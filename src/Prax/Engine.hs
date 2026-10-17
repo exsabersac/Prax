@@ -71,49 +71,41 @@ retable st0 =
      , negFootprint = axiomNegPatterns (cookedRules st')
      , contMonotone = monotoneAxioms (cookedRules st') }
 
--- | 'relevantDelta' generalized to operate on already-split, interned names:
--- the primary delta's names and its eviction shadows (each already a name
--- list). The hot cooked path ('performCooked') calls this directly — it
--- never reparses or re-interns a sentence to recover what it already has as
--- tokens.
+-- | 'relevantDelta' 的泛化：在已拆分、已 intern 的名字上运算——主 delta 的名字及其驱逐阴影
+-- （各自已是名字列表）。热路径煮熟路径（'performCooked'）直接调用本函数——从不重解析或重 intern
+-- 句子以找回它已有的 token。
 relevantNames :: [Sym] -> [[Sym]] -> PraxState -> Bool
 relevantNames names shadows st =
   any (\ns -> any (mayUnifySyms ns) (footprint st)) (names : shadows)
 
--- | Can this ground delta change what the axioms derive? Conservative:
--- False only when the sentence — and anything its exclusions evict —
--- may-unify nothing in the axioms' footprint (v27 spec theorem). False is
--- the licence for 'performOutcome' to skip 'reclose'.
+-- | 此落地 delta 能否改变公理所派生之物？保守：仅当句子——及其排他所驱逐的一切——
+-- 与公理 footprint 中任何物均不可统一（may-unify）时为 False（v27 规格定理）。
+-- False 是 'performOutcome' 跳过 'reclose' 的许可证。
 relevantDelta :: String -> PraxState -> Bool
 relevantDelta s = relevantNames (map fst toks) (evictionShadowNames toks)
   where toks = internTokens s
 
--- | 'monotoneInsert' generalized to operate on already-split, interned
--- tokens.
+-- | 'monotoneInsert' 的泛化：在已拆分、已 intern 的 token 上运算。
 monotoneToks :: [(Sym, Maybe Char)] -> PraxState -> Bool
 monotoneToks toks st =
   contMonotone st
     && all ((/= Just '!') . snd) toks
     && not (any (mayUnifySyms (map fst toks)) (negFootprint st))
 
--- | May this insert take the continuation tier: the world is
--- continuation-safe, the insert evicts nothing, and it can defeat nothing.
+-- | 此插入可否走延续层：世界延续安全、插入不驱逐任何物、且不能击败任何物。
 monotoneInsert :: String -> PraxState -> Bool
 monotoneInsert s = monotoneToks (internTokens s)
 
--- | The continuation tier, natively on tokens: grow the base and continue the
--- ALREADY-CLOSED view with the one new fact via 'runCooked' and the state's
--- precompiled 'cookedRules' — no string is ever rebuilt from @toks@. A
--- contradiction (⊥) falls back to the full 'reclose' path, which reaches the
--- same "contradiction" marker from scratch.
+-- | 延续层，原生在 token 上：经 'runCooked' 与状态预编译的 'cookedRules' 增长基并延续
+-- *已闭合* 视图（一个新事实）——从不从 @toks@ 重建字符串。矛盾（⊥）回退到完整 'reclose'
+-- 路径，从零到达同一 @"contradiction"@ 标记。
 applyGrowToks :: [(Sym, Maybe Char)] -> PraxState -> PraxState
 applyGrowToks toks st =
   case runCooked (cookedRules st) (insertToks toks (readView st)) (insertToks toks emptyDb) of
     Right v -> st { db = insertToks toks (db st), readView = v }
     Left _  -> withDb (insertToks toks) st
 
--- | Register a practice and insert its static @dataFacts@ under
--- @practiceData.<id>.@.
+-- | 注册实践，并将其静态 @dataFacts@ 插入 @practiceData.<id>.@ 下。
 definePractice :: Practice -> PraxState -> PraxState
 definePractice p st
   | a : _ <- dupActions =
@@ -129,22 +121,16 @@ definePractice p st
     names = map actionName (actions p)
     dupActions = [ n | (n, i) <- zip names [0 :: Int ..], n `elem` take i names ]
 
--- | Register several practices in order.
+-- | 按序注册若干实践。
 definePractices :: [Practice] -> PraxState -> PraxState
 definePractices ps st = foldl' (flip definePractice) st ps
 
--- | Register the world's functions — the one home ('cookedFns'). 'Practice'
--- carries no functions since v47: practice-locality was fiction, resolution
--- was always global ('lookupCookedFn' searched every practice first-wins,
--- 'Call' sites name bare functions). Cooks each into the registry and retables
--- so the fn-pool analyses ('Prax.Relevance.producibleAtoms',
--- 'improvableDesires', 'livenessOf', 'bearingTemplates') see the vocabulary.
--- Loud on a duplicate 'fnName' — within this batch OR against the
--- already-registered set (v43's two per-practice collision arms collapse into
--- this one check: a Map cannot hold a duplicate silently, so the guard makes
--- the attempt loud). Order relative to 'definePractices' does not matter: both
--- setters persist their own field ('cookedFns'\/'practiceDefs') and 'retable'
--- reads both, so whichever runs last leaves every table coherent.
+-- | 注册世界的函数——唯一归宿（'cookedFns'）。自 v47 起 'Practice' 不再携带函数：实践局部性是虚构，
+-- 解析始终全局（'lookupCookedFn' 先胜搜索每个实践，'Call' 站点命名裸函数）。各煮入注册表并 retable，
+-- 使函数池分析（'Prax.Relevance.producibleAtoms'、'improvableDesires'、'livenessOf'、'bearingTemplates'）
+-- 看见词汇。重复 'fnName' 响亮报错——本批内或对照已注册集（v43 的两道每实践碰撞臂并入此检查：Map 不能静默持有重复，
+-- 因此守卫使尝试响亮）。相对 'definePractices' 的次序无关：两 setter 各持久化自有字段（'cookedFns'\/'practiceDefs'），
+-- 'retable' 读两者，谁最后跑都使每表一致。
 defineFunctions :: [Function] -> PraxState -> PraxState
 defineFunctions fs st
   | (fn : _) <- clashes =
@@ -159,8 +145,7 @@ defineFunctions fs st
     existing = Map.keys (cookedFns st)
     clashes  = (newNames \\ nub newNames) ++ filter (`elem` existing) newNames
 
--- | Substitute @[Var]@ placeholders in a template using the bindings, leaving
--- unknown placeholders untouched.
+-- | 用绑定替换模板中的 @[Var]@ 占位符，未知占位符保持不动。
 renderText :: String -> Bindings -> String
 renderText template b = go template
   where
@@ -172,54 +157,42 @@ renderText template b = go template
         _ -> '[' : go rest      -- unterminated '['; emit literally
     go (c : rest) = c : go rest
 
--- | Rebuild the cached closed view: the base DB forward-chained under the
--- state's domain 'axioms', via 'runCooked' and the precompiled 'cookedRules'
--- (so this ~5,400-calls\/round path never re-cooks the axiom set — 'retable'
--- maintains it, gated). With no axioms this is exactly @db st@, so un-axiomatised
--- worlds are unaffected and pay nothing. A contradiction (@⊥@) is surfaced as
--- a queryable @contradiction@ fact over the (still-consistent) base rather
--- than crashing, so a world or drama-manager can react to it. Internal:
--- every helper that changes 'db' or 'axioms' must end here.
+-- | 重建缓存的闭合视图：经 'runCooked' 与预编译 'cookedRules'，在状态域 'axioms' 下前向链基 DB
+-- （因此此约 5,400 次\/回合路径从不重煮公理集——'retable' 维护它，有门禁）。无公理时恰为 @db st@，
+-- 未公理化世界不受影响且无代价。矛盾（@⊥@）表现为（仍一致的）基上可查询的 @contradiction@ 事实而非崩溃，
+-- 以便世界或戏剧管理器可反应。内部：每个变更 'db' 或 'axioms' 的助手必须以此结束。
 reclose :: PraxState -> PraxState
 reclose st = st { readView = case runCooked (cookedRules st) (db st) (db st) of
                                Right closed -> closed
                                Left _       -> insert "contradiction" (db st) }
 
--- | The only sanctioned way to change the fact base of a built state.
+-- | 变更已构建状态事实基的唯一正当方式。
 withDb :: (Db -> Db) -> PraxState -> PraxState
 withDb f st = reclose st { db = f (db st) }
 
--- | Apply one delta to the base AND the cached view in lockstep — sound
--- exactly when 'relevantDelta' answered False (the delta commutes with
--- closure; v27 spec theorem). The only sanctioned 'readView' write outside
--- 'reclose'.
+-- | 锁步将一 delta 应用到基 *与* 缓存视图——恰在 'relevantDelta' 答 False 时可靠
+-- （delta 与闭包交换；v27 规格定理）。'reclose' 外唯一正当的 'readView' 写入。
 applyDirect :: (Db -> Db) -> PraxState -> PraxState
 applyDirect f st = st { db = f (db st), readView = f (readView st) }
 
--- | The only sanctioned way to change the axioms of a built state. Retable
--- FIRST (it maintains 'cookedRules'), THEN reclose: reclose's 'runCooked' reads
--- the 'cookedRules' retable just set, so the cached view closes under exactly
--- the axiom set. Order-insensitive in the axiom set itself — 'cookAxioms' reads
--- only 'axioms', so no producer setup fact need precede this call.
+-- | 变更已构建状态公理的唯一正当方式。先 retable（它维护 'cookedRules'），再 reclose：
+-- reclose 的 'runCooked' 读 retable 刚设的 'cookedRules'，故缓存视图恰在该公理集下闭合。
+-- 对公理集本身次序不敏感——'cookAxioms' 只读 'axioms'，因此无需生产者 setup 事实先于此调用。
 setAxioms :: [Axiom] -> PraxState -> PraxState
 setAxioms axs st = reclose (retable st { axioms = axs })
 
--- | The only sanctioned way to change the desire vocabulary of a built state.
+-- | 变更已构建状态欲望词汇的唯一正当方式。
 setDesires :: [Desire] -> PraxState -> PraxState
 setDesires ds st = retable st { desires = ds }
 
--- | The only sanctioned way to change the character roster of a built state.
+-- | 变更已构建状态角色阵容的唯一正当方式。
 setCharacters :: [Character] -> PraxState -> PraxState
 setCharacters cs st = retable st { characters = cs }
 
--- | The AUTHORING door onto a world's engine schedule (spec v44): install
--- authored recurring rules. This is the one choke point for schedule-rule
--- authoring hygiene — on every clause of every rule the v40 splice check
--- ('authoredVarClash' @["Actor"]@): the @Prax@ namespace is reserved for engine
--- machinery and @Actor@ is reserved for movers (a schedule rule has no actor at
--- all). Everything else (single-segment names, positive periods, no duplicate
--- names, due seeding) is the shared 'addScheduleRules' core, which
--- 'registerEngineRules' shares.
+-- | 世界引擎调度的 *创作* 门（规格 v44）：安装创作的周期规则。这是调度规则创作卫生的唯一咽喉——
+-- 每条规则的每个子句做 v40 拼接检查（'authoredVarClash' @["Actor"]@）：@Prax@ 命名空间留给引擎机械，
+-- @Actor@ 留给行动者（调度规则根本无行动者）。其余（单段名、正周期、无重名、到期播种）是共享的
+-- 'addScheduleRules' 核心，'registerEngineRules' 也共用。
 setSchedule :: [ScheduleRule] -> PraxState -> PraxState
 setSchedule rules st
   | (v : _) <- offenders =
@@ -231,13 +204,10 @@ setSchedule rules st
     offenders = concat [ authoredVarClash ["Actor"] conds outs
                        | r <- rules, (conds, outs) <- srBody r ]
 
--- | Seed the drama die (spec v50): install the RNG stream's start position into
--- engine state ('rngSeed'). Loud on a seed outside the stream's domain
--- ('Prax.Rng.seedBounds' — @0@ and multiples of the modulus are fixed points, a
--- die that always rolls the same face). A world calls this once at build time
--- (the seed is an authored world parameter that selects the playthrough's
--- fate); an unseeded world's 'Roll' is a loud error, caught statically by the
--- 'Prax.TypeCheck.SeedlessDraw' check.
+-- | 播种戏剧骰（规格 v50）：把 RNG 流起始位置装入引擎状态（'rngSeed'）。种子在流域外时响亮报错
+-- （'Prax.Rng.seedBounds'——@0@ 与模的倍数是不动点，骰子总掷同一面）。世界在构建时调用一次
+-- （种子是选择本通关命运的创作世界参数）；未播种世界的 'Roll' 是响亮错误，由
+-- 'Prax.TypeCheck.SeedlessDraw' 静态捕获。
 seedDie :: Integer -> PraxState -> PraxState
 seedDie s st
   | s < lo || s > hi =
@@ -248,40 +218,24 @@ seedDie s st
   | otherwise = st { rngSeed = Just s }
   where (lo, hi) = seedBounds
 
--- | The COMPILER-LEVEL door onto the engine schedule (spec v46): register rules
--- that authoring code could not. The compiled "Prax.Script" story rule is
--- compiler-generated, not authored — its clauses carry compiler-owned
--- mechanics ('Prax.Script.compile' has already hygiene-checked the verbatim
--- author fragments it splices in) — so it registers here rather than through
--- 'setSchedule'. This door omits ONLY the v40 splice guard: its caller is
--- compiler-level code ('Prax.Script.compile'), squarely inside v45's
--- threat model (the family of reserved-namespace writes that only mechanism may
--- make), so it carries no authoring guard BY DESIGN. It is deliberately NOT
--- re-exported from any authoring-surface module. Every other schedule-rule
--- invariant still holds (single-segment names, positive periods, no duplicate
--- names ACROSS BOTH DOORS, dues seeded one period out) — the shared
--- 'addScheduleRules' core.
+-- | 引擎调度的 *编译器级* 门（规格 v46）：注册创作代码不能写的规则。编译后的 "Prax.Script" 故事规则
+-- 由编译器生成、非创作——其子句携带编译器自有机械（'Prax.Script.compile' 已对其拼接的逐字作者片段做过卫生检查）——
+-- 因此在此注册而非经 'setSchedule'。本门 *只* 省略 v40 拼接守卫：调用方是编译器级代码（'Prax.Script.compile'），
+-- 正落在 v45 威胁模型内（仅机械可做的保留命名空间写入族），故 *设计上* 不带创作守卫。有意不从任何创作表面模块再导出。
+-- 其余调度规则不变量仍成立（单段名、正周期、两门间无重名、到期播在一周期外）——共享 'addScheduleRules' 核心。
 --
--- Beyond installing the rules, this door RECORDS which names it installed in
--- 'engineRuleNames' — the provenance the reserved-family scan ('Prax.TypeCheck')
--- consults so machinery may write reserved compiler families (spec v53). The
--- record update forces 'addScheduleRules' to WHNF, so its duplicate-name guard
--- still fires loudly BEFORE any name is recorded (a duplicate is never silently
--- exempted).
+-- 除安装规则外，本门把所装名字 *记录* 到 'engineRuleNames'——保留族扫描（'Prax.TypeCheck'）查阅的出处，
+-- 以便机械可写保留编译器族（规格 v53）。记录更新把 'addScheduleRules' 强制到 WHNF，因此其重名守卫仍在
+-- *记录任何名字之前* 响亮触发（重复从不静默豁免）。
 registerEngineRules :: [ScheduleRule] -> PraxState -> PraxState
 registerEngineRules rules st =
   (addScheduleRules rules st)
     { engineRuleNames = engineRuleNames st ++ map srName rules }
 
--- | Install schedule rules onto the world, APPENDING to any already registered
--- (both doors write the one globally-keyed rule table): store the declarations,
--- cook their mirror ('retable'), and seed each rule's next-due one full period
--- out (the start-sated convention — @currentTurn + srPeriod@, uniform across
--- rules). Loud construction-time errors: single-segment rule names (a
--- multi-segment name would corrupt the by-name due keying), positive periods,
--- and no duplicate names — checked both within this batch AND against rules the
--- other door already registered (the dues map is keyed by name; a collision
--- would share one due key), naming both doors so the author knows where to look.
+-- | 把调度规则安装到世界，*追加* 到已注册者（两门写入同一全局键规则表）：存声明、煮镜像（'retable'），
+-- 并把每条规则的下次到期播在完整一周期外（开局已饱约定——@currentTurn + srPeriod@，跨规则统一）。
+-- 构建时响亮错误：单段规则名（多段名会破坏按名到期键控）、正周期、无重名——本批内 *与* 对照另一门已注册规则
+-- 均检查（dues map 按名键控；碰撞会共享一个到期键），点名两门以便作者知道往哪看。
 addScheduleRules :: [ScheduleRule] -> PraxState -> PraxState
 addScheduleRules rules st
   | (r : _) <- filter ((/= 1) . length . pathNames . srName) rules =
@@ -306,12 +260,9 @@ addScheduleRules rules st
     existing = map srName (schedule st)
     clashes  = (newNames \\ nub newNames) ++ filter (`elem` existing) newNames
 
--- | All actions the named actor can currently perform, across every
--- instantiated practice and every satisfying binding of each action. Conditions
--- (and practice instances) are evaluated against 'readView', so derived facts are
--- visible to preconditions. Instance unification and the inner condition query
--- both run on the precooked forms cached in 'cookedDefs' — the hot loop never
--- reparses an authored pattern.
+-- | 具名行动者当前可执行的全部动作，遍及每个已实例化实践及每个动作的每个满足绑定。条件
+-- （与实践实例）对照 'readView' 求值，故派生事实对前置条件可见。实例统一与内部条件查询均跑在
+-- 'cookedDefs' 缓存的预煮形式上——热循环从不重解析创作模式。
 possibleActions :: PraxState -> String -> [GroundedAction]
 possibleActions st actor =
   [ GroundedAction
@@ -329,8 +280,7 @@ possibleActions st actor =
   ]
   where view = readView st
 
--- | Apply every outcome of a grounded action, in order, through the cooked
--- engine.
+-- | 经煮熟引擎按序应用落地动作的每个结果。
 performAction :: PraxState -> GroundedAction -> PraxState
 performAction st ga =
   case Map.lookup (gaPracticeId ga) (cookedDefs st) of
@@ -341,7 +291,7 @@ performAction st ga =
                            st (caOuts ca)
         [] -> st
 
--- | Substitute bound variables into an outcome's sentence(s)/args.
+-- | 把已绑定变量代入结果的句子\/参数。
 groundOutcome :: Outcome -> Bindings -> Outcome
 groundOutcome (Insert s)          b = Insert (ground s b)
 groundOutcome (Delete s)          b = Delete (ground s b)
@@ -352,18 +302,14 @@ groundOutcome (ForEach conds outs) b =
 groundOutcome (Roll num den conds outs) b =
   Roll num den (map (groundCondition b) conds) (map (`groundOutcome` b) outs)
 
--- | Apply a single, already-grounded outcome to the state — the public,
--- string-facing entry, cook-then-run: one engine, two doors.
+-- | 把单个已落地结果应用到状态——公开、面向字符串的入口，先煮再跑：一引擎，两门。
 performOutcome :: Outcome -> PraxState -> PraxState
 performOutcome o = performCooked (cookOutcome o)
 
--- | Apply a single, already-grounded cooked outcome to the state.
--- Case-for-case with the string 'performOutcome': same classification order
--- (irrelevant → monotone-insert continuation → reclose), same
--- 'applyDirect'\/'applyGrowToks'\/'withDb' routing, same spawn-runs-inits
--- semantics, same 'ForEach' snapshot-then-apply behaviour — only the parsing
--- moves: classification, spawn detection, and insert/retract all run on
--- names already in hand.
+-- | 把单个已落地煮熟结果应用到状态。与字符串 'performOutcome' 逐 case 对应：同一分类次序
+-- （无关 → 单调插入延续 → reclose）、同一 'applyDirect'\/'applyGrowToks'\/'withDb' 路由、
+-- 同一 spawn-runs-inits 语义、同一 'ForEach' 先快照再应用行为——仅解析移动：分类、孵化检测与
+-- 插入\/撤回均跑在手中已有的名字上。
 performCooked :: CookedOutcome -> PraxState -> PraxState
 performCooked (CDelete toks) st0
   | relevantNames names shadows st = withDb (retractNames names) st
@@ -428,26 +374,20 @@ performCooked (CRoll num den conds outs) st =
            then performCooked (CForEach conds outs) st1
            else st1
 
--- | The engine clock's current value — the single @turn@ child in the db
--- (spec v44). Loud error if absent or not a lone numeric value: the clock is
--- seeded in 'emptyState' and only ever advanced by 'roundBoundary', so its
--- absence is a construction bug, and silence is banned.
+-- | 引擎时钟当前值——db 中唯一的 @turn@ 孩子（规格 v44）。缺失或非单独数值时响亮报错：时钟在
+-- 'emptyState' 播种且仅由 'roundBoundary' 推进，故缺失是构建 bug，禁止沉默。
 currentTurn :: PraxState -> Int
 currentTurn st = case childKeys turnPath (db st) of
   [n] | Just i <- readMaybe n -> i
   ks -> error ("Prax.Engine.currentTurn: expected exactly one numeric " ++ show turnPath
                ++ " value in the db, found " ++ show ks)
 
--- | One round boundary (spec v44): advance the clock, fire due expiries
--- (existence-guarded: an entry whose exact fact was evicted since drops
--- silently — no retract, no recompute), then due schedule rules in
--- declaration order, re-arming each period boundaries from NOW. A pure
--- function of the state; the loop runs it at rotation wrap (Task 2).
+-- | 一个回合边界（规格 v44）：推进时钟，触发到期失效（存在守卫：自播种以来精确事实已被驱逐的条目
+-- 静默丢弃——无撤回、无重算），再按声明序触发到期调度规则，并从 *现在* 重装各周期边界。状态的纯函数；
+-- 循环在轮转回绕时运行它（任务 2）。
 --
--- Expiries fire BEFORE rules for a stated reason: a fact with lifetime n is
--- present rounds onset..onset+n-1 and GONE at the boundary — rules-first would
--- let a period-1 rule stamp a belief about a fact expiring that instant (a
--- ghost observation).
+-- 失效在规则 *之前* 触发有明确理由：寿命为 n 的事实在回合 onset..onset+n-1 存在，边界时 *消失*——
+-- 若先规则，周期-1 规则可在事实恰到期的瞬间盖印信念（幽灵观察）。
 roundBoundary :: PraxState -> PraxState
 roundBoundary st0 = foldl' fireRule stExpired dueRules
   where
@@ -494,29 +434,19 @@ spawnedInstanceNames names st =
     -- The instance is newly spawned iff it did not exist before this insert.
     existedBefore ns = not (null (unifySyms ns (db st) Map.empty))
 
--- | The function named @fn@'s params and cooked cases — a plain lookup in the
--- one registry ('cookedFns'). Since v47 functions have a single home (the
--- practice-fold-and-first-wins resolution is gone), so this is exactly
--- @Map.lookup fn (cookedFns st)@.
+-- | 名为 @fn@ 的函数的参数与煮熟分支——在唯一注册表（'cookedFns'）中的普通查找。自 v47 起函数只有
+-- 一个归宿（实践折叠先胜解析已去），故恰为 @Map.lookup fn (cookedFns st)@。
 lookupCookedFn :: String -> PraxState -> Maybe ([String], [([CookedCondition], [CookedOutcome])])
 lookupCookedFn fn st = Map.lookup fn (cookedFns st)
 
--- | The insert\/delete anchor families one grounded action's outcomes can
--- touch — 'performAction''s effects, bounded statically per call by walking
--- the same cooked outcomes 'performAction' itself executes. @Nothing@ when
--- the effects cannot be bounded: an unresolvable 'CCall'; an insert whose
--- first segment IS the literal @practice@; or an insert whose first segment
--- is a variable that is not a safe ForEach binder ('safeBinders') — such a
--- head could ground to @practice@ and spawn an instance
--- ('spawnedInstanceNames'), running that practice's 'cpInits', arbitrary
--- further outcomes this walk does not model. Paths with no literal segment
--- at all are likewise opaque — they carry no anchor evidence for
--- 'Prax.Relevance.mayUnifySyms'. The caller (the planner's prediction reuse)
--- treats @Nothing@ as opaque: no reuse at or below the node. Conservative by
--- construction: 'CForEach' bodies are included whether or not their guards
--- would fire, a safe binder head kept as a 'mayUnifySyms' wildcard anchor;
--- 'CCall' includes every case of the resolved function, cycle-guarded like
--- 'Prax.Relevance''s string-side atom walk.
+-- | 一个落地动作的结果可触及的插入\/删除锚点族——'performAction' 的效果，每次调用通过遍历
+-- 'performAction' 自身执行的同一煮熟结果做静态限界。无法限界时为 @Nothing@：不可解析的 'CCall'；
+-- 首段 *就是* 字面 @practice@ 的插入；或首段是非安全 ForEach 绑定器（'safeBinders'）的变量的插入——
+-- 此类头可落地到 @practice@ 并孵化实例（'spawnedInstanceNames'），跑该实践的 'cpInits'、本步行不建模的
+-- 任意后续结果。完全无字面段的路径同样不透明——它们不携带 'Prax.Relevance.mayUnifySyms' 的锚点证据。
+-- 调用方（planner 的预测复用）把 @Nothing@ 当不透明：该节点及以下不复用。构造上保守：无论守卫是否会触发
+-- 都包含 'CForEach' 体，安全绑定器头保留为 'mayUnifySyms' 通配锚；'CCall' 包含已解析函数的每个分支，
+-- 像 'Prax.Relevance' 字符串侧原子行走一样有环守卫。
 groundedDeltaAnchors :: PraxState -> GroundedAction -> Maybe [[Sym]]
 groundedDeltaAnchors st ga = do
   cp <- Map.lookup (gaPracticeId ga) (cookedDefs st)
@@ -566,20 +496,13 @@ outcomeDeltaAnchors st visited = go' Set.empty
     -- this arm is unreachable in shipped worlds.
     unanchored = all symIsVar
 
--- | The ForEach binders that provably cannot take the value @practice@:
--- variables bound at a NON-FIRST position of a top-level positive 'CMatch'
--- guard and never occurring at the first position of any such guard. Spends
--- the authored-world structural invariant (the family "Prax.Relevance"'s
--- header states for predicate literals, extended to the registry root): the
--- literal @practice@ roots practice-registry paths and is never an entity,
--- place, value, or id name — so a value read out of a fact's INTERIOR can
--- never be @practice@, and an insert headed by such a binder can never reach
--- 'spawnedInstanceNames'. Deliberately narrow: 'CExists'\/'CAbsent'\/'CNot'
--- do not bind outward, 'COr' branches may leave the binder unbound, subquery
--- variables carry sets, and a FIRST-position variable really can unify
--- @practice@ against the registry — none of those yield safe binders, and
--- 'CCall' resets the safe set (call-scoped parameters are not the mover's
--- bindings). Uncertainty stays opaque.
+-- | 可证明不能取值 @practice@ 的 ForEach 绑定器：在顶层正 'CMatch' 守卫的 *非首位* 绑定、
+-- 且从不出现在任何此类守卫首位的变量。花费创作世界结构不变量（"Prax.Relevance" 头对谓词字面所声明的族，
+-- 延伸到注册表根）：字面 @practice@ 根实践注册表路径，从不是实体、地点、值或 id 名——因此从事实
+-- *内部* 读出的值永不可能是 @practice@，以此类绑定器为头的插入永不能到达 'spawnedInstanceNames'。
+-- 有意收窄：'CExists'\/'CAbsent'\/'CNot' 不向外绑定，'COr' 分支可能使绑定器未绑定，子查询变量携带集合，
+-- 且 *首位* 变量确实可对注册表统一 @practice@——那些都不产生安全绑定器，且 'CCall' 重置安全集
+-- （调用作用域参数不是行动者的绑定）。不确定性保持不透明。
 safeBinders :: [CookedCondition] -> Set Sym
 safeBinders conds = Set.difference boundDeep firstPos
   where

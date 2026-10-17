@@ -68,41 +68,37 @@ import           Prax.Core (coreFns)
 
 -- The AST ---------------------------------------------------------------------
 
--- | A whole playtext: a cast, a set of scenes, and the scene to open on.
+-- | 整部剧本：阵容、一组场景，以及开场场景。
 data Script = Script
   { scriptCast  :: [CastMember]
   , scriptScenes :: [Scene]
-  , scriptStart :: String          -- ^ id of the opening scene
+  , scriptStart :: String          -- ^ 开场场景的 id
   }
   deriving (Eq, Show)
 
--- | A character in the cast, with its desires written as FOL 'Want's. A
--- character /sketch/ adds 'concernedWith' (concerns compiled to wants) and
--- 'withTraits' (personality tags stored as queryable facts).
+-- | 阵容中的角色，欲望写成 FOL 'Want'。角色 /素描/ 加上 'concernedWith'（关注编译为 want）
+-- 与 'withTraits'（个性标签存为可查询事实）。
 data CastMember = CastMember
   { castName     :: String
-  , castPlayable :: Bool           -- ^ marks the player-controlled character
+  , castPlayable :: Bool           -- ^ 标记玩家控制的角色
   , castDesires  :: [Want]
-  , castTraits   :: [String]       -- ^ personality tags → @trait.\<who\>.\<t\>@ facts
+  , castTraits   :: [String]       -- ^ 个性标签 → @trait.\<who\>.\<t\>@ 事实
   }
   deriving (Eq, Show)
 
--- | One scene: the unit of grouping. Its beats are available only while it is
--- current; its junctions are the ways it can end or hand off to another scene.
+-- | 一个场景：分组单元。其 beat 仅在当前时可用；其 junction 是结束或移交另一场景的路径。
 data Scene = Scene
   { sceneId      :: String
-  , sceneOpening :: String         -- ^ narration shown on entering the scene
-  , sceneSetup   :: [Outcome]      -- ^ facts asserted when the scene becomes current
+  , sceneOpening :: String         -- ^ 进入场景时显示的旁白
+  , sceneSetup   :: [Outcome]      -- ^ 场景成为当前时断言的事实
   , sceneBeats   :: [Beat]
   , sceneJunctions :: [Junction]
   }
   deriving (Eq, Show)
 
--- | A beat: a line of dialogue or an affordance a character may take within the
--- scene. @beatSpeaker (Just c)@ restricts it to character @c@ (a Prompter quip is
--- spoken by a named actor); @Nothing@ leaves it open to any cast member. Its
--- conditions and effects are ordinary engine 'Condition's/'Outcome's, so
--- "Prax.Core"/"Prax.Beliefs" smart constructors drop straight in.
+-- | 一个 beat：场景内角色可说的对白行或可采取的 affordance。@beatSpeaker (Just c)@ 限制为角色 @c@
+-- （Prompter quip 由具名行动者说出）；@Nothing@ 对任意阵容成员开放。其条件与效果是普通引擎
+-- 'Condition'\'Outcome'，因此 "Prax.Core"/"Prax.Beliefs" 智能构造器可直接落入。
 data Beat = Beat
   { beatLabel   :: String
   , beatSpeaker :: Maybe String
@@ -111,48 +107,40 @@ data Beat = Beat
   }
   deriving (Eq, Show)
 
--- | A junction: a route out of a scene, fired (by the engine's @"story"@
--- schedule rule at a round boundary) as soon as @junctionWhen@ holds AND (if
--- 'junctionAfter' is set) at least that many engine rounds have elapsed since
--- the scene was entered. @junctionTo (Just s)@ transitions to scene @s@;
--- @Nothing@ ends the story with @junctionName@ as the ending key.
+-- | 一个 junction：离开场景的路由，一旦 @junctionWhen@ 成立 *且*（若设了 'junctionAfter'）
+-- 自进入场景起至少经过那么多引擎回合，就由引擎 @"story"@ 调度规则在回合边界触发。
+-- @junctionTo (Just s)@ 转到场景 @s@；@Nothing@ 以 @junctionName@ 为结局键结束故事。
 --
--- @junctionWhen@ is always 100% author content — unlike the pre-v44-fix
--- design, it never carries spliced machinery, so 'compile' can (and does)
--- validate it uniformly with the same v40 hygiene guard 'sceneSetup' gets,
--- regardless of how the 'Junction' was built (Haskell smart constructor, raw
--- constructor, or decoded from JSON — see "Prax.Script.Json"'s @FromJSON
--- Junction@, the module's documented external-authoring surface). The timeout
--- machinery — the patience marker ('scenePatiencePath') 'setupOf' arms and
--- 'storyClause' reads as @Not@ — is expanded from 'junctionAfter' at compile
--- time, so it never appears in author-visible data at all.
+-- @junctionWhen@ 始终 100% 是作者内容——与 v44 修复前设计不同，从不携带拼接机械，因此 'compile'
+-- 可用与 'sceneSetup' 相同的 v40 卫生守卫统一校验，无论 'Junction' 如何构建（Haskell 智能构造器、
+-- 原始构造器，或从 JSON 解码——见 "Prax.Script.Json" 的 @FromJSON Junction@，本模块文档化的外部创作表面）。
+-- 超时机械——'setupOf' 武装、'storyClause' 以 @Not@ 读取的耐心标记（'scenePatiencePath'）——在编译时
+-- 从 'junctionAfter' 展开，因此从不出现在作者可见数据中。
 data Junction = Junction
   { junctionName  :: String
   , junctionTo    :: Maybe String
   , junctionWhen  :: [Condition]
-  , junctionAfter :: Maybe Int    -- ^ fire only >= this many rounds after scene entry
+  , junctionAfter :: Maybe Int    -- ^ 仅在进入场景后 >= 这么多回合才触发
   }
   deriving (Eq, Show)
 
 -- Smart constructors ----------------------------------------------------------
 
--- | A non-player cast member with no desires (override with 'wanting').
+-- | 无欲望的非玩家阵容成员（用 'wanting' 覆盖）。
 member :: String -> CastMember
 member n = CastMember { castName = n, castPlayable = False, castDesires = [], castTraits = [] }
 
--- | The player-controlled cast member.
+-- | 玩家控制的阵容成员。
 player :: String -> CastMember
 player n = (member n) { castPlayable = True }
 
--- | Give a cast member desires: @member "cassia" \`wanting\` [Want …]@.
+-- | 给阵容成员欲望：@member "cassia" \`wanting\` [Want …]@。
 wanting :: CastMember -> [Want] -> CastMember
 wanting c ws = c { castDesires = castDesires c ++ ws }
 
--- | Sketch a character's __concerns__: each @(dimension, weight)@ appends a want
--- that the character be regarded positively on that dimension — @+weight@ for
--- every other whose evaluation of them on @dimension@ is above zero (the natural
--- positive/negative boundary; the weight is author-supplied, so no magic
--- constants). Composes with 'wanting'.
+-- | 素描角色的 __关注__：每个 @(dimension, weight)@ 追加一条 want——希望在该维度上被正面看待——
+-- 对每个在 @dimension@ 上对其评价高于零的他人 @+weight@（自然正\/负边界；权重作者供给，无魔法常量）。
+-- 与 'wanting' 组合。
 concernedWith :: CastMember -> [(String, Int)] -> CastMember
 concernedWith c pairs = c { castDesires = castDesires c ++ map want pairs }
   where
@@ -161,82 +149,70 @@ concernedWith c pairs = c { castDesires = castDesires c ++ map want pairs }
       , Neq "Other" (castName c)
       , Cmp Gt "N" "0" ] w
 
--- | Give a character personality __traits__ — stored as queryable
--- @trait.\<who\>.\<t\>@ facts (usable in preconditions). They are deliberately
--- /not/ compiled to behaviour: no source specifies a trait→desire mapping.
+-- | 给角色个性 __特质__——存为可查询 @trait.\<who\>.\<t\>@ 事实（可用于前置条件）。有意 /不/ 编译为行为：
+-- 无源指定特质→欲望映射。
 withTraits :: CastMember -> [String] -> CastMember
 withTraits c ts = c { castTraits = castTraits c ++ ts }
 
--- | An empty scene with the given id; fill fields with record syntax.
+-- | 给定 id 的空场景；用记录语法填字段。
 scene :: String -> Scene
 scene sid = Scene
   { sceneId = sid, sceneOpening = "", sceneSetup = []
   , sceneBeats = [], sceneJunctions = [] }
 
--- | A beat open to any cast member: @beat label conditions effects@.
+-- | 对任意阵容成员开放的 beat：@beat label conditions effects@。
 beat :: String -> [Condition] -> [Outcome] -> Beat
 beat lbl = Beat lbl Nothing
 
--- | A beat spoken by a named character: @quip speaker label conditions effects@.
+-- | 由具名角色说出的 beat：@quip speaker label conditions effects@。
 quip :: String -> String -> [Condition] -> [Outcome] -> Beat
 quip spk lbl = Beat lbl (Just spk)
 
--- | A transition junction: @goto name toScene when@. @when@ is validated at
--- 'compile' time (uniformly with every other junction, however built) rather
--- than here: a constructor-level guard is bypassable through any authoring
--- surface that builds a 'Junction' without going through 'goto' — notably
--- "Prax.Script.Json"'s @FromJSON Junction@ — so the v40 hygiene check lives
--- at the actual consumption point instead.
+-- | 转移 junction：@goto name toScene when@。@when@ 在 'compile' 时校验（与每个其他 junction 统一，
+-- 无论如何构建）而非此处：构造器级守卫可被任何不经 'goto' 构建 'Junction' 的创作表面绕过——尤其
+-- "Prax.Script.Json" 的 @FromJSON Junction@——因此 v40 卫生检查改放在实际消费点。
 goto :: String -> String -> [Condition] -> Junction
 goto name to conds = Junction name (Just to) conds Nothing
 
--- | An ending junction: @ending name when@ (ending key = @name@).
+-- | 结局 junction：@ending name when@（结局键 = @name@）。
 ending :: String -> [Condition] -> Junction
 ending name conds = Junction name Nothing conds Nothing
 
--- | The patience-marker family (spec v50): a timed junction @j@ of scene
--- @sid@ carries the fact @scenePatience.\<sid\>.\<j\>@, inserted with lifetime
--- @n@ on scene entry ('setupOf') and retracted @n@ boundaries later by the
--- v44 expiry schedule. The junction fires when its patience has RUN OUT (the
--- marker is absent). Compiler machinery, not fiction: produced only by
--- 'setupOf', read only by the story rule. Authors may not touch it — 'compile'
--- rejects any authored condition or outcome headed here (the collision hole).
+-- | 耐心标记族（规格 v50）：场景 @sid@ 的定时 junction @j@ 携带事实 @scenePatience.\<sid\>.\<j\>@，
+-- 进入场景时以寿命 @n@ 插入（'setupOf'），@n@ 个边界后由 v44 失效调度撤回。耐心 *耗尽*（标记缺失）时
+-- junction 触发。编译器机械，非虚构：仅由 'setupOf' 产生，仅由故事规则读取。作者不可触及——'compile'
+-- 拒绝任何以此为头的创作条件或结果（碰撞洞）。
 scenePatienceFamily :: String
 scenePatienceFamily = "scenePatience"
 
--- | The patience marker for timed junction @jname@ of scene @sid@.
+-- | 场景 @sid@ 定时 junction @jname@ 的耐心标记。
 scenePatiencePath :: String -> String -> String
 scenePatiencePath sid jname = scenePatienceFamily ++ "." ++ sid ++ "." ++ jname
 
--- | A __timed transition__: @after name n toScene@ — hand off to @toScene@ once
--- @n@ rounds have elapsed in the current scene (Prompter's timeout transition).
+-- | __定时转移__：@after name n toScene@——当前场景经过 @n@ 回合后移交 @toScene@（Prompter 超时转移）。
 after :: String -> Int -> String -> Junction
 after name n to = Junction name (Just to) [] (Just n)
 
--- | A __timeout ending__: @timeout name n@ — end the story with key @name@ after
--- @n@ rounds in the scene (Prompter's @timeout_conclusion@).
+-- | __超时结局__：@timeout name n@——在场景中经过 @n@ 回合后以键 @name@ 结束故事（Prompter 的 @timeout_conclusion@）。
 timeout :: String -> Int -> Junction
 timeout name n = Junction name Nothing [] (Just n)
 
 -- Compilation -----------------------------------------------------------------
 
--- | The player-controlled character (the first cast member marked @playable@).
+-- | 玩家控制的角色（第一个标为 @playable@ 的阵容成员）。
 scriptPlayer :: Script -> String
 scriptPlayer scr = case [ castName c | c <- scriptCast scr, castPlayable c ] of
   (p : _) -> p
   []      -> error "Prax.Script.scriptPlayer: no playable cast member"
 
--- | The current-scene fact family (spec v46): the single-slot fact
--- @currentScene!\<id\>@ names the active scene. The compiler's one home for the
--- literal — every @currentScene@ site in this module (and the two raw reads in
--- @app/Main.hs@) routes through it. Compiler-emitted and literal-tailed with
--- exactly one legitimate writer (the @"story"@ rule's transition inserts, and
--- 'compile''s start-scene setup), so 'Prax.TypeCheck' reserves it (spec v53):
--- no authored surface may write it.
+-- | 当前场景事实族（规格 v46）：单槽事实 @currentScene!\<id\>@ 命名活动场景。编译器对该字面的唯一归宿——
+-- 本模块每个 @currentScene@ 站点（以及 @app/Main.hs@ 中两处原始读取）都经此路由。编译器发出且字面收尾，
+-- 恰好一个正当写入者（@"story"@ 规则的转移插入，以及 'compile' 的开场场景 setup），因此 'Prax.TypeCheck'
+-- 保留它（规格 v53）：任何创作表面不可写入。
 currentScenePath :: String
 currentScenePath = "currentScene"
 
--- | The id of the currently-active scene, if any.
+-- | 当前活动场景的 id（若有）。
 currentSceneOf :: PraxState -> Maybe String
 currentSceneOf st =
   case [ v | b <- unify (currentScenePath ++ ".S") (db st) Map.empty
@@ -244,21 +220,15 @@ currentSceneOf st =
     (s : _) -> Just s
     []      -> Nothing
 
--- | Compile a 'Script' into a ready-to-run 'PraxState'. Loud at the consumption
--- point (uniformly over every construction route — Haskell smart constructor,
--- raw constructor, or JSON decode) on five authoring faults:
+-- | 把 'Script' 编译成可运行的 'PraxState'。在消费点（统一覆盖每条构建路径——Haskell 智能构造器、
+-- 原始构造器或 JSON 解码）对五种创作过错响亮报错：
 --
---   * two junctions sharing a name within one scene — each timed junction keys
---     its own patience marker ('scenePatiencePath'), so names must be unique
---     (and same-named junctions are authored ambiguity regardless);
---   * a timed junction with @junctionAfter (Just n)@ and @n < 1@ — a zero-delay
---     \"timed\" junction is a plain junction (spec v50 §2);
---   * an authored condition or outcome headed 'scenePatienceFamily', in any of
---     the five lists 'compile' consumes ('sceneSetup', 'junctionWhen', beat
---     conditions, beat effects, cast-desire conditions) — the family is
---     compiler-owned (the collision hole);
---   * a 'sceneSetup' or 'junctionWhen' authoring a Prax-namespaced variable
---     (the v40 hygiene boundary; these splice into the story rule).
+--   * 同一场景内两 junction 同名——每个定时 junction 键控自有耐心标记（'scenePatiencePath'），故名须唯一
+--     （同名 junction 无论如何都是创作歧义）；
+--   * 定时 junction 带 @junctionAfter (Just n)@ 且 @n < 1@——零延迟「定时」junction 只是普通 junction（规格 v50 §2）；
+--   * 创作条件或结果以 'scenePatienceFamily' 为头，出现在 'compile' 消费的五列表任一中（'sceneSetup'、
+--     'junctionWhen'、beat 条件、beat 效果、阵容欲望条件）——该族归编译器（碰撞洞）；
+--   * 'sceneSetup' 或 'junctionWhen' 创作 Prax 命名空间变量（v40 卫生边界；这些拼进故事规则）。
 compile :: Script -> PraxState
 compile scr
   | (sid, jn) : _ <- duplicateJunctionNames =
@@ -402,9 +372,8 @@ compile scr
 
 -- Tooling ---------------------------------------------------------------------
 
--- | Render the scene graph as a Mermaid @graph TD@ (Prompter's auto-generated
--- flow-chart): a @start@ node into the opening scene, one node per scene, and a
--- labelled edge per junction — to the target scene, or to a terminal ending node.
+-- | 把场景图渲染为 Mermaid @graph TD@（Prompter 自动生成的流程图）：@start@ 节点进入开场场景，
+-- 每场景一节点，每 junction 一条标号边——到目标场景，或到终端结局节点。
 flowChart :: Script -> String
 flowChart scr = unlines $
   [ "graph TD"
