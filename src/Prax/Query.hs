@@ -39,7 +39,7 @@ import           Text.Read (readMaybe)
 import           Prax.Db
 import           Prax.Sym (Sym, intern, symIsVar, symName)
 
--- | Numeric comparison operators (@lt@, @lte@, @gt@, @gte@).
+-- | 数值比较运算符（@lt@、@lte@、@gt@、@gte@）。
 data CmpOp = Lt | Lte | Gt | Gte
   deriving (Eq, Show)
 
@@ -51,7 +51,7 @@ data CmpOp = Lt | Lte | Gt | Gte
 data CalcOp = Add | Sub | Mul | Mod
   deriving (Eq, Show)
 
--- | A single condition in a query.
+-- | 查询中的单一条件。
 data Condition
   = Match String
     -- ^ A bare logic sentence; unified against the DB (extends bindings).

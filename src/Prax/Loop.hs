@@ -16,25 +16,21 @@ import           Prax.Types
 import           Prax.Engine (performAction, roundBoundary)
 import           Prax.Planner (pickAction, motiveSignature, candidateActions)
 
--- | Advance to the next living character (fact @dead.\<name\>@ skipped) and
--- return it, running the engine's round boundary at each rotation wrap (spec
--- @docs/specs/2026-07-16-v44-the-schedule.md@). The next living index @i@ is a
--- WRAP when @i <= cursor@ — equality included, so a single-survivor cast wraps
--- every turn (strict @<@ would freeze engine time). Initial @cursor = -1@ means
--- no boundary fires before round 1. At a wrap: run 'Prax.Engine.roundBoundary'
--- ONCE (it advances the clock, fires due expiries then due rules — a rule may
--- kill a character), then RE-select the actor from the post-boundary aliveness,
--- scanning the fresh round from index 0 (the wrap left @cursor@ untouched and a
--- boundary can only kill, never revive, so re-scanning from @cursor@ finds the
--- same lowest-index survivor — the round starts fresh).
+-- | 推进到下一个活角色（跳过事实 @dead.\<name\>@）并返回它；每次轮转回绕时运行引擎回合边界
+-- （规格 @docs/specs/2026-07-16-v44-the-schedule.md@）。下一活索引 @i@ 在 @i <= cursor@ 时为
+-- 回绕——含相等，因此单幸存者阵容每回合回绕（严格 @<@ 会冻结引擎时间）。初始 @cursor = -1@
+-- 表示第 1 回合前无边界触发。回绕时：运行 'Prax.Engine.roundBoundary' 一次（推进时钟、先触发到期
+-- 再触发到期规则——规则可能杀死角色），然后从边界后存活中重新选择行动者，从索引 0 扫描新回合
+-- （回绕未改 @cursor@，且边界只能杀不能复活，因此从 @cursor@ 再扫会找到同一最低索引幸存者——
+-- 回合重新开始）。
 advance :: PraxState -> (Character, PraxState)
 advance st0 =
   case nextLiving st0 of
     Nothing -> error "Prax.Loop.advance: no living characters"
     Just i
-      | i <= cursor st0 ->                        -- wrap (equality: single survivor)
+      | i <= cursor st0 ->                        -- 回绕（含相等：单幸存者）
           let st1 = roundBoundary st0
-          in case nextLiving st1 of               -- re-select: a rule may have killed
+          in case nextLiving st1 of               -- 重选：规则可能已杀死某人
                Just j  -> (characters st1 !! j, st1 { cursor = j })
                Nothing -> error "Prax.Loop.advance: no living characters"
       | otherwise -> (characters st0 !! i, st0 { cursor = i })
@@ -44,14 +40,11 @@ advance st0 =
       where n = length (characters st)
     alive st i = not (exists (deadSentence (charName (characters st !! i))) (db st))
 
--- | Have an NPC act: if their motive signature equals the one their standing
--- intention was based on, act that intention WITHOUT deliberating (spec
--- 2026-07-13-v35 — commitment is the default); otherwise deliberate in full
--- ('pickAction', unchanged), act the result, and store the new intention.
--- A standing action whose grounding is no longer offered cannot be acted:
--- 'stillOffered' checks it against the current candidates directly (the
--- signature's bearing component would miss a vanished NON-bearing action,
--- movement above all).
+-- | 让 NPC 行动（规格 2026-07-13-v35）：若其动机签名仍等于站立意图所基于的签名，则
+-- __不重新审议__ 直接执行该意图（承诺是默认）；否则完整审议（'pickAction'），执行结果，
+-- 并存入新意图。站立动作若其落地已不再被提供则不可执行：'stillOffered' 直接对照当前候选检查
+-- （签名的 bearing 分量会漏掉已消失的非 bearing 动作，尤其是移动）。
+-- 返回 @(Maybe GroundedAction, 新状态)@；等待则为 Nothing。
 npcAct :: Int -> Character -> PraxState -> (Maybe GroundedAction, PraxState)
 npcAct depth actor st =
   case Map.lookup name (intentions st) of
@@ -65,19 +58,16 @@ npcAct depth actor st =
   where
     name = charName actor
     sig  = motiveSignature st actor
-    -- The standing action must still be offered, by full grounded equality —
-    -- movement picks are rarely want-bearing yet must expire once acted
-    -- (you arrived; decide THERE), and a stale grounding is never performed.
+    -- 站立动作必须仍被提供，用完整落地相等检查——移动选择很少带 want，但一经执行必须过期
+    -- （你已到达；在那里再决定），陈旧落地永不执行。
     stillOffered Nothing   = True
     stillOffered (Just ga) = ga `elem` candidateActions st actor
     act (Just ga) s = (Just ga, performAction s ga)
     act Nothing   s = (Nothing, s)
 
--- | Run @steps@ NPC turns from the given state, collecting the narration of
--- each performed action (idle turns — a 'Nothing' pick — produce no line).
--- Every character is driven by the planner (used for deterministic replay
--- tests). The engine's round boundary rides inside 'advance' (spec v44), so a
--- run of @steps@ turns crosses a boundary at every rotation wrap.
+-- | 从给定状态跑 @steps@ 次 NPC 回合，收集每次执行动作的旁白（空闲——'Nothing' 选择——不产生行）。
+-- 每个角色由 planner 驱动（用于确定性重放测试）。引擎回合边界骑在 'advance' 内（规格 v44），
+-- 因此 @steps@ 次回合在每次轮转回绕时越过边界。
 runNpcTicks :: Int -> Int -> PraxState -> ([String], PraxState)
 runNpcTicks depth steps = go steps []
   where

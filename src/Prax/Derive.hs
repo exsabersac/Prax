@@ -40,10 +40,8 @@ import           Prax.Query (Condition (..), CmpOp (..), query, CookedCondition 
 import           Prax.EL (meet, leq)
 import           Prax.Sym (Sym, symName)
 
--- | An implication rule @axiomWhen → axiomThen@: when the body holds for some
--- binding of its variables, assert each (grounded) head sentence. Heads are
--- sentence /templates/ that keep their @!@/@.@ labels (so exclusion is honoured
--- when they are 'Prax.EL.meet'-ed into the model).
+-- | 蕴含规则 @axiomWhen → axiomThen@：当体对某些变量绑定成立时，断言每个（落地）头句子。
+-- 头是保留其 @!@/@.@ 标签的句子 /模板/（因此它们被 'Prax.EL.meet' 进模型时尊重排他）。
 data Axiom = Axiom
   { axiomWhen :: [Condition]
   , axiomThen :: [String]
@@ -59,10 +57,7 @@ axiom = Axiom
 newtype Contradiction = Contradiction String
   deriving (Eq, Show)
 
--- | Close a world under a set of axioms: build the exclusion-logic model, apply
--- the rules to a fixpoint, and project back to a 'Db'. @Left@ reports the first
--- contradiction. With no axioms the base is returned unchanged (the identity
--- that keeps un-axiomatised worlds free).
+-- | 在一组公理下闭合世界：构建排他逻辑模型，反复应用每个蕴含直到停止增长。
 closure :: [Axiom] -> Db -> Either Contradiction Db
 closure []  db0 = Right db0
 closure axs db0 = run axs db0 db0

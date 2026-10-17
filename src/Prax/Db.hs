@@ -70,31 +70,27 @@ import           Prax.Sym (Sym, intern, symId, symIsVar, symName, symOfId)
 data Db = Db !Bool !Bool (IntMap Db)
   deriving (Eq, Show)
 
--- | Whether a node's outgoing edges are exclusive (@!@).
+-- | 节点出边是否排他（@!@）。
 dbExcl :: Db -> Bool
 dbExcl (Db e _ _) = e
 
--- | Whether the path to a node was itself asserted as a fact (as opposed to
--- existing only as an interior step toward deeper facts).
+-- | 到节点的路径自身是否被断言为事实（相对仅作为通向更深事实的内部步骤存在）。
 dbAsserted :: Db -> Bool
 dbAsserted (Db _ a _) = a
 
 emptyDb :: Db
 emptyDb = Db False False IntMap.empty
 
--- | A value a logic variable can be bound to. 'unify' only ever produces
--- 'VSym' (trie keys are symbols); 'VNum' and 'VSet' arise from query
--- operators (@calc@, subqueries) in "Prax.Query".
+-- | 逻辑变量可绑定到的值。'unify' 只产生 'VSym'（trie 键是符号）；'VNum' 与 'VSet'
+-- 来自 "Prax.Query" 中的查询运算符（@calc@、子查询）。
 data Val
   = VSym !Sym
   | VNum !Integer
   | VSet ![[Sym]]
   deriving (Eq, Show)
 
--- | Map of logic-variable symbol to bound value — the representation the
--- engine computes over natively (spec
--- @docs/specs/2026-07-12-v29-interning.md@); Strings appear only at the
--- authoring/display boundary.
+-- | 逻辑变量符号到绑定值的映射——引擎原生计算所用的表示（规格
+-- @docs/specs/2026-07-12-v29-interning.md@）；字符串只出现在创作/显示边界。
 type Bindings = Map Sym Val
 
 -- | Render a value the way Praxish's @DB.ground@/@String()@ coercion does:

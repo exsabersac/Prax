@@ -14,14 +14,14 @@
 -- "Prax.Worlds.Bar" 中饮酒计数器已证明的同一 @Call@/@Calc@ 机制。用
 -- 'Prax.Engine.defineFunctions' 注册 'coreFns'，使下方智能构造器可用。
 module Prax.Core
-  ( -- * Registering the library
+  ( -- * 注册库
     coreFns
-    -- * Relationship roles
+    -- * 关系角色
   , warmth, respect
-    -- * Effects (smart-constructor 'Outcome's)
+    -- * 效果（智能构造的 Outcome）
   , adjustScore
   , setBond
-    -- * Conditions
+    -- * 条件
   , scoreAtLeast
   ) where
 
@@ -30,14 +30,14 @@ import           Data.Char (toUpper)
 import           Prax.Query (Condition (..), CmpOp (..), CalcOp (..))
 import           Prax.Types
 
--- Relationship roles -----------------------------------------------------------
+-- 关系角色（评价维度）-----------------------------------------------------------
 
 -- | 评价维度示例。关系可在任意数量的这些维度上、每个方向独立地被评判。
 warmth, respect :: String
 warmth  = "warmth"
 respect = "respect"
 
--- Effects ----------------------------------------------------------------------
+-- 效果（智能构造的 Outcome）----------------------------------------------------
 
 -- | 将 @a@ 对 @b@ 在 @role@ 上的评价调整 @delta@（首次互动则播种），并记录 @reason@。
 -- 负 delta 使关系变冷。
@@ -49,7 +49,7 @@ adjustScore a b role delta reason =
 setBond :: String -> String -> String -> Outcome
 setBond a b st = Call "prax_setBond" [a, b, st]
 
--- Conditions -------------------------------------------------------------------
+-- 条件 -------------------------------------------------------------------------
 
 -- | 要求 @a@ 对 @b@ 在 @role@ 上的评价至少为 @n@。绑定角色特定的分数变量
 -- （跨不同角色可安全组合）。
@@ -60,17 +60,18 @@ scoreAtLeast a b role n =
   ]
   where v = "Score" ++ capitalize role
 
+-- | 角色名首字母大写，用于生成按角色区分的绑定变量（如 ScoreWarmth）。
 capitalize :: String -> String
 capitalize []       = []
 capitalize (c : cs) = toUpper c : cs
 
--- The library functions -----------------------------------------------------------
+-- 库函数（注册后由 Call 按名调用）------------------------------------------------
 
 -- | 可复用的核心模型函数。用 'Prax.Engine.defineFunctions' 注册；动作按名调用时找到它们。
 coreFns :: [Function]
 coreFns = [adjustScoreFn, setBondFn]
 
--- Add Delta to an existing score, or seed it with Delta on first interaction.
+-- 若已有分数则加 Delta；首次互动则用 Delta 播种分数。
 adjustScoreFn :: Function
 adjustScoreFn = Function "prax_adjustScore" ["A", "B", "Role", "Delta", "Reason"]
   [ FnCase [ Match "A.relationship.B.Role.score!N", Calc "M" Add "N" "Delta" ]
@@ -81,7 +82,7 @@ adjustScoreFn = Function "prax_adjustScore" ["A", "B", "Role", "Delta", "Reason"
       , Insert "A.relationship.B.Role.reason!Reason" ]
   ]
 
--- Write the symmetric bond in both directions at once.
+-- 一次写入双向对称纽带。
 setBondFn :: Function
 setBondFn = Function "prax_setBond" ["A", "B", "State"]
   [ FnCase [] [ Insert "bond.A.B!State", Insert "bond.B.A!State" ] ]

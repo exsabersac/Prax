@@ -18,34 +18,27 @@ module Prax.Schedule
 import           Prax.Query (Condition (..))
 import           Prax.Types
 
--- | Wrap plain inserts with a lifetime: the asserted fact lives @n@ round
--- boundaries, then the engine retracts it (the ONE expiry mechanism —
--- 'Prax.Types.InsertFor'). Loud on anything but an 'Insert' — a lifetime on a
--- 'Delete'\/'Call'\/'ForEach' has no meaning. NOTE the retract takes the
--- path's whole subtree, so lifetimes belong on leaf facts.
+-- | 给普通插入包上寿命：被断言事实存活 @n@ 个回合边界，然后引擎撤回它（唯一到期机制——
+-- 'Prax.Types.InsertFor'）。对非 'Insert' 大声报错——'Delete'\/'Call'\/'ForEach' 上的寿命无意义。
+-- 注意：撤回取走路径的整棵子树，因此寿命应落在叶事实上。
 lasts :: Int -> Outcome -> Outcome
 lasts n (Insert s) = InsertFor n s
 lasts _ o = error ("Prax.Schedule.lasts: only an Insert can carry a lifetime, got: "
                    ++ show o)
 
--- | A recurring convening: ONE rule; the open effects fire every @period@
--- boundaries and their asserted facts live @duration@ boundaries (the close
--- rule of the v37 design is subsumed by expiry — one mechanism for a
--- temporary fact). @0 < duration < period@; a gathering that never opens, or
--- one whose opening never lapses before the next, is not a gathering.
+-- | 循环集会：一条规则；开放效果每 @period@ 边界触发，其断言事实存活 @duration@ 边界
+-- （v37 设计的关闭规则被到期包含——临时事实一种机制）。要求 @0 < duration < period@；
+-- 从不开放、或开放在下次前从不失效的集会，不是集会。
 gathering :: String -> Int -> Int -> [Outcome] -> ScheduleRule
 gathering name period duration openOuts
   | duration < 1 || duration >= period =
       error ("Prax.Schedule: gathering " ++ name ++ " needs 0 < duration < period")
   | otherwise = ScheduleRule name period [ ([], map (lasts duration) openOuts) ]
 
--- | Perception as a period-1 recurring rule: the authored sighting template,
--- stamped with the clock read as a fact ('Prax.Types.turnPath' — the tick
--- machinery is the engine's now). @Now@\/@Seer@\/@Seen@\/@Spot@ are its
--- CONTRACT variables — the template binds them and the outcomes read them
--- straight back out — so, like every other rule body, only the @Prax@
--- namespace and @Actor@ are forbidden in the authored @sighting@
--- ('Prax.Engine.setSchedule' enforces it).
+-- | 感知作为周期-1 循环规则：创作的目击模板，用读作事实的时钟打戳（'Prax.Types.turnPath'——
+-- tick 机制现属引擎）。@Now@\/@Seer@\/@Seen@\/@Spot@ 是其契约变量——模板绑定它们，结果直接读回——
+-- 因此与其他规则体一样，创作 @sighting@ 中仅禁止 @Prax@ 命名空间与 @Actor@
+-- （'Prax.Engine.setSchedule' 强制）。
 sightRule :: [Condition] -> ScheduleRule
 sightRule sighting = ScheduleRule "sight" 1
   [ ( sighting ++ [ Neq "Seer" "Seen", Match (turnPath ++ "!Now") ]

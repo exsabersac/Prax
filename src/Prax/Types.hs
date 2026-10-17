@@ -78,33 +78,25 @@ data Action = Action
 action :: String -> [Condition] -> [Outcome] -> Action
 action = Action
 
--- | An effect on the world. Postconditions never need an explicit remove for
--- single-valued slots — the @!@ exclusion in 'Insert' handles that.
+-- | 对世界的效果。单值槽的后置从不需要显式 remove——'Insert' 中的 @!@ 排他处理它。
 data Outcome
-  = Insert String            -- ^ assert a sentence (may spawn a practice)
-  | Delete String            -- ^ retract a subtree
+  = Insert String            -- ^ 断言句子（可能孵化实践）
+  | Delete String            -- ^ 撤回子树
   | InsertFor Int String
-    -- ^ assert a sentence that EXPIRES: the engine retracts it (whole
-    -- subtree, so lifetimes belong on leaf facts) @n@ round boundaries
-    -- after this insert (spec @docs/specs/2026-07-16-v44-the-schedule.md@).
-    -- Re-inserting the exact path with a lifetime refreshes the due;
-    -- re-inserting it bare cancels it (v44's supersession law). Rides the
-    -- whole cooked pipeline exactly as 'Insert' — the deferred retract is
-    -- ENVIRONMENT, not a mover effect.
-  | Call String [String]     -- ^ invoke a practice 'Function' by name with args
+    -- ^ 断言会到期的句子：引擎在此插入后 @n@ 个回合边界撤回它（整棵子树，因此寿命应落在叶事实上）
+    -- （规格 @docs/specs/2026-07-16-v44-the-schedule.md@）。用寿命再插入精确路径会刷新到期；
+    -- 裸再插入则取消它（v44 的 supersession 法则）。整条煮熟管线与 'Insert' 完全一样骑乘——延期撤回是
+    -- 环境，非行动者效果。
+  | Call String [String]     -- ^ 按名用参数调用实践 'Function'
   | ForEach [Condition] [Outcome]
-    -- ^ Quantified effect: for /every/ binding of the conditions (evaluated
-    -- against the closed view, snapshot at entry), apply the sub-outcomes.
+    -- ^ 量化效果：对条件的 /每个/ 绑定（对照闭合视图求值，入口时快照）应用子结果。
   | Roll Int Int [Condition] [Outcome]
-    -- ^ The drama die (spec @docs/specs/2026-07-18-v50-machinery-state.md@):
-    -- @Roll num den conds outs@ advances the engine's RNG stream
-    -- ('Prax.Engine.rngSeed') UNCONDITIONALLY (the frozen-die law: every draw
-    -- spends one step, hit or miss), then rolls on the advanced value — on a
-    -- hit (@advanced \`mod\` den < num@) it applies @conds@\/@outs@ exactly as
-    -- a 'ForEach' would (same snapshot semantics). 'Prax.Rng.draw' is the
-    -- authoring surface that builds this; 'Prax.Engine.performCooked' executes
-    -- the cooked mirror ('CRoll') against the engine seed. A 'Roll' on an
-    -- unseeded state is a loud error (a typechecked world seeds the die).
+    -- ^ 戏剧骰（规格 @docs/specs/2026-07-18-v50-machinery-state.md@）：
+    -- @Roll num den conds outs@ __无条件__ 推进引擎 RNG 流（'Prax.Engine.rngSeed'）
+    -- （冻结骰法则：每次抽取无论中否都消耗一步），然后在推进后的值上掷——若中
+    -- （@advanced `mod` den < num@）则恰如 'ForEach' 应用 @conds@/@outs@（同一快照语义）。
+    -- 'Prax.Rng.draw' 是构建它的创作表面；'Prax.Engine.performCooked' 对照引擎种子执行煮熟镜像
+    -- （'CRoll'）。未播种状态上的 'Roll' 是大声错误（类型检查过的世界会播种骰）。
   deriving (Eq, Show)
 
 -- | Every name an outcome /mentions/ — a total walk over every constructor,
@@ -181,8 +173,7 @@ isPraxVar :: String -> Bool
 isPraxVar ('P':'r':'a':'x':_:_) = True
 isPraxVar _                     = False
 
--- | A named function: guarded conditional effects (used for e.g. win-condition
--- checks). The first case whose conditions hold runs; the rest are skipped.
+-- | 命名函数：守卫条件效果（例如胜负检查）。第一个条件成立的 case 运行；其余跳过。
 data Function = Function
   { fnName   :: String
   , fnParams :: [String]
@@ -196,51 +187,42 @@ data FnCase = FnCase
   }
   deriving (Eq, Show)
 
--- | The engine's turn-counter path family — the one spelling of @turn@ in the
--- tree (spec @docs/specs/2026-07-16-v44-the-schedule.md@). The engine maintains
--- @turn!N@; schedule rule bodies may read it as a fact (@Match "turn!Now"@).
--- Seeded @turn!0@ in 'emptyState' itself, so every path (worlds, Script
--- compile, fixtures) has a clock before anything reads it.
+-- | 引擎回合计数器路径族——树中 @turn@ 的唯一拼写（规格 @docs/specs/2026-07-16-v44-the-schedule.md@）。
+-- 引擎维护 @turn!N@；调度规则体可读它为事实（@Match "turn!Now"@）。在 'emptyState' 自身播种
+-- @turn!0@，因此每条路径（世界、Script 编译、fixture）在任何读取前都有时钟。
 turnPath :: String
 turnPath = "turn"
 
--- | One recurring engine-schedule rule (spec v44): every 'srPeriod' round
--- boundaries, ground each clause's conditions against the world and apply its
--- outcomes per binding. Bodies may read the clock ('turnPath') as a fact.
+-- | 一条循环引擎调度规则（规格 v44）：每 'srPeriod' 个回合边界，对照世界落地各子句条件并按绑定
+-- 应用其结果。体可读时钟（'turnPath'）为事实。
 data ScheduleRule = ScheduleRule
-  { srName   :: String   -- ^ single segment; the persist re-association key
-  , srPeriod :: Int      -- ^ round boundaries between firings (authored meaning)
+  { srName   :: String   -- ^ 单段；持久化再关联键
+  , srPeriod :: Int      -- ^ 触发间隔的回合边界数（创作含义）
   , srBody   :: [([Condition], [Outcome])]
   }
   deriving (Eq, Show)
 
--- | The cooked mirror of 'Outcome' (see @docs/specs/2026-07-12-v28-cooked-world.md@,
--- @docs/specs/2026-07-12-v29-interning.md@ and 'Prax.Cooked.cookOutcome', which
--- builds these): 'Insert'/'Delete' carry the sentence already split into
--- @(symbol, punctuationAfterName)@ tokens ('Prax.Db.internTokens'); 'CCall'\'s
--- @fn@ stays a String (a @cookedFns@ registry lookup key, never unified) while its @args@
--- are interned; 'CForEach' recurses. Declared here rather than in "Prax.Cooked"
--- because 'PraxState' below embeds 'CookedPractice' (built from these), and
--- "Prax.Cooked" depends on this module for 'Outcome'\/'Practice' — these are
--- pure mirror shapes with no dependency on "Prax.Cooked"; the conversion
--- functions ('Prax.Cooked.cookOutcome', 'Prax.Cooked.cookPractice') live there.
+-- | 'Outcome' 的煮熟镜像（见 @docs/specs/2026-07-12-v28-cooked-world.md@、
+-- @docs/specs/2026-07-12-v29-interning.md@ 与构建它们的 'Prax.Cooked.cookOutcome'）：
+-- 'Insert'/'Delete' 携带已切分为 @(符号, 名后标点)@ token 的句子（'Prax.Db.internTokens'）；
+-- 'CCall' 的 @fn@ 保持 String（@cookedFns@ 登记查找键，从不统一）而其 @args@ 已 intern；
+-- 'CForEach' 递归。声明在此而非 "Prax.Cooked"，因为下方 'PraxState' 嵌入 'CookedPractice'
+-- （由这些构建），且 "Prax.Cooked" 为本模块的 'Outcome'\/'Practice' 依赖——这些是无依赖
+-- "Prax.Cooked" 的纯镜像形状；转换函数（'Prax.Cooked.cookOutcome'、'Prax.Cooked.cookPractice'）住在那里。
 data CookedOutcome
   = CInsert [(Sym, Maybe Char)]
   | CDelete [(Sym, Maybe Char)]
   | CInsertFor Int [(Sym, Maybe Char)]
-    -- ^ the cooked mirror of 'InsertFor': assert the tokens and enqueue a
-    -- retract @n@ round boundaries out ('Prax.Engine.performCooked').
+    -- ^ 'InsertFor' 的煮熟镜像：断言 token 并入队 @n@ 个回合边界后的撤回（'Prax.Engine.performCooked'）。
   | CCall String [Sym]
   | CForEach [CookedCondition] [CookedOutcome]
   | CRoll Int Int [CookedCondition] [CookedOutcome]
-    -- ^ the cooked mirror of 'Roll' (spec v50): advance the engine seed, roll
-    -- on the advanced value, and on a hit apply the body as a 'CForEach'
-    -- ('Prax.Engine.performCooked').
+    -- ^ 'Roll' 的煮熟镜像（规格 v50）：推进引擎种子，在推进后的值上掷，中则把体当 'CForEach' 应用
+    -- （'Prax.Engine.performCooked'）。
   deriving (Eq, Show)
 
--- | The cooked mirror of 'Action': 'actionConditions'\/'actionOutcomes' precooked;
--- 'caName' carries 'actionName' unchanged (a display template, not a pattern —
--- never re-parsed by the query/unify machinery, so it needs no cooking).
+-- | 'Action' 的煮熟镜像：'actionConditions'\/'actionOutcomes' 预煮；'caName' 原样携带 'actionName'
+-- （显示模板，非模式——查询/统一机制从不重解析，故无需煮）。
 data CookedAction = CookedAction
   { caName  :: String
   , caConds :: [CookedCondition]
@@ -248,181 +230,144 @@ data CookedAction = CookedAction
   }
   deriving (Eq, Show)
 
--- | The cooked mirror of 'Practice': everything 'Prax.Engine.possibleActions'
--- and 'Prax.Engine.performAction' need, precompiled once by
--- 'Prax.Cooked.cookPractice' and cached in 'PraxState''s 'cookedDefs'.
+-- | 'Practice' 的煮熟镜像：'Prax.Engine.possibleActions' 与 'Prax.Engine.performAction' 所需的一切，
+-- 由 'Prax.Cooked.cookPractice' 预编译一次并缓存在 'PraxState' 的 'cookedDefs'。
 data CookedPractice = CookedPractice
   { cpInstanceNames :: [Sym]
-    -- ^ Interned 'Prax.Db.pathNames' of @practice.\<pid\>.\<Role1\>...\<RoleN\>@,
-    -- precomputed once per world instead of re-split (and re-interned) every
-    -- 'possibleActions' call.
+    -- ^ @practice.\<pid\>.\<Role1\>...\<RoleN\>@ 的 interned 'Prax.Db.pathNames'，
+    -- 每世界预计算一次，避免每次 'possibleActions' 再切分（与再 intern）。
   , cpActions :: [CookedAction]
   , cpInits   :: [CookedOutcome]
   }
   deriving (Eq, Show)
 
--- | The cooked mirror of 'ScheduleRule' ('Prax.Cooked.cookScheduleRule'):
--- body clauses precooked, the name carried unchanged (the persist
--- re-association key and the string-side 'srPeriod' lookup key). Lives on its
--- own cooked surface ('PraxState''s 'cookedSchedule'), NOT in 'cookedDefs':
--- movers cannot take schedule rules, they appear in no candidate set.
+-- | 'ScheduleRule' 的煮熟镜像（'Prax.Cooked.cookScheduleRule'）：体子句预煮，名原样携带
+-- （持久化再关联键与字符串侧 'srPeriod' 查找键）。住在自身煮熟表面（'PraxState' 的 'cookedSchedule'），
+-- 不在 'cookedDefs'：行动者不能取调度规则，它们不出现在候选集中。
 data CookedScheduleRule = CookedScheduleRule
   { csrName :: String
   , csrBody :: [([CookedCondition], [CookedOutcome])]
   }
   deriving (Eq, Show)
 
--- | Per-desire state-check recipe for the planner's dead-now test (spec
--- @docs/specs/2026-07-13-v33-live-relevance.md@), computed once per world by
--- 'Prax.Relevance.livenessOf' (declared here, alongside 'CookedPractice',
--- because 'PraxState' embeds it — the same rationale as that type's own
--- haddock). 'FloorCheck': a negative want-kind is at its floor (unimprovable
--- by anything) when its own Owner-grounded conditions have zero bindings —
--- sound unconditionally, count zero is the minimum. 'GateCheck': a positive
--- want-kind cannot gain a binding while any environment-gated conjunct (a
--- base-fact family no authored outcome inserts and no axiom derives) is
--- empty. 'AlwaysLive': no cheap state test applies — the static verdict
--- stands alone.
+-- | planner 死-现在测试的按欲望状态检查配方（规格 @docs/specs/2026-07-13-v33-live-relevance.md@），
+-- 由 'Prax.Relevance.livenessOf' 每世界计算一次（声明在此，旁于 'CookedPractice'，因为 'PraxState'
+-- 嵌入它——与该类型自身 haddock 同一理由）。'FloorCheck'：负 want 类在其自身 Owner-落地条件零绑定时
+-- 处于地板（任何东西都不可改善）——无条件健全，计数零是最小。'GateCheck'：正 want 类在任何环境门禁
+-- 合取（无创作结果插入、无公理派生的基事实族）为空时不能获得绑定。'AlwaysLive'：无便宜状态测试适用——
+-- 静态裁决单独成立。
 --
--- Conservativity note: gates only ever REMOVE work when provably safe;
--- @Or@\/@Absent@\/@Exists@ conjuncts are never gates (only top-level
--- positive @Match@es), and any uncertainty (an axiom-derivable candidate, an
--- unresolvable outcome, a @Subquery@\/@Count@\/@Calc@-bearing want) keeps
--- the desire 'AlwaysLive'.
+-- 保守性注记：门禁仅在可证明安全时移除工作；@Or@\/@Absent@\/@Exists@ 合取永不当门禁（只有顶层
+-- 正 @Match@），且任何不确定（公理可派生候选、不可解析结果、带 @Subquery@\/@Count@\/@Calc@ 的 want）
+-- 保持欲望为 'AlwaysLive'。
 data Liveness
-  = FloorCheck                    -- ^ negative: check the desire's own conditions
-  | GateCheck [[CookedCondition]] -- ^ positive: each inner list is ONE gate
-                                   -- conjunct (cooked, Owner-templated)
+  = FloorCheck                    -- ^ 负：检查欲望自身条件
+  | GateCheck [[CookedCondition]] -- ^ 正：每个内列表是一个门禁合取（煮熟、Owner 模板）
   | AlwaysLive
   deriving (Eq, Show)
 
--- | A character/agent. Wants drive autonomous choice; a practice-bound character
--- only acts within its bound practice (e.g. an ambient jukebox).
+-- | 角色/agent。Wants 驱动自主选择；绑定实践的角色只在其绑定实践内行动（例如环境点唱机）。
 data Character = Character
   { charName    :: String
   , charWants   :: [Want]
-  , charDesires :: [String]       -- ^ names of vocabulary 'Desire's this character holds
-  , charBoundTo :: Maybe String   -- ^ restrict actions to this practice id
+  , charDesires :: [String]       -- ^ 此角色持有的词汇 'Desire' 名
+  , charBoundTo :: Maybe String   -- ^ 把动作限制到此实践 id
   }
   deriving (Eq, Show)
 
--- | A character with no wants, no desires, and no binding.
+-- | 无 wants、无 desires、无绑定的角色。
 character :: String -> Character
 character n = Character
   { charName = n, charWants = [], charDesires = [], charBoundTo = Nothing }
 
--- | A desire: a query whose every satisfying instantiation adds 'wantUtility'
--- to the utility of a candidate future world (Versu §IX-A).
+-- | 欲望：其每个满足实例化都把 'wantUtility' 加到候选未来世界效用上的查询（Versu §IX-A）。
 data Want = Want
   { wantConditions :: [Condition]
   , wantUtility    :: Int
   }
   deriving (Eq, Show)
 
--- | A nameable desire: a 'Want' whose conditions may use the reserved variable
--- @Owner@, instantiated per character ('Prax.Minds.wantFor'). Naming a desire is
--- what makes it a possible object of belief.
+-- | 可命名欲望：条件可使用保留变量 @Owner@ 的 'Want'，按角色实例化（'Prax.Minds.wantFor'）。
+-- 给欲望命名正是使它成为可能信念对象的原因。
 data Desire = Desire
   { desireName :: String
   , desireWant :: Want
   }
   deriving (Eq, Show)
 
--- | A fully grounded, performable action produced by the engine.
+-- | 引擎产出的完全落地、可执行动作。
 data GroundedAction = GroundedAction
   { gaPracticeId :: String
   , gaInstanceId :: String
-  , gaActionId   :: String     -- ^ the originating 'actionName' (lookup key)
-  , gaBindings   :: Bindings   -- ^ Actor + role + query bindings for grounding
-  , gaLabel      :: String     -- ^ rendered display text
+  , gaActionId   :: String     -- ^ 源 'actionName'（查找键）
+  , gaBindings   :: Bindings   -- ^ 用于落地的 Actor + 角色 + 查询绑定
+  , gaLabel      :: String     -- ^ 渲染显示文本
   }
   deriving (Eq, Show)
 
--- | The inputs to /wanting to reconsider/ (spec
--- @docs/specs/2026-07-13-v35-intentions.md@, as amended): what I can do
--- THAT I CARE ABOUT (want-bearing templates — full-grounding equality made
--- the mechanism inert, measured; staleness is prevented by npcAct's
--- standing-offered check instead), how I am doing (per-want satisfaction
--- counts, 'selfWants' order — counts, not their weighted sum, so two
--- profiles cannot mask each other), what is driving me (own live desires:
--- statically improvable and not dead-now), and what motives I know of
--- (believed-motive facts, the family "Prax.Minds" reads). Compared for
--- equality at the character's own turn against their last deliberation.
+-- | /想要重新审议/ 的输入（规格 @docs/specs/2026-07-13-v35-intentions.md@，经修订）：我能做的
+-- 我在意的事（带 want 的模板——完整落地相等曾使机制惰性，已测；陈旧性改由 npcAct 的站立-仍提供
+-- 检查阻止）、我过得如何（按 want 满足计数，'selfWants' 序——计数而非加权和，因此两轮廓不能互相掩盖）、
+-- 什么在驱动我（自身活欲望：静态可改善且非死-现在）、以及我所知的动机（被相信动机事实，"Prax.Minds"
+-- 所读的族）。在角色自身回合对照上次审议做相等比较。
 data MotiveSignature = MotiveSignature
   { msBearing      :: [String]
-    -- ^ the /want-bearing/ affordance templates currently offered: action
-    -- identities both grounded now ('Prax.Planner.candidateActions') and
-    -- listed in the character's 'bearing' table. Opportunities that touch
-    -- what I care about interrupt me; irrelevant comings and goings do not.
-    -- (Standing-action validity is checked separately by 'Prax.Loop.npcAct'
-    -- — a movement pick is rarely bearing but must still expire when acted.)
+    -- ^ 当前提供的 /带 want/ affordance 模板：既在现在落地（'Prax.Planner.candidateActions'）
+    -- 又列在角色 'bearing' 表中的动作身份。触及我在意之事的机会打断我；无关的来来往往不。
+    -- （站立动作有效性由 'Prax.Loop.npcAct' 单独检查——移动选择很少 bearing，但一经执行仍须过期。）
   , msSatisfaction :: [Int]
   , msLiveDesires  :: [String]
-  , msKnownMotives :: [(String, String)]  -- (other, desire name)
+  , msKnownMotives :: [(String, String)]  -- (他人, 欲望名)
   }
   deriving (Eq, Show)
 
--- | A standing intention: the action chosen at the last deliberation (or
--- the choice to do nothing) and the motive signature it was based on.
+-- | 站立意图：上次审议所选动作（或选择什么都不做）及其所基于的动机签名。
 data Intention = Intention
   { intentAct   :: Maybe GroundedAction
   , intentBasis :: MotiveSignature
   }
   deriving (Eq, Show)
 
--- | All state a running simulation needs.
+-- | 运行中模拟所需的全部状态。
 data PraxState = PraxState
   { db           :: Db
   , practiceDefs :: Map String Practice
   , cookedDefs   :: Map String CookedPractice
-    -- ^ 'practiceDefs' compiled to cooked/token form
-    -- ('Prax.Cooked.cookPractice'), rebuilt in lockstep by the same Engine
-    -- helper ('Prax.Engine.retable') that maintains 'improvables'\/'footprint'.
-  , worldFns  :: [Function]                 -- ^ the authored registry (build-time vocabulary)
+    -- ^ 'practiceDefs' 编译为煮熟/token 形式（'Prax.Cooked.cookPractice'），由维护
+    -- 'improvables'\/'footprint' 的同一 Engine 助手（'Prax.Engine.retable'）锁步重建。
+  , worldFns  :: [Function]                 -- ^ 创作登记册（构建时词汇）
   , cookedFns :: Map String ([String], [([CookedCondition], [CookedOutcome])])
-    -- ^ cooked once by 'Prax.Engine.defineFunctions'; the ONE home 'Call'
-    -- resolution reads ('Prax.Engine.lookupCookedFn'). Keyed by 'fnName';
-    -- uniqueness is the setter's loud guard, so the Map never silently
-    -- collapses a duplicate. Functions carry no practice locality — resolution
-    -- was always global (spec 2026-07-17-v47).
+    -- ^ 由 'Prax.Engine.defineFunctions' 煮一次；'Call' 解析读取的唯一归宿
+    -- （'Prax.Engine.lookupCookedFn'）。按 'fnName' 键控；唯一性是 setter 的大声守护，
+    -- 因此 Map 从不静默折叠重复。函数无实践局部性——解析总是全局的（规格 2026-07-17-v47）。
   , characters   :: [Character]
   , cookedWants :: Map String [[CookedCondition]]
-    -- ^ Each character's 'charWants' conditions precooked, one entry per
-    -- want, same order as 'charWants' — keyed by 'charName'. Maintained by
-    -- 'Prax.Engine.setCharacters' (retable); paired with 'charWants''
-    -- utilities by construction (same source list, same order — never
-    -- re-sorted or filtered independently).
+    -- ^ 每个角色的 'charWants' 条件预煮，每 want 一项，与 'charWants' 同序——按 'charName' 键控。
+    -- 由 'Prax.Engine.setCharacters'（retable）维护；与 'charWants' 效用按构造配对
+    -- （同一源列表、同一顺序——从不独立重排或过滤）。
   , cookedDesires :: Map String [CookedCondition]
-    -- ^ Each vocabulary 'Desire''s (Owner-templated) conditions precooked
-    -- once — keyed by 'desireName', independent of which characters hold it.
-    -- Maintained by 'Prax.Engine.retable' alongside 'cookedDefs'.
-  , cursor       :: Int          -- ^ round-robin index of the last actor
+    -- ^ 每个词汇 'Desire' 的（Owner 模板）条件预煮一次——按 'desireName' 键控，与谁持有无关。
+    -- 由 'Prax.Engine.retable' 与 'cookedDefs' 一并维护。
+  , cursor       :: Int          -- ^ 上一行动者的轮转下标
   , caresAbout :: Map String [String]
-    -- ^ Per character, the affordance templates whose authored outcomes
-    -- could touch their own wants or desires
-    -- ('Prax.Relevance.bearingTemplates') — the opportunity-relevance half
-    -- of 'MotiveSignature'. Maintained by 'Prax.Engine.retable'.
+    -- ^ 按角色：其创作结果可能触及自身 wants 或 desires 的 affordance 模板
+    -- （'Prax.Relevance.bearingTemplates'）——'MotiveSignature' 的机会相关半边。
+    -- 由 'Prax.Engine.retable' 维护。
   , intentions :: Map String Intention
-    -- ^ Each character's standing intention ('Prax.Loop.npcAct' — the
-    -- reconsideration semantics, spec 2026-07-13-v35). Runtime state like
-    -- 'cursor': starts empty (every character's first turn deliberates),
-    -- never derived, never touched by 'Prax.Engine.retable'.
+    -- ^ 每个角色的站立意图（'Prax.Loop.npcAct'——重新审议语义，规格 2026-07-13-v35）。
+    -- 像 'cursor' 的运行时状态：起始为空（每个角色第一回合都审议），从不派生，
+    -- 从不被 'Prax.Engine.retable' 触碰。
   , axioms       :: [Axiom]
-    -- ^ The axiom list the world DECLARED — closure included, not merely the
-    -- authored rules. 'Prax.Engine.setAxioms' stores exactly what it is passed;
-    -- a deontic world passes 'Prax.Deontic.obligedClose' of its rules, so the
-    -- □-lifted twins live here as ordinary members alongside the authored ones.
-    -- Reads see the forward-chained closure of this set ('readView'); default none.
+    -- ^ 世界所声明的公理列表——含闭包，非仅创作规则。'Prax.Engine.setAxioms' 原样存储传入内容；
+    -- 道义世界传入其规则的 'Prax.Deontic.obligedClose'，因此 □-提升双生作为普通成员与创作规则并列。
+    -- 读取看见此集的前向链闭包（'readView'）；默认无。
   , cookedRules  :: [CookedRule]
-    -- ^ 'axioms' precompiled ('Prax.Derive.cookAxioms') — bodies pattern-
-    -- split, heads pre-tokenized. Whatever □-lifted rules a deontic world
-    -- declared ('Prax.Deontic.obligedClose') are already in 'axioms', so they
-    -- cook here like any other rule. Maintained by 'Prax.Engine.retable',
-    -- consumed by 'Prax.Derive.runCooked' in
-    -- 'Prax.Engine.reclose'\/'Prax.Engine.applyGrowToks' so the closure loop's
-    -- ~5,400 calls\/round never re-cook the axiom set.
-  , sorts        :: [(String, [String])]  -- ^ sort → member constants, for the type checker (default none)
-  , desires      :: [Desire]      -- ^ the vocabulary of nameable desires (default none)
+    -- ^ 'axioms' 预编译（'Prax.Derive.cookAxioms'）——体模式切分、头预分词。道义世界声明的
+    -- 任何 □-提升规则（'Prax.Deontic.obligedClose'）已在 'axioms' 中，因此在此像其他规则一样煮。
+    -- 由 'Prax.Engine.retable' 维护，由 'Prax.Engine.reclose'\/'Prax.Engine.applyGrowToks' 中的
+    -- 'Prax.Derive.runCooked' 消费，使闭包循环每回合约 5,400 次调用从不重煮公理集。
+  , sorts        :: [(String, [String])]  -- ^ sort → 成员常量，供类型检查器（默认无）
+  , desires      :: [Desire]      -- ^ 可命名欲望词汇（默认无）
   , schedule       :: [ScheduleRule]
     -- ^ Authored recurring-rule declarations (spec v44); declaration order is
     -- firing order. Default none. Cooked into 'cookedSchedule' by

@@ -29,28 +29,24 @@ import           Prax.Engine (possibleActions, performAction, groundedDeltaAncho
 import           Prax.Minds (believedDesires, cookedSelfWants, cookedDesiresFor)
 import           Prax.Relevance (moverReadAnchors, mayUnifySyms)
 
--- | Total utility of a world to a set of wants: @Σ utility × #satisfying@.
+-- | 世界相对一组 wants 的总效用：@Σ utility × #satisfying@。
 evaluate :: PraxState -> [Want] -> Int
 evaluate st wants =
   sum [ wantUtility w * countSatisfying view (wantConditions w) Map.empty
       | w <- wants ]
   where view = readView st
 
--- | 'evaluate''s cooked mirror, fed by 'Prax.Minds.cookedSelfWants'\/
--- 'Prax.Minds.cookedDesiresFor' — the Planner's internal scoring path
--- ('scoreActions'\/'predictMove'\/'pickAction'). Case-for-case with
--- 'evaluate': same sum-of-utility-times-satisfying-count, over
--- 'queryCooked' instead of 'countSatisfying'.
+-- | 'evaluate' 的煮熟镜像，由 'Prax.Minds.cookedSelfWants'\/'Prax.Minds.cookedDesiresFor' 喂养——
+-- Planner 内部打分路径（'scoreActions'\/'predictMove'\/'pickAction'）。与 'evaluate' 逐 case：
+-- 同一效用×满足计数之和，经 'queryCooked' 而非 'countSatisfying'。
 evaluateCooked :: PraxState -> [([CookedCondition], Int)] -> Int
 evaluateCooked st wants =
   sum [ u * length (queryCooked view cs Map.empty) | (cs, u) <- wants ]
   where view = readView st
 
--- | The actions a character may actually take (practice-bound filtering).
--- The dead act in no one's plans, including their own: a character marked
--- dead by the time this is consulted has no candidates, so neither
--- 'predictMove' nor the actor's own 'selfNext' recursion will plan around or
--- through a corpse.
+-- | 角色实际可采取的动作（实践绑定过滤）。死者不进入任何人的计划，包括自己的：
+-- 咨询时已标记死亡的角色无候选，因此 'predictMove' 与行动者自身 'selfNext' 递归都不会
+-- 围绕或穿过他们规划。
 candidateActions :: PraxState -> Character -> [GroundedAction]
 candidateActions st c
   | exists (deadSentence (charName c)) (db st) = []
@@ -60,9 +56,8 @@ candidateActions st c
            Nothing  -> as
            Just pid -> filter ((== pid) . gaPracticeId) as
 
--- | Is the mover within the actor's prediction scope? The world's template
--- (over @Actor@/@Witness@) is grounded to the pair and queried against the
--- view; the empty template means everyone.
+-- | mover 是否在 actor 的预测范围内？世界的模板（覆盖 @Actor@/@Witness@）落地到该对并对照
+-- 视图查询；空模板意味着所有人。
 inScope :: PraxState -> Character -> Character -> Bool
 inScope st actor m =
   not (null (query (readView st) grounded Map.empty))
@@ -71,22 +66,18 @@ inScope st actor m =
     binds = Map.fromList [ (intern "Actor",   VSym (intern (charName actor)))
                          , (intern "Witness", VSym (intern (charName m))) ]
 
--- | Is a believed desire dead RIGHT NOW: at its floor (a negative want-kind's
--- own conditions have zero bindings) or gated shut (a positive want-kind's
--- environment gate has zero bindings)? ('Prax.Relevance.livenessOf'; Owner
--- grounds to the mover @m@, matching 'Prax.Minds.cookedDesiesFor'\/
--- 'cookedSelfWants'.) A desire with no 'liveness' recipe, or classified
--- 'AlwaysLive', is never dead-now — only 'FloorCheck'\/'GateCheck' fire.
+-- | 被相信欲望是否现在已死：处于地板（负 want 类自身条件零绑定）或被门禁关闭（正 want 类
+-- 环境门禁零绑定）？（'Prax.Relevance.livenessOf'；Owner 落地到 mover，匹配
+-- 'Prax.Minds.cookedDesiresFor'。）
 --
 -- The Owner binding is passed to 'queryCooked' as a seed binding rather than
 -- substituted into the conditions up front: 'Prax.Db.unifySyms' consults an
 -- already-bound variable at every occurrence, so one seed binding grounds
 -- @Owner@ everywhere it appears in the (possibly multi-condition) conjunct.
 --
--- A 'FloorCheck' desire absent from 'cookedDesires' (@conds = []@) queries
--- via the empty-conjunction identity ('Prax.Query.queryCookedWith'\'s fold
--- over @[]@ returns @[b0]@ unchanged) — one binding, non-null, so it counts
--- LIVE, not dead: an unrecorded desire must never silently read as at-floor.
+-- 不在 'cookedDesires' 中的 'FloorCheck' 欲望（@conds = []@）经空合取恒等式查询
+-- （'Prax.Query.queryCookedWith' 对 @[]@ 的 fold 返回不变的 @[b0]@）——一个绑定、非空，因此计为
+-- 活而非死：未记录的欲望永不可静默读作已在地板。
 deadNow :: PraxState -> Character -> Desire -> Bool
 deadNow st m d = case Map.lookup (desireName d) (liveness st) of
   Just FloorCheck     -> null (queryCooked v conds owner)
@@ -97,10 +88,8 @@ deadNow st m d = case Map.lookup (desireName d) (liveness st) of
     v     = readView st
     owner = Map.singleton (intern "Owner") (VSym (intern (charName m)))
 
--- | The predictor's guess at the mover's next move: the mover's best candidate
--- under the predictor's believed model of them — and only if it strictly
--- improves that model over doing nothing (unmotivated moves are noise, not
--- plan). 'Nothing' when the mind is unreadable or unmotivated.
+-- | 预测者对 mover 下一移动的猜测：在预测者对被预测者的被相信模型下 mover 的最佳候选——
+-- 且仅当它严格改善该模型相对什么都不做（无动机移动是噪声，非计划）。心智不可读或无动机时为 'Nothing'。
 predictMove :: PraxState -> Character -> Character -> Maybe GroundedAction
 predictMove st p m =
   case believedDesires st p m of
@@ -134,13 +123,8 @@ othersAfter st actor =
            (k : _) -> k
            []      -> length cs - 1   -- an actor outside the cast walks everyone
 
--- | One imagined path's accumulated effect on the pick's root state, as
--- anchor families with the derived-fact cone folded in: the moment any
--- extension feeds an axiom ('footprint'), every fireable head ('axiomHeads')
--- joins the delta — and stays, because heads are themselves in the
--- footprint. 'Nothing' is the opaque path: some applied outcome could not
--- be bounded ('Prax.Engine.groundedDeltaAnchors'), so nothing at or below
--- it may reuse. Spec: docs/specs/2026-07-13-v34-prediction-reuse.md.
+-- | 一条想象路径对选择根状态的累积效应，作为折入派生事实锥的锚点族：一旦任何扩展喂入公理
+-- （'footprint'），每个可触发头（'axiomHeads'）加入 delta——并留下，因为头自身也在 footprint 中。
 type PathDelta = Maybe [[Sym]]
 
 extendDelta :: PraxState -> PathDelta -> Maybe [[Sym]] -> PathDelta
@@ -149,12 +133,8 @@ extendDelta st (Just old) (Just new) =
   where feeds = any (\n -> any (mayUnifySyms n) (footprint st)) new
 extendDelta _ _ _ = Nothing
 
--- | Score each candidate by the imagined round it opens (best first; ties
--- broken by label for determinism). Within one pick, every prediction is
--- either the root state's — reused when the path delta provably cannot
--- reach anything that (actor, mover) prediction reads — or computed live,
--- exactly as before; the reused value is EQUAL to the live one (the spec's
--- soundness argument), so decisions are bit-for-bit unchanged.
+-- | 按每个候选打开的想象回合打分（最佳在前；平局按标签打破以保证确定性）。在一次选择内，每个预测
+-- 要么是根状态的——当路径 delta 可证明触及不到（actor, mover）预测所读的任何东西时重用——要么现场计算。
 scoreActions :: Int -> PraxState -> Character -> [(GroundedAction, Double)]
 scoreActions depth st0 actor = go depth (Just []) st0
   where
@@ -204,13 +184,12 @@ scoreActions depth st0 actor = go depth (Just []) st0
               ((_, v) : _) -> 0.9 * v
               []           -> 0
 
--- | The actor's best action (deterministic), if any.
+-- | 行动者的最佳动作（确定），若有。
 pickAction :: Int -> PraxState -> Character -> Maybe GroundedAction
 pickAction depth st actor = fst <$> listToMaybe (scoreActions depth st actor)
 
--- | The character's current 'MotiveSignature' — cheap by construction:
--- grounding without scoring, four count\/existence walks against the cached
--- view, no lookahead. This is the whole cost of a quiet turn.
+-- | 角色当前的 'MotiveSignature'——按构造便宜：落地而不打分，对照缓存视图的四次计数/存在遍历，
+-- 无前瞻。这是安静回合的全部代价。
 motiveSignature :: PraxState -> Character -> MotiveSignature
 motiveSignature st c = MotiveSignature
   { msBearing      = sort (nub [ aid
