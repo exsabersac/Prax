@@ -28,8 +28,9 @@
 - **v18** — `Prax.Script` 中剩余的 **Prompter 编译特性**：memories（一次性说明）、定时 junction
   （场景时钟）、以及角色速写（关切→wants，特质→事实）。
 
-> **翻译进度（zh-Hans）：** 标题、版本图例导言（v1–v18）以及详细条目 **v19–v30** 已译。
-> 自下方 **v31** 起的详细条目、特性表与 backlog 仍为英文原文。标识符、模块名、CLI、规格路径不译。
+> **翻译进度（zh-Hans）：** 标题、版本图例导言（v1–v18）以及详细条目 **v19–v36** 已译（v31–v36 为忠实摘要译；
+> 更长原文条目已压缩为要点）。自下方 **v37** 起的详细条目、特性表（Core logic engine 等）与 backlog 仍为英文原文。
+> 标识符、模块名、CLI、规格路径不译。
 
 ---
 
@@ -170,468 +171,47 @@
   只能抓住发生过低语。精确记下，以免被误认为更完整机制。
 
   套件：339（`Prax.Debt`）→ 354（`Prax.Blackmail`，含评审发现的保留变量守卫修复）→ 360（`Prax.Worlds.Village`
-  的敲诈弧 + 一条制裁复述），全程绿；零警告；hlint 干净；全部 7 世界 `prax check`；村庄金标准在独立提交中重捕获一次，
-  恰好一条漂移行逐项列出（世界变更，从非引擎变更）。
+  的敲诈弧 + 一条制裁复述），全程绿；零警告；hlint 干净；全部 7 世界 `prax c- **v31** — **一条脊骨，两台生成器：派系与亲属**（`Prax.Faction`、`Prax.Kin`；规格
+  `docs/specs/2026-07-12-v31-faction-kin.md`）。两 backlog 行按用户指示折叠，因共享一原语：**成员**。
+  它是基、单槽事实 `member.<who>!<faction>`——加入、叛逃与嫁入皆同一 `!` 排他覆盖，非三机制。
+  `comrades` 从共享成员派生 `allied.X.Y` 并 **保留名 `allied`**，故下游一切未修改地消费。**概括的证明**：
+  `Prax.Worlds.Feud` 两手写 `allied.*` setup 换为三条户-`joins`，`FeudSpec` 五原测试字节未修改通过。
+  `factionStanding` 扩展 v21 `standingUnless` 形状（信念门禁）但本轮未接线进世界；评审抓住保留变量碰撞，
+  以响亮守卫修复，钉弑亲与受害者自我信念。`Prax.Kin`：`kinAxioms` 纯派生；`wed` = 婚姻 + 成员 `!`；
+  `succession` 排他职衔。婚礼拍：esme 嫁入 `kestrel`，派生同志与恩怨，驱动疏远。所存：多重归属、
+  持有继承、出生、离婚动作、`factionStanding` 村庄接线。套件绿；村庄金标准未搅动。
 
-- **v31** — **one spine, two generators: factions & kinship** (`Prax.Faction`, `Prax.Kin`; spec
-  `docs/specs/2026-07-12-v31-faction-kin.md`). Two backlog rows folded per user direction because
-  they share one primitive: **membership**. It's a base, single-slot fact,
-  `member.<who>!<faction>` — joining, defecting, and marrying-in are all the same `!` exclusion
-  overwrite, not three mechanisms. `comrades` derives `allied.X.Y` from shared membership and
-  **keeps the name `allied`**, so everything downstream (the mutuality axiom, "enemy of my ally",
-  `societyP`'s shun affordance) consumes it unmodified — the base `allied.*` vocabulary itself stays
-  legal (`bigFeud`'s pairwise chain is unchanged, a benchmark's own design, not every alliance is a
-  membership). **The generalization's proof**: `Prax.Worlds.Feud`'s two hand-authored
-  `allied.bob.carol`/`allied.carol.dave` setup facts are deleted, replaced by three house-`joins`
-  facts, and `FeudSpec` — every one of its 5 original tests — passes byte-unmodified; no assertion
-  in it even mentions `allied.*`, so the refactor is invisible to the contract it must preserve.
-  `factionStanding` extends v21's `standingUnless` shape with a membership join (belief-gated,
-  spec-tested) but ships unwired into any world this round — review caught the v30-class bug again
-  (a `W`/`F` reserved-variable collision that silently no-ops the axiom), fixed with the same
-  `reservedClash`-style loud guard `Prax.Blackmail.shakedown` already established, plus two
-  deliberate pins: fratricide (an offender's own faction-mates still condemn them) and victim
-  self-belief, both asserted directly rather than left implicit. `Prax.Kin`'s `kinAxioms` are pure
-  derivation (marriage symmetry, sibling, grandparent, two in-law rules) — the in-law rules are
-  **stated one-directional** (acquired-relative-first, ego-second; no symmetric back-edge), and
-  dissolution is retraction-safe with a designed asymmetry: retracting `married` un-derives every
-  in-law it supported, but membership does **not** un-derive, because `wed`'s transfer is a base `!`
-  move, not a derivation — whoever moved households stays moved through a divorce, like a real
-  defection. `wed joiner faction spouse` compiles a wedding to exactly two things (the marriage
-  fact, one membership overwrite), with both `joiner` and `spouse` name-guarded (review found the
-  first draft guarded only `joiner`, leaving `spouse` spliceable into the fact unguarded).
-  Succession reuses the same exclusion idiom for offices: any child of a dead holder may claim
-  `office.<name>!<holder>`, the single slot resolves the race to one, honestly — no invented
-  age/primogeniture (age isn't modeled; "eldest" would be an unprincipled fact). **The wedding
-  beat, live**: esme starts inert in her own single-member house (`wren` — `comrades` needs two
-  members to derive anything, so this is structural, not scripted); `wed "esme" "kestrel" "dave"`
-  (the bride moves — an authored per-wedding choice, not module policy) flips her derived world in
-  one pass — she becomes a comrade of the whole `kestrel` house and inherits `resents.esme.alice`,
-  the grudge she had no part in creating — and the planner picks it up unprompted, on the first
-  try: esme shuns alice within her first few ticks alongside bob/carol/dave, no BLOCK, no tuning.
-  The village is untouched this round (goldens byte-identical; nothing in `Prax.Worlds.Village`
-  imports either new module) — `factionStanding`'s village wiring is a stated, deferred decision,
-  `FactionSpec`-pinned rather than built speculatively. Banked: multi-affiliation, holdings
-  inheritance beyond bare offices, births (`parent.*` must be asserted, never generated), divorce
-  as a driven action (dissolution is tested via raw retraction only), and the village faction
-  wiring just noted. Suite: 371 (`Prax.Faction`, incl. the reserved-variable fix) → 389
-  (`Prax.Kin`, incl. the `wed`-guard fix) → 392 (`Prax.Worlds.Feud` refactor + the wedding beat),
-  all green throughout; zero warnings; hlint clean; `prax check` on all 7 worlds; grep-gates
-  empty.
-- **v32** — **confession & absolution: the road back is real, and it narrows**
-  (`Prax.Confession`; spec `docs/specs/2026-07-12-v32-confession.md`, two in-round amendments).
-  A deliberately small round closing two dangling hooks at once: v25's parked "getting-caught"
-  item (banked in v25 as "truth recovery, if it is ever built, is committed to flow through
-  mark-bearers — confession, testimony — never consultation") and v30's inert `recanted.<who>`
-  defeater name (`standingUnless "whispered.V.H" "recanted.V" "slanderer"` had no action that
-  ever inserted it — "no atonement path authored" — until now). **Marks convert, never delete**:
-  `confess` turns `<who>.lied.<hearer>.<event>` into `<who>.confessed.<hearer>.<event>` — the
-  memory persists, only its valence changes, so a trait can price the confessed form at 0, a mild
-  residue, or the full price. **Confession is self-incriminating by design**: it deposits the
-  deed into the hearer's beliefs through the ordinary sourced-hearsay channel (v20's `.heard`),
-  so the whole rumor/reputation stack cascades on a confession exactly as on gossip. **Absolution
-  is a separate, refusable, second-party act**: confessing clears your conscience; only an
-  absolver's grant (inserting the world's defeater) clears your standing — you can confess and be
-  refused. **Fed-up-ness is knowledge, not bookkeeping**: `incorrigible` points `Prax.Repute.
-  notoriety`'s own Count idiom inward — an absolver's patience is spent once she *believes* ≥k
-  distinct past instances of the deed, by any provenance, so permanence (beliefs never die),
-  per-absolver independence, and confession-shopping-until-word-spreads all fall out rather than
-  being bolted on. **Re-offense deletes the defeater** (v21's re-steal idiom again): a fresh lie
-  snaps standing back from memory nobody lost, before a now-less-patient audience.
+- **v32** — **告白与赦免：归路真实，且变窄**（`Prax.Confession`；规格
+  `docs/specs/2026-07-12-v32-confession.md`）。标记告白时转换价而非删除（v48 清偿动词成参数）。
+  告白经带源传闻自证其罪；赦免可拒绝；`incorrigible` 把 notoriety Count 指向内。形状问题：标记内容形 vs
+  站队行为形——`confess` 取两模式参数。村庄：eve 向 gale 无代价告白；赦免溶解站队信念持久；再犯弹回过阈值；
+  向 carol 告白弧测量后未发货（结构天花板）。自由游玩 100 回合 eve 从不告白；§25 被构陷者不公未触及。
 
-  **The deposit-pattern amendment, forced by an empirical block.** `confess`'s first cut took one
-  pattern, matched against the mark *and* deposited to the hearer. Task 1 shipped it clean (28
-  tests), but Task 2's village wiring hit exactly the shape mismatch the spec had flagged as a
-  risk: eve's conscience-mark is content-shaped (`stole.C.loaf`, naming the person she framed)
-  while her slanderer standing is act-shaped (`whispered.V.H`, naming her). One pattern cannot
-  serve both what the mark *is* and what confessing it *reveals*; built and probed both naive
-  wirings live against the engine, watched `absolve` never get offered to anyone under either,
-  and reported the BLOCK rather than improvising. The spec was amended (`confess` gains a second,
-  `depositPat` argument, groundable only from `Actor`/`H`/the mark's own variables, checked and
-  loudly erroring otherwise — worlds whose deed is self-shaped pass the same pattern twice,
-  explicitly, no default) and the module fixed to match, both before Task 2 resumed.
+- **v33** — **状态条件相关性**（规格 `docs/specs/2026-07-13-v33-live-relevance.md`）。
+  v26 的相关性预过滤仅从词汇推理——「是否曾有任何动作能改善此类 want？」——v32 的 `confess` 使该问题对每个
+  良心欲望永久为真，即使在几乎每个实际状态仍可靠也全世界花费跳过。本轮加入缺失维度：**它现在能否重要？**
+  两活性配方，由 `Prax.Relevance.livenessOf` 每世界分类一次，planner 按状态跳过已死 want。与 v26 词汇检查并立。
+  精确性保持；村庄自由游玩测量加速。
 
-  **Task 1's own incorrigible bug, found before a single test was written.** The plan's own
-  worked code for `incorrigible` reused the deed pattern's non-offender variables verbatim in
-  both the outer existence `Match` and the counting `Subquery` — but `Prax.Repute.notoriety`'s
-  own shape (the pattern this was meant to mirror) uses *different* names for the counted role in
-  each. A literal transcription binds every deed variable in the outer `Match` before the
-  `Subquery` ever runs, so the count is always 1 and a `k > 1` threshold can never fire, in any
-  multi-variable deed pattern — confirmed directly against the engine (a believer of two distinct
-  instances, `k=2`, evaluated `False`) before any assertion was pinned. Fixed by generalizing
-  `notoriety`'s own `W`/`W0` convention to every deed variable (dummy `<name>0` witnesses in the
-  outer `Match`, the true names free for the `Subquery` alone to count) — `k=2`/`k=3` then
-  evaluated correctly against the same fixture.
+- **v34** — **预测复用——及其诚实限度**（规格 `docs/specs/2026-07-13-v34-prediction-reuse.md`）。
+  用户从测量分支统计导向：70 村庄自由游玩回合（深度 2 的 60 次 NPC 选取）同选取代价
+  **深度 0 为 89ms，深度 1 为 2.3s，深度 2 为 44.5s**——每前瞻层约 20–26×，纯递归分支。闲聊低语模板占树大部。
+  同选取内兄弟后状态预测常相等——复用缓存。诚实限度：效果不透明（`groundedDeltaAnchors` 为 `Nothing`）时
+  不复用。精确性金标准保持。
 
-  **The probed arithmetic, measured live before being pinned** (`scoreActions`/`pickAction`
-  against the real module, v30's own discipline). Spontaneous confession: a mild secret (stake 4)
-  scores confess = 0.0 against holding your tongue at −2.0 — confesses; an expensive one (stake
-  20) scores hold-your-tongue = 37.94 against confess = 0.0 — doesn't. Confession as blackmail
-  defense (a confessed secret is spent leverage: the extorter's `expose` deposits nothing new
-  once the hearer already has it self-sourced): at a steep price against a mild secret (price 30,
-  fear 3), confessing to the sole co-present hearer beats complying and defying on the merits, not
-  a tie — and `expose` is then fully dead (no other hearer left to expose to); at a cheap price
-  against a severe secret (price 1, fear 30), complying still wins. Both sides matched the spec's
-  stated expectation on first measurement, no BLOCK — but the first pin (steep-price case) rested
-  on a three-way label tie between confess/defy/wait because the fixture's victim carried no
-  conscience cost on the underlying mark; review caught it, a matching conscience desire was added
-  to that fixture alone, and the case was re-measured and re-pinned on an honest, strict margin.
+- **v35** — **意图：再考虑语义替换总是深思**（`Prax.Types` `Intention` + `PraxState` 上 `intentions`
+  运行时字段；`Prax.Planner.motiveSignature`；`Prax.Loop.npcAct`；规格
+  `docs/specs/2026-07-13-v35-intentions.md`）。**自 v26 精确性时代开始以来本轮首次接受的语义变更**——用户导向：
+  「代理人不会每几秒规划潜在低语秘密——每步总考虑每种可能不现实且很浪费。」三探针奠基再设计。代理人持有意图；
+  仅当动机签名变化时再考虑。测量：深度 2 村庄自由游玩大幅加速，决策仍忠实。
 
-  **The village demo: two arcs probed, one structurally capped, one shipped.** Primary arc — carol
-  (the wronged party, given an arbitrarily generous professed `merciful` desire) absolving eve
-  after confession — was built and measured across `mercifulValue ∈ {0,5,…,50}` and never beats
-  eve's ordinary baseline at *any* value: confessing to a genuinely new regarder (carol wasn't yet
-  one) eats the full, immediate notoriety-threshold hit, while the planner's own `othersScore` term
-  applies only a fixed 0.5 discount to a *predicted* absolution's value — a hard ceiling no
-  authored desire magnitude can clear. Documented, not shipped — the "threshold drama" the spec
-  asked to measure, measured and found insufficient. Fallback arc — eve confesses to gale, who
-  already regards her a slanderer from directly witnessing the whisper — costs nothing ("free
-  below the brink," v30's own idiom: confessing scores exactly tied with eve's routine baseline,
-  no notoriety spike) and cleanly unlocks gale's `absolve`. Shipped, forced per the wedding/theft
-  precedent.
+- **v36** — **衰减与漂移：时钟上的情节状态**（`Prax.Drift`；规格
+  `docs/specs/2026-07-14-v36-drift.md`）。用户导向，评审在一行代码前锐化范围，两拒绝。原「分数冷却向基线」
+  （**恩怨冷却**）被拒绝：倾向（恩怨、行为标记、信任、站队）永不衰减——只经行为改变（告白、赦免、补偿、
+  已建 v20–v21 机械）——因定时器抹去会破坏补偿非失忆。本轮建造的是情节状态漂移：场景耐心、情绪寿命等已在
+  调度上；漂移把可创作衰减规则接到同一时钟。精确性对非漂移世界保持。
 
-  **A real regression, root-caused, not patched around: gale's cheap-grace loophole.** Making
-  `confess` generally available (not just to eve) gave gale's `honest` trait a hole its own design
-  forbids: her only desire priced the *lied* form of her mark at −6 and said nothing about the
-  *confessed* form (defaulting to 0 relief once it converts), so her depth-2 lookahead saw
-  "lie, then immediately confess" as a way to buy the +4/head spite payoff for the price of a
-  self-erasable −6 — defeating the v25 "her conscience outprices the spite" invariant outright
-  (traced turn-by-turn: her first free-play whisper decision flipped from losing, 5.42 vs. a 10.84
-  baseline, to winning, 15.68 vs. 12.28, with the wiring present). The spec was amended to allow —
-  and, for a bearer whose entire narrative purpose is unconditional honesty, require — pricing the
-  confessed form at the *full* price too: a second `honest` desire prices `confessed` identically
-  to `lied`. Re-verified byte-for-byte against the pre-confession-wiring trace.
-
-  **A mechanical, honestly-recorded side effect: the v26 pre-filter pays.** `confessWhisper`'s own
-  outcome list `Delete`s a `lied`-mark shape — the first authored village action ever to do so —
-  which mechanically flips `Prax.Relevance.improvableDesires`'s analysis of `clean-conscience`
-  from un-improvable to improvable (its premise, "no action deletes a lied-mark," is no longer
-  true). `Prax.RelevanceSpec`'s table assertion flips accordingly, with the mechanism stated in
-  its own comment. Consequence: `predictMove`'s v26 skip — free for any conscience-only believed
-  model of a `transparent`-presumed bearer since t=0 — no longer applies to gale, so every in-scope
-  predictor now scores her candidates on every relevant turn instead of skipping the round
-  entirely. **Measured, isolated, three ways** (`cabal run -v0 prax-test -- -p "Village"`,
-  best-of-3, zero concurrent builds verified before each side, a dedicated `git worktree` for the
-  pre-arc side so it never shares a build with HEAD): the full 36-test Village group at HEAD
-  (post-round, pre-filter spent) runs **219.38s** (227.17s/246.78s/219.38s); the SAME 31
-  pre-existing tests alone (excluding the 5 new v32 additions, via an explicit `-p` exclusion
-  filter) run **171.64s** at HEAD (190.64s/171.64s/180.98s); the identical 31-test group at
-  `fd436de` (the commit immediately before the village wiring landed, pre-filter still intact)
-  runs **31.11s** (31.11s/32.23s/31.35s). The gap between the pre-arc and HEAD-filtered numbers —
-  **≈140.5s, a ≈5.5× slowdown on 31 tests whose own code never changed**, cleanly isolated from
-  the 5 new tests' own ≈47.7s cost (219.38s − 171.64s) — was recorded here as "the pre-filter loss
-  alone." **Amended in place by v33, on remeasurement, not confession: that attribution was
-  wrong.** v33 built exactly the state-aware pre-filter this entry called for and re-ran the
-  identical 31-test A/B: reclaiming the skip recovers ≈39s (171.64s → **132.75s**), not ≈140.5s —
-  the pre-filter's real cost is the smaller number, not the whole gap. A controller profile at
-  HEAD (3.0s vs. 0.69s at v28-on-the-pre-v30 world) attributes the residual ≈100s to
-  **world-richness** in the village's grown axiom set, not to the pre-filter: three Count-bearing
-  aggregate axioms now run in every closure continuation (`notoriety "thief" 3`,
-  `notoriety "slanderer" 3`, `incorrigible "whispered.V.H" 2 …` — `deltaJoinCooked` ~17%, `num`
-  ~3.7% of the profile) alongside larger per-primitive classification footprints (`mayUnifySyms`
-  ~11%) — cost the 31.11s-era world never carried and that no relevance filter removes without
-  shrinking the world itself. (The v33 implementer's own first guess, that this residual was a
-  confound from `Prax.Repute` merging in just before this round, was checked against `git log` and
-  rejected: `Prax.Repute` dates to v21, well before this round's own `fd436de` baseline, so it was
-  already present on both sides of the gap and explains none of it.) The 31.11s epoch belongs to a
-  poorer world and was never reachable by fixing the filter alone. Stated plainly, per the round's
-  own instruction: the 5.5× multiple was real and worth investigating — it correctly pointed at
-  the v33 decision below — but this entry's original explanation of *why* the gap was that large
-  was itself wrong; see the v33 legend row for the corrected account and the measured recovery.
-
-  **Task 2b's ghost investigation: a premise disproved, a fix reverted, the real fix banked.**
-  Probing `Prax.Db.retract`'s known ghost-ancestor imprecision (a drained ancestor path reads as a
-  phantom fact) under the controller's premise that interior nodes aren't independently
-  representable facts, pruning childless ancestors on retraction was implemented, RED/GREEN-pinned,
-  and then broke a real, unmodified test: `Prax.Worlds.Bar`'s `tendBarP` practice asserts a
-  bartender's instance fact at a path (`practice.tendBar.<Place>.<Bartender>`) that *also* anchors
-  transient per-customer state nested beneath it — draining that transient state to zero (a normal
-  order→fulfill→drink cycle) pruned the instance fact itself, permanently destroying the
-  bartender's affordance for the rest of the run. The trie cannot distinguish "an asserted fact
-  that happens to be childless" from "an ordinary ancestor, now childless because its only occupant
-  was retracted" — both are represented identically. Pruning is correct for the first half of that
-  ambiguity and actively wrong for the second; the premise that motivated the attempt was
-  disproved by evidence, not just complicated by it. **Reverted** (`retractNames` restored
-  byte-identical to its pre-task form); the DbSpec ghost-pruning test was **replaced**, not
-  deleted, with an INSTANCE PERSISTENCE test pinning the opposite (a drained instance path must
-  still `exist`) as the regression net against ever reintroducing the pruning by accident. The
-  principled fix — marking a node as an asserted endpoint independently of child-emptiness — is a
-  distinct `Db`-type change, banked as **asserted-endpoint marking** (see "Future ideas to
-  investigate," below); `retract`'s and `dbToSentences`'s haddocks now name it directly so the
-  ambiguity is found already-planned, not rediscovered.
-
-  **Banked, per the user: recidivism into character.** Becoming a liar *by* lying (fed-up-ness
-  shaping the offender's own future disposition, not just an observer's regard) needs bearer-side
-  desires to be fact-driven — but `charDesires :: [String]` (`Prax.Types`) is a static field fixed
-  at character construction, not something an in-world action can insert or delete the way a base
-  fact can. Closing this needs a `Prax.Minds`-level engine change (desires gated on believed-own
-  facts, not just assigned at cast time), belonging with a future Arc-vocabulary round, not this
-  one. Stated with the obstacle, not silently dropped.
-
-  Suite: 421 (`Prax.Confession`, incl. the `incorrigible` fix and the RED-checked blackmail-margin
-  fix) → 424 (the deposit-pattern amendment's own 3 new tests) → 429 (`Prax.Worlds.Village`'s
-  redemption arc, incl. the `honest`-trait fix and the sanctioned `RelevanceSpec` flip) → 431
-  (`Prax.Db`'s reverted-and-repinned ghost investigation), all green throughout; zero warnings;
-  hlint clean; `prax check` on all 7 worlds; grep-gates empty; `Prax.GoldenDriveSpec`/
-  `Prax.ViewInvariantSpec` byte-identical throughout — no golden re-capture needed anywhere this
-  round (the new affordances are forced-trajectory only; eve's free play is unperturbed).
-- **v33** — **state-conditioned relevance** (spec
-  `docs/specs/2026-07-13-v33-live-relevance.md`). v26's relevance pre-filter reasons from
-  vocabulary alone — "could ANY action EVER improve this want-kind?" — a question v32's
-  `confess` made permanently true for every conscience desire, spending the skip world-wide
-  even though it stays sound in almost every actual state (the v32 entry above is amended in
-  place with the corrected accounting). This round adds the missing dimension: **could it
-  matter NOW?** Two liveness recipes, classified once per world by
-  `Prax.Relevance.livenessOf` and consulted by `predictMove`'s pair-skip
-  (`Prax.Planner.deadNow`) alongside the existing static check: **FloorCheck** (negative
-  want-kinds) — a rule improves only by LOWERING its satisfaction count, so a count of zero
-  right now is unconditionally the floor, sound regardless of conjunct structure, decided by
-  one `countSatisfying` against the desire's own Owner-grounded conditions; **GateCheck**
-  (positive want-kinds) — a top-level conjunct that (a) no authored action outcome
-  may-unify-inserts, AND (b) no axiom head derives (the existing `derivable` conservatism),
-  AND (c) currently has zero bindings, makes the WHOLE conjunction's rise impossible this
-  turn. Everything else (`Subquery`/`Count`/`Calc`-tainted wants, an unresolvable `wild`
-  pool, weight 0) stays **AlwaysLive**, conservative by construction. Both checks are
-  **pair-level only**: if any believed desire is live, the FULL model scores, dead
-  deterrents included — a mixed live+dead believed model must still have its dead deterrent
-  deter, pinned by a dedicated test and RED-verified against a model-content-filtering
-  mutation (a wrong implementation that dropped dead-now desires from the SCORED model,
-  rather than only from the skip decision, flips a real tie between two otherwise-equal
-  actions). Task 1 caught its own plan's error before a test was built against it: the plan
-  named the village's third positive desire `fears-scandal`; grepping `src/` found no such
-  desire anywhere in `Prax.Worlds.Village` — the actual one is `punishes-whisper` — and the
-  plan doc was corrected rather than a test written against a name that isn't there.
-
-  **The measured recovery, and the correction it forces.** The same 31 pre-existing,
-  uncontended `Prax.Worlds.Village` tests v32 A/B'd: **132.75s** (best of 3:
-  140.02s/132.75s/135.00s), down from v32's **171.64s** — a real ≈39s reclaim (≈23% of the regressed 171.64s runtime; ≈28% of the
-  ≈140.5s v32 regression, not a full return to the pre-v32 **31.11s**. This ≈39s IS the
-  pre-filter's actual cost, which is why the v32 entry's "the gap... is the pre-filter loss
-  alone" is amended above rather than left standing beside a truer number: a controller
-  profile at HEAD (3.0s vs. 0.69s at v28-on-the-pre-v30 world) assigns the residual ≈100s to
-  **world-richness** — three Count-bearing aggregate axioms now running in every closure
-  continuation (`deltaJoinCooked` ~17%, `num` ~3.7% of the profile) plus larger per-primitive
-  classification footprints (`mayUnifySyms` ~11%) — cost the 31.11s-era world never carried
-  and that no relevance filter, however state-aware, removes without shrinking the world
-  itself. The 31.11s epoch belongs to a poorer world and was never reachable by fixing the
-  filter alone. Suite: 437 → **441** (`RelevanceSpec`/`PlannerSpec` additions, incl. the
-  mixed-model pin), ~236s → **~188s**, all green throughout; zero warnings; hlint clean;
-  `prax check` on all 7 worlds; grep-gates empty; goldens byte-identical; ViewInvariant green
-  throughout. **Banked, not built** (targeting the world-richness residual this round's
-  profiling isolated, not the pre-filter question this round closed): footprint
-  discrimination indexing and axiom-family partitioning for the continuation loop (see
-  "Future ideas to investigate," below). **v34 built exactly the mechanism this residual
-  pointed at and measured it directly**: reuse reclaims ≈9.5% of the post-v33 runtime
-  (120.10s vs. 132.75s) — not the rest of the residual. The remainder of the recursion cost
-  turns out to be semantically necessary under the exactness contract: the village's own
-  reputation-cascade writes (the whisper's `Delete recanted.Actor`, the `believes`→`regards`
-  cone) genuinely reach every mover's reads, so those predictions must recompute, not merely
-  be re-derived waste — see the v34 legend row below for the measured account.
-- **v34** — **prediction reuse — and the honest limit of it** (spec
-  `docs/specs/2026-07-13-v34-prediction-reuse.md`). User-directed from measured branch
-  statistics: over 70 village free-play turns (60 NPC picks at depth 2), the same picks cost
-  **89ms at depth 0, 2.3s at depth 1, 44.5s at depth 2** — each lookahead level multiplying
-  by ~20–26×, pure recursive branching, not state machinery. One template is most of the
-  tree: the gossip whisper grounds 458 of 674 top-level candidates (68%), each taken at most
-  once per pick. And within a pick, sibling post-states' predictions equalled the parent
-  state's prediction in **4,014 of 4,014** observed (candidate, mover) comparisons —
-  `scoreActions` was re-running `predictMove` at every tree node even where a node's state
-  differed from the pick's root by only a few outcome tokens that provably couldn't change
-  most movers' predictions. This round makes that proof and reuses the root's prediction
-  wherever it holds: three static per-world enumerations (what a `predictMove` pair reads;
-  what an action's grounded outcomes touch; which axiom heads a fact family can fire), a
-  root-memo prediction per pick filled lazily per mover, and a per-node path-delta anchor set
-  expanded through a derived-fact cone (an axiom's head joins the cone whenever any body atom
-  may-unifies something already in it) — a node reuses the root's prediction exactly when the
-  cone misses the mover's read set, and goes opaque (no reuse anywhere below it) on anything
-  unboundable. **Task 2b tightened the opacity rule itself**: a broadcast `ForEach` insert
-  (the whisper's own shape, previously forced opaque unconditionally) is bounded instead when
-  its variable head is a *safe binder* — never occurring at the first position of any guard
-  `Match`, so it can never unify the registry literal `practice` — while an evidence-free
-  (all-variable) path stays opaque by construction regardless of binder safety, closing an
-  in-principle soundness hole the safe-binder rule would otherwise have opened. Exactness held
-  throughout: goldens byte-identical, ViewInvariant green, decisions bit-for-bit; both reuse
-  guards are mutation-verified in both directions (dropping the reuse guard entirely fails
-  both payoff fixtures verbatim; dropping only the cone fails the derived-fact fixture alone,
-  leaving the base-fact fixture green exactly as the discrimination predicts).
-
-  **The measured recovery, and why the projection came up short.** The same 31-test village
-  A/B (uncontended, best-of-3) against the recorded epochs — 31.11s pre-v32, 171.64s
-  post-v32, 132.75s post-v33 — landed at **120.10s** post-Task-2, a real ≈9.5% reclaim, then
-  **123.57s** post-2b, overlapping Task 2's own 120.10–130.85s run range: 2b is a perf
-  **wash**, kept for the correctness it buys (closing the haddock's stated-vs-actual
-  divergence) rather than for speed. Full suite: 449 tests @ ~165–187s (machine-noise range).
-  An attribution pass over 68,286 `predictAt` calls explains the shortfall against the spec's
-  projected win (whisper subtrees collapsing to the depth-0 floor): before 2b, 98% of calls
-  sat on opaque paths (every broadcast `ForEach` insert tripped the spawn guard); 2b brought
-  opacity down to 25%, but the freed 73% moved into cone∩read-set **INTERSECTION** (74%), not
-  reuse (still 1%) — the whisper's own writes (`Delete recanted.Actor`, forfeiting amends; the
-  `believes`→`regards` cone) genuinely reach every mover's reputation read. The branch probe's
-  4,014/4,014 equality was contingent on that one traced state, not provable: under the exact
-  contract, those pairs must recompute live. The residual 25% opacity is exactly two
-  literal-`practice`-rooted templates (`Go to [Place]`, `take up honest work`) — the sound
-  floor of the current rule, not a missed case.
-
-  **Banked**: below-existing-instance practice-path inserts could bound exactly rather than
-  stay opaque (`spawnedInstanceNames`'s existed-before semantics would let `Go to`/`honest
-  work` un-opaque); per-reachable-head cone precision (`extendDelta` currently joins every
-  axiom head on any feed — a per-head reachable-from-the-delta cone would free some
-  whisper-adjacent pairs, though the raw `recanted.V` dependency would still defeat the
-  culprit-facing ones — see "Future ideas to investigate," below). Suite: 445 (Task 1) → 448
-  (Task 2) → 449 (Task 2b + its own evidence-free-path fix), all green throughout; zero
-  warnings; hlint clean; goldens byte-identical; ViewInvariant green throughout.
-- **v35** — **intentions: reconsideration semantics replace always-deliberate** (`Prax.Types`
-  `Intention` + an `intentions` runtime field on `PraxState`; `Prax.Planner.motiveSignature`;
-  `Prax.Loop.npcAct`; spec `docs/specs/2026-07-13-v35-intentions.md`). **The round's first
-  accepted semantics change since the exactness era began at v26** — user-directed: "agents
-  would not plan potentially whispering secrets every few seconds — always considering every
-  possibility every step is not realistic and very wasteful." Three probes grounded the
-  redesign before a line of implementation: a **91.5% pick-stability ceiling** over a 70-turn
-  village drive (379/414 turns unchanged; carol, one of the most expensive deliberators, never
-  changed her pick once); **the anchor family is structurally exhausted** — a chained cache
-  upgraded with the banked per-head-cone lever served **zero** picks, because the village's
-  axiom graph deliberately chains co-presence into reputation (movement → togetherness →
-  witnessing → belief → notoriety → regard), so every non-wait action's cone reaches all six
-  characters and no refinement of the v26–v34 proof family can see that gale walking to the
-  mill is irrelevant to carol in the square; and **motivational triggers caught all 35 real
-  pick changes while licensing 290/414 (70%) skips**, at near-zero cost.
-
-  **A mid-round reversal, stated plainly.** The first-cut signature grain (full
-  grounded-candidate equality) measured **INERT** at the real own-turn interval — 0 serves,
-  120/120 deliberated, 1.0× — because the per-turn probes above had measured the wrong
-  interval: villagers move every round, and movement churns co-presence groundings. The probe
-  ladder that found the working grain: unfiltered templates, 26% served/0 divergences;
-  templates dropped entirely (the "bold agent" variant, **rejected**), 50 served but 19
-  divergences — dana served "Wait" for the whole drive while a fresh pick wanted "shun carol"
-  every round, proving opportunity *appearance itself* carries dramatic signal; **want-bearing
-  templates**, 45 served (38%) with **zero divergences**, every one of the remaining
-  deliberations (the probe's 75/45 split) defensible — arrivals expiring a movement pick (55),
-  satisfaction changes (8), motive updates (2), first turns (6). The spec was amended in place
-  to this grain.
-
-  **The shipped semantics**: a character holds a standing intention plus the motive signature
-  it was chosen against, and re-deliberates only when the signature changes — commitment is
-  the default, reconsideration the exception, per Bratman. Four named components, none a tuned
-  number: (1) what I can do that I care about — my standing action is still offered (full
-  grounded equality; a stale grounding can never be acted) AND the want-bearing template set
-  changed (`Relevance.bearingTemplates`, a `caresAbout` table); (2) how I'm doing — the
-  per-want satisfaction count vector, kept as counts, not summed, so two profiles can't mask
-  each other; (3) what's driving me — the live-desire set (v33's floor/gate machinery, pointed
-  at oneself); (4) what motives I know of — the believed-motive facts I hold on others.
-  **Accepted gaps, pinned as INTENDED**: a one-beat lag when only another's *predicted* reply
-  to a fresh affordance would change my pick (invisible until a signature-visible consequence
-  lands), and the same one-beat lag on second-order opportunities generally — both dedicated
-  tests (the quiet pin, the non-bearing pin), not silently absent.
-
-  **Measured, honestly, with the variance called out.** Goldens are **byte-identical** — the
-  re-capture protocol the spec expected to need went unused, zero drift to itemize. Full
-  suite: 454 tests @ **153.22s**, down from the ~175–186s baseline (deliberation itself now
-  mostly skipped). The **paired drive bench is the primary performance evidence** (same
-  140-turn trajectory, both loops, one process, eliminating cross-run noise): **52.3s vs.
-  97.1s = 1.9× on sustained play**. The 31-test village A/B is reported but **not
-  attributed**: best-of-3 98.17s against v34's 120.10s epoch looks like a win, but the *inert*
-  v1 tree (0 serves, the mechanism doing nothing) measured 113.97s on pure run variance alone —
-  **below** the v34 epoch with zero mechanism engaged — so the suite A/B's noise band swamps
-  an effect this size; the paired bench is what the round actually stands on. Two mutations
-  confirm the pins bite: dropping the bearing filter fails the non-bearing pin; dropping the
-  `stillOffered` guard lets a vanished action get performed, and the standing-gone pin catches
-  it. Zero warnings; hlint clean; no mutation markers remain.
-- **v36** — **decay & drift: episodic state on the clock** (`Prax.Drift`; spec
-  `docs/specs/2026-07-14-v36-drift.md`). User-directed, scope sharpened in review before a
-  line of code, on two rejections. The original "scores cool toward baseline" framing
-  (**grudge-cooling**) is REJECTED: dispositions (grudges, conduct marks, trust, standing)
-  never decay — they change only through ACTS (confession, absolution, amends, the v20–v21
-  machinery already built) — because a timer erasing them would undermine
-  atonement-not-amnesia (discharge must cost something) and history-persists-through-marks
-  (truth going unrecoverable is drama, not bookkeeping). The v35-era **recency-gradient**
-  stays declined, permanently: `Prax.Sight`'s hard `sightedWithin` window is the intended
-  model, not a smoothed approximation of one. What's left is genuinely episodic — appetite,
-  intoxication, arousal — the scale a game actually represents (hours to weeks).
-
-  **The mechanism** (`Prax.Drift`, the v18/`Prax.Sight` idiom pointed at state evolution: a
-  compiler of authored rules into ordinary practice content, zero engine/planner/query
-  surface). A bodiless per-round drifter (`_drift`, blank-label, riding after `_sight` in
-  the cast) carries a `due.<name>!D` fact per rule; its one action gates each body
-  `ForEach` on `turn!Now >= D` and re-arms `due.<name>!D2` at `D2 = Now + period` — **from
-  NOW, not from D**, so a stalled world doesn't rapid-fire its backlog on resume. Three
-  construction-time guards, the v30/v31 class: a rule name must be a single segment; a body
-  may not mention the reserved `D`/`D2`/`Now` variables (collision with the due gate); a
-  period must be positive. `Prax.TypeCheck` gains `ClocklessDrift` (Check 5): a world
-  registering the `drift` practice without a `turn` fact is flagged loudly rather than
-  silently never firing.
-
-  **Two cargo cycles, one shape.** Village hunger (build-up): every `mealPeriod` (3)
-  rounds, `appetite.<who>` bearers gain `hungry.<who>`; `suffers-hunger` (`Want
-  [Match "hungry.Owner"] -22`) prices eating at exactly what it costs — a held loaf
-  forfeits 10, a completed 3-stage endeavor forfeits 9 more (the `eat` action tears the
-  instance down), 19 total against 22 relief, a **+3** margin the planner actually picks
-  (mutation-verified: dropping relief to 12 flips the choice back to hoarding, net −7). Bar
-  metabolism (wear-off): every `soberPeriod` (2) rounds, each patron's `drinks!N`
-  decrements toward a `Gte 1` floor (never negative), and `checkSober` mirrors
-  `checkTipsy`'s own threshold (`Cmp Lte M 1` clears `tipsy`) — the same number read both
-  directions, one home for the fact.
-
-  **The emergent fiction, unplanned.** Village free play produces a hungry bob eating the
-  loaf he *stole* outright — no credit ever forfeited on it — and only later earning and
-  eating a second, honest loaf before the theft's atonement beat completes. `postTheftAt`
-  moved 70→96: 10 rounds under the old 7-member round is 70, 12 under the new 8-member
-  round (`_drift` joins the cast) is 96, and the arc genuinely needs those two extra
-  rounds now — eat-the-stolen-loaf, then earn-and-eat-a-second, not eat-then-forgive. In
-  the bar, the same roster growth costs `LoopSpec`'s fixed 25-turn golden its last two
-  lines: bex's arc-completing "settle in, feeling you belong here" actually lands at turn
-  27 (confirmed directly, not assumed), two turns past the window's edge — bex is
-  `hopeful`, not yet `belonging`, when the replay ends; the warmth held, it just needed two
-  turns the extra silent tick spent elsewhere.
-
-  **The golden protocol held.** Both worlds' goldens were re-captured live from the driven
-  output, never hand-authored, each cargo task's re-capture in its own commit separate from
-  the code that moved it (`cf82427`/`70afce0` village, `0d02b02`/`0957ff7` bar), itemized
-  line by line in both task reports. The village's 21-line window shows only two ordinary
-  `"_drift: "` no-op lines (the due hasn't come due inside that short a capture) — the
-  hunger cycle itself is pinned directly, at the real turn counts, in `VillageSpec` (absent
-  at `freePlayAt 23`, present at `freePlayAt 24`, re-armed three rounds later), not
-  inferred from the golden slice. Intrigue and feud goldens: untouched. ViewInvariant green
-  throughout; suite 465 (Task 1) → 468 (Task 2) → 472 (Task 3), all green; zero warnings;
-  hlint clean throughout.
-
-  **The paired drive bench, re-run against the drifting village** (same 140-turn
-  trajectory, both loops, one process — the v35 protocol exactly), with a same-machine,
-  same-session pre-drift control (commit `81380ed`, the 7-member roster) run alongside it
-  to separate drift's own effect from ordinary run-to-run noise: pre-drift **50.1s / 82.1s
-  / 1.6×** (20 deliberations of 140 turns: bob 7/20, dana 6/20, carol 2/20, eve 2/20, gale
-  2/20, `_sight` 1/20) vs. post-drift **51.8s / 70.9s / 1.4×** (33 deliberations: bob
-  **18/18** — every single one of his turns — dana 6/18, carol 2/18, eve 3/17, gale 2/17,
-  `_sight` 1/17, `_drift` 1/17). The attribution the spec's acceptance demands: bob's count
-  alone absorbs 11 of the 13 added deliberations — the mealtime hunger cycle is a second
-  gate/satisfaction-changing rhythm layered on his existing endeavor-stage churn, pushing
-  him from re-deliberating on roughly a third of his turns to literally all of them; every
-  other named character is flat against the pre-drift control within one deliberation (eve
-  +1, plausibly a downstream motivational ripple, not a sub-threshold read); `_drift`
-  contributes only its own one-time first-turn cost, the same idiom as `_sight`. **The
-  pulse wakes bob and essentially nobody else — the acceptance holds; not BLOCKED.** The
-  intentions loop's wall time is nearly flat (50.1s→51.8s) because bob's added real
-  deliberation work roughly cancels the discount every turn gets from an 8th, mostly-free
-  cast member; the always-deliberate loop, whose cost tracks raw turns rather than
-  deliberations, takes that whole discount (82.1s→70.9s) — the 1.6×→1.4× ratio drop is that
-  discount, not a regression in the reconsideration mechanism. Against the
-  originally-recorded v35 numbers (52.3s/97.1s/1.9×, a different session): intentions is
-  within noise (52.3→51.8s); the rest of the gap is *not* attributable to v36 alone — the
-  same-session pre-drift control already measured 82.1s/1.6×, so roughly half the drop from
-  97.1s is ordinary cross-session variance (the v35 row's own documented pattern), the
-  other half the roster-dilution effect above. Full suite: 472 @ 146.83s.
-
-  **Correction, made and cited here per the fix-don't-confess discipline (see the v37 row
-  below).** This round's own mechanism silently degraded gate precision for exactly the
-  fact family it exists to move: `_drift`'s pulses joined `Prax.Relevance.worldAtomPools`'s
-  scan without an exclusion, so the pool's wild/action-insertable fallback swallowed every
-  clock-moved fact — `hungry.*` here, and (found by v37's attendance probe) any future
-  clock-gated positive desire — reclassifying it from `GateCheck` to `AlwaysLive`.
-  Conservative direction, so nothing was ever unsound and no golden moved: this is a
-  precision loss (v33's liveness-skip optimization silently lost its intended target on
-  this fact family), not a correctness bug. v37 repaired it (`worldAtomPools` now excludes
-  the drift practice by id) and re-verified both ends: `suffers-hunger` (negative,
-  `FloorCheck`) was never touched by either the bug or the fix; any positive hunger-shaped
-  desire regains its gate under the repair. The measurements recorded above (bench numbers,
-  deliberation counts, golden protocol) are unaffected by this — they were never about gate
+te
   classification — and stand exactly as recorded.
 - **v37** — **calendar & gatherings: the clock convenes, the town shows up** (`Prax.Drift`
   `gathering`; `Prax.Relevance` reclassification; spec
