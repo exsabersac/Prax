@@ -1,39 +1,25 @@
--- | The exclusion-logic database underlying Praxis/Versu.
+-- | 支撑 Praxis/Versu 的排他逻辑数据库。
 --
--- The world state is a trie: @data Db = Db Bool Bool (IntMap Db)@, where the
--- first 'Bool' records whether the node's outgoing edges are __exclusive__,
--- the second whether the node was itself __asserted__ as a fact (as opposed
--- to existing only as scaffolding beneath deeper facts), and the
--- 'IntMap' keys are interned segment ids ('Prax.Sym.symId'; spec
--- @docs/specs/2026-07-12-v29-interning.md@). Every fact is a path built from
--- two operators — @.@ (ordinary, multi-valued descent) and @!@ (exclusion:
--- the parent has exactly one child). Queries treat @.@ and @!@ identically,
--- but the distinction is now /retained/ in the trie (not just applied and
--- forgotten at insert), so the world state is a faithful Exclusion-Logic
--- model — which is what lets 'Prax.EL.meet' detect a contradiction from
--- either side of a clash. 'dbToSentences' flattens the labels (for
--- display/matching); 'dbToLabeledSentences' re-emits them (for exact
--- serialization).
+-- 世界状态是 trie：@data Db = Db Bool Bool (IntMap Db)@，其中第一个 'Bool' 记录
+-- 节点出边是否为 __排他__，第二个记录节点自身是否被 __断言__ 为事实（相对仅作为
+-- 更深事实下的脚手架存在），'IntMap' 键是 interned 段 id（'Prax.Sym.symId'；规格
+-- @docs/specs/2026-07-12-v29-interning.md@）。每个事实是由两个运算符构成的路径——
+-- @.@（普通、多值下钻）与 @!@（排他：父节点恰好一个孩子）。查询对 @.@ 与 @!@ 同等对待，
+-- 但区分现 /保留/ 在 trie 中（不只在插入时应用后遗忘），因此世界状态是忠实 Exclusion-Logic
+-- 模型——这正是让 'Prax.EL.meet' 从冲突任一侧检测矛盾的原因。'dbToSentences' 展平标签
+-- （供显示/匹配）；'dbToLabeledSentences' 再发出它们（供精确序列化）。
 --
--- The authoring/display surface (@insert@, @unify@, @exists@,
--- @dbToSentences@, @dbToLabeledSentences@, @ground@, …) stays String-facing —
--- interning at entry, rendering at exit — so worlds, tests, 'Prax.Persist'
--- and 'Prax.Inspect' are unaffected by the representation change. The engine
--- itself computes on 'Prax.Sym.Sym': 'Val'\/'Bindings' carry symbols
--- natively, and the Sym-level cores ('insertToks', 'retractNames',
--- 'unifySyms', 'groundTokens', 'tokensToSentence') are exported for callers
--- that already hold split, interned tokens (the cooked pipeline — "Prax.Cooked",
--- "Prax.Query", "Prax.Derive") and must not re-parse or re-render them. 'Sym'
--- ids are first-encounter ordered and therefore run-dependent
--- ('Prax.Sym'); anywhere the old code observed @Map String@'s alphabetical
--- iteration order (unify's unbound-variable branching, 'childKeys'), the
--- rewrite explicitly restores name order by sorting on 'symName' — id
--- (encounter) order must never leak into candidate order or output.
+-- 创作/显示表面（@insert@、@unify@、@exists@、@dbToSentences@、@dbToLabeledSentences@、
+-- @ground@、…）保持面向 String——入口 intern、出口渲染——因此世界、测试、'Prax.Persist'
+-- 与 'Prax.Inspect' 不受表示变更影响。引擎自身在 'Prax.Sym.Sym' 上计算：'Val'\/'Bindings'
+-- 原生携带符号，Sym 级核心（'insertToks'、'retractNames'、'unifySyms'、'groundTokens'、
+-- 'tokensToSentence'）导出给已持有切分、interned token 的调用者（煮熟管线——"Prax.Cooked"、
+-- "Prax.Query"、"Prax.Derive"），且不得再解析或再渲染。'Sym' id 按首次遭遇排序，因此依赖运行
+-- （'Prax.Sym'）；凡旧代码观察 @Map String@ 字母迭代序之处（unify 的未绑定变量分支、'childKeys'），
+-- 重写经按 'symName' 排序显式恢复名称序——id（遭遇）序永不可泄漏到候选序或输出。
 --
--- See @docs/research/praxis-praxish-notes.md@ for the correspondence to
--- Praxish's @db.js@, including the corrected @!@ semantics (Praxish's own
--- @insert@ has a flagged bug that drops data; we implement the paper's rule
--- instead).
+-- 见 @docs/research/praxis-praxish-notes.md@ 与 Praxish @db.js@ 的对应，含纠正后的 @!@ 语义
+-- （Praxish 自身的 @insert@ 有标记的丢数据 bug；我们实现论文规则）。
 module Prax.Db
   ( Db(..)
   , emptyDb
@@ -75,16 +61,12 @@ import qualified Data.Map.Strict as Map
 
 import           Prax.Sym (Sym, intern, symId, symIsVar, symName, symOfId)
 
--- | The world state: a trie whose edges are interned segments. The first
--- 'Bool' is the node's __exclusion flag__ — 'True' when its edges are
--- single-valued (@!@); a valid exclusive node has one child. The second is
--- the node's __asserted flag__ — 'True' when the path to this node was itself
--- inserted as a fact, independent of whether it also has children (spec
--- @docs/specs/2026-07-15-v39-asserted-endpoints.md@). __The invariant__
--- ('retractNames' establishes and maintains it): the trie never contains an
--- unasserted childless node — so "a node is present" is equivalent to
--- "asserted, or has living descendants", and the queries read presence
--- directly without consulting the flag.
+-- | 世界状态：边为 interned 段的 trie。第一个 'Bool' 是节点的 __排他标志__——
+-- 边为单值（@!@）时为 'True'；合法排他节点有一个孩子。第二个是节点的
+-- __断言标志__——到此节点的路径自身作为事实插入时为 'True'，与是否还有孩子无关
+-- （规格 @docs/specs/2026-07-15-v39-asserted-endpoints.md@）。__不变量__
+-- （'retractNames' 建立并维护）：trie 从不包含未断言的无子节点——因此「节点存在」
+-- 等价于「已断言，或有存活后代」，查询直接读存在性而不查阅该标志。
 data Db = Db !Bool !Bool (IntMap Db)
   deriving (Eq, Show)
 

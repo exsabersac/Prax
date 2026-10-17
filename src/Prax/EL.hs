@@ -1,23 +1,18 @@
--- | Exclusion Logic's lattice, from Evans' DEON 2010 paper (§1.5–1.6; distilled in
--- @docs/research/deon-notes.md@). This is the faithful formal core the derivation
--- layer ("Prax.Derive") builds on, and the substrate a future static type checker
--- (LEDGER #8) would reuse.
+-- | Exclusion Logic 的格，出自 Evans 的 DEON 2010 论文（§1.5–1.6；精炼于
+-- @docs/research/deon-notes.md@）。这是派生层（"Prax.Derive"）所建基的忠实形式核心，
+-- 也是未来静态类型检查器（LEDGER #8）将复用的基底。
 --
--- The paper interprets expressions in /labeled rooted trees/ (LRTs, Def 2): a tree
--- whose edges are @!@ ("only child" — exclusion) or @*@ ("one of many" — multi).
--- Our 'Prax.Db.Db' /is/ exactly such a tree — each node carries an exclusion flag
--- ('Prax.Db.dbExcl') — so the lattice operates on it directly, with nothing lost.
+-- 论文在 /labeled rooted trees/（LRTs，Def 2）中解释表达式：边为 @!@（「唯一孩子」——排他）
+-- 或 @*@（「多者之一」——多值）的树。我们的 'Prax.Db.Db' /正是/这样的树——每个节点携带
+-- 排他标志（'Prax.Db.dbExcl'）——因此格直接在其上运算，无损失。
 --
---   * 'meet' — the greatest lower bound @⊓@ (Def 8), i.e. conjunction of models;
---     @Nothing@ is the paper's @⊥@ (Def 7 incompatibility): at a node exclusive in
---     either operand, the two disagree on the child. This detects a contradiction
---     /exactly/, from either side of the clash.
---   * 'leq' — the information order @≤@ (Def 6): @a `leq` b@ iff @a@ carries at
---     least as much information as @b@ (all of @b@'s structure, edge labels at
---     least as specific, @Excl ≤ Multi@); i.e. @a@ entails @b@.
+--   * 'meet' — 最大下界 @⊓@（Def 8），即模型合取；@Nothing@ 是论文的 @⊥@
+--     （Def 7 不相容）：在任一侧操作数为排他的节点上，两者对孩子意见不一。
+--     这从冲突任一侧 /精确/ 检测矛盾。
+--   * 'leq' — 信息序 @≤@（Def 6）：@a `leq` b@ 当且仅当 @a@ 携带至少与 @b@ 一样多的信息
+--     （@b@ 的全部结构、边标签至少同样具体，@Excl ≤ Multi@）；即 @a@ 蕴涵 @b@。
 --
--- The join @⊔@ (Def 9) is only needed for general entailment testing (#8) and is
--- deliberately omitted.
+-- 并 @⊔@（Def 9）仅一般蕴涵测试（#8）需要，有意省略。
 module Prax.EL
   ( meet
   , leq
@@ -28,18 +23,14 @@ import qualified Data.IntMap.Strict as IntMap
 
 import           Prax.Db (Db (..))
 
--- | Greatest lower bound @⊓@ (Def 8) — the conjunction of two models. @Nothing@ is
--- the paper's @⊥@: at some node exclusive in /either/ operand, the two disagree on
--- the child (Def 7 incompatibility). Otherwise children are merged (recursively
--- meeting shared subtrees) and a node is exclusive if either operand marks it so
--- (the more specific label wins, @Excl ≤ Multi@).
+-- | 最大下界 @⊓@（Def 8）——两模型的合取。@Nothing@ 是论文的 @⊥@：在某节点对 /任一侧/
+-- 操作数排他时，两者对孩子意见不一（Def 7 不相容）。否则合并孩子（递归 meet 共享子树），
+-- 且若任一侧标记则节点排他（更具体标签胜，@Excl ≤ Multi@）。
 --
--- Assertedness (spec @docs/specs/2026-07-15-v39-asserted-endpoints.md@) extends
--- pointwise as __disjunction__: a node is asserted in the meet iff asserted in
--- /either/ operand, because meet conjoins the facts of both models and a path
--- asserted in either is a fact of the conjunction. This is the choice that keeps
--- the meet a lower bound — @meet a b `leq` a@ — of an asserted operand (see
--- 'leq'); conjunction here would drop the mark and break that law.
+-- Assertedness（规格 @docs/specs/2026-07-15-v39-asserted-endpoints.md@）按点扩展为
+-- __析取__：节点在 meet 中被断言当且仅当在 /任一侧/ 操作数中被断言，因为 meet 合取两模型的事实，
+-- 任一侧断言的路径是合取的事实。这是保持 meet 为断言操作数下界——@meet a b `leq` a@——的选择
+-- （见 'leq'）；此处若用合取会丢掉标记并破坏该法则。
 meet :: Db -> Db -> Maybe Db
 meet (Db e1 a1 k1) (Db e2 a2 k2) = do
   merged <- foldM ins k1 (IntMap.toList k2)
@@ -53,15 +44,12 @@ meet (Db e1 a1 k1) (Db e2 a2 k2) = do
       Nothing -> Just (IntMap.insert k v2 acc)
       Just v1 -> do v <- meet v1 v2; Just (IntMap.insert k v acc)
 
--- | The information order @≤@ (Def 6): @a `leq` b@ iff @a@ has every edge of @b@,
--- with labels at least as specific (@Excl ≤ Multi@), recursively — i.e. @a@
--- entails @b@.
+-- | 信息序 @≤@（Def 6）：@a `leq` b@ 当且仅当 @a@ 有 @b@ 的每条边，标签至少同样具体
+-- （@Excl ≤ Multi@），递归地——即 @a@ 蕴涵 @b@。
 --
--- Assertedness enters exactly as the exclusion label does: if @b@ asserts a node
--- as a fact, @a@ must assert it too (@aa || not ab@) — asserting a path is
--- strictly more information than merely scaffolding it, so an asserted fact
--- entails its unasserted scaffold but not conversely (mirroring @Excl ≤ Multi@,
--- @Multi ⋠ Excl@).
+-- Assertedness 恰如排他标签进入：若 @b@ 把节点断言为事实，@a@ 也必须断言它
+-- （@aa || not ab@）——断言路径严格多于仅作脚手架，因此被断言事实蕴涵其未断言脚手架，
+-- 反之不然（镜像 @Excl ≤ Multi@，@Multi ⋠ Excl@）。
 leq :: Db -> Db -> Bool
 leq (Db ea aa ka) (Db eb ab kb) =
   (ea || not eb) && (aa || not ab) && all present (IntMap.toList kb)

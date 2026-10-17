@@ -1,11 +1,9 @@
--- | The interpreter: registering practices, discovering an actor's affordances,
--- and applying an action's outcomes to the world (including practice spawning
--- and function calls).
+-- | 解释器：注册实践、发现行动者的 affordance，以及把动作结果应用到世界
+-- （含实践孵化与函数调用）。
 --
--- A typed port of the @Praxish.*@ functions in @praxish.js@. All operations are
--- pure state transformations — the planner ("Prax.Planner") exploits this by
--- speculatively applying an action and simply discarding the result, replacing
--- Praxish's clone-and-undo.
+-- @praxish.js@ 中 @Praxish.*@ 函数的类型化移植。全部操作是纯状态变换——planner
+-- （"Prax.Planner"）利用这一点，推测性应用动作并直接丢弃结果，替换 Praxish 的
+-- clone-and-undo。
 module Prax.Engine
   ( definePractice
   , definePractices
@@ -46,13 +44,11 @@ import           Prax.Cooked (cookOutcome, cookPractice, cookFunctions, cookSche
 import           Prax.Rng (rollStep, seedBounds)
 import           Prax.Sym (Sym, intern, symIsVar, symName)
 
--- | Rebuild the derived vocabulary tables. Internal: every helper that changes
--- 'practiceDefs', 'axioms', 'desires', 'characters', 'schedule', or 'worldFns'
--- must end here. 'cookedRules' is recooked from the axiom list alone
--- ('cookAxioms', census-free) — whatever □-lifted rules a deontic world declared
--- ("Prax.Deontic.obligedClose") are already in 'axioms', so retable does not
--- decide any lift. The axiom-derived tables (footprint\/axiomHeads\/negFootprint\/
--- contMonotone) then read that 'cookedRules'.
+-- | 重建派生词汇表。内部：每个变更 'practiceDefs'、'axioms'、'desires'、
+-- 'characters'、'schedule' 或 'worldFns' 的助手必须以此结束。'cookedRules'
+-- 仅从公理列表重煮（'cookAxioms'，无 census）——道义世界声明的任何 □-提升规则
+-- （"Prax.Deontic.obligedClose"）已在 'axioms' 中，因此 retable 不决定任何提升。
+-- 公理派生表（footprint\/axiomHeads\/negFootprint\/contMonotone）随后读该 'cookedRules'。
 retable :: PraxState -> PraxState
 retable st0 =
   let st = st0

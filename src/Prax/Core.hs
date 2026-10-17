@@ -1,23 +1,18 @@
--- | The Core Model: relationships (Versu paper §X).
+-- | 核心模型：关系（Versu 论文 §X）。
 --
--- Versu calls the agent's emotional and relationship state "the channel through
--- which the different practices communicate." It is ordinary DB state — this
--- module adds no new engine machinery, only a reusable standard library of
--- conventions on top of "Prax.Engine":
+-- Versu 把 agent 的情感与关系状态称作「不同实践据以通信的通道」。它是普通 DB 状态——
+-- 本模块不增加新引擎机制，只在 "Prax.Engine" 之上提供可复用的约定标准库：
 --
---   * relationship evaluations are numeric, multiple, asymmetric, and carry a
---     reason (@A.relationship.B.Role.score!N@, @A.relationship.B.Role.reason!Why@);
---   * a public "bond" is symmetric (@bond.A.B!State@ written both ways).
+--   * 关系评价是数值、多重、不对称的，并携带理由
+--     (@A.relationship.B.Role.score!N@, @A.relationship.B.Role.reason!Why@)；
+--   * 公开「纽带」是对称的（@bond.A.B!State@ 双向写入）。
 --
--- Emotions moved to "Prax.Emotion" (spec 2026-07-15-v38): coexisting episodic
--- @feels@ facts replaced this module's single-slot, auto-overriding
--- @mood!@/@priorMood@ machinery, which is deleted with its last consumer
--- (the bar's migration).
+-- 情感已迁至 "Prax.Emotion"（规格 2026-07-15-v38）：共存的情节 @feels@ 事实替换了本模块
+-- 单槽、自动覆盖的 @mood!@/@priorMood@ 机制，后者随其最后消费者（酒吧迁移）一并删除。
 --
--- The read-modify-write pieces (seed-then-accumulate a score) are provided
--- once as 'Function's ('coreFns'), reusing the same @Call@/@Calc@ machinery
--- proven by the drink counter in "Prax.Worlds.Bar". Register 'coreFns' with
--- 'Prax.Engine.defineFunctions' to make the smart constructors below usable.
+-- 读-改-写部件（先播种再累积分数）作为 'Function'（'coreFns'）提供一次，复用
+-- "Prax.Worlds.Bar" 中饮酒计数器已证明的同一 @Call@/@Calc@ 机制。用
+-- 'Prax.Engine.defineFunctions' 注册 'coreFns'，使下方智能构造器可用。
 module Prax.Core
   ( -- * Registering the library
     coreFns
@@ -37,28 +32,27 @@ import           Prax.Types
 
 -- Relationship roles -----------------------------------------------------------
 
--- | Example evaluation dimensions. A relationship is judged on any number of
--- these, independently in each direction.
+-- | 评价维度示例。关系可在任意数量的这些维度上、每个方向独立地被评判。
 warmth, respect :: String
 warmth  = "warmth"
 respect = "respect"
 
 -- Effects ----------------------------------------------------------------------
 
--- | Adjust @a@'s evaluation of @b@ on @role@ by @delta@ (seeding it if this is
--- the first interaction), recording @reason@. Negative deltas cool the relation.
+-- | 将 @a@ 对 @b@ 在 @role@ 上的评价调整 @delta@（首次互动则播种），并记录 @reason@。
+-- 负 delta 使关系变冷。
 adjustScore :: String -> String -> String -> Int -> String -> Outcome
 adjustScore a b role delta reason =
   Call "prax_adjustScore" [a, b, role, show delta, reason]
 
--- | Set the symmetric public bond between @a@ and @b@ (e.g. @"friends"@).
+-- | 设定 @a@ 与 @b@ 之间的对称公开纽带（例如 @"friends"@）。
 setBond :: String -> String -> String -> Outcome
 setBond a b st = Call "prax_setBond" [a, b, st]
 
 -- Conditions -------------------------------------------------------------------
 
--- | Require @a@'s evaluation of @b@ on @role@ to be at least @n@. Binds a
--- role-specific score variable (safe to combine across distinct roles).
+-- | 要求 @a@ 对 @b@ 在 @role@ 上的评价至少为 @n@。绑定角色特定的分数变量
+-- （跨不同角色可安全组合）。
 scoreAtLeast :: String -> String -> String -> Int -> [Condition]
 scoreAtLeast a b role n =
   [ Match (a ++ ".relationship." ++ b ++ "." ++ role ++ ".score!" ++ v)
@@ -72,9 +66,7 @@ capitalize (c : cs) = toUpper c : cs
 
 -- The library functions -----------------------------------------------------------
 
--- | The reusable core-model functions. Register them with
--- 'Prax.Engine.defineFunctions'; they are found by name whenever an action
--- calls them.
+-- | 可复用的核心模型函数。用 'Prax.Engine.defineFunctions' 注册；动作按名调用时找到它们。
 coreFns :: [Function]
 coreFns = [adjustScoreFn, setBondFn]
 

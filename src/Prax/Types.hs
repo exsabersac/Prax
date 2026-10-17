@@ -1,9 +1,7 @@
--- | Core data types for the simulation: practices, actions, outcomes,
--- characters, and the bundled interpreter state.
+-- | 模拟的核心数据类型：实践、动作、结果、角色，以及打包的解释器状态。
 --
--- Practices/actions are authored as ordinary Haskell values (the eDSL). Smart
--- defaults ('practice', 'action') keep definitions terse — override fields with
--- record syntax, e.g.
+-- 实践/动作作为普通 Haskell 值创作（eDSL）。智能默认值（'practice'、'action'）
+-- 使定义简洁——用记录语法覆盖字段，例如
 --
 -- > greet = practice
 -- >   { practiceId = "greet", roles = ["Greeter", "Greeted"]
@@ -51,32 +49,32 @@ import           Prax.Query (Condition, CookedCondition, conditionVars, condSent
 import           Prax.Derive (Axiom, CookedRule)
 import           Prax.Sym (Sym, intern)
 
--- | A social practice: a role-parameterized bundle of affordances.
+-- | 社会实践：按角色参数化的 affordance 包。
 data Practice = Practice
-  { practiceId   :: String        -- ^ unique id; the DB key under @practice.@
-  , practiceName :: String        -- ^ display template (may contain @[Role]@s)
-  , roles        :: [String]      -- ^ role variables; the instance key
-  , actions      :: [Action]      -- ^ affordances offered to participants
-  , dataFacts    :: [String]      -- ^ static facts, inserted under @practiceData.<id>.@
-  , initOutcomes :: [Outcome]     -- ^ run once when an instance first spawns
+  { practiceId   :: String        -- ^ 唯一 id；@practice.@ 下的 DB 键
+  , practiceName :: String        -- ^ 显示模板（可含 @[Role]@）
+  , roles        :: [String]      -- ^ 角色变量；实例键
+  , actions      :: [Action]      -- ^ 向参与者提供的 affordance
+  , dataFacts    :: [String]      -- ^ 静态事实，插入于 @practiceData.<id>.@ 下
+  , initOutcomes :: [Outcome]     -- ^ 实例首次孵化时跑一次
   }
   deriving (Eq, Show)
 
--- | A practice with everything empty; override fields with record syntax.
+-- | 全空实践；用记录语法覆盖字段。
 practice :: Practice
 practice = Practice
   { practiceId = "", practiceName = "", roles = []
   , actions = [], dataFacts = [], initOutcomes = [] }
 
--- | An affordance: a named, conditioned bundle of outcomes.
+-- | affordance：命名、带条件的结果包。
 data Action = Action
-  { actionName       :: String       -- ^ display template; also the action's id
-  , actionConditions :: [Condition]  -- ^ preconditions (a conjunctive query)
-  , actionOutcomes   :: [Outcome]    -- ^ effects applied when performed
+  { actionName       :: String       -- ^ 显示模板；亦为动作 id
+  , actionConditions :: [Condition]  -- ^ 前置条件（合取查询）
+  , actionOutcomes   :: [Outcome]    -- ^ 执行时应用的效果
   }
   deriving (Eq, Show)
 
--- | Convenience constructor: @action name conditions outcomes@.
+-- | 便利构造器：@action name conditions outcomes@。
 action :: String -> [Condition] -> [Outcome] -> Action
 action = Action
 
