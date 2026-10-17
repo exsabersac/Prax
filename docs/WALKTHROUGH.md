@@ -955,99 +955,28 @@ predictMove dana gale = Nothing
 （`lie` 的新标记结果）、`Prax.Worlds.Village`（`honest`、`spitesCarol`、gale）；断言于
 `Prax.PersonaSpec`、`Prax.DeceitSpec`、`Prax.VillageSpec`。
 
-### 28. Leverage: blackmail & debt, priced (`prax village`) (v30)
+### 28. 杠杆：敲诈与债务，已标价（`prax village`）（v30）
 
-The backlog's oldest named commitment (parked since v22 for its own design round) lands as two thin
-modules over shipped machinery: `Prax.Debt` (an obligation with a beneficiary) and `Prax.Blackmail`
-(`shakedown`, the threaten/comply/defy/expose protocol). Both were probe-verified live before the
-spec was written — every step in the mechanism is individually motivated, no scripted "villain AI."
+backlog 中最老的具名承诺（自 v22 起为独立设计轮搁置）落为两薄模块，骑乘已交付机械：`Prax.Debt`（带受益人的义务）与 `Prax.Blackmail`（`shakedown`，威胁/服从/违抗/曝光协议）。两者皆在规格写前现场探针验证——机制每步各自有动机，无脚本「反派 AI」。
 
-**A debt is an obligation, priced.** `owe creditor debtor content` inserts
-`debt.<creditor>.<debtor>.<content>` *and* `oblige debtor content` in one call — a debt *is* an
-obligation, not merely coupled to one. `settle` reverses both. Default becomes reputational the same
-way theft did in v21: a `demand` action wraps `Deontic.breach` in `Prax.Witness.observable`, so a
-*witnessed* default deposits a belief, and `standingUnless` derives `regards.<W>.<debtor>.deadbeat`
-from that belief alone — an unwitnessed default derives no regard for anyone who wasn't there.
-Except one: the debtor himself. He's unavoidably co-present at his own default
-(`Witness.observable`'s `Neq Witness Actor` only excludes the *creditor*, never the debtor), so he
-always regards himself a deadbeat, witnessed by anyone else or not — a self-regard/third-party-spread
-distinction review found underspecified in the first draft, and the shipped test now asserts it
-directly. Repayment defeats the standing by inserting `atoned.<who>` — the identical positive-fact
-defeater idiom v21's thief already uses — while the belief that he once defaulted persists untouched:
-reputation flows from belief, never the raw fact, unchanged since v21.
+**债务是义务，已标价。** `owe creditor debtor content` 一次调用插入 `debt.<creditor>.<debtor>.<content>` *与* `oblige debtor content`——债务 *就是* 义务，非仅耦合。`settle` 逆转两者。违约变声誉的方式与 v21 盗窃相同：`demand` 动作把 `Deontic.breach` 包在 `Prax.Witness.observable` 中，故 *被目击的* 违约存入信念，且 `standingUnless` 仅从该信念派生 `regards.<W>.<debtor>.deadbeat`——未被目击的违约对不在场者派生无 regard。例外一：债务人自己。他在自有违约时不可避免同场（`Witness.observable` 的 `Neq Witness Actor` 只排除 *债权人*，从不排除债务人），故他总 regard 自己为老赖，无论是否有他人目击——评审在初稿发现自 regard/第三方传播区分未充分规格化，交付测试现直接断言。偿还经插入 `atoned.<who>` 击败站队——与 v21 小偷已用的同一正事实击败者惯用语——而他一度违约的信念原封不动：声誉从信念流出，从不从原始事实，自 v21 未变。
 
-**A threat is a motive-belief deposit.** `shakedown` compiles four actions around one evidence
-pattern and one price. `threaten` inserts `threatened.<extorter>.<victim>` and plants the identical
-kind of belief confiding and lying already ride (v20/v22): the victim comes to believe the
-extorter's own punitive desire, sourced (`.heard.<extorter>`) — no mind-reading, just the same
-channel every other belief in this engine uses. The victim's own round-walk then does the pricing
-work: it predicts the extorter might *act* on that professed desire, same as it would predict any
-other believed motive.
+**威胁是动机信念存款。** `shakedown` 围绕一证据模式与一价格编译四个动作。`threaten` 插入 `threatened.<extorter>.<victim>` 并种下倾诉与说谎已骑乘的同一类信念（v20/v22）：受害者开始相信敲诈者自有惩罚性欲望，有源（`.heard.<extorter>`）——无读心，只是本引擎其他每个信念使用的同一信道。受害者自有 round-walk 然后做标价工作：它预测敲诈者可能对该公开欲望 *行动*，如同预测任何其他被信念动机。
 
-**Why the threat is credible: self-motivation, not omniscience.** The probe's central finding —
-stated honestly because it wasn't obvious going in — is that the extortionist doesn't need to
-predict compliance to make threatening rational. The punitive desire the threat professes
-(`punishes-<id>`, `+w` per believer once threatened or defied) is genuinely held, and exposing pays
-off from it one lookahead ply away — so `threaten` scores on its own terms, myopic and
-unmotivated-move-blind exactly like every other `predictMove`. A pure bluffer (a deposit without the
-desire) is expressible in the vocabulary but wouldn't be self-motivating to send — banked with the
-script layer, not attempted this round.
+**威胁为何可信：自我动机，非全知。** 探针的中心发现——诚实陈述因进入时并不显然——是敲诈者无需预测服从即可使威胁理性。威胁所公开的惩罚性欲望（`punishes-<id>`，一旦被威胁或违抗每信徒 `+w`）是真正持有的，且曝光在一前瞻 ply 外从其获益——故 `threaten` 按自身条款得分，短视且对无动机动作盲目，恰如其他每个 `predictMove`。纯虚张声势（无欲望的存款）在词汇可表达，但不会自我激励去发送——与剧本层一并存下，本轮未尝试。
 
-**A standing threat is exposable too.** The probe found the classic hole first: gating exposure on
-defiance alone makes stalling free forever — a victim who simply never acts is never punished.
-`expose` fires on *either* `threatened` or `defied`, so waiting ties with defiance rather than
-beating it.
+**站立威胁也可曝光。** 探针先发现经典空洞：仅把门禁于违抗使拖延永远免费——从不行动的受害者永不被罚。`expose` 在 `threatened` *或* `defied` 上触发，故等待与违抗打平而非压过它。
 
-**The compliance arithmetic, pinned both sides.** `BlackmailSpec` ports the session probe's own
-fixture through `shakedown`, asserting the exact numbers, not just the direction: with two
-onlookers, buying silence scores −63.84 against waiting's −71.84 and defying's −75.80 — comply wins.
-Strip it to one onlooker and defy and wait score identically, −54.2 exactly (the stall-tie, asserted
-as an equality, not an inequality) — buy is still −63.84, now the *worst* option. Audience size alone
-flips the decision; the spec states the arithmetic so world authors price threats deliberately, not
-by feel.
+**服从算术，两边钉死。** `BlackmailSpec` 经 `shakedown` 移植会话探针自有夹具，断言精确数字而非仅方向：两名旁观者时，买沉默得分 −63.84，对照等待 −71.84 与违抗 −75.80——服从胜。剥到一名旁观者，违抗与等待得分完全相同，恰 −54.2（拖延平局，断言为相等而非不等）——买仍为 −63.84，现为 *最差* 选项。仅观众规模翻转决策；规格陈述算术以便世界作者有意标价威胁，而非凭感觉。
 
-**A real bug, found by the planner's own lookahead — and a backlog item banked from it.** Porting
-the probe surfaced a genuine divergence: an early draft of `comply` had no guard against being
-bought twice, and the recursive lookahead discovered it could — a renewed threat after paying once
-re-extracts, and the *prospect* of repeat extraction inflated the very first buy decision's own
-score to −51.24, against the guarded, canonical −63.84. The fix mirrors the probe exactly (`comply`
-now requires no debt already standing); the finding — the planner discovering repeat extortion on
-its own before anyone designed for it — banked **escalating / serial extortion** as a real future
-mechanic in `docs/LEDGER.md`, not a hypothetical one. **That bank is now discharged at v54**: a
-`coComplianceLasts = Just n` lifetime expires the `complied` marker and the racket cycles — one
-purchase per bought period, then the extorter extracts again — with no new logic, the permanence
-here becoming the `Nothing` case. Buying protects the purse, never the person (the no-fiat ruling):
-betrayal-vs-wait is emergent `pickAction` scoring, enforced by no marker.
+**真 bug，由 planner 自有前瞻发现——并由此存下一 backlog 项。** 移植探针浮现真实分歧：`comply` 早期草稿无守卫防止被买两次，递归前瞻发现可以——付过一次后的更新威胁再榨取，且 *重复榨取的前景* 把第一次购买决策自身分数膨胀到 −51.24，对照有守卫的规范 −63.84。修复恰镜像探针（`comply` 现要求无已站立债务）；发现——planner 在任何人设计前自行发现重复敲诈——把 **升级/连环敲诈** 存为 `docs/LEDGER.md` 中真实未来机制，非假想。**该存款现于 v54 清偿**：`coComplianceLasts = Just n` 寿命使 `complied` 标记到期，勒索循环——每购买周期一次购买，然后敲诈者再榨取——无新逻辑，此处的永久成为 `Nothing` 情形。购买保护钱包，从不保护人（无 fiat 裁定）：背叛 vs 等待是涌现的 `pickAction` 打分，无标记强制。
 
-**The village demo blocked twice before it shipped.** Both drafted arcs failed on measured traces:
-per-head fear can't be low enough to let eve keep whispering before a guaranteed witness *and* high
-enough to compel compliance — one weight, two irreconcilable jobs. And a theft-evidence shakedown
-catches the framed exactly as readily as the guilty (v22's whole point, still true here), which
-would have displaced dana's already-shipped bread arc rather than added to it. dana/bob is retired
-as an arc outright, recorded as a faithful result rather than a gap: in this village, bob's crimes
-are either fully witnessed (v21's arc already tells that story) or perfectly secret (v22's
-concealment already tells that story) — there's no room left for a *partially*-witnessed crime a
-blackmailer could threaten to expose.
+**村庄演示发货前被挡两次。** 两草稿弧皆在测量轨迹上失败：按头恐惧无法低到让 eve 在保证目击证人前继续低语，又高到迫使服从——一权重，两不可调和工作。且盗窃证据敲诈抓被构陷者与抓有罪者一样容易（v22 的全部要点，此处仍真），会置换 dana 已交付的面包弧而非加于其上。dana/bob 作为弧彻底退役，记为忠实结果而非缺口：在此村庄，bob 的罪要么完全被目击（v21 弧已讲述），要么完美秘密（v22 隐瞒已讲述）——不留空间给敲诈者可威胁曝光的 *部分* 被目击之罪。
 
-**The resolution: threshold fear, bob's own idiom generalized.** Nonlinear fear serves both masters
-because its marginal price is zero below the brink and catastrophic at it. eve gains
-`Want [Match "notorious.eve.slanderer"] (−15)` — the identical shape and magnitude as bob's own
-`notorious.bob.thief`, wired by `standingUnless … "slanderer"` and `notoriety "slanderer" 3`. The
-whispering *act* itself becomes observable (`witnessed together "whispered.Actor.Hearer"` — the
-content stays exactly as secret as before; only the fact that a whisper happened is witnessable).
-That single change means a witnessed whisper lands *two* regards in one action — the addressee and
-any co-present bystander both come to believe it happened — putting eve one witness from the brink
-the instant anyone catches her in the act.
+**解析：阈值恐惧，bob 自有惯用语的一般化。** 非线性恐惧服务两主，因其边际价格在悬崖下为零、在悬崖上为灾难。eve 获得 `Want [Match "notorious.eve.slanderer"] (−15)`——与 bob 自有 `notorious.bob.thief` 同形同量，由 `standingUnless … "slanderer"` 与 `notoriety "slanderer" 3` 接线。低语 *行为本身* 变为可观察（`witnessed together "whispered.Actor.Hearer"`——内容仍与先前一样秘密；仅低语发生的事实可被目击）。那一变更意味着被目击的低语在一个动作中落地 *两条* regard——收件人与任何同场旁观者都开始相信它发生了——使 eve 在任何人当场抓住她的瞬间距悬崖只差一名目击证人。
 
-**Carol's shakedown, captured live.** `VillageSpec`'s own forced trajectory: gale steps out of the
-mill first (otherwise she'd be a third simultaneous witness, tripping notoriety at the instant of
-catching eve rather than leaving her "one exposure from the brink"); carol arrives and witnesses
-directly; both return to the square, where real bystanders (bob, "you") make the exposure threat
-credible rather than empty (`scoreActions`-measured before the arc was built: at the mill, with only
-gale and dana already in on it, buying silence merely *ties* waiting — the threat has no teeth
-without someone new to expose to).
-Verbatim, from a clean `villageWorld` (a co-presence tick, `VillageSpec`'s own "out of sight, out of
-mind" idiom, fires silently between moves):
+**Carol 的敲诈，现场捕获。** `VillageSpec` 自有强制轨迹：gale 先离开磨坊（否则她会是第三同时目击证人，在抓住 eve 的瞬间触发恶名，而非留她「距悬崖一次曝光」）；carol 到达并直接目击；两人返回广场，那里真实旁观者（bob、「you」）使曝光威胁可信而非空洞（建弧前 `scoreActions` 测量：在磨坊，仅 gale 与 dana 已知情时，买沉默仅与等待 *打平*——无新人可曝光则威胁无牙）。
+逐字，从干净 `villageWorld`（同场 tick，`VillageSpec` 自有「眼不见心不烦」惯用语，在移动间静默触发）：
 
 ```
   gale: Go to square
@@ -1057,17 +986,9 @@ mind" idiom, fires silently between moves):
   eve: Go to square
 ```
 
-Note who gets framed: **bob**, not carol — a different character than every earlier round of this
-world. That's not a scripting mistake; it's the honest consequence of `shakedown`'s evidence pattern
-being *content-blind* (`"whispered.V.H"` — a whisper happened, full stop, no matter what it claimed).
-Carol's leverage over eve never depended on knowing or caring what was said, only that it was said in
-front of her — the same "content stays secret" property the `observable` wrapper states directly,
-visible here in the transcript itself: bob, two lines below having just taken up honest work at the
-stall, gets shunned by dana in the very same round over a slander he had nothing to do with, purely
-because this run's victim-binding happened to land on him.
+注意谁被构陷：**bob**，非 carol——与本世界每一先前轮次不同的角色。那不是脚本错误；是 `shakedown` 证据模式 *内容盲目* 的诚实后果（`"whispered.V.H"`——发生过低语，句号，无论声称什么）。Carol 对 eve 的杠杆从不依赖知道或在乎说了什么，只依赖当着她的面说了——`observable` 包装器直接陈述的同一「内容保持秘密」性质，在转录本身可见：bob 两行下刚承接摊位正经工作，同一轮就被 dana 疏远，为与他无关的诽谤，纯粹因为本跑程受害者绑定碰巧落在他身上。
 
-Free play resumes from there, "you" idling, driven the identical way every other section's headless
-traces are:
+自由游玩从那里恢复，「you」空闲，驱动方式与其他每节无头轨迹相同：
 
 ```
   bob: take up honest work at the stall
@@ -1077,7 +998,7 @@ traces are:
   gale: Go to mill
 ```
 
-Checked directly against the driven state after carol's threat (turn 3):
+威胁后对照驱动状态直接检查（第 3 回合）：
 
 ```
 threatened.whisper.carol.eve: True
@@ -1085,7 +1006,7 @@ eve's motive-belief deposit (eve.believes.desires.carol.punishes-whisper.heard.c
 notorious.eve.slanderer: False -- still under the brink, only carol and dana regard her
 ```
 
-And after eve complies (turn 5):
+eve 服从后（第 5 回合）：
 
 ```
 debt.carol.eve.favor: True
@@ -1095,16 +1016,9 @@ defied.whisper.eve.carol: False -- she never defied
 notorious.eve.slanderer: False -- real silence bought, not a forced exposure
 ```
 
-Eve pays because the arithmetic above says to: one credible witness already in hand (carol), one
-more exposure away from the brink, against a debt she can walk back later. Nobody scripted the
-decision — `pickAction` made it, the same planner every other section in this document exercises.
+Eve 支付因上方算术如此说：一名可信目击证人已在手（carol），再一次曝光就到悬崖，对照她以后可走回的债务。无人脚本该决策——`pickAction` 做出，与本文其他每节行使的同一 planner。
 
-**Threshold fear's second consequence: eve becomes a one-shot liar.** This is structural, not a
-side-effect of the arc above — it shows up in ordinary, *unforced* free play too. A single witnessed
-whisper lands two regards at once (the addressee and any co-present bystander); with the notoriety
-threshold at three, any *further* whisper to someone new is an instant trip, and no atonement path
-for slander is authored this round. Driving the identical 49-turn free-play trace §25–§27 all draw
-from, checked directly:
+**阈值恐惧的第二后果：eve 成为一次性说谎者。** 这是结构的，非上方弧的副作用——也出现在普通、*未强制* 自由游玩中。单次被目击低语一次落地两条 regard（收件人与任何同场旁观者）；恶名阈值为三时，向新人的 *再* 低语是瞬间触发，且本轮未创作诽谤补偿路径。驱动 §25–§27 皆抽取的同一 49 回合自由游玩轨迹，直接检查：
 
 ```
 eve.lied.* marks across the whole 49-turn trace: ["eve.lied.dana.stole.carol.loaf"]
@@ -1114,24 +1028,9 @@ regards.dana.carol.thief: True      -- the only regarder carol's own frame-up ev
 notorious.carol.thief: False        -- unlike every pre-v30 round of this world
 ```
 
-Before v30, that same trace had eve whisper three separate times (turns matching presses 1, 3, and
-4 — to dana, "you", and gale in turn), and carol's frame-up reached notoriety on the strength of it
-(§25). Post-v30, eve whispers exactly once, ever, and carol's frame-up never gets past its first
-believer in free play — both are the same finding from two angles. `Prax.GoldenDriveSpec`'s
-re-capture shows it from a third: of 21 turns, exactly one line drifted — turn 19 (eve's second
-free-play decision) was `"whisper to you that carol stole the loaf"`, is now `"Go to mill"` —
-because by then she already sits at two regarders and a third would tip her over. Bar and intrigue's
-goldens are byte-identical; nothing else in the village moved.
+v30 前，同一轨迹 eve 低语三次（对应按键 1、3、4 的回合——依次向 dana、「you」、gale），carol 的构陷据此达恶名（§25）。v30 后，eve 终其一生恰低语一次，carol 的构陷在自由游玩中永不过第一信徒——两者是同一发现的两个角度。`Prax.GoldenDriveSpec` 的重捕获从第三角展示：21 回合中恰一行漂移——第 19 回合（eve 的第二次自由游玩决策）曾是 `"whisper to you that carol stole the loaf"`，现为 `"Go to mill"`——因届时她已坐在两名 regard 者上，第三人会推她过崖。酒吧与阴谋金标准字节同一；村庄其余未动。
 
-**The laundering mechanism, reproduced on demand.** §27(b) found — live, unpredicted by the spec's
-first draft — that an honest believer is the perfect vector for a lie: gale, deceived like anyone
-else, spreads what she genuinely believes by ordinary `tell`, no `lie`, no mark, no conscience cost,
-and even hands the falsehood back to eve as "evidence" for her own fabrication. Threshold fear means
-eve's own planner no longer walks into that scene voluntarily — so it has to be forced to show it
-still works. Driving 49 turns, then 5 more idle turns to reach a moment eve and gale are actually
-co-present (free play has them drift in and out of sync), then forcing exactly the whisper eve's own
-prudence now declines (still legal — one-shot-per-hearer permits it, since gale's never heard this
-specific claim from anyone), then driving on:
+**漂洗机制，按需复现。** §27(b) 发现——现场，规格初稿未预测——诚实信徒是谎言的完美载体：gale 像其他人一样受骗，用普通 `tell` 传播她真正相信之物，无 `lie`、无标记、无良心代价，甚至把虚假作为「证据」交回 eve 以支撑其自有捏造。阈值恐惧意味着 eve 自有 planner 不再自愿走进该场景——故须强制以展示它仍工作。驱动 49 回合，再 5 空闲回合到达 eve 与 gale 实际同场的时刻（自由游玩使他们进出会不同步），然后强制恰是 eve 自有审慎现拒绝的低语（仍合法——每听者一次允许它，因 gale 从未从任何人听过此特定声称），再继续驱动：
 
 ```
   eve: whisper to gale that carol stole the loaf     -- forced; eve's own planner declines this
@@ -1139,7 +1038,7 @@ specific claim from anyone), then driving on:
   gale: tell eve that carol stole the loaf
 ```
 
-Checked directly:
+直接检查：
 
 ```
 heardFromGale (who heard what, from gale): [("bob","carol"), ("eve","carol")]
@@ -1148,117 +1047,40 @@ gale.lied anywhere in the whole run: False
 eve now holds hearsay heard from gale -- the lie laundered back to its own author: True
 ```
 
-Exactly the v25 finding, reproduced on demand rather than stumbled into: gale never lies, and the
-falsehood travels through her anyway, indistinguishable from truth on her end because to her it *is*
-truth — including carrying it straight back to the woman who invented it. (An incidental find while
-probing this, outside anything pinned or asserted: carol, once she regains eyewitness evidence of a
-*second* whisper this way, independently rediscovers grounds to shake eve down again — a live,
-unscripted echo of the repeat-extortion question banked above, now BUILT as a first-class mechanic
-at v54 via `coComplianceLasts`, though this village instance stays free-play, not a claim this round
-builds on or tests.) `Prax.VillageSpec`'s "same spite, different temperaments" test carries exactly this
-retelling: the free-play assertions that still hold (the frame-up, eve's own mark, gale never lying)
-are kept and sharpened with "exactly one whisper, ever"; the laundering assertion moves to the forced
-continuation above, so v25's mechanism stays pinned rather than silently going untested.
+恰是 v25 发现，按需复现而非偶遇：gale 从不说谎，虚假仍经她旅行，在她一端与真相不可区分因对她它 *就是* 真相——包括径直带回发明它的女人。（探测此点时的附带发现，在任何钉死或断言之外：carol 一旦以此方式重获对 *第二次* 低语的目击证据，独立重新发现再敲 eve 的理由——上方所存重复敲诈问题的现场、未脚本回声，现经 `coComplianceLasts` 在 v54 建为一等机制，虽本村庄实例保持自由游玩，非本轮建立或测试的主张。）`Prax.VillageSpec` 的「同一怨恨，不同性情」测试恰携带此复述：仍成立的自由游玩断言（构陷、eve 自有标记、gale 从不说谎）保留并以「终其一生恰一次低语」锐化；漂洗断言移到上方强制延续，故 v25 机制保持钉死而非静默失测。
 
-**v25's parked "getting-caught-lying" item, partially landed.** Not lie-detection, and not
-content-exposure — the whisper *act* alone became witnessable this round (`witnessed together
-"whispered.Actor.Hearer"`), so co-present villagers now come to believe *that* a whisper happened,
-while *what was said* stays exactly as secret as it always was. That's enough to give blackmail its
-leverage (carol never needed to know or care what eve whispered, only that she did), but it isn't the
-fuller mechanic v25 parked — nobody can yet catch what a lie actually claimed, only that a
-lying-shaped act occurred.
+**v25 搁置的「被抓说谎」项，部分落地。** 非测谎，亦非内容暴露——本轮仅低语 *行为本身* 变为可目击（`witnessed together "whispered.Actor.Hearer"`），故同场村民现开始相信 *发生过* 低语，而 *说了什么* 仍与历来一样秘密。这足以给敲诈以杠杆（carol 从不需要知道或在乎 eve 低语了什么，只需要她做了），但不是 v25 搁置的更完整机制——尚无人能抓住谎言实际声称了什么，只能抓住发生过说谎形行为。
 
-**Re-founded on a general primitive (v49).** The four-action protocol, the motive-belief deposit,
-and the punitive `Desire` described above are no longer blackmail's own — they belong to
-`Prax.Coerce`'s `Coercion`/`coerce`, a content-agnostic leverage skeleton with evidence made
-optional (a protection racket burning a barn is the primitive's other instance, evidence-free).
-`Prax.Blackmail.shakedown` keeps its exact v30 signature and composes one `Coercion`: the evidence
-trigger, the debt demand, the exposure punishment, and a believers-of-the-evidence kernel are all it
-supplies; threaten/comply/defy/punish, the markers, and the punitive want are the primitive's. The
-compliance arithmetic above still reproduces byte-for-byte, but is no longer what's pinned — the
-re-founding's own test contract is six design properties (stalling never dominates, audience scales
-fear, repeat extraction stays impossible, …), with the old decimals kept only as comparison
-baselines, a shift from asserting exact scores to asserting the shape of the decision they produce.
+**在一般原语上重奠基（v49）。** 上方所述四动作协议、动机信念存款与惩罚性 `Desire` 不再是敲诈自有——它们属于 `Prax.Coerce` 的 `Coercion`/`coerce`，内容无关的杠杆骨架，证据可选（烧谷仓的保护勒索是原语的另一实例，无证据）。`Prax.Blackmail.shakedown` 保持其精确 v30 签名并组合一个 `Coercion`：证据触发、债务要求、曝光惩罚与证据信徒内核是它供给的全部；威胁/服从/违抗/惩罚、标记与惩罚性 want 是原语的。上方服从算术仍字节复现，但不再是所钉之物——重奠基自有测试契约是六条设计性质（拖延永不主导、观众放大恐惧、重复榨取保持不可能，…），旧小数仅作比较基线保留，从断言精确分数转向断言它们产生的决策形状。
 
-→ code: `Prax.Debt` (`owe`/`settle`/`owes`), `Prax.Blackmail` (`shakedown`, v49: an instance of
-`Prax.Coerce`), `Prax.Coerce` (`Coercion`/`coerce`, v49), `Prax.Worlds.Village` (`villageP`'s `Scene`
-role, `whisperShakedown`, eve's threshold-fear want, the `slanderer` standing); asserted in
-`Prax.DebtSpec`, `Prax.BlackmailSpec`, `Prax.CoerceSpec`, `Prax.VillageSpec`, `Prax.GoldenDriveSpec`.
+→ 代码：`Prax.Debt`（`owe`/`settle`/`owes`）、`Prax.Blackmail`（`shakedown`，v49：`Prax.Coerce` 的实例）、`Prax.Coerce`（`Coercion`/`coerce`，v49）、`Prax.Worlds.Village`（`villageP` 的 `Scene` 角色、`whisperShakedown`、eve 的阈值恐惧 want、`slanderer` 站队）；断言于 `Prax.DebtSpec`、`Prax.BlackmailSpec`、`Prax.CoerceSpec`、`Prax.VillageSpec`、`Prax.GoldenDriveSpec`。
 
----
+### 29. 一条成员脊骨，两台生成器 — 派系、亲属，与跨越宿怨的婚礼（`prax feud`）（v31）
 
-### 29. One membership spine, two generators — factions, kinship, and a wedding across the feud (`prax feud`) (v31)
+两 backlog 行（`Factions & membership`、`Kinship & households`）并入一轮，因它们共享恰一原语：**成员**。家庭是小派系；亲属 *生成* 成员（婚姻移动它们）；派系公理把成员变成团结。`Prax.Faction` 与 `Prax.Kin` 作为骑乘该脊骨的两薄模块交付，且 §19 的宿怨重构其上——不留作第二平行设计——作为本轮概括成立的自有证明。
 
-Two backlog rows (`Factions & membership`, `Kinship & households`) fold into one round because they
-share exactly one primitive: **membership**. A household is a small faction; kinship *generates*
-memberships (marriage moves them); faction axioms turn membership into solidarity. `Prax.Faction`
-and `Prax.Kin` ship as two thin modules over that one spine, and §19's feud is refactored onto it —
-not left as a second, parallel design — as the round's own proof that the generalization holds.
+**成员是基、单槽事实。** `member.<who>!<faction>`——一主要效忠，且 `!` 是全部语义：加入一户、叛逃、嫁入皆同一排他覆盖，非三机制。`comrades` 从 `member.X!F ∧ member.Y!F ∧ X≠Y` 派生 `allied.X.Y`——并 **保留名 `allied`**，故已建于该名上的一切（相互性公理、「盟友之敌即我敌」、`societyP` 的疏远 affordance）未修改地消费。第三公理 `factionStanding` 以成员连接扩展 v21 的信念门禁声誉（`standingUnless` 的形状）——对同志的冒犯、*我相信发生了*，使我 regard 冒犯者——并规格测试交付（`Prax.FactionSpec`），但本轮未接线进任何世界：仅 `FactionSpec` 钉死，村庄接线决定已陈述并推迟而非投机建造（见 ledger Tier 1 行同一存项）。
 
-**Membership is a base, single-slot fact.** `member.<who>!<faction>` — one primary allegiance, and
-the `!` is the whole semantics: joining a house, defecting from one, and marrying into one are all
-the same exclusion overwrite, not three different mechanisms. `comrades` derives `allied.X.Y` from
-`member.X!F ∧ member.Y!F ∧ X≠Y` — and it **keeps the name `allied`**, so everything already built on
-that name (the mutuality axiom, "the enemy of my ally is my enemy", `societyP`'s shun affordance)
-consumes it unmodified. A third axiom, `factionStanding`, extends v21's belief-gated reputation
-(`standingUnless`'s shape) with a membership join — an offense against my faction-mate, *that I
-believe happened*, makes me regard the offender — and ships spec-tested (`Prax.FactionSpec`), but
-isn't wired into any world this round: it's `FactionSpec`-pinned only, the village-wiring decision
-stated and deferred rather than built speculatively (see the ledger's Tier 1 row for the same
-banked line).
+**`Prax.Kin` 是其上的纯派生。** 基词汇是 `parent.<parent>.<child>` 与 `married.<a>.<b>`（断言一次；对称派生，非断言两次）；`kinAxioms` 闭合婚姻对称、`sibling`、`grandparent` 与两条 `inLaw` 规则（配偶之父母；兄弟姐妹之配偶）——陈述为 **单向**（先获亲属、后自我：`inLaw.P.B` 读作「P 是 B 的姻亲」），无对称 `inLaw.B.P` 派生。因是纯派生，撤回安全免费：解除婚姻（撤回 `married` 事实）取消它支撑的每个姻亲——但 **成员本身不取消派生**，因 `wed` 的成员转移是基 `!` 覆盖，非从婚姻事实派生。该不对称是要点，非疏忽：搬了家的人即使离婚后仍已搬，恰如真实叛逃。`wed joiner faction spouse` 把婚礼编译为恰两物：婚姻基事实，与一次把加入者成员移入具名派系的 `!` 覆盖——折叠的全部回报浓缩一行。*哪* 方移动是作者每婚礼的选择（世界内容，非模块政策）。职衔把同一排他惯用语一般化到继承：`office.<name>!<holder>` 加 `succession`，门禁于持有者死亡且主张者为持有者子女的主张动作——任何子女可主张，单槽取第一个有动机者，是诚实排他语义而非发明的年龄长子继承（本模型无年龄；发明「最年长」会是无原则事实）。
 
-**`Prax.Kin` is pure derivation on top.** Base vocabulary is `parent.<parent>.<child>` and
-`married.<a>.<b>` (asserted once; symmetry is derived, not asserted twice); `kinAxioms` closes
-marriage symmetry, `sibling`, `grandparent`, and two `inLaw` rules (spouse's parent; sibling's
-spouse) — stated **one-directional** (acquired-relative-first, ego-second: `inLaw.P.B` reads "P is
-B's in-law"), with no symmetric `inLaw.B.P` derived. Because it's pure derivation, retraction-safety
-is free: dissolving a marriage (retracting the `married` fact) un-derives every in-law it supported
-— but **membership itself does not un-derive**, because `wed`'s membership transfer is a base `!`
-overwrite, not a derivation from the marriage fact. That asymmetry is the point, not an oversight:
-whoever moved households stays moved even after a divorce, exactly as a real defection would.
-`wed joiner faction spouse` compiles a wedding to exactly two things: the marriage base fact, and
-one `!` overwrite moving the joiner's membership into the named faction — the fold's whole payoff in
-one line. *Which* party moves is the author's choice per wedding (world content, not module policy).
-Offices generalize the same exclusion idiom to succession: `office.<name>!<holder>` plus
-`succession`, a claim action gated on the holder's death and the claimant being a child of the
-holder — any child may claim, the single slot takes the first motivated one, which is honest
-exclusion semantics rather than an invented age-based primogeniture (age doesn't exist in this
-model; inventing "eldest" would be an unprincipled fact).
+**宿怨，已重构——且未修改的 `FeudSpec` 是证明。** §19 两手写 `Insert "allied.bob.carol"` / `Insert "allied.carol.dave"` setup 事实已去，换为三条 `joins "X" "kestrel"` 事实；`comrades` 现派生那两事实曾直接断言之物。五个原 `FeudSpec` 测试在 *触碰任何其他物之前* 对着重构世界跑，字节未修改通过——无测试编辑，因无既有断言提及 `allied.*`（每条皆以 `resents.*`/`shunned.*`/`wronged.*` 措辞，恰重构保留的派生词汇）。一语义皱褶经检查而非假定：旧成对链两跳派生 `resents.dave.alice`（经 `allied.carol.dave`）；户在一跳派生（`comrades` 把共享 `kestrel` 的每个人直接连到其他每个人）——对每个既有测试不可见，因无一计数派生深度。
 
-**The feud, refactored — and `FeudSpec` unmodified is the proof.** §19's two hand-authored
-`Insert "allied.bob.carol"` / `Insert "allied.carol.dave"` setup facts are gone, replaced by three
-`joins "X" "kestrel"` facts; `comrades` now derives what those two facts used to assert directly.
-The five original `FeudSpec` tests were run against the refactored world **before anything else was
-touched**, and pass byte-for-byte unmodified — no test edit, because no existing assertion mentions
-`allied.*` at all (every one is phrased in `resents.*`/`shunned.*`/`wronged.*`, exactly the derived
-vocabulary the refactor preserves). One semantic wrinkle was checked, not assumed: the old pairwise
-chain derived `resents.dave.alice` in two hops (through `allied.carol.dave`); the house derives it
-in one hop (`comrades` ties everyone sharing `kestrel` to everyone else directly) — invisible to
-every existing test, since none of them count derivation depth.
-
-**The wedding beat, live.** Esme starts in her own single-member house, `wren` — inert to the feud
-by construction: `comrades` needs *two* members of a house to derive anything, and she has no
-housemate yet, so her pre-wedding facts are exactly this, checked directly against `feudWorld`
-(base and derived view identical — nothing else touches her name):
+**婚礼拍，现场。** Esme 从自有单成员户 `wren` 起步——构造上对宿怨惰性：`comrades` 需要一户 *两* 成员才派生任何物，而她尚无户伴，故婚前事实恰为此，直接对照 `feudWorld` 检查（基与派生视图同一——无其他物触及她的名）：
 
 ```
 member.esme.wren
 ```
 
-(no `allied.esme.*`, no `resents.esme.*` — `dbToSentences` prints the `!` exclusion as `.`, so this
-is the base fact `member.esme!wren`.)
+（无 `allied.esme.*`，无 `resents.esme.*`——`dbToSentences` 把 `!` 排他打成 `.`，故这是基事实 `member.esme!wren`。）
 
-Then the wedding — `wed "esme" "kestrel" "dave"` (the bride moves; an authored choice for this
-world, not a module default) — and the derived world flips. Base facts change by exactly the two
-things `wed` compiles to:
+然后婚礼——`wed "esme" "kestrel" "dave"`（新娘移动；本世界的创作选择，非模块默认）——派生世界翻转。基事实恰按 `wed` 编译的两物变化：
 
 ```
 married.esme.dave
 member.esme.kestrel        -- the ! overwrite: member.esme!wren is gone
 ```
 
-and the closed view derives everything downstream in one pass — she is now a comrade of the whole
-house she married into, and inherits the grudge she had no part in creating:
+闭合视图一趟派生下游一切——她现为嫁入整户的同志，并继承她未参与制造的恩怨：
 
 ```
 allied.bob.esme      allied.esme.bob        -- comrades: shared kestrel membership
@@ -1268,9 +1090,7 @@ married.dave.esme    married.esme.dave      -- marriage symmetry (kinAxioms)
 resents.esme.alice                          -- her in-laws' grudge, inherited through the chain
 ```
 
-Driving 12 ticks with Alice passive (the same `advance`/`npcAct` idiom every other section's
-headless traces use) shows the planner picking the newly-derived enmity up on the very first try —
-no BLOCK, no tuning:
+Alice 被动驱动 12 tick（其他每节无头轨迹使用的同一 `advance`/`npcAct` 惯用语）显示 planner 第一次尝试就拾起新派生敌意——无 BLOCK、无调参：
 
 ```
 bob: shun alice
@@ -1284,56 +1104,19 @@ esme: (idle)
 bob: (idle)
 ```
 
-Every member of `kestrel` — including the bride who joined that morning — shuns Alice on their very
-first opportunity, then idles: nothing else is left for any of them to want.
+`kestrel` 每个成员——含当日早间加入的新娘——在第一次机会就疏远 Alice，然后空闲：他们再无可追求之物。
 
-**What's banked, not built.** Multi-affiliation (one character, several factions at once);
-inheritance of holdings beyond bare offices; births (a `parent.*` fact currently has to be asserted,
-never generated by play); divorce as a driven *action* (dissolution is tested via raw retraction of
-the `married` fact, not a practice a character can choose); and `factionStanding`'s wiring into a
-world (stated and deferred above) — all recorded in the ledger's Tier 1 row rather than attempted
-this round. The village itself is untouched: no golden churn, because nothing in `Prax.Worlds.Village`
-imports `Prax.Faction` or `Prax.Kin` this round.
+**所存而非所建。** 多重归属（一角色同时多派系）；职衔以外的持有继承；出生（`parent.*` 事实当前须断言，从不由游玩生成）；作为驱动 *动作* 的离婚（解除经对 `married` 事实的原始撤回测试，非角色可选择的实践）；以及 `factionStanding` 接线进世界（上方已陈述并推迟）——皆记于 ledger Tier 1 行而非本轮尝试。村庄本身未触：无金标准搅动，因本轮 `Prax.Worlds.Village` 无物导入 `Prax.Faction` 或 `Prax.Kin`。
 
-→ code: `Prax.Faction` (`member`/`joins`/`comrades`/`factionStanding`), `Prax.Kin` (`kinAxioms`/
-`wed`/`succession`), `Prax.Worlds.Feud`; asserted in `Prax.FactionSpec`, `Prax.KinSpec`,
-`Prax.FeudSpec`.
+→ 代码：`Prax.Faction`（`member`/`joins`/`comrades`/`factionStanding`）、`Prax.Kin`（`kinAxioms`/`wed`/`succession`）、`Prax.Worlds.Feud`；断言于 `Prax.FactionSpec`、`Prax.KinSpec`、`Prax.FeudSpec`。
 
----
+### 30. 告白与赦免 — 归路真实，且变窄（`prax village`）（v32）
 
-### 30. Confession & absolution — the road back is real, and it narrows (`prax village`) (v32)
+`Prax.Confession` 给村庄第一条从谎言回来的路。标记告白时不删除——它 *转换*：`<who>.lied.<hearer>.<event>` 变为 `<who>.confessed.<hearer>.<event>`，同一记忆、改变的价，因此特质仍可对残余标价。（**v48**：清偿动词是创作参数，非硬编码词 `confessed`——村庄传入 `"confessed"` 且此处无变，但撤回/吹嘘/承认骑乘同一机械。）告白设计上是自证其罪：它经闲聊与说谎已骑乘的同一带源传闻信道（v20）把行为存入听者信念，故 §24 声誉栈对信念所做的一切，对告白也做。赦免是分离动作，且可拒绝：告白清除你自有良心；只有第二方的 *授予* 经插入世界击败者事实清除你的站队。你可以告白而被拒绝——良心干净，站队仍脏。赦免者的耐心不是有人递增的计数器；它是知识——`incorrigible` 把 §24 的 `notoriety` Count 惯用语指向内，故「我已原谅你够多次」从赦免者 *所信* 派生，恰如恶名本身从村庄所信派生。
 
-`Prax.Confession` gives the village its first way back from a lie. A mark doesn't delete when
-confessed — it *converts*: `<who>.lied.<hearer>.<event>` becomes `<who>.confessed.<hearer>.<event>`,
-the same memory, a changed valence, so a trait can still price what's left of it. (**v48**: the
-discharge verb is an authored parameter, not the hardcoded word `confessed` — the village passes
-`"confessed"` and nothing here changes, but recant/boast/admit ride the identical machinery.)
-Confessing is self-incriminating by design: it deposits the deed into the hearer's beliefs through
-the identical sourced-hearsay channel gossip and lying already ride (v20), so everything §24's
-reputation stack does with a belief, it does with a confession too. Absolution is a separate act,
-and a refusable one: confessing clears your own conscience; only a second party's *grant* clears
-your standing, by
-inserting the world's defeater fact. You can confess and be refused — conscience clean, standing
-still dirty. And an absolver's patience is not a counter someone increments; it's knowledge —
-`incorrigible` points §24's `notoriety` Count idiom inward, so "I've forgiven you enough" derives
-from what an absolver *believes*, the same way notoriety itself derives from what a village
-believes.
+**告白几乎无法解决的形状问题。** eve 来自 §25/§28 的良心标记是内容形——`eve.lied.dana.stole.carol.loaf`，命名 *carol*，她构陷之人。她的诽谤者站队（§28）从完全不同之物派生——行为，`whispered.eve.dana`，命名 *eve*。转换标记的告白必须把信念存入 *行为*（实际使 eve 麻烦之物）——非对捏造内容的再断言（那只会在新信徒上种构陷）。一模式不能同时是标记自有形状与存款形状；实现开始前已标为风险，村庄接线一旦尝试就真实撞上（两种朴素接线皆对着引擎建造并现场探测；两种下 `absolve` 从未向任何人提供），经修正 `confess` 取标记模式与存款模式为两独立参数解决——仅从标记自身绑定之物落地（告白者、原听者、标记自有事件变量），对任何其他物检查并响亮报错。
 
-**The shape problem confession almost couldn't solve.** eve's conscience-mark from §25/§28 is
-content-shaped — `eve.lied.dana.stole.carol.loaf`, naming *carol*, the person she framed. Her
-slanderer standing (§28) derives from something else entirely — the act, `whispered.eve.dana`,
-naming *eve*. A confession that converts the mark has to deposit belief in the *act* (what actually
-gets eve in trouble) — not a re-assertion of the fabricated content (which would just plant the
-frame-up on a new believer). One pattern can't be both the mark's own shape and the deposit's shape
-at once; this was flagged as a risk before implementation started, hit for real once the village
-wiring was attempted (both naive wirings were built and probed live against the engine; `absolve`
-was never offered to anyone under either), and resolved by amending `confess` to take the mark
-pattern and the deposit pattern as two separate arguments — grounded only from what the mark itself
-binds (the confessor, the original hearer, the mark's own event variables), checked and loudly
-erroring on anything else.
-
-**Live, from a clean `villageWorld`.** eve whispers to dana; gale, still at the mill, witnesses the
-whisper directly — she already regards eve a slanderer before anyone confesses anything:
+**现场，从干净 `villageWorld`。** eve 向 dana 低语；gale 仍在磨坊，直接目击低语——在任何人告白任何物前她已 regard eve 为诽谤者：
 
 ```
 eve.lied.dana.stole.carol.loaf: True
@@ -1341,8 +1124,7 @@ dana.believes.whispered.eve.dana.seen: True
 gale.believes.whispered.eve.dana.seen: True
 ```
 
-Confessing to gale costs eve nothing — gale already held the regard, so there's no new believer to
-spook, and the notoriety threshold doesn't move:
+向 gale 告白对 eve 无代价——gale 已持有 regard，故无新信徒可惊吓，恶名阈值不移动：
 
 ```
 eve.confessed.dana.stole.carol.loaf: True
@@ -1351,12 +1133,9 @@ gale.believes.whispered.eve.dana.heard.eve: True
 gale.believes.stole.carol.loaf.heard.eve (a re-assertion of the fabricated content): False
 ```
 
-Note what gale does *not* come to believe: not a re-assertion of "carol stole the loaf" (the
-content eve fabricated), only the act and its falsity, sourced from eve herself. That's the
-deposit-pattern amendment doing its job — confessing implicates eve directly while leaving carol's situation exactly as §25 left it (untouched, not helped).
+注意 gale *不* 开始相信什么：非「carol 偷了面包」的再断言（eve 捏造的内容），仅行为及其虚假，源出 eve 自己。那是存款模式修正在做工——告白直接牵连 eve，同时把 carol 的处境恰留在 §25 所留（未触、未助）。
 
-gale grants absolution — the defeater lands, both her own and dana's slanderer regards dissolve
-from the derived view, and nothing is forgotten:
+gale 给予赦免——击败者落地，她自有与 dana 的诽谤者 regard 皆从派生视图溶解，无物被遗忘：
 
 ```
 recanted.eve: True
@@ -1366,12 +1145,7 @@ dana.believes.whispered.eve.dana.seen (memory persists): True
 gale.believes.whispered.eve.dana.heard.eve (memory persists): True
 ```
 
-**Re-offense snaps it back, and this time it's worse.** eve and gale return to the square — where
-bob, carol, and "you" already are — and eve whispers again, to bob. The defeater she was just
-granted disappears (the same re-steal idiom §24's thief lives under), and because this whisper
-happens in a crowded square rather than an empty mill, every bystander there regards her at once —
-crossing the notoriety threshold in a single action, something the original mill-side whisper never
-did:
+**再犯弹回，且这次更糟。** eve 与 gale 返回广场——bob、carol 与「you」已在——eve 再向 bob 低语。她刚获授予的击败者消失（§24 小偷生活于其下的同一再偷惯用语），且因这次低语发生在拥挤广场而非空磨坊，那里每个旁观者立刻 regard 她——单动作越过恶名阈值，原磨坊侧低语从未做到：
 
 ```
 recanted.eve (snapped away): False
@@ -1381,9 +1155,7 @@ regards.carol.eve.slanderer: True
 notorious.eve.slanderer: True
 ```
 
-**Fed-up-ness, and its limit.** gale now believes two distinct whispered-lie instances from eve —
-the original and the re-offense — and her patience (`incorrigible "whispered.V.H" 2 "incorrigible"`,
-a two-strikes threshold authored into `villageAxioms`) is spent:
+**厌烦，及其限度。** gale 现相信来自 eve 的两桩不同低语谎言实例——原初与再犯——且她的耐心（`incorrigible "whispered.V.H" 2 "incorrigible"`，写进 `villageAxioms` 的两振阈值）已耗尽：
 
 ```
 regards.gale.eve.incorrigible: True
@@ -1391,16 +1163,9 @@ gale's own "absolve eve" affordance gone from her menu: True
 regards.dana.eve.incorrigible (dana witnessed only the original instance): False
 ```
 
-dana, who only ever witnessed the first instance, is not yet fed up — patience is per-absolver,
-exactly like every other regard in this engine.
+dana 只曾目击第一实例，尚未厌烦——耐心按赦免者计，恰如本引擎其他每个 regard。
 
-**The arc that didn't ship: confessing to the person actually wronged.** The natural redemption
-would run through carol, not gale — she's the one eve framed, and forgiving your actual victim
-means more than forgiving a bystander. It was built and measured, not just imagined: give carol a
-professed `merciful` desire (so eve's own depth-2 lookahead can see through confess→absolve via a
-believed model of her), and sweep its magnitude from 0 to 50. At every positive value the result is
-identical — confessing to carol scores far below eve's ordinary baseline, never crossing it no
-matter how generous the authored mercy (measured live via `scoreActions`, verbatim):
+**未发货的弧：向实际被伤害之人告白。** 自然救赎会经 carol 而非 gale——她是 eve 构陷之人，原谅你的实际受害者比原谅旁观者意味更多。它被建造并测量，非仅想象：给 carol 一条公开 `merciful` 欲望（以便 eve 自有深度-2 前瞻可经对她的信念模型看见告白→赦免），并将其量级从 0 扫到 50。在每个正值结果相同——向 carol 告白远低于 eve 普通基线，无论创作慈悲多慷慨都不越过（经 `scoreActions` 现场测量，逐字）：
 
 ```
 mercifulValue=0:      confess to carol about framing carol  ->  -19.73   (worst option)
@@ -1408,20 +1173,9 @@ mercifulValue=5..50:  confess to carol about framing carol  ->    7.92   (FLAT -
                        eve's routine baseline (Go to mill / Wait / steal / honest work) -> 14.08-17.68
 ```
 
-The mechanism is structural, not a tuning shortfall. Confessing to carol makes her a *new* believer
-of the whispered act — carol wasn't yet a regarder — so the confession itself eats the full,
-immediate notoriety-threshold hit, on top of which the planner's own `othersScore` term applies only
-a fixed 0.5 discount to the value of a *predicted* third-party absolution. That 0.5 ceiling caps the
-achievable relief regardless of how large the authored desire gets; carol's own choice to absolve,
-once profitable to her, is a discrete switch, not something that scales continuously with how
-merciful she's said to be. Documented here rather than shipped — the "threshold drama" the round set
-out to measure, measured, and found insufficient to drive an unforced arc.
+机制是结构的，非调参不足。向 carol 告白使她成为低语行为的 *新* 信徒——carol 尚非 regard 者——故告白本身吃下完整、立即的恶名阈值打击，其上 planner 自有 `othersScore` 项对 *预测的* 第三方赦免价值只应用固定 0.5 折扣。该 0.5 天花板封顶可达成救济，无论创作欲望多大；carol 自有赦免选择一旦对她有利，是离散开关，非随她被说多么仁慈而连续缩放。记于此而非发货——本轮着手测量的「阈值戏剧」，已测量，并发现不足以驱动未强制弧。
 
-**Free play: the secret stays expensive.** Left alone, eve never confesses and gale never absolves —
-her lie is not cheap enough, nor is there a believed merciful absolver at depth 2, for the arithmetic
-to favor spending it. Driven 100 turns past the original free-play trace §25/§27/§28 all draw from
-(double the longest precedent so far), pinned in `VillageSpec` and confirmed green in this round's
-own full-suite run:
+**自由游玩：秘密仍昂贵。** 放任不管，eve 从不告白且 gale 从不赦免——她的谎言不够便宜，深度 2 也无被信念的仁慈赦免者，算术不会偏向花掉它。在 §25/§27/§28 皆抽取的原自由游玩轨迹外再驱动 100 回合（迄今最长先例的两倍），钉于 `VillageSpec` 并在本轮自有完整套件跑程确认绿：
 
 ```
 eve.lied.dana.stole.carol.loaf (still unconfessed after 100 turns): True
@@ -1429,143 +1183,72 @@ eve.confessed.dana.stole.carol.loaf: False
 recanted.eve: False
 ```
 
-**Falsification sweep: does the road back reach carol's own injustice?** No — §25 covers this
-directly (its own "Update — v32" paragraph, re-checked live rather than assumed): confession clears
-the *confessor's* mark and the *confessor's* standing; nothing in this round retracts a belief
-already planted in someone else, and nothing lets a third party confess on the framed victim's
-behalf. The road back this round builds is real, but it narrows to exactly the people a liar can
-face directly — it does not extend to the people her lie reached secondhand, and it does nothing at
-all for the people she framed.
+**证伪扫描：归路是否够到 carol 自有不公？** 否——§25 直接覆盖（其自有「更新 — v32」段，现场重检而非假定）：告白清除 *告白者* 的标记与 *告白者* 的站队；本轮无物撤回已种在他人中的信念，也无物让第三方代表被构陷受害者告白。本轮建造的归路真实，但收窄到说谎者可直接面对之人——不延伸到其谎言二手够到之人，对被构陷之人完全无作为。
 
-→ code: `Prax.Confession` (`confess`/`absolve`/`incorrigible`), `Prax.Worlds.Village`
-(`confessWhisper`/`absolveWhisper`, the `honest` trait's second desire, `villageAxioms`'s
-`incorrigible` wiring); asserted in `Prax.ConfessionSpec`, `Prax.VillageSpec`.
+→ 代码：`Prax.Confession`（`confess`/`absolve`/`incorrigible`）、`Prax.Worlds.Village`
+（`confessWhisper`/`absolveWhisper`、`honest` 特质的第二欲望、`villageAxioms` 的 `incorrigible` 接线）；断言于
+`Prax.ConfessionSpec`、`Prax.VillageSpec`。
 
----
+## 特性覆盖图
 
-## Feature coverage map
+已实现的一切、它住在何处，以及如何看见它。第一块是引擎核心（酒吧，Part I）；第二块是 Part II，每世界/工具一行。
 
-Everything implemented, where it lives, and how to see it. The first block is the engine core (the
-bar, Part I); the second is Part II, one row per world/tool.
-
-| Feature | Code | Seen when you… |
+| 特性 | 代码 | 你何时看见… |
 |---|---|---|
-| Trie DB, `.` descent | `Prax.Db` | (everywhere — all state) |
-| Exclusion `!` (corrected) | `Prax.Db.insert` | move (`at!Place` replaces old), order/serve |
-| Unify / pattern match | `Prax.Db.unify` | every action precondition |
-| `Match` | `Prax.Query` | any action being available |
-| `Not` (negation as failure) | `Prax.Query` | greet vanishing after greeting |
-| `Eq` (also assignment) | `Prax.Query` | Fulfill (`Eq Actor Bartender`) |
-| `Neq` | `Prax.Query` | greet (can't greet yourself) |
-| `Cmp` (`lt/lte/gt/gte`) | `Prax.Query` | tipsy threshold; the bell |
-| `Calc` (`add/sub/mul`) | `Prax.Query` | drink counter incrementing |
-| `Count` | `Prax.Query` | the bell (counting customers) |
-| `Subquery` | `Prax.Query` | the bell (gathering the crowd) |
-| `Insert` / `Delete` | `Prax.Engine` | ordering, serving, moving |
-| `Call` + functions + `FnCase` | `Prax.Engine` | getting tipsy (`recordDrink`→`checkTipsy`) |
-| Practice spawning + `init` | `Prax.Engine` | patron drink counters seeded at start |
-| Single- & multi-role practices | `Prax.Types`/`Bar` | `world` (1 role), `tendBar` (2 roles) |
-| `dataFacts` | `Prax.Engine` | the four beverage choices |
-| Wants / utility / lookahead | `Prax.Planner` | bex walking in to order; ada serving |
-| Round-robin loop + CLI menu | `Prax.Loop` / `app/Main` | the whole session |
-| Emotions (coexisting, targeted, fading) | `Prax.Emotion` `feelToward` | "feels annoyed toward you" after a snub |
-| Relationship evaluation (numeric, asymmetric) | `Prax.Core` `adjustScore` | "warmth toward …" climbing/cooling |
-| Relationship-gated affordance | `Prax.Core` `scoreAtLeast` | "Buy … a drink" appearing once warm |
-| Reactions (spawned practices + response chains) | `Prax.Reactions` | greet → "Greet back"/"Rebuff"; take-offense |
-| Norms (violation-marking + disapproval) | `Prax.Reactions` | stiff the tab → "broke a norm" → ada disapproves |
-| Norm avoidance in the planner | `Prax.Planner` + a `Want` | NPCs tip rather than stiff |
-| Beliefs (per-agent, can be false) | `Prax.Beliefs` | a rumour → "… believes ada resents them" |
-| Belief-gated behaviour / revision | `Prax.Beliefs` | a false belief suppresses friendliness; evidence dispels it |
-| Conversation (speaker turns, topics, quips) | `Prax.Conversation` | "… are chatting (rapport)"; compliment / gossip quips |
-| Story manager (DM) as a metalevel agent | `dmPractice` / `director` | "director: turn ada against bex to stir up the evening" |
-| Character arcs (stage-gated wants) | `Prax.Arc` | "bex feels hopeful" → "at home here"; belonging beat |
-| Player-only transformation (against desires) | `arc` practice | "give up …" offered but never taken by an NPC |
-| First-order connectives (`Or`/`Absent`/`Exists`, `forAll`/`implies`) | `Prax.Query` | endings frozen by `Absent [ending.E]` |
-| Deontic obligation (□), discharge/breach, contrary-to-duty (□□) | `Prax.Deontic` | bar: "owes ada a tip" → tip discharges / stiff breaches |
-| Cast removal (a character dies and leaves) | `Prax.Engine` / `Intrigue` | `prax intrigue`: do nothing → Artus dies (betrayal) |
-| Branching dramatic episode | `Prax.Worlds.Intrigue` | `prax intrigue`: warn/poison/romance → distinct endings |
-| Stress-tester + inspector (`explain`) | `Prax.Stress` / `Prax.Inspect` | `prax stress intrigue` (endings, coverage, dead ends) |
-| Save / resume (state = the fact DB) | `Prax.Persist` | press `s`; then `prax intrigue resume` |
-| Scene-authoring layer (CAST + scenes/beats/junctions) | `Prax.Script` / `Worlds.Play` | `prax play`; `prax flow` prints the scene graph |
-| Play-scripts round-trip through JSON | `Prax.Script.Json` | `prax dump-play`; `prax play examples/play.json` |
-| Player as drama manager | `Bar.barDirectorWorld` / `candidateActions` | `prax dm`: your menu is authorial nudges |
-| Forward-chaining derivation (defeasible) | `Prax.EL` / `Prax.Derive` | `prax feud`: 1 wrong + 4 rules (v31 folds membership in) → a feud; amends dissolves it |
-| Static type checker + sort inference | `Prax.TypeCheck` | `prax check <world>` |
-| Timed junctions, character sketches (memories: built v18, removed v46 — presentation, not world content) | `Prax.Script` / `Worlds.Audience` | `prax audience` |
-| Quantified outcomes (`ForEach`) + authored witnessing | `Prax.Engine` / `Prax.Witness` | `prax village`: carol (co-present) believes bob's theft and can confront him; dana (elsewhere) doesn't |
-| Gossip / sourced hearsay (`gossip`/`heard`, multi-valued `.seen`/`.heard.<source>` provenance) | `Prax.Rumor` | `prax village`: carol tells dana what she saw; hearsay licenses suspicion, not confrontation |
-| `standing`/`standingUnless`/`regardedAs`/`notoriety` (derived reputation, base-fact atonement defeater) | `Prax.Repute` | `prax village`: three regards tip `notorious.bob.thief`; atonement dissolves every regard while the belief persists; re-offense revokes it and an atoned bob is deterred from a restocked stall |
-| Secrets & deception (`conceal`/`lie`) | `Prax.Deceit` | `prax village`: bob's concealment want still gates a watched theft (mid-project opportunism, §26; the scripted "secret keeps"/"perfect crime" tests); eve frames carol, and the lie cascades into real shunning and notoriety with no recourse for the framed |
-| Endeavors: part-set practices, dormant pursuits (`endeavor`/`Part`) | `Prax.Project` | `prax village`: bob undertakes `earnBread` unprompted at t=0, sweeps the square in public, and bakes the loaf he'd otherwise have to steal; watching him sweep is enough for the village to presume his purpose and predict his next part |
-| Temperament as conduct-valuations (`Trait`/`personaVocabulary`/`bearing`/`transparent`/`cast`); a lie marks the liar (`Actor.lied.Hearer.<event>`) | `Prax.Persona`, `Prax.Deceit` | `prax village`: gale bears `honest` and never lies despite sharing eve's exact spite; everyone presumes her conscience from t=0; a believed conscience nets against a believed motive in `predictMove`; eve's whisper deceives gale too, and (forced, since v30's threshold fear stops her reaching gale unprompted) gale spreads it onward by ordinary gossip, no mark, carrying it back to eve as "evidence" for her own fabrication |
-| Debt as a beneficiary'd obligation (`owe`/`settle`), belief-gated deadbeat standing | `Prax.Debt` | `prax village`: a witnessed default derives `regards.<W>.<debtor>.deadbeat`; the debtor himself, unavoidably co-present at his own default, always regards himself one even when no one else does; repayment defeats it by the same base-fact-defeater idiom as v21's thief |
-| Blackmail (`shakedown`: threaten/comply/defy/expose), threshold fear | `Prax.Blackmail`, `Prax.Worlds.Village` | `prax village`: a threat is a motive-belief deposit the victim's own round-walk prices; a standing threat is exposable, so stalling ties defiance; carol, holding eyewitness evidence of eve's whisper, shakes her down and buys real silence; eve's own fear of the notoriety brink also makes her a one-shot liar in free play, retelling §27's laundering under a forced continuation |
-| Membership as one spine (`member.<who>!<faction>`, `comrades`, belief-gated `factionStanding`); kin derivation (`kinAxioms`: marriage symmetry, sibling, grandparent, one-directional in-laws) and `wed`'s marriage-fact-plus-membership-overwrite; succession as single-slot exclusion | `Prax.Faction`, `Prax.Kin` | `prax feud`: bob/carol/dave share house `kestrel` (`comrades` derives their alliance, replacing the old hand-authored pairwise ties — §19/§29); esme weds into it (`wed "esme" "kestrel" "dave"`), inherits the grudge, and shuns alice unprompted on her first turn |
-| Confession & absolution (`confess`/`absolve`/`incorrigible`): a mark converts rather than deletes, confessing self-incriminates through sourced hearsay, absolution is a refusable second-party grant, and an absolver's patience is `notoriety`'s Count idiom pointed inward | `Prax.Confession` | `prax village`: eve confesses her frame-up to gale (already a believer — costless) and gale absolves; a fresh whisper snaps the absolution away; a second absolver, now knowing two instances, refuses further absolution — and confessing to carol, the party actually wronged, never rationally beats eve's baseline at any authored generosity |
+| Trie DB、`.` 下降 | `Prax.Db` | （处处——全部状态） |
+| 排他 `!`（已修正） | `Prax.Db.insert` | 移动（`at!Place` 替换旧值）、点单/上菜 |
+| 统一 / 模式匹配 | `Prax.Db.unify` | 每个动作前置条件 |
+| `Match` | `Prax.Query` | 任何动作变为可用 |
+| `Not`（失败即否定） | `Prax.Query` | 问候后问候消失 |
+| `Eq`（兼赋值） | `Prax.Query` | Fulfill（`Eq Actor Bartender`） |
+| `Neq` | `Prax.Query` | 问候（不能问候自己） |
+| `Cmp`（`lt/lte/gt/gte`） | `Prax.Query` | 微醺阈值；铃 |
+| `Calc`（`add/sub/mul`） | `Prax.Query` | 饮酒计数递增 |
+| `Count` | `Prax.Query` | 铃（数顾客） |
+| `Subquery` | `Prax.Query` | 铃（聚集人群） |
+| `Insert` / `Delete` | `Prax.Engine` | 点单、上菜、移动 |
+| `Call` + 函数 + `FnCase` | `Prax.Engine` | 变微醺（`recordDrink`→`checkTipsy`） |
+| 实践孵化 + `init` | `Prax.Engine` | 开局播种顾客饮酒计数 |
+| 单角色与多角色实践 | `Prax.Types`/`Bar` | `world`（1 角色）、`tendBar`（2 角色） |
+| `dataFacts` | `Prax.Engine` | 四种饮料选择 |
+| Want / 效用 / 前瞻 | `Prax.Planner` | bex 走进点单；ada 上菜 |
+| 轮转循环 + CLI 菜单 | `Prax.Loop` / `app/Main` | 整场会话 |
+| 情感（共存、有目标、消退） | `Prax.Emotion` `feelToward` | 「对你感到恼火」 |
+| 关系求值（数值、非对称） | `Prax.Core` `adjustScore` | 「对…的温暖」爬升 |
+| 关系门禁 affordance | `Prax.Core` `scoreAtLeast` | 一温暖就出现「请…喝一杯」 |
+| 反应（孵化实践 + 回应链） | `Prax.Reactions` | 问候 →「回礼」/「回绝」 |
+| 规范（违规标记 + 不赞成） | `Prax.Reactions` | 逃单 →「违反规范」→ ada 反应 |
+| planner 中的避规范 | `Prax.Planner` + `Want` | NPC 给小费而非逃单 |
+| 信念（按 agent，可假） | `Prax.Beliefs` | 谣言 →「…相信 ada 怨恨他们」 |
+| 信念门禁行为 / 修正 | `Prax.Beliefs` | 假信念压制友好；证据修正 |
+| 对话（说话者轮次、话题、quips） | `Prax.Conversation` | 「…在闲聊（rapport）」；对话 |
+| 故事管理器（DM）作为元层 agent | `dmPractice` / `director` | 「director：让 ada 反对…」 |
+| 角色弧（阶段门禁 want） | `Prax.Arc` | 「bex 感到希望」→「在此如家」；归属 |
+| 仅玩家的转变（逆欲望） | `arc` 实践 | 「放弃…」被提供但从不被 NPC 采取 |
+| 一阶联结词（`Or`/`Absent`/`Exists`，`forAll`/`implies`） | `Prax.Query` | 结局冻结；全称检查 |
+| 道义义务（□）、履行/违约、违反义务（□□） | `Prax.Deontic` | 酒吧：「欠 ada…」 |
+| 阵容移除（角色死亡并离开） | `Prax.Engine` / `Intrigue` | `prax intrigue`：什么都不做则有人死 |
+| 分支戏剧剧集 | `Prax.Worlds.Intrigue` | `prax intrigue`：警告/下毒/恋情 → 不同结局 |
+| 压力测试器 + 检查器（`explain`） | `Prax.Stress` / `Prax.Inspect` | `prax stress intrigue` |
+| 存档 / 继续（状态 = 事实 DB） | `Prax.Persist` | 按 `s`；然后 `prax intrigue resume` |
+| 场景创作层（CAST + scenes/beats/junctions） | `Prax.Script` / `Worlds.Play` | `prax play`；`prax flow` |
+| 剧本经 JSON 往返 | `Prax.Script.Json` | `prax dump-play`；`prax play examples/…` |
+| 玩家即戏剧管理器 | `Bar.barDirectorWorld` / `candidateActions` | `prax dm`：你的菜单是作者动作 |
+| 前向链派生（可击败） | `Prax.EL` / `Prax.Derive` | `prax feud`：1 错 + 4 规则 → 涌现宿怨 |
+| 静态类型检查器 + 排序推断 | `Prax.TypeCheck` | `prax check <world>` |
+| 定时 junction、角色素描（memories：v18 建，v46 移除——呈现，非世界内容） | `Prax.Script` | `prax audience`；超时结局 |
+| 量化结果（`ForEach`）+ 创作目击 | `Prax.Engine` / `Prax.Witness` | `prax village`：同场者获得 `.seen` |
+| 闲聊 / 带源传闻（`gossip`/`heard`，多值 `.seen`/`.heard.<source>` 出处） | `Prax.Rumor` | `prax village`：carol 告知；菜单不重复 |
+| `standing`/`standingUnless`/`regardedAs`/`notoriety`（派生声誉，基事实补偿击败者） | `Prax.Repute` | `prax village`：regard、恶名、补偿非失忆 |
+| 秘密与欺骗（`conceal`/`lie`） | `Prax.Deceit` | `prax village`：bob 隐瞒；eve 构陷 |
+| 事业：部分集实践、休眠追求（`endeavor`/`Part`） | `Prax.Project` | `prax village`：bob 挣面包；旁观读目的 |
+| 性情即行为估值（`Trait`/`personaVocabulary`/`bearing`/`transparent`/`cast`）；诚实村民漂洗谎言 | `Prax.Persona` | `prax village`：gale；预测对照 |
+| 债务作带受益人义务（`owe`/`settle`），信念门禁老赖站队 | `Prax.Debt` | `prax village` / 规格测试 |
+| 敲诈（`shakedown`：威胁/服从/违抗/曝光），阈值恐惧 | `Prax.Blackmail`，`Prax.Worlds.Village` | `prax village`：carol 敲 eve；一次低语 |
+| 成员作一条脊骨（`member.<who>!<faction>`，`comrades`，信念门禁 `factionStanding`）；亲属生成（`wed`/`kinAxioms`/`succession`） | `Prax.Faction`，`Prax.Kin` | `prax feud`：婚礼翻转派生；疏远 |
+| 告白与赦免（`confess`/`absolve`/`incorrigible`）：标记转换而非删除；归路变窄 | `Prax.Confession` | `prax village`：向 gale 告白；再犯弹回 |
 
-If the tables and scene lines don't convince you a feature is really doing what's claimed, the
-same behaviours are asserted in the test suite (`cabal test`, 431 tests). Part I: `Prax.QuerySpec`,
-`Prax.EngineSpec`, `Prax.PlannerSpec` + `Prax.MindsSpec` (wants/utility/lookahead, now a round-walk
-over believed minds — `predictMove`, `charDesires`, `professed`/`conventional`), `Prax.CoreSpec`
-(emotions/relationships), `Prax.ReactionsSpec` (reactions, norms, norm-avoidance), `Prax.BeliefsSpec`
-(per-agent & false beliefs), `Prax.ConversationSpec` (speaker turns, topics, one-shot quips),
-`Prax.ArcSpec` (arc stages), `Prax.DeonticSpec` (□, discharge, breach, contrary-to-duty),
-`Prax.DebtSpec` (`owe`/`settle`, the demand→deadbeat-standing lifecycle, belief-gated visibility and
-the debtor's own unavoidable self-regard), `Prax.ConfessionSpec` (mark conversion and its priced
-residue, the deposit landing as sourced hearsay, absolution's grant/refusal gate, `incorrigible`'s
-Count idiom pinned at threshold and per-absolver, re-offense snapping a defeater, and both sides of
-the spontaneous-confession and blackmail-defense arithmetic measured live before being pinned),
-`Prax.DbSpec` (the trie's exact `!`/`.`/retract semantics, incl. the reverted ghost-pruning
-attempt's own regression net — an asserted instance fact must survive its transient children
-draining to zero), `Prax.BarSpec`, and `Prax.LoopSpec` (a deterministic
-25-turn replay — since v44 the round boundary, not a ticker in the cast, runs the schedule). Part II: `Prax.IntrigueSpec` (death + branching endings, incl. the
-confidant/victim `predictMove` split), `Prax.StressSpec`, `Prax.PersistSpec` (save/resume),
-`Prax.ScriptSpec` + `Prax.Script.JsonSpec` (scene layer + JSON, incl. the one-boundary story-rule
-law, timed junctions/sketches, and the `audience`), `Prax.DirectorSpec` (player-as-DM), `Prax.ELSpec` + `Prax.DeriveSpec` (the
-exclusion-logic lattice and forward chaining), `Prax.TypeCheckSpec`, `Prax.WitnessSpec` +
-`Prax.VillageSpec` + `Prax.RumorSpec` + `Prax.SightSpec` (`ForEach` witnessing, co-presence, the
-confront affordance, sourced hearsay and the gossip gate, and the sighting schedule rule whose
-stamps gate whose moves get predicted), `Prax.ReputeSpec` (derived standing, the base-fact
-atonement defeater, and notoriety at threshold — `VillageSpec`'s later cases carry the same
-mechanisms through the full autonomous arc, the re-offense snap-back, and the resulting
-deterrence), `Prax.DeceitSpec` (`conceal`'s shape and its watched/unwatched planner probe,
-`lie`'s no-evidence gate, self-framing and subject-is-hearer exclusions, one-shot-per-hearer,
-hearing-your-own-lie-back replacing `lie` with `gossip`, and — v25 — the liar's own mark
-(`<liar>.lied.<hearer>.<event>`), forgettable and additive, with truthful `gossip` leaving none —
-`VillageSpec`'s later cases carry the same mechanisms into the full village: a watched theft still
-fails, the perfect crime still needs a genuinely empty square, and eve's frame-up still cascades to
-shunning with no recourse), `Prax.ProjectSpec` (`endeavor`'s undertake/part-gating/yield shape on a
-standalone oven-building fixture, the pursuit desire's exact shape and its dormant-vs-undertaken
-believability, and the horizon regression driving four parts to completion at planner depth 2 —
-`VillageSpec`'s later cases carry the same mechanism into the full village: bob's unforced
-redemption, the watching-teaches-purpose inference feeding a belief-relative, myopic `predictMove`,
-and the mid-project opportunism beat that keeps concealment honest), and `Prax.PersonaSpec`
-(`bearing`/`personaVocabulary`/`cast` mechanics and their loud-error guards, `transparent`'s
-defeasible presumption, the conduct-valuation core split via `pickAction` on a temptation-bearing
-twin pair, the marginal-lie property, and believed-conscience prediction — `VillageSpec`'s later
-cases carry the same mechanism into the full village: gale's temperament legible from t=0, the
-free-play drive where eve's frame-up proceeds and gale never lies unprompted, and the told-about-spite
-prediction contrast between eve and gale), and `Prax.BlackmailSpec` (`shakedown`'s motive-belief
-deposit, self-motivated credibility, standing-threat exposure, and the compliance arithmetic pinned
-on both sides — two onlookers comply, one rationally defies, an exact stall-tie between defy and
-wait — plus the reserved-variable collision guards found in review) — `VillageSpec`'s shakedown-arc
-cases carry the same mechanism into the full village: carol's threat lands once she holds eyewitness
-evidence, eve complies and the reputation stack stays undisturbed for everyone uninvolved, and
-threshold fear leaves eve's below-the-brink free-play whispering exactly as rational as it always
-was while retelling, under a forced continuation, the one free-play consequence (§27's laundering)
-it structurally forecloses), `Prax.FactionSpec` (`comrades`'s shared-membership derivation and its
-`X≠Y`/cross-faction negatives, defection's retraction-safety, `factionStanding`'s belief-gating —
-including the fratricide and victim-self-belief pins — and its reserved-variable guards), and
-`Prax.KinSpec` (each `kinAxioms` rule positive and negative, `wed`'s two facts and both parties'
-name guards, dissolution un-deriving in-laws while membership persists, and the succession
-lifecycle's death-gating, child-only claims, and single-slot race resolution) — `Prax.FeudSpec`
-carries both into the emergent sandbox unmodified: the five original assertions untouched by the
-refactor, plus the wedding beat's derivation flip and driven shunning — `VillageSpec`'s own later
-cases carry `Prax.Confession` into the full village: eve's costless confession to gale (the
-deposit self-sourced, not a re-assertion of the framed content), absolution dissolving standing
-while every belief persists, a fresh whisper snapping the defeater away and landing every square
-bystander at once, gale's patience running out at the second instance while dana's (one instance)
-doesn't, and eve's frame-up surviving unconfessed through 100 turns of unforced free play.
+若表格与场景行不能使你相信某特性真在做所声称之事，同一行为在测试套件中断言（`cabal test`，431 测试）。Part I：`Prax.QuerySpec`、`Prax.EngineSpec`、`Prax.PlannerSpec` + `Prax.MindsSpec`（want/效用/前瞻，现为对照信念心智的 round-walk——`predictMove`、`charDesires`、`professed`/`conventional`）、`Prax.CoreSpec`（情感/关系）、`Prax.ReactionsSpec`（反应、规范、避规范）、`Prax.BeliefsSpec`（按 agent 与假信念）、`Prax.ConversationSpec`（说话者轮次、话题、一次性 quips）、`Prax.ArcSpec`（弧阶段）、`Prax.DeonticSpec`（□、履行、违约、违反义务）、`Prax.DebtSpec`（`owe`/`settle`、demand→老赖站队生命周期、信念门禁可见性与债务人自有不可避免的自我 regard）、`Prax.ConfessionSpec`（标记转换及其标价残余、存款落为带源传闻、赦免的授予/拒绝门、`incorrigible` 的按赦免者耐心，以及钉死前现场测量的自发告白与敲诈防御算术）、`Prax.DbSpec`（trie 精确 `!`/`.`/撤回语义，含回退的幽灵剪枝尝试自有回归网——断言实例事实必须在其瞬态孩子排空至零后幸存）、`Prax.BarSpec`，以及 `Prax.LoopSpec`（确定性 25 回合重放——自 v44 起回合边界而非阵容中的 ticker 跑调度；倾诉对象/受害者 `predictMove` 分裂）、`Prax.StressSpec`、`Prax.PersistSpec`（存档/继续）、`Prax.ScriptSpec` + `Prax.Script.JsonSpec`（场景层 + JSON，含单边界故事法则、定时 junction/素描与 `audience`）、`Prax.DirectorSpec`（玩家即 DM）、`Prax.ELSpec`/`Prax.DeriveSpec`（排他逻辑格与前向链）、`Prax.TypeCheckSpec`、`Prax.WitnessSpec` + `Prax.VillageSpec` + `Prax.RumorSpec` + `Prax.SightSpec`（`ForEach` 目击、同场、质问 affordance、带源传闻与闲聊门，以及盖印哪些移动被预测的目击调度规则）、`Prax.ReputeSpec`（派生站队、基事实补偿击败者与阈值恶名——`VillageSpec` 后续用例把同一机制带过完整自主弧、再犯弹回与所致威慑）、`Prax.DeceitSpec`（`conceal` 的形状及其被监视/未被监视 planner 探针、`lie` 的无证据门、自构陷与主体即听者排除、每听者一次、听到自己的谎言传回使 `lie` 换为 `gossip`，以及——v25——说谎者自有标记（`<liar>.lied.<hearer>.<event>`），可遗忘且可加，真实 `gossip` 不留下标记——`VillageSpec` 后续用例把同一机制带进完整村庄：被监视盗窃失败、完美犯罪仍需真正空广场，eve 的构陷仍造成无救济的疏远）、`Prax.ProjectSpec`（`endeavor` 的承接/部分门禁/产出形状、独立烤箱建造夹具、追求欲望的精确形状及其休眠 vs 已承接可信性，以及在 planner 深度驱动四部分至完成的地平线回归——`VillageSpec` 后续用例把同一机制带进完整村庄：bob 未强制救赎、旁观教目的推理喂给信念相对、短视的 `predictMove`，以及保持隐瞒诚实的项目中途机会主义拍），以及 `Prax.PersonaSpec`（`bearing`/`personaVocabulary`/`cast` 机械及其响亮错误守卫、`transparent` 的可击败假定、经诱惑双胞胎对上 `pickAction` 的行为估值核心分裂、边际谎言性质与被信念良心预测——`VillageSpec` 后续用例把同一机制带进完整村庄：gale 性情自 t=0 可读、eve 构陷推进且 gale 从不无提示说谎的自由游玩驱动，以及关于怨恨被告知后 eve 与 gale 的预测对照），以及 `Prax.BlackmailSpec`（`shakedown` 的动机信念存款、自我动机可信度、站立威胁曝光，以及两边钉死的服从算术——两旁观者服从、一旁观者理性违抗、违抗与等待的精确拖延平局——外加评审发现的保留变量碰撞守卫）——`VillageSpec` 的敲诈弧用例把同一机制带进完整村庄：carol 一旦持有目击证据威胁落地，eve 服从且声誉栈对无关者保持不动，阈值恐惧使 eve 悬崖下自由游玩低语恰如历来一样理性，同时在强制延续下复述它结构上排除的那一自由游玩后果（§27 的漂洗））、`Prax.FactionSpec`（`comrades` 的共享成员派生及其 `X≠Y`/跨派系否定、叛逃的撤回安全、`factionStanding` 的信念门禁——含弑亲与受害者自我信念钉——及其保留变量守卫），以及 `Prax.KinSpec`（每条 `kinAxioms` 规则正负、`wed` 的两事实与双方名守卫、解除取消姻亲派生而成员持久，以及继承生命周期的死亡门禁、仅子女主张与单槽竞赛解析）——`Prax.FeudSpec` 把两者未修改地带进涌现沙箱：重构未触的五条原断言，外加婚礼拍的派生翻转与驱动疏远——`VillageSpec` 自有后续用例把 `Prax.Confession` 带进完整村庄：eve 对 gale 无代价告白（存款自源，非对被构陷内容的再断言）、赦免溶解站队而每个信念持久、新鲜低语弹开击败者并立刻落地广场每个旁观者、gale 的耐心在第二实例耗尽而 dana（一实例）不，以及 eve 的构陷经 100 回合未强制自由游玩仍未告白而幸存。
 
 ---
 
