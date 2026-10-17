@@ -380,12 +380,11 @@ cabal run prax -- dm
 
 ---
 
-> **翻译进度（zh-Hans）：** Part I（§1–§13）与 Part II §14–§18 已译。自下方 §19 起仍为英文原文。
+> **翻译进度（zh-Hans）：** Part I 全文与 Part II §14–§21 已译。自下方 §22（village 目击）起仍为英文原文。
 
-### 19. Emergent derivation — `prax feud` (v15)
+### 19. 涌现派生 — `prax feud`（v15）
 
-This is the sandbox that points past authored interactive fiction toward emergent social sim. You
-author **one** wrong and a handful of rules; a whole feud derives itself.
+这是指向涌现社交模拟、越过创作互动小说的沙盒。你创作 **一个** 过错与一把规则；整场世仇自行派生。
 
 ```sh
 cabal run prax -- feud
@@ -398,10 +397,9 @@ cabal run prax -- feud
 >   - dave resents alice
 > ```
 
-**As of v31** the setup no longer hand-authors the alliance: it asserts `wronged.alice.bob` and
-three *membership* facts — bob, carol, and dave all `join` the same house, `kestrel`
-(`Prax.Faction`, folded in at v31 — see §29 for the full refactor). Four forward-chaining rules do
-the rest, the original three plus one that turns shared membership into alliance:
+**自 v31 起** setup 不再手写联盟：它断言 `wronged.alice.bob` 与三个 *成员* 事实——bob、carol、dave
+都 `join` 同一家族 `kestrel`（`Prax.Faction`，v31 折入——完整重构见 §29）。四条前向链规则做其余，
+原三条外加一条把共享成员变成联盟：
 
 ```
 allied.X.Y                          ⇒ allied.Y.X       -- alliances are mutual
@@ -410,22 +408,18 @@ resents.A.B ∧ allied.A.C            ⇒ resents.C.B      -- the enemy of my al
 member.X!F ∧ member.Y!F, X≠Y        ⇒ allied.X.Y       -- shared membership is alliance (comrades, v31)
 ```
 
-So **carol and dave come to resent Alice though she only ever wronged Bob** — now via one shared
-house instead of a hand-authored pairwise chain — and they act on it (*"bob is shunning alice"*,
-and so on). The derivation is **defeasible**: derived facts live in a closed *view*, recomputed
-from the base and never stored. Choose **`make amends with bob`** — which deletes the single
-authored `wronged.alice.bob` — and watch the *entire* feud vanish in one move: every derived
-`resents` and every shunning disappears, because their only support is gone. (The scaled
-`bigFeud` benchmark keeps its original pairwise `allied.*` chain unchanged — the chain topology is
-the benchmark's own design, and base `allied.*` facts remain legal vocabulary; not every alliance
-has to be a membership.)
-→ code: `Prax.EL` (the exclusion-logic lattice + `m(X)`), `Prax.Derive` (forward chaining),
-`Prax.Faction` (`comrades`, v31), `Prax.Worlds.Feud`.
+因此 **carol 与 dave 开始怨恨 Alice，尽管她只冒犯过 Bob** ——现经一个共享家族而非手写成对链——
+并据此行动（*"bob is shunning alice"* 等等）。派生是 **可废止的**：派生事实住在闭合 *视图* 中，
+从基重算且从不存储。选 **`make amends with bob`** ——删除单一创作的 `wronged.alice.bob` ——并看
+*整场* 世仇一举消失：每个派生 `resents` 与每次冷落消失，因为其唯一支持没了。（缩放的 `bigFeud`
+基准保持其原先成对 `allied.*` 链不变——链拓扑是基准自身设计，且基 `allied.*` 事实仍是合法词汇；
+并非每个联盟都必须是成员。）
+→ 代码：`Prax.EL`（排他逻辑格 + `m(X)`）、`Prax.Derive`（前向链）、`Prax.Faction`（`comrades`，v31）、
+`Prax.Worlds.Feud`。
 
-### 20. Static type-checking — `prax check` (v16–17)
+### 20. 静态类型检查 — `prax check`（v16–17）
 
-Versu had an implicit type system; `prax check` makes it explicit and runs it over a world without
-executing it.
+Versu 有隐式类型系统；`prax check` 使之显式，并在不执行世界的情况下对它运行。
 
 ```sh
 cabal run prax -- check feud
@@ -434,21 +428,17 @@ cabal run prax -- check feud
 well-formed: the feud (emergent sandbox)
 ```
 
-It flags **unbound variables** (an effect/axiom-head variable no precondition can bind — a silent
-no-op), **exclusion-cardinality clashes** (a relation asserted both `!` and `.`), and **dangling
-references** (a `Call`/spawn of something undefined). On top of that it does **ML-style sort
-inference**: declare each base sort's members and it infers every position's sort by unification and
-rejects conflicts (e.g. a place where an agent belongs). Every shipped world checks clean. → code:
-`Prax.TypeCheck`; asserted in `Prax.TypeCheckSpec`.
+它标记 **未绑定变量**（前置无法绑定的效果/公理-头变量——静默空操作）、**排他基数冲突**
+（关系同时断言 `!` 与 `.`）、以及 **悬空引用**（对未定义物的 `Call`/孵化）。之上它做 **ML 风格
+sort 推断**：声明每个基 sort 的成员，经统一推断每个位置的 sort 并拒绝冲突（例如地点出现在 agent
+所属处）。每个已发布世界检查干净。→ 代码：`Prax.TypeCheck`；在 `Prax.TypeCheckSpec` 中断言。
 
-### 21. The Prompter compilation features — `prax audience` (v18)
+### 21. Prompter 编译特性 — `prax audience`（v18）
 
-A short scene that exercises the authoring constructs the scene layer compiles beyond plain beats
-and junctions — **timed junctions** and **character sketches** — at once. (A third construct,
-**memories** — one-shot exposition narrated by a bodiless story manager — was built at v18 and
-REMOVED at v46: omniscient narration with no speaker turned out to be a presentation feature
-wearing world-content clothes, so the scene layer no longer compiles it at all. The audience scene
-used to open on one; it no longer does.)
+一个短场景，一次行使场景层在普通 beats 与 junctions 之外编译的创作构造——**定时 junctions** 与
+**角色速写**。（第三个构造 **memories**——无身体故事管理器旁白的一次性说明——在 v18 构建并在 v46
+**移除**：无说话者的全知旁白结果是穿着世界内容外衣的呈现特性，因此场景层根本不再编译它。观众场景
+曾以一个打开；现不再。）
 
 ```sh
 cabal run prax -- audience
@@ -456,17 +446,15 @@ cabal run prax -- audience
 
 > *"You are the envoy. Flatter the king, then petition — before the moment (or the Duke) passes."*
 
-- **A character sketch.** The **Duke** has no hand-written desires — only a *concern* for standing
-  (`concernedWith [("favor", …)]`) and a trait (`ambitious`). That concern compiles to a want, so he
-  **courts the king unbidden** (*"duke: flatter the king"*) exactly once, then rests.
-- **A timed junction.** If you **dawdle** (press `m`), the audience runs out of patience and ends
-  **`dismissed`** once its deadline passes. **Flatter, then present your petition** in time and it
-  ends **`granted`**. Entering the scene arms a **patience marker** whose lifetime is the delay; the
-  engine's expiry schedule retracts it that many rounds later, and the junction fires the moment the
-  patience has run out — the whole timer is one insertion on the schedule every scheduled effect
-  already rides.
+- **角色速写。** **Duke** 无手写欲望——只有对地位的 *关切*（`concernedWith [("favor", …)]`）与特质
+  （`ambitious`）。该关切编译为 want，因此他 **不请自来地讨好国王**（*"duke: flatter the king"*）
+  恰好一次，然后休息。
+- **定时 junction。** 若你 **拖沓**（按 `m`），观众耐心耗尽并在截止后以 **`dismissed`** 结束。
+  及时 **恭维，然后提出请愿** 则以 **`granted`** 结束。进入场景武装 **耐心标记**，其寿命即延迟；
+  引擎的到期调度在那么多回合后撤回它，junction 在耐心耗尽的瞬间触发——整个计时器是每个已调度效果
+  已骑的调度上的一次插入。
 
-→ code: `Prax.Script` (compilation), `Prax.Worlds.Audience`; asserted in `Prax.ScriptSpec`.
+→ 代码：`Prax.Script`（编译）、`Prax.Worlds.Audience`；在 `Prax.ScriptSpec` 中断言。
 
 ### 22. Witnessing — who knows what (`prax village`) (v19)
 

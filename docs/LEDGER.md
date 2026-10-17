@@ -28,137 +28,90 @@
 - **v18** — `Prax.Script` 中剩余的 **Prompter 编译特性**：memories（一次性说明）、定时 junction
   （场景时钟）、以及角色速写（关切→wants，特质→事实）。
 
-> **翻译进度（zh-Hans）：** 上方为标题与版本图例导言的中文。下文从 v19 起的详细条目、
-> backlog 行与后续章节仍为英文原文，将在后续 commit 中分批翻译。标识符、模块名、CLI、
-> 规格路径保持不译。
+> **翻译进度（zh-Hans）：** 标题、版本图例导言（v1–v18）以及详细条目 **v19–v25** 已译。
+> 自下方 **v26** 起的详细条目、backlog 行与后续章节仍为英文原文。标识符、模块名、CLI、规格路径不译。
 
 ---
 
-- **v19** — **quantified outcomes** (`ForEach`, the dual of v8's condition quantifiers) and
-  **authored witnessing** (`Prax.Witness`): co-present characters come to believe an action
-  happened, with `.seen` provenance (multi-valued from v20 — see below); observability is a
-  semantic property the author states, not an automatic event log. `Prax.Worlds.Village` seeds the
-  sandbox arc (`prax village`).
-- **v20** — **sourced rumor propagation** (`Prax.Rumor` `gossip`/`heard`): a character tells a
-  co-present hearer what they have evidence for, planting the same event-belief with hearsay
-  provenance. Provenance becomes **multi-valued** (`.seen`/`.heard.<source>`, replacing v19's
-  exclusive `!seen`), so witnessing and hearsay for the same event coexist instead of one
-  overwriting the other, and corroboration (multiple named `.heard.<source>` edges) is countable.
-  `Prax.Worlds.Village` grows: carol spreads the theft on her own; hearsay licenses
-  `eye … with suspicion`, never `confront` (eyewitness-only); a world-authored relationship gate
-  lets distrust close the gossip channel.
-- **v21** — **derived reputation** (`Prax.Repute` `standing`/`standingUnless`/`regardedAs`/
-  `notoriety`): `regards.<observer>.<subject>.<label>` is never stored, only *derived* from an
-  observer's evidence (seen or heard alike) — so it inherits information asymmetry and
-  defeasibility for free. Standing is defeated by **atonement, not amnesia**: `standingUnless`
-  guards the derivation with a *base-fact* defeater, dissolving every regard on one insertion while
-  every belief (the memory of the deed) persists untouched — and because the belief never went
-  away, **re-offense revokes the defeater**, so standing and notoriety snap back instantly on a
-  repeat. `notoriety` turns corroboration into a threshold-gated global fact (an authored world
-  parameter). `Prax.Worlds.Village` completes its arc: theft → witnessing → rumor → three regards
-  → notoriety tips bob into atonement → the village relents — and, because the planner can see the
-  snap-back, an atoned thief facing a restocked stall is *deterred*, never touching it again.
-- **v22** — **secrets & deception** (`Prax.Deceit` `conceal`/`lie`): a concealment want — that
-  nobody believe some deed (`Absent [Anyone.believes.<event>]`) — makes an agent avoid witnesses
-  *by planning*: the lookahead already simulates v19's witness deposits, so waiting for privacy
-  falls out of ordinary utility, no stealth system needed. A lie is an assertion without evidence:
-  `lie` mirrors v20's `gossip` and plants the identical `.heard.<liar>` hearsay, so a fabrication
-  is indistinguishable from truth to everyone but the liar, and the whole rumor/reputation stack
-  (v20/v21) cascades on it unmodified — hearing your own lie back replaces the lie action with
-  plain gossip, seamlessly. `Prax.Worlds.Village` gains a villain: bob conceals his theft, waiting
-  out a genuinely watched square (walking away alone isn't enough — carol keeps her own post; the
-  bread is safe exactly as long as *someone* is watching); eve, out of authored malice, frames
-  carol, and the frame-up settles into regard, shunning, and notoriety exactly as truth would —
-  with an honest injustice at the end: framed carol has no recourse (amends needs a loaf she never
-  took; exculpation needs ground-truth event records — an idea banked here, then **rejected in
-  v25**: the vocabulary's refusal to fake ground truth is a stated commitment, not a gap; see v25's
-  banked-item rewrite below).
-- **v23** — **realistic lookahead: round-walk over believed minds** (`Prax.Minds`, `Prax.Sight`,
-  a rewritten `Prax.Planner`; spec `docs/specs/2026-07-10-v23-planner-realism-design.md`). The old
-  lookahead's `worldValue` (now **deleted**) maxed over every living character's every action,
-  scored by the *planning actor's own wants* — three demonstrated failures: speculative (credited
-  others with actions they would never choose, e.g. carol's top move became an unevidenced
-  accusation), omniscient (used movers' *true* wants, so a secret plot was foreseeable by anyone),
-  and combinatorially explosive (v22's village suite: 8.7s → 621s). Replaced by a round-walk: each
-  other character within the actor's **epistemic scope** (`predictionScope`, the v19 co-presence
-  template — default everyone) gets one myopic, *motivated-only* move predicted from the actor's
-  **believed** model of them (`predictMove`), in cast order, before the actor recurses on its own
-  next choice (`scoreActions`, `pickAction`). A mind the actor holds no belief about, or a mover
-  out of scope, is modeled as still, never as helpful — and the model can be *wrong* (prediction
-  uses the actor's beliefs, not the mover's true wants). Desires become nameable and believable
-  (`Prax.Minds`: owner-parameterized `Desire` templates, `charDesires`; motive-beliefs reuse the
-  v20 provenance shape unchanged, so gossip/lie/confide/forget all work on
-  `desires.<owner>.<name>` for free); "public"/"secret" is recovered as derived, defeasible common
-  knowledge (`professed`/`conventional` → `.presumed`) rather than a flag. `Prax.Sight` adds
-  sightings as ordinary location-beliefs (`believes.at`/`atSince`), maintained by a compiled
-  per-round ticker (`turn!N`, the v18 `_clock` idiom) — "who's around" is itself information with
-  an authored horizon, not global. Intrigue's plot is now a believed mind (a confidant's
-  `predictMove` of cassia foresees the poisoning; the victim's does not; a leak flips it). Two
-  world edits were needed outside Intrigue and are recorded honestly in the spec's §6: the
-  village's `dana` gets a sanctioned mill-anchoring want (the same idiom `bob`'s stall-anchor
-  already used), and the bar's `LoopSpec` golden-trace turn budget is re-derived from 20 to 25
-  (5 rounds × a cast grown by one for the sight ticker) — the narration itself is unchanged.
-  Master suite: 5.5s → 0.8s (the rewrite's own speedup). The true referee — v22's village suite,
-  once landed on top — bears this out directly: ~19s (`cabal test --test-options='--pattern
-  "Prax.Worlds.Village"'`), down from the 621s blowup, a >30× recovery, at the *original* pre-blowup
-  order of magnitude (8.7s).
-- **v24** — **endeavors: staged practices with dormant pursuits** (`Prax.Project` `endeavor`/
-  `Stage`; spec `docs/specs/2026-07-11-v24-project-design.md`). A project *type* is authored
-  vocabulary, like a practice or a desire; `endeavor pid weight undertakeLabel gate stages`
-  compiles it to three things a world wires in: the undertake `Action`, a staged `Practice`
-  (one instance per owner — undertaking twice is never offered again), and a named pursuit
-  `Desire` that counts completed stages (`practice.<pid>.Owner.done.S`) at `+weight` each.
-  Progress itself is the reward, so horizon length stops mattering — every next stage is
-  locally visible to the ordinary planner, no lookahead change needed; this is the concrete
-  case that finally **closes #21's runtime-want-injection question by worked pattern**, not
-  just by claim (see #21's updated note, below): the pursuit desire is *dormant* — zero
-  bindings, zero utility — for any disposed character with no instance yet, and undertaking
-  (an ordinary planner choice) is exactly "injecting a want by inserting a fact." Because the
-  pursuit is a named, nameable desire, an endeavor is automatically theory-of-mind content
-  (`Prax.Minds`): whoever comes to believe a character pursues one gets it fed straight into
-  `predictMove`. `Prax.Witness`'s `witnessed` outcome-builder is extracted as a first-class,
-  exported combinator (previously folded only inside `observable`) so a generated stage can
-  carry public observability in its own effects — `Prax.Project` needed this, not a new
-  primitive. `Prax.Worlds.Village` closes its own moral arc on this: bob — deterred since v21,
-  concealing since v22 — takes up `earnBread` from a clean t=0 free-play start: undertakes at
-  the stall, sweeps the square in public, walks to the mill, fetches flour, returns, and bakes
-  the loaf he could no longer safely steal, done by turn 32 of the same running world every
-  earlier round used. Watching him sweep is enough for the village to learn his purpose (a
-  one-line inference axiom presumes the pursuit for anyone who believed the sweep), and once he
-  stands at the mill, `predictMove` anticipates the flour trip specifically for whoever holds
-  that belief — myopically (no prediction at the square, where no stage is yet available) and
-  belief-relative (co-present, unbelieving dana predicts nothing, proving prediction reads the
-  predictor's beliefs, not the mover's true state). The opportunism stays honest: mid-project,
-  with the square genuinely empty, stealing (71.18) still beats pressing on to the next stage
-  (50.46) — industry is chosen because it's watched and safe, not because temptation stopped
-  scoring. One sanctioned test amendment (spec §3): "an atoned thief is deterred" swaps its
-  stale "bob holds no loaf" proxy for a direct non-re-offense assertion
-  (`practice.earnBread.bob.done.s3`), since the endeavor now gives bob a lawful loaf the
-  original proxy couldn't anticipate.
-- **v25** — **persona: traits as conduct-valuations** (`Prax.Persona`; spec
-  `docs/specs/2026-07-11-v25-persona-design.md`). A first draft (goal-bundle traits — a trait
-  installs a desire) was **rejected**: pressed, it added nothing real, since a bearer behaves
-  identically to a character assigned the desires directly. The shipped model instead values
-  **conduct**: a `Trait` is a named bundle of desires over the bearer's *own* conduct-marks
-  (`Trait "honest" [Desire "clean-conscience" (Want [Match "Owner.lied.…"] (-6))]`) —
-  `personaVocabulary`/`bearing`/`cast` wire a roster's traits into desires and facts, and
-  `transparent` derives that everyone presumes a bearer's valuations (defeasibly, from t=0). A
-  trait costs contrary conduct rather than forbidding it — the soft planner's usual idiom, no
-  new enforcement. Conduct needed something to value, so `Prax.Deceit.lie` gained one outcome:
-  `Insert "Actor.lied.Hearer.<pat>"`, the liar's own memory of the deed, rooted under their name
-  like all mental state — a **mark on the liar**, never a world-rooted ground-truth record (the
-  banked exculpation idea, rejected below). `Prax.Worlds.Village` gains **gale**, eve's
-  temperament contrast: both carry the identical named `spites-carol` desire, but gale bears
-  `honest`, so her conscience (−6/lie) outprices what any single whisper buys (+4/head) — eve
-  whispers, gale never does, and a predictor told of both spites predicts the difference
-  (`predictMove`). **The round's signature finding, surfaced in implementation, not predicted by
-  the spec's first draft**: eve's whisper deceives gale too, and an honest believer turns out to
-  be the perfect vector — gale spreads the falsehood she now genuinely holds by ordinary
-  `gossip`, no lie, no mark, no conscience cost, and even carries it back to eve, handing the
-  liar "evidence" for her own fabrication. *The honest villager launders the lie.* The spec was
-  amended in place (§4 "The laundering") once this was observed live, and `VillageSpec` pins the
-  corrected claim. Suite: 292 tests (`PersonaSpec`, `DeceitSpec` additions, `VillageSpec`
-  additions).
+- **v19** — **量化结果**（`ForEach`，v8 条件量词的对偶）与 **创作目击**（`Prax.Witness`）：
+  共现角色开始相信动作发生了，带 `.seen` 出处（自 v20 起多值——见下）；可观察性是作者陈述的语义属性，
+  非自动事件日志。`Prax.Worlds.Village` 播种沙盒弧（`prax village`）。
+- **v20** — **有源谣言传播**（`Prax.Rumor` 的 `gossip`/`heard`）：角色告诉共现听者其所持证据，
+  以传闻出处种植同一事件信念。出处变为 **多值**（`.seen`/`.heard.<source>`，替换 v19 的排他 `!seen`），
+  因此同一事件的目击与传闻共存而非一方覆盖另一方，且佐证（多个命名 `.heard.<source>` 边）可计数。
+  `Prax.Worlds.Village` 成长：carol 自行传播偷窃；传闻许可 `eye … with suspicion`，从不 `confront`
+  （仅目击）；世界创作的关系门禁让不信任关闭八卦通道。
+- **v21** — **派生声誉**（`Prax.Repute` 的 `standing`/`standingUnless`/`regardedAs`/`notoriety`）：
+  `regards.<observer>.<subject>.<label>` 从不存储，只从观察者证据（目击或传闻）*派生*——因此免费
+  继承信息不对称与可废止性。地位由 **赎罪而非失忆** 击败：`standingUnless` 用 *基事实* 击败者守卫派生，
+  一次插入消解每个 regard，而每个信念（事迹记忆）原样持续——且因信念从未消失，**再犯罪撤销击败者**，
+  地位与臭名在重复时瞬间弹回。`notoriety` 把佐证变成阈值门禁的全局事实（创作世界参数）。
+  `Prax.Worlds.Village` 完成其弧：偷窃 → 目击 → 谣言 → 三个 regards → 臭名把 bob 推向赎罪 → 村子让步——
+  且因 planner 能看见弹回，面对补货摊位的已赎罪贼被 *威慑*，再不触碰。
+- **v22** — **秘密与欺骗**（`Prax.Deceit` 的 `conceal`/`lie`）：隐瞒 want——无人相信某事迹
+  （`Absent [Anyone.believes.<event>]`）——使 agent *经规划* 避免目击者：前瞻已模拟 v19 目击存入，
+  因此等待隐私落在普通效用之外，无需潜行系统。谎言是无证据断言：`lie` 镜像 v20 的 `gossip` 并种植
+  相同的 `.heard.<liar>` 传闻，因此捏造对除撒谎者外所有人与真相不可区分，且整个谣言/声誉栈（v20/v21）
+  未修改地级联——听说自己的谎返回用普通八卦无缝替换谎言动作。`Prax.Worlds.Village` 获得反派：
+  bob 隐瞒偷窃，等真正被看守的广场（独自走开不够——carol 守自己的岗；面包恰在 *有人* 照看时安全）；
+  eve 出于创作恶意嫁祸 carol，且嫁祸恰如真相般落入 regard、冷落与臭名——结尾有诚实不公：被嫁祸的
+  carol 无救济（弥补需要她从未拿过的面包；洗清需要真值事件记录——想法在此储备，后在 **v25 拒绝**：
+  词汇拒绝伪造真值是声明承诺，非缺口；见下方 v25 的储备项重写）。
+- **v23** — **现实前瞻：对被相信心智的回合漫步**（`Prax.Minds`、`Prax.Sight`、重写的 `Prax.Planner`；
+  规格 `docs/specs/2026-07-10-v23-planner-realism-design.md`）。旧前瞻的 `worldValue`（现 **已删除**）
+  对每个活角色每个动作取 max，按 *规划行动者自身 wants* 打分——三个已演示失败：推测性（把他人从不选择的
+  动作记在其账上，例如 carol 的首选变成无证据指控）、全知（用 mover 的 *真* wants，因此秘密情节任何人
+  可预见）、以及组合爆炸（v22 村庄套件：8.7s → 621s）。由回合漫步替换：actor 的 **认知范围**
+  （`predictionScope`，v19 共现模板——默认所有人）内每个其他角色，按阵容序从 actor 对他们的
+  **被相信** 模型（`predictMove`）得到一次短视、*仅有动机* 的移动，然后 actor 对自己下一选择递归
+  （`scoreActions`、`pickAction`）。actor 无信念的心智，或范围外 mover，被建模为静止，从不「帮忙」——
+  且模型可以 *错*（预测用 actor 的信念，非 mover 的真 wants）。欲望变得可命名且可相信（`Prax.Minds`：
+  所有者参数化的 `Desire` 模板、`charDesires`；动机信念不变复用 v20 出处形状，因此八卦/谎/倾诉/遗忘
+  都免费对 `desires.<owner>.<name>` 工作）；「公开」/「秘密」作为派生、可废止共同知识收回
+  （`professed`/`conventional` → `.presumed`）而非标志。`Prax.Sight` 添加目击为普通地点信念
+  （`believes.at`/`atSince`），由编译的每回合 ticker 维护（`turn!N`，v18 `_clock` 习语）——「谁在周围」
+  本身是带创作视界的信息，非全局。Intrigue 的情节现为被相信心智（知情人的 cassia `predictMove` 预见下毒；
+  受害者的不；泄露翻转它）。Intrigue 外需要两次世界编辑并诚实记在规格 §6：村庄的 `dana` 获得批准的
+  磨坊锚定 want（与 `bob` 的摊位锚同一习语），酒吧的 `LoopSpec` 金标准轨迹回合预算从 20 重导出为 25
+  （5 回合 × 因目击 ticker 多一人的阵容）——旁白本身未变。Master 套件：5.5s → 0.8s（重写自身加速）。
+  真正裁判——v22 村庄套件一旦落在其上——直接证实：约 19s（`cabal test --test-options='--pattern
+  "Prax.Worlds.Village"'`），从 621s 爆炸下降，>30× 恢复，处于 *原先* 爆炸前量级（8.7s）。
+- **v24** — **事业：带休眠追求的分段实践**（`Prax.Project` 的 `endeavor`/`Stage`；规格
+  `docs/specs/2026-07-11-v24-project-design.md`）。项目 *类型* 是创作词汇，像实践或欲望；
+  `endeavor pid weight undertakeLabel gate stages` 把它编译为世界接入的三样东西：承担 `Action`、
+  分段 `Practice`（每所有者一实例——承担两次再不提供）、以及按 `+weight` 计数完成阶段
+  （`practice.<pid>.Owner.done.S`）的命名追求 `Desire`。进展本身是回报，因此视界长度不再重要——
+  每个下一阶段对普通 planner 局部可见，无需前瞻变更；这是最终 **以已做模式关闭 #21 的运行时-want-注入
+  问题** 的具体情形，非仅主张（见下方 #21 更新注记）：追求欲望 *休眠*——对尚无实例的已处置角色零绑定、
+  零效用，而承担（普通 planner 选择）恰是「经插入事实注入 want」。因为追求是命名、可命名的欲望，
+  事业自动是心智理论内容（`Prax.Minds`）：谁开始相信角色追求一个，就直接喂进 `predictMove`。
+  `Prax.Witness` 的 `witnessed` 结果构建器提取为一等导出组合子（先前只折在 `observable` 内），
+  以便生成阶段可在自身效果中携带公共可观察性——`Prax.Project` 需要这个，非新原语。
+  `Prax.Worlds.Village` 在此收束自身道德弧：bob——自 v21 被威慑、自 v22 隐瞒——从干净 t=0 自由游玩
+  起点从事 `earnBread`：在摊位承担、公开打扫广场、走到磨坊、取面粉、返回，并烘焙他不能再安全偷窃的面包，
+  在每个更早轮次使用的同一运行世界第 32 回合完成。看着他打扫足以让村子了解其目的（一行推断公理对相信
+  打扫者假定追求），且一旦他站在磨坊，`predictMove` 为持有该信念者具体预期面粉之行——短视地（在尚无阶段
+  可用的广场无预测）且相对信念（共现、不信的 dana 预测无物，证明预测读预测者信念，非 mover 真状态）。
+  机会主义保持诚实：项目中途，广场真正空时，偷窃（71.18）仍击败推进到下一阶段（50.46）——选择勤劳是因为
+  被看着且安全，非因为诱惑停止得分。一次批准的测试修订（规格 §3）：「已赎罪的贼被威慑」把它陈旧的
+  「bob 无面包」代理换成直接非再犯罪断言（`practice.earnBread.bob.done.s3`），因为事业现给 bob 合法面包，
+  原代理无法预期。
+- **v25** — **persona：特质即行为评价**（`Prax.Persona`；规格
+  `docs/specs/2026-07-11-v25-persona-design.md`）。首稿（目标包特质——特质安装欲望）被 **拒绝**：
+  施压下它不加真实物，因为承载者行为与直接赋欲望的角色相同。已发布模型改为评价 **行为**：`Trait`
+  是承载者 *自身* 行为标记上的命名欲望包（`Trait "honest" [Desire "clean-conscience" (Want [Match "Owner.lied.…"] (-6))]`）——
+  `personaVocabulary`/`bearing`/`cast` 把阵容特质接入欲望与事实，且 `transparent` 派生人人（可废止地，
+  从 t=0）假定承载者评价。特质给逆行定价而非禁止——软 planner 的通常习语，无新强制。行为需要可评价之物，
+  因此 `Prax.Deceit.lie` 获得一个结果：`Insert "Actor.lied.Hearer.<pat>"`，撒谎者对事迹的自身记忆，
+  像所有心智状态一样根于其名下——**在撒谎者上的标记**，永非世界根真值记录（下方拒绝的储备洗清想法）。
+  `Prax.Worlds.Village` 获得 **gale**，eve 的气质对照：两者携带相同命名 `spites-carol` 欲望，但 gale
+  承载 `honest`，因此其良心（−6/谎）出价高于任何单次耳语买入（+4/头）——eve 耳语，gale 从不，且被告知
+  两者恶意的预测者预测差异（`predictMove`）。**本轮标志性发现，在实现中浮现，非规格首稿预测**：
+  eve 的耳语也欺骗 gale，且诚实信者结果是完美载体——gale 经普通 `gossip` 传播她现真心持有的虚假，
+  无谎、无标记、无良心代价，甚至带回给 eve，把「证据」交给撒谎者自己的捏造。*诚实村民洗白谎言。*
+  一旦现场观察到，规格就地修订（§4「洗白」），且 `VillageSpec` 钉死纠正主张。套件：292 测试
+  （`PersonaSpec`、`DeceitSpec` 增补、`VillageSpec` 增补）。
+
 - **v26** — **planner work elimination** (spec `docs/specs/2026-07-11-v26-planner-work.md`).
   A performance round with an exactness contract: bit-for-bit identical planner decisions,
   pinned by golden decision-sequence tests (`Prax.GoldenDriveSpec`, captured live pre-change,
