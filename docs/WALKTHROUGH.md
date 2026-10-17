@@ -380,7 +380,7 @@ cabal run prax -- dm
 
 ---
 
-> **翻译进度（zh-Hans）：** Part I 全文与 Part II §14–§21 已译。自下方 §22（village 目击）起仍为英文原文。
+> **翻译进度（zh-Hans）：** Part I 全文与 Part II §14–§22 已译；文末「可试之事」「尚未建模」已译。§23–§30 与 Feature coverage map 仍为英文。
 
 ### 19. 涌现派生 — `prax feud`（v15）
 
@@ -456,10 +456,10 @@ cabal run prax -- audience
 
 → 代码：`Prax.Script`（编译）、`Prax.Worlds.Audience`；在 `Prax.ScriptSpec` 中断言。
 
-### 22. Witnessing — who knows what (`prax village`) (v19)
+### 22. 目击 — 谁知道什么（`prax village`）（v19）
 
-Everything so far has one shared fact database everyone reads. `Prax.Witness` breaks that: what a
-character comes to *believe* now depends on where they were standing when something happened.
+到目前为止，人人读的是同一共享事实库。`Prax.Witness` 打破这一点：角色开始*相信*什么，
+现取决于某事发生时他们站在何处。
 
 ```sh
 cabal run prax -- village
@@ -467,19 +467,15 @@ cabal run prax -- village
 
 > *"You are a villager. What you see — and what you miss — decides what you can do."*
 
-bob, carol, and you start in the square; dana, eve, and (as of v25) gale are off at the mill. dana
-stays there all game — she has her own +1 want to be at the mill (the same anchoring idiom that
-keeps bob loitering near the stall: an idle character needs a place it wants to be, or it drifts on
-a tie-break).
+bob、carol 与你从广场开始；dana、eve，以及（自 v25）gale 在磨坊。dana 整局留在那里——她有自己的
++1 want 留在磨坊（与让 bob 在摊位附近徘徊的同一锚定习语：空闲角色需要它想待的地方，否则在平局
+决胜中漂移）。
 
-**A note before you press anything.** In an earlier round of this world (v19–21), the honest
-demonstration here was to wait a beat and watch bob, who wants the loaf, take it. As of v22 that
-stopped: bob concealed his theft instead (§25 covers the mechanism), and pressing `m` just showed
-him waiting out a watched square. As of v24 pressing `m` doesn't show *that* either — bob now has
-a lawful path to the loaf, and takes it unprompted from turn one (§26 tells that story in full;
-it's not this section's subject). The cleanest way to see witnessing fire on its own, without
-getting pulled into either later arc, is still to steal the loaf yourself — captured live,
-`cabal run -v0 prax -- village`, `1` then `q`:
+**动手前的注记。** 在此世界更早一轮（v19–21），诚实演示是等一拍并看想要面包的 bob 拿走它。
+自 v22 起那停止了：bob 改为隐瞒偷窃（§25 覆盖机制），按 `m` 只显示他在等被看守的广场。自 v24 起
+按 `m` 也不再显示*那个*——bob 现有通往面包的合法路径，并从第一回合不提示地采取它（§26 完整讲述；
+非本节主题）。要单独看见目击触发、不被后续弧拉走，最干净的方式仍是自己偷面包——现场捕获，
+`cabal run -v0 prax -- village`，`1` 然后 `q`：
 
 ```
 -------------------- scene --------------------
@@ -511,59 +507,44 @@ Your move (you):
   gale: Go to square
 ```
 
-(Several things already visible that weren't here at v19's landing: the `whisper to …` and `take up
-honest work` options, and eve's and gale's own moves. The whisper options are v22's deception layer
-(§25) — two more of them now than at v22's landing, since v25's gale is a fifth possible subject to
-fabricate about; `take up honest work` and bob choosing it the instant you steal are v24's
-redemption (§26) — the undertake gate only needs bob at the square, not a loaf still on the stall,
-so your theft doesn't stop him pursuing the endeavor, it just takes his own theft option off the
-table. None of this is this section's subject; ignore it for now. eve and gale, at the mill the
-whole time, aren't witnesses to anything in the square either — the same reason dana isn't. gale's
-own move here (walking to the square) is just an idle character's ordinary tie-break drift, not
-yet anything to do with her temperament — §27 covers what gale's presence actually adds.)
+（若干在 v19 落地时还没有的东西已可见：`whisper to …` 与 `take up honest work` 选项，以及 eve 与
+gale 自身移动。耳语选项是 v22 的欺骗层（§25）——比 v22 落地时又多两个，因为 v25 的 gale 是第五个
+可捏造主体；`take up honest work` 以及 bob 在你偷窃瞬间选择它是 v24 的救赎（§26）——承担门禁只需
+bob 在广场，不需摊位上仍有面包，因此你的偷窃不阻止他追求事业，只是拿掉他自己的偷窃选项。这些都不是
+本节主题；暂且忽略。eve 与 gale 整段时间在磨坊，也不是广场任何事的目击者——与 dana 同因。gale 此处
+自身移动（走向广场）只是空闲角色的普通平局决胜漂移，尚与其气质无关——§27 覆盖 gale 在场实际添加什么。）
 
-carol, standing right there, confronted you the instant you took it — the same beat, because
-witnessing is checked at the moment of the act, not on a later turn — and comes to *regard* you a
-thief on the strength of it, a *derived-reputation* affordance this section isn't about yet (§24
-covers it):
+carol 正站在那里，你一拿她就对质你——同一拍，因为目击在行动瞬间检查，非稍后回合——并据此开始
+*regard* 你为贼，这是本节尚不论的 *派生声誉* affordance（§24 覆盖）：
 
 ```
   - bob regards you as a thief
   - carol regards you as a thief
 ```
 
-dana never gets `confront` — not on this turn, not once she's told secondhand (§23), and not even
-later, once she's standing right next to you in the square (checked directly against her own
-`possibleActions` at that point: it's never offered). Witnessing is fixed at the moment of the
-act, not by later proximity or later belief: `carol.believes.stole.you.loaf.seen` is asserted the
-instant you steal — and note who *doesn't* get a belief either: you don't. `observable`'s `ForEach`
-excludes the actor from its own witness deposit (the same reason `bob.believes.stole.bob.loaf.seen`
-never held in the old bob-steals demo) — you aren't a witness to your own hand, and so, as it turns
-out, you can't later `tell` anyone what "you saw," because you never saw it either. dana holds no
-such belief, ever — only a *heard* one, once carol reaches her (§23) — and `confront` is gated on
-`saw`, not `heard`.
+dana 从不得 `confront`——不在本回合，不在被告知二手之后（§23），甚至稍后她站在你旁边的广场时也不
+（当时直接对照其自身 `possibleActions` 检查：从不提供）。目击固定在行动瞬间，非由稍后邻近或稍后信念：
+`carol.believes.stole.you.loaf.seen` 在你偷窃瞬间断言——并注意谁*也不*得到信念：你不。`observable` 的
+`ForEach` 把行动者排除在自身目击存入之外（旧 bob-偷窃演示中 `bob.believes.stole.bob.loaf.seen` 从不成立
+的同一原因）——你不是自己之手的目击者，因此结果是你稍后也不能 `tell` 任何人「你看见」什么，因为你也
+从未看见。dana 从不持有此类信念——只有 *heard* 的，一旦 carol 到达她（§23）——且 `confront` 门禁于
+`saw`，非 `heard`。
 
-The theft is wrapped in `observable together "stole.Actor.loaf"`; the plain `Go to [Place]` /
-`Wait a moment` actions in the same world are not — so **movement is not news**: nobody, not even
-someone standing next to you the whole time, comes to believe `went.you`, because no author
-declared it an event. Observability is a property the world author states about an action, not
-something the engine infers from watching it execute — the same action could be authored to *look*
-like something else entirely (cover stories/misdirection about one's own deeds stay a banked
-future tier; §25 covers the deception the vocabulary *does* support today — concealing a real deed
-and lying about one that never happened).
+偷窃包在 `observable together "stole.Actor.loaf"` 中；同一世界中普通的 `Go to [Place]` / `Wait a moment`
+动作则不是——因此 **移动不是新闻**：无人，甚至全程站在你旁边的人，会开始相信 `went.you`，因为无作者
+声明它为事件。可观察性是世界作者对动作陈述的属性，非引擎从观看执行推断——同一动作可被创作为*看起来*
+完全像别的东西（关于自身事迹的掩饰/误导仍是储备的未来层；§25 覆盖词汇*今天*支持的欺骗——隐瞒真实事迹
+与对从未发生之事撒谎）。
 
-Underneath, this is `ForEach [Condition] [Outcome]`, the outcome-language quantifier v8 never
-gave: `Insert`/`Delete` act on one sentence, `Call` dispatches to one function case, but "for every
-co-present character, deposit a belief" needs to range over a whole query's worth of bindings at
-once. `ForEach` takes a **snapshot** — it queries all bindings before applying any sub-outcome — so
-depositing carol's belief can't change who else counts as a witness mid-fold. `Prax.Witness.observable`
-is the one built-in use of it: it appends
-`ForEach (copresence ++ [Neq "Witness" "Actor"]) [Insert <the belief>]` to an action's outcomes,
-where `copresence` is a *world-supplied* template (the village's `together` relates two characters
-sharing an `at` fact) — the engine itself has no notion of place.
+底层是 `ForEach [Condition] [Outcome]`，v8 从未给出的结果语言量词：`Insert`/`Delete` 作用于一句，
+`Call` 分派到一个函数 case，但「对每个共现角色存入信念」需要一次在整个查询的绑定上取值。`ForEach`
+取 **快照**——在应用任何子结果前查询全部绑定——因此存入 carol 的信念不能在 fold 中途改变谁还算目击者。
+`Prax.Witness.observable` 是其唯一内建用法：它向动作结果追加
+`ForEach (copresence ++ [Neq "Witness" "Actor"]) [Insert <the belief>]`，其中 `copresence` 是
+*世界提供的* 模板（村庄的 `together` 关联共享 `at` 事实的两个角色）——引擎自身无地点概念。
 
-→ code: `Prax.Engine` (`ForEach`, `performOutcome`), `Prax.Witness` (`observable`/`saw`),
-`Prax.Worlds.Village`; asserted in `Prax.WitnessSpec`, `Prax.VillageSpec`.
+→ 代码：`Prax.Engine`（`ForEach`、`performOutcome`）、`Prax.Witness`（`observable`/`saw`）、
+`Prax.Worlds.Village`；在 `Prax.WitnessSpec`、`Prax.VillageSpec` 中断言。
 
 ### 23. Rumor — the news travels (`prax village`) (v20)
 
@@ -1918,37 +1899,27 @@ doesn't, and eve's frame-up surviving unconfessed through 100 turns of unforced 
 
 ---
 
-## Things to try to build intuition
+## 可试之事以建立直觉
 
-- **Never serve yourself:** order a beer, then keep pressing `m`. ada serves you because *she*
-  wants no outstanding orders — you never asked.
-- **Non-alcoholic vs alcoholic:** drink sodas all night; you never get tipsy (the guarded
-  function case). Switch to beer/cider and the counter climbs.
-- **Leave mid-order:** order a beer, then `Go to entrance` before ada serves you. She can't
-  fulfill (her `Fulfill` requires you both at the same place) until you return.
-- **Watch bex's arc end:** once bex has its beer, it stops chasing and just waits at the bar —
-  its top want (`beer in hand`) is satisfied, so no action beats waiting.
+- **从不自己招待：** 点啤酒，然后持续按 `m`。ada 招待你是因为*她*不想有未完成订单——你从未要求。
+- **非酒精 vs 酒精：** 整晚喝汽水；你从不醉（守卫函数 case）。改喝啤酒/苹果酒则计数器上升。
+- **点单中途离开：** 点啤酒，然后在 ada 招待前 `Go to entrance`。她无法履行（其 `Fulfill` 要求你们同处）直到你返回。
+- **看 bex 的弧结束：** 一旦 bex 有了啤酒，它停止追逐，只在酒吧等待——其最高 want（`beer in hand`）已满足，因此无动作胜过等待。
 
-## What is *not* yet modeled
+## 尚未建模的
 
-As far as can be assessed from the available sources, the features of **Versu, Praxis, and Prompter**
-are now reproduced — the sections above are the tour. What remains (see `docs/LEDGER.md`) is short
-and honest:
+就现有来源所能评估的范围，**Versu、Praxis 与 Prompter** 的特性现已复现——上方各节即是游览。
+剩余（见 `docs/LEDGER.md`）简短且诚实：
 
-- **The readable text playtext surface** of Prompter is *deliberately* not reproduced: editable
-  scripts round-trip through JSON (§17) instead of a bespoke `.prompter` grammar. This is a chosen
-  substitution, not a gap.
-- **Free-text player input (#42, "Play What I Mean").** Typing a sentence and matching it to an
-  affordance via an embedding model — a *beyond-Versu* capability that requires an external model,
-  so it's a dependency to add, not a paper to work through.
-- **Beyond-Versu extensions** noted for later: incremental view-maintenance for the derivation
-  layer, hard priority tiers (Swaygent/Ensemble-style `forbidden`/`required` above utility) for
-  *categorical* norm enforcement, and quantified/nested beliefs (which Versu itself couldn't
-  represent). These extend past what Versu did; the LEDGER's "Future ideas" section tracks them.
-  (Runtime want injection needs no separate mechanism — a want gated on a fact is injectable by
-  inserting the fact — and `Prax.Minds`, v23, gives named desires a believable, tellable form on
-  top of the plain `Want` this doc's Part I covers.)
+- **Prompter 的可读文本剧本表面** *有意* 不复现：可编辑脚本经 JSON 往返（§17），而非定制
+  `.prompter` 语法。这是选择的替代，非缺口。
+- **自由文本玩家输入（#42，「Play What I Mean」）。** 键入句子并经嵌入模型匹配到 affordance——
+  *超出 Versu* 的能力，需要外部模型，因此是要添加的依赖，非要研读的论文。
+- **超出 Versu 的扩展** 记为稍后：派生层的增量视图维护、硬优先级层（Swaygent/Ensemble 风格的
+  `forbidden`/`required` 高于效用）用于 *范畴性* 规范强制，以及量化/嵌套信念（Versu 自身也无法表示）。
+  这些延伸超过 Versu 所做；LEDGER 的「Future ideas」节跟踪它们。（运行时 want 注入无需单独机制——
+  门禁在事实上的 want 可通过插入事实注入——且 `Prax.Minds`，v23，在本文 Part I 覆盖的普通 `Want`
+  之上给命名欲望可相信、可告知的形式。）
 
-The larger arc, per the LEDGER, is to grow this from a faithful reproduction into an emergent
-social-sim substrate that can be embedded in other games (sandboxes, roguelikes) — the `feud`
-sandbox (§19) is the first step in that direction.
+更大的弧，按 LEDGER，是把这从忠实复现长成可嵌入其他游戏（沙盒、roguelike）的涌现社交模拟基底——
+`feud` 沙盒（§19）是该方向的第一步。

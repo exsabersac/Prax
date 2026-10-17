@@ -28,8 +28,8 @@
 - **v18** — `Prax.Script` 中剩余的 **Prompter 编译特性**：memories（一次性说明）、定时 junction
   （场景时钟）、以及角色速写（关切→wants，特质→事实）。
 
-> **翻译进度（zh-Hans）：** 标题、版本图例导言（v1–v18）以及详细条目 **v19–v25** 已译。
-> 自下方 **v26** 起的详细条目、backlog 行与后续章节仍为英文原文。标识符、模块名、CLI、规格路径不译。
+> **翻译进度（zh-Hans）：** 标题、版本图例导言（v1–v18）以及详细条目 **v19–v29** 已译。
+> 自下方 **v30** 起的详细条目、特性表与 backlog 仍为英文原文。标识符、模块名、CLI、规格路径不译。
 
 ---
 
@@ -112,71 +112,48 @@
   一旦现场观察到，规格就地修订（§4「洗白」），且 `VillageSpec` 钉死纠正主张。套件：292 测试
   （`PersonaSpec`、`DeceitSpec` 增补、`VillageSpec` 增补）。
 
-- **v26** — **planner work elimination** (spec `docs/specs/2026-07-11-v26-planner-work.md`).
-  A performance round with an exactness contract: bit-for-bit identical planner decisions,
-  pinned by golden decision-sequence tests (`Prax.GoldenDriveSpec`, captured live pre-change,
-  held byte-identical throughout). Four changes: the closed view became a cached per-state
-  field behind `Prax.Engine.withDb`/`setAxioms`/`setDesires` (one closure per state instead of
-  ~15k re-computations per village round); `Prax.Relevance` skips predictions no authored
-  action could motivate (conservative outcome↔want pattern analysis with polarity, resting on
-  one stated invariant — entity names never collide with predicate-name literals; a
-  vocabulary-only "could it EVER matter" check — v33 later adds the missing state dimension,
-  "could it matter NOW," alongside it — see the v33 legend row); pattern
-  parsing hoisted out of the binding loops with a token-level closure loop (tokenization was
-  ~48% of runtime); and the village tests share their two deterministic drive trajectories
-  instead of re-simulating overlapping prefixes. Measured, uncontended: the full suite ~726s
-  (292 tests) → **~114s (301 tests)**, the `Prax.VillageSpec` group ~580–660s → **~116s**, one
-  profiled free-play round 7.07s → 2.83s. The residual planner cost is one axiom-closure per
-  *distinct* state the search visits (71.8% of the post-round profile) — v27's target (below).
-- **v27** — **incremental view maintenance** (#17; spec
-  `docs/specs/2026-07-11-v27-incremental-view.md`). The exactness contract carried over, with a
-  stronger net the user designated the round's core: `Prax.ViewInvariantSpec` asserts, after
-  EVERY turn of real drives, that the cached `readView` equals a from-scratch closure
-  (label-faithfully), with a doctored-view test proving the checker can fail. Three tiers now
-  build the view: deltas the axioms cannot see (`relevantDelta` vs the pre-tokenized
-  `axiomFootprint`, eviction shadows included) apply to base and view in lockstep with no
-  derivation at all; `!`-free inserts that defeat nothing (`monotoneInsert`: no negated-body
-  unification, `monotoneAxioms`-safe world) grow the ALREADY-CLOSED view via `closureFrom` —
-  `closure`'s own semi-naive loop re-entered at the old fixpoint; everything else takes the
-  full reclose. Review closed a real classifier hole before it could ever fire: `Eq`/`Neq`
-  over an aggregate-bound variable is anti-monotone (exactly-k un-fires as the count grows) —
-  proven by probe, rejected by `aggVars` tracking. Measured: from-scratch closures 11,840 →
-  ~330 per profiled round; the round 2.83s → **1.32s** (7.07s at v26's start); full suite
-  ~50–60s (machine-variance range across the round's recorded runs). DRed-style truth maintenance recorded as **not warranted**: from-scratch closure is
-  ~5% of the round, and the continuation IS the delta derivation DRed would compute.
-- **v28** — **the world compiles once** (spec `docs/specs/2026-07-12-v28-cooked-world.md`).
-  Authored conditions and outcomes cook to token form once per world (`CookedCondition` and
-  `queryCooked` in `Prax.Query` — a case-for-case transcription of the string evaluator,
-  pinned by an equivalence property over every constructor; `CookedOutcome`/`CookedPractice`
-  conversions in `Prax.Cooked`; the containers in `Prax.Types`, maintained like every derived
-  field by the Engine helpers, with `setCharacters` joining the helper family and the
-  grep-gate). The hot paths run on names end to end: `possibleActions`/`performCooked`
-  (the string `performOutcome` delegates — one engine, two doors), the planner's scoring
-  (`evaluateCooked` over cooked wants), and the closure loop (`runCooked` over pre-cooked
-  rules) — while the STRING `closure` path is deliberately retained as the independent
-  reference `Prax.ViewInvariantSpec` recomputes against every turn. Consolidations en route:
-  one home for eviction shadows, the applyGrow string bridge killed, `cpFns` first-wins
-  fixing a latent duplicate-function-name lookup asymmetry. Measured: profiled round 1.32s →
-  **0.69s** (allocation 2.2GB → 0.75GB); full suite ~55s → **~22–30s** (320 tests). The
-  post-round profile's top centres are now segment *comparisons* (`mayUnifyNames` ~25%,
-  `unifyNames` ~25%) — the interning criterion is met, designating v29.
-- **v29** — **segment interning** (spec `docs/specs/2026-07-12-v29-interning.md`), and an
-  honest wash. `Prax.Sym` (FastString-style global pool; variable-ness packed into id parity;
-  three pool doors each carrying a load-bearing bang after two lazy-argument races were found
-  by implementation and the third by review); the `Db` trie re-keyed on `IntMap` with every
-  String signature unchanged and tie-break name-ordering explicitly restored where the old
-  `Map String` gave it for free; `Val`/`Bindings`/the cooked pipeline symbolic end to end.
-  Exactness held (goldens byte-identical, ViewInvariant green throughout; DbSpec/ELSpec/
-  QuerySpec passed untouched). **Measured result: ~10% at best, within machine noise**
-  (unprofiled A/B round 0.19–0.33s vs v28's 0.22–0.36s; suite flat at ~24–26s, 329 tests).
-  The v28 profile's "segment comparisons ~50%" attribution was misleading: the cost was list
-  traversal and allocation around the comparisons — short segments fail at the first
-  character, nearly as cheap as an Int test. Recorded as the round's lesson: cost-centre
-  shares attribute time to a function, not to the instruction the optimization targets.
-  Kept (correct, reviewed, marginally positive, and the consistent endpoint of v28's
-  strings-stop-being-computational design); the next real levers are architectural — delta
-  scoring/undo-log search, or the eventual embedding port — not representation.
-- **v30** — **leverage: blackmail & debt, priced** (`Prax.Debt`, `Prax.Blackmail`; spec
+-- **v26** — **planner 工作消除**（规格 `docs/specs/2026-07-11-v26-planner-work.md`）。
+  带精确性契约的性能轮：planner 决策位对位同一，由金标准决策序列测试钉死（`Prax.GoldenDriveSpec`，
+  变更前现场捕获，全程字节同一）。四处变更：闭合视图变为缓存在 `Prax.Engine.withDb`/`setAxioms`/`setDesires`
+  后的按状态字段（每状态一次闭包，而非每村庄回合约 15k 次重算）；`Prax.Relevance` 跳过无创作动作可激励的预测
+  （带极性的保守结果↔want 模式分析，建立在一条声明不变量上——实体名永不与谓词名字面碰撞；仅词汇的
+  「它是否曾重要」检查——v33 后来在旁加入缺失的状态维度「它现在能否重要」——见 v33 图例行）；模式解析
+  提升出绑定循环，配 token 级闭包循环（分词曾占运行时约 48%）；村庄测试共享两条确定性驱动轨迹，而非
+  重模拟重叠前缀。无争用测量：完整套件约 726s（292 测试）→ **约 114s（301 测试）**，`Prax.VillageSpec`
+  组约 580–660s → **约 116s**，一次剖析自由游玩回合 7.07s → 2.83s。残余 planner 代价是搜索访问的每个
+  *不同* 状态一次公理闭包（回合后剖析的 71.8%）——v27 的目标（下方）。
+- **v27** — **增量视图维护**（#17；规格 `docs/specs/2026-07-11-v27-incremental-view.md`）。精确性契约延续，
+  带用户指定为本轮核心的更强网：`Prax.ViewInvariantSpec` 在真实驱动的每一回合后断言缓存的 `readView`
+  等于从零闭包（标签忠实），并用篡改视图测试证明检查器能失败。现三层构建视图：公理看不见的 delta
+  （`relevantDelta` vs 预分词 `axiomFootprint`，含驱逐阴影）锁步应用到基与视图，完全无派生；不击败任何物的
+  无 `!` 插入（`monotoneInsert`：无否定体统一，`monotoneAxioms` 安全世界）经 `closureFrom` 增长
+  *已闭合* 视图——在旧不动点再进入 `closure` 自身半朴素循环；其余全量重闭。评审在能触发前关闭真实分类器空洞：
+  聚合绑定变量上的 `Eq`/`Neq` 是反单调的（恰好-k 随计数增长而熄火）——由探针证明，由 `aggVars` 跟踪拒绝。
+  测量：从零闭包 11,840 → 每剖析回合约 330；回合 2.83s → **1.32s**（v26 起点 7.07s）；完整套件约 50–60s
+  （本轮记录跑程的机器方差范围）。DRed 风格真值维护记为 **无必要**：从零闭包约占回合 5%，且延续正是
+  DRed 会计算的 delta 派生。
+- **v28** — **世界编译一次**（规格 `docs/specs/2026-07-12-v28-cooked-world.md`）。创作条件与结果每世界
+  煮成 token 形式一次（`Prax.Query` 中的 `CookedCondition` 与 `queryCooked`——字符串求值器的逐 case 转写，
+  由每个构造器上的等价性质钉死；`Prax.Cooked` 中的 `CookedOutcome`/`CookedPractice` 转换；容器在
+  `Prax.Types`，像每个派生字段一样由 Engine 助手维护，`setCharacters` 加入助手族与 grep 门禁）。热路径
+  端到端跑在名字上：`possibleActions`/`performCooked`（字符串 `performOutcome` 委托——一引擎两门）、
+  planner 打分（煮熟 wants 上的 `evaluateCooked`）、以及闭包循环（预煮规则上的 `runCooked`）——而字符串
+  `closure` 路径有意保留为 `Prax.ViewInvariantSpec` 每回合对照重算的独立参考。途中整合：驱逐阴影唯一归宿、
+  杀死 applyGrow 字符串桥、`cpFns` 先胜修复潜伏的重复函数名查找不对称。测量：剖析回合 1.32s → **0.69s**
+  （分配 2.2GB → 0.75GB）；完整套件约 55s → **约 22–30s**（320 测试）。回合后剖析顶部中心现为段 *比较*
+  （`mayUnifyNames` 约 25%，`unifyNames` 约 25%）——intern 判据满足，指定 v29。
+- **v29** — **段 intern**（规格 `docs/specs/2026-07-12-v29-interning.md`），以及诚实的持平。`Prax.Sym`
+  （FastString 风格全局池；变量性打包进 id 奇偶；三个池门各带承重 bang，在实现发现两次惰性参数竞态、
+  评审发现第三次之后）；`Db` trie 在 `IntMap` 上重键，每个 String 签名不变，并在旧 `Map String` 免费给出
+  平局决胜名称序处显式恢复；`Val`/`Bindings`/煮熟管线端到端符号化。精确性保持（金标准字节同一，
+  ViewInvariant 全程绿；DbSpec/ELSpec/QuerySpec 未触通过）。**测量结果：最好约 10%，在机器噪声内**
+  （未剖析 A/B 回合 0.19–0.33s vs v28 的 0.22–0.36s；套件持平约 24–26s，329 测试）。v28 剖析的
+  「段比较约 50%」归因有误导：代价是比较周围的列表遍历与分配——短段在首字符失败，几乎与 Int 测试一样便宜。
+  记为本轮教训：成本中心份额把时间归因到函数，而非优化所瞄准的指令。保留（正确、经评审、略正，且是 v28
+  「字符串停止成为计算」设计的一致终点）；下一真正杠杆是架构性的——delta 打分/undo-log 搜索，或最终嵌入移植——
+  非表示。
+
+ **v30** — **leverage: blackmail & debt, priced** (`Prax.Debt`, `Prax.Blackmail`; spec
   `docs/specs/2026-07-12-v30-blackmail-debt.md`, three in-round amendments). The backlog's oldest
   named commitment (parked since v22 for its own design round), folded with debt per user direction,
   probe-verified live before the spec was written (session probe, depth 2). **The leverage model**:
