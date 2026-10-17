@@ -14,7 +14,7 @@ import           Prax.Types (Outcome (..), authoredPatClash)
 import           Prax.Derive (Axiom, axiom)
 import           Prax.Db (isVariable, pathNames)
 
--- | @member.\<who\>!\<faction\>@ (single-slot: the primary allegiance).
+-- | @member.\<who\>!\<faction\>@（单槽：主要效忠）。
 memberPath :: String -> String -> String
 memberPath who faction
   | bad who || bad faction =
@@ -23,32 +23,17 @@ memberPath who faction
   | otherwise = "member." ++ who ++ "!" ++ faction
   where bad n = null n || any (`elem` (".!" :: String)) n
 
--- | Join (or defect to, or marry into) a faction: one exclusion overwrite.
+-- | 加入（或叛逃至，或嫁入）派系：一次排他覆盖。
 joins :: String -> String -> Outcome
 joins who faction = Insert (memberPath who faction)
 
--- | Shared membership derives alliance — the feud's old base facts, generalized.
--- The derived name stays @allied@ so every downstream consumer (mutuality,
--- enemy-of-my-ally, affordances) is unchanged.
+-- | 共享成员派生同盟——宿怨旧基事实的一般化。
 comrades :: Axiom
 comrades = axiom
   [ Match "member.X!F", Match "member.Y!F", Neq "X" "Y" ]
   [ "allied.X.Y" ]
 
--- | Belief-gated faction standing for K-discipline worlds: an offense against
--- my faction-mate, THAT I BELIEVE HAPPENED, makes me regard the offender.
--- @factionStanding pat label@: @pat@'s FIRST variable is the offender, SECOND
--- the victim (loud error otherwise) — e.g. @"struck.A.V"@ ⇒
--- @PraxW.believes.struck.A.V ∧ member.V!PraxF ∧ member.PraxW!PraxF ∧ PraxW≠A
--- ⇒ regards.PraxW.A.\<label\>@. The axiom's own believer\/shared-faction join
--- variables live in the @Prax@ namespace (v40): @pat@ is free to name its own
--- variables @W@ or @F@ (or anything else) without colliding — only the Prax
--- namespace itself is off limits. Intra-faction offenders are condemned by
--- their own co-members: nothing exempts an offender who shares the victim's
--- faction (a co-member who believes the deed regards the offender all the
--- same, offender included in the population of possible believers — only the
--- offender's OWN belief of their own act is excluded, by the believer/offender
--- inequality).
+-- | 面向 K-纪律世界的信念门禁派系声望：对同志的冒犯触发派系内站队。
 factionStanding :: String -> String -> Axiom
 factionStanding pat label =
   case filter isVariable (pathNames pat) of

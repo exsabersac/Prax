@@ -36,7 +36,7 @@ import           Prax.Types
 import           Prax.Derive (Axiom (..))
 import           Prax.Script (scenePatienceFamily, currentScenePath)
 
--- | A well-formedness problem found in a world.
+-- | 世界中发现的良构问题。
 data TypeError
   = UnboundVar { teWhere :: String, teVar :: String, teSentence :: String }
     -- ^ @teVar@ in @teSentence@ (at @teWhere@) is bound by nothing.
@@ -79,7 +79,7 @@ data TypeError
     -- not is the genuine\/bluff choice).
   deriving (Eq, Show)
 
--- | Every well-formedness problem in a world (empty ⇒ the world is well-formed).
+-- | 世界中每个良构问题（空 ⇒ 通过）。
 typeCheck :: PraxState -> [TypeError]
 typeCheck st =
      concatMap unboundInPractice ps

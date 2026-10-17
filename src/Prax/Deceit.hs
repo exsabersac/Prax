@@ -23,9 +23,7 @@ import           Prax.Types (Action, Outcome (..), Want (..), action, authoredVa
 import           Prax.Beliefs (beliefAbout)
 import           Prax.Witness (CoPresence, asRole)
 
--- | A desire that nobody believe @event@ — how much the secret is worth is
--- authored character. The event must be variable-free (a concealment want
--- quantifies over /observers/, not deeds); the variable @Anyone@ is reserved.
+-- | 无人相信 @event@ 的欲望——秘密值多少由权重给出。
 conceal :: String -> Int -> Want
 conceal event k
   | any isVariable (pathNames event) =
@@ -34,12 +32,7 @@ conceal event k
              ++ " observers, not deeds)")
   | otherwise = Want [ Absent [ Match (beliefAbout "Anyone" event) ] ] k
 
--- | An action: assert an event you have no evidence for, to a co-present
--- hearer. The pattern's __first__ variable is the fabricated subject, bound by
--- the world-supplied fabrication conditions (whom you could frame); framing
--- yourself is excluded (that would be a confession, not a lie). Hearer gates
--- are gossip's: never the subject, never an eyewitness, one-shot per hearer,
--- plus the world's own gate.
+-- | 一个动作：向同场听者断言你无证据的事件（捏造）。
 lie :: CoPresence   -- ^ who can be told
     -> [Condition]  -- ^ the world's gate (may be @[]@)
     -> [Condition]  -- ^ fabrication: binds the pattern's variables

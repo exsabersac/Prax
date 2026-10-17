@@ -20,30 +20,15 @@ lehmerA, lehmerM :: Integer
 lehmerA = 16807
 lehmerM = 2147483647   -- 2^31 - 1
 
--- | One Lehmer step: the advanced stream value. The roll basis IS this
--- advanced value (a state advance evicts the old seed, so the roll reads the
--- fresh one — spec v50). Integer arithmetic, matching the db's Calc domain, so
--- the residence move off the fact base is byte-identical.
+-- | 一步 Lehmer：推进后的流值。掷骰基底 *就是* 此推进值（冻结骰法则：每次抽取花费一步，无论命中与否）。
 rollStep :: Integer -> Integer
 rollStep s = (s * lehmerA) `mod` lehmerM
 
--- | The seed's valid domain, inclusive: strictly between 0 and the modulus.
--- @0@ and multiples of the modulus are fixed points of the stream (a die that
--- always rolls the same face), so they are excluded — 'Prax.Engine.seedDie'
--- rejects a seed outside these bounds loudly.
+-- | 种子的有效域，含端点：严格介于 0 与模之间（两端是不动点）。
 seedBounds :: (Integer, Integer)
 seedBounds = (1, lehmerM - 1)
 
--- | "With probability num\/den, where conds also hold, apply outs." The
--- fragment authors append to an action's outcomes. Compiles to a single
--- 'Roll' outcome — the engine advances the stream once and rolls on the
--- advanced value, so every draw consumes EXACTLY one step, hit or miss (a
--- failed roll must not freeze the die: a provocation that failed once must not
--- fail identically forever). Guards are loud: odds must be a real chance
--- (0 < num < den — certainty and impossibility are authored dishonesty; use a
--- plain outcome or nothing), and the caller's conditions and outcomes may not
--- use the reserved Prax namespace (v40 hygiene stands even though the die no
--- longer splices anything).
+-- | 「以概率 num\/den，在 conds 也成立处，应用 outs。」作者表面；编译为 'Roll' 结果。未播种世界响亮错误。
 draw :: Int -> Int -> [Condition] -> [Outcome] -> [Outcome]
 draw num den conds outs
   | num <= 0 || num >= den =

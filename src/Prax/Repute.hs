@@ -24,13 +24,11 @@ import           Prax.Query (Condition (..), CmpOp (..))
 import           Prax.Derive (Axiom, axiom)
 import           Prax.Types (authoredPatClash)
 
--- | Every observer with evidence of the deed regards its subject under @label@.
+-- | 每个对行为有证据的观察者都将其 regard 为主体。
 standing :: String -> String -> Axiom
 standing pat = standingWith pat []
 
--- | 'standing', defeated by a base-fact pattern (which may use only the deed
--- pattern's variables — checked, loud error otherwise): derives only while
--- the defeater is absent.
+-- | 'standing'，被基事实模式击败（存在时溶解派生 regard）。
 standingUnless :: String -> String -> String -> Axiom
 standingUnless pat defeater = standingWith pat [ Not (checkedDefeater pat defeater) ]
 
@@ -56,14 +54,12 @@ standingWith pat extra label
   | otherwise = axiom (Match ("Regarder.believes." ++ pat) : extra)
         [ "regards.Regarder." ++ subjectOf pat ++ "." ++ label ]
 
--- | Condition: @observer@ regards @subject@ under @label@ (a derived fact —
--- usable in preconditions and wants, which read the closed view).
+-- | 条件：@observer@ 在 @label@ 下 regard @subject@。
 regardedAs :: String -> String -> String -> Condition
 regardedAs observer subject label =
   Match ("regards." ++ observer ++ "." ++ subject ++ "." ++ label)
 
--- | @notorious.\<subject\>.\<label\>@ while at least @k@ distinct observers hold
--- the regard.
+-- | 当至少 @n@ 名观察者 regard 主体时，@notorious.\<subject\>.\<label\>@ 成立。
 notoriety :: String -> Int -> Axiom
 notoriety label k =
   axiom [ Match ("regards.W0.T." ++ label)

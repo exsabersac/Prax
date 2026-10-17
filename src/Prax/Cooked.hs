@@ -23,7 +23,7 @@ import           Prax.Query (CookedCondition, cookCondition, groundCookedConditi
 import           Prax.Sym (intern)
 import           Prax.Types
 
--- | Compile an 'Outcome' to its cooked form (see 'CookedOutcome').
+-- | 把 'Outcome' 编译为其煮熟形式（见 'CookedOutcome'）。
 cookOutcome :: Outcome -> CookedOutcome
 cookOutcome o = case o of
   Insert s          -> CInsert (internTokens s)
@@ -33,9 +33,7 @@ cookOutcome o = case o of
   ForEach conds outs -> CForEach (map cookCondition conds) (map cookOutcome outs)
   Roll num den conds outs -> CRoll num den (map cookCondition conds) (map cookOutcome outs)
 
--- | Substitute bindings into a cooked outcome. 'CInsert'/'CDelete' reuse
--- 'Prax.Db.groundTokens' directly — no string rebuild; 'CCall' args are
--- single names, substituted the same way as 'groundNames'.
+-- | 把绑定代入煮熟结果。'CInsert' 等在名字上运算。
 groundCookedOutcome :: Bindings -> CookedOutcome -> CookedOutcome
 groundCookedOutcome b o = case o of
   CInsert toks        -> CInsert (groundTokens toks b)
@@ -47,11 +45,7 @@ groundCookedOutcome b o = case o of
   CRoll num den conds outs -> CRoll num den (map (groundCookedCondition b) conds)
                                             (map (groundCookedOutcome b) outs)
 
--- | Compile a 'Practice' to its cooked form (see 'CookedPractice'): every
--- action's conditions/outcomes and every init outcome precooked; the
--- instance-unification pattern (@practice.\<pid\>.\<Role1\>...@) pre-split
--- once. Functions live in the world registry, not on practices (spec v47) —
--- 'cookFunctions' cooks them.
+-- | 把 'Practice' 编译为其煮熟形式（见 'CookedPractice'）。
 cookPractice :: Practice -> CookedPractice
 cookPractice p = CookedPractice
   { cpInstanceNames = map intern ("practice" : practiceId p : roles p)
@@ -70,12 +64,7 @@ cookPractice p = CookedPractice
       , caOuts  = map cookOutcome (actionOutcomes a)
       }
 
--- | Cook a function registry: each 'Function' keyed by 'fnName', paired with
--- its 'fnParams' and cooked cases — the shape 'lookupCookedFn' and the cooked
--- hot path ('Prax.Engine.performCooked') read, so neither falls back to a
--- string-side 'fnParams' lookup. A plain 'Map.fromList': 'Prax.Engine.defineFunctions'
--- guards uniqueness loudly before any duplicate 'fnName' could reach here, so
--- the Map never silently collapses one.
+-- | 煮函数注册表：每个 'Function' 按名键控，分支已煮。
 cookFunctions :: [Function]
               -> Map String ([String], [([CookedCondition], [CookedOutcome])])
 cookFunctions fs = Map.fromList
@@ -83,9 +72,7 @@ cookFunctions fs = Map.fromList
                             | c <- fnCases f ]))
   | f <- fs ]
 
--- | Compile a 'ScheduleRule' to its cooked form (see 'CookedScheduleRule'):
--- every body clause's conditions and outcomes precooked; the name carried
--- unchanged (a lookup key, never unified).
+-- | 把 'ScheduleRule' 编译为其煮熟形式。
 cookScheduleRule :: ScheduleRule -> CookedScheduleRule
 cookScheduleRule r = CookedScheduleRule
   { csrName = srName r

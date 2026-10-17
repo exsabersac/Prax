@@ -69,31 +69,21 @@ import           Prax.Reactions (markViolation, violationOf)
 
 -- Fact convention --------------------------------------------------------------
 
--- | The obligation operator's head literal — the ONE home for the vocabulary:
--- 'obligationPath', 'obligationsOf', 'obligedLift', and "Prax.TypeCheck"'s
--- declaration-completeness net all draw from it.
+-- | 义务算子的头字面——引擎中 *唯一* 的义务头。
 obligedHead :: String
 obligedHead = "obliged"
 
--- | The DB path of an obligation: @obliged.\<who\>.\<content\>@. @content@ is a
--- /simple term/ (a sentence) and is kept verbatim, so an exclusion @!@ inside it
--- survives into the trie (this is what makes 'conflicts' meaningful).
+-- | 义务的 DB 路径：@obliged.\<who\>.\<content\>@。
 obligationPath :: String -> String -> String
 obligationPath who content = obligedHead ++ "." ++ who ++ "." ++ content
 
--- | The prefix every □-lifted sentence carries ('obligedLift' prepends it to
--- each body match and head) — the full lifted-shape convention in one place:
--- "Prax.TypeCheck"'s already-lifted detection matches on THIS, so the checker
--- and the lift cannot desync.
+-- | 每个 □-提升句子携带的前缀（'obligedLift' 发出）。
 obligedLiftPrefix :: String
 obligedLiftPrefix = obligedHead ++ ".Obligor."
 
 -- Entailment closure (□ property 1) --------------------------------------------
 
--- | Lift a purely-conjunctive domain rule under the obligation operator: prefix
--- @obliged.\<fresh\>.@ to every body match and head, so @□A ⊢ □B@ whenever
--- @A ⊢ B@. Rules whose body uses non-'Match' conditions are not lifted (nothing
--- sensible to place under @□@).
+-- | 在义务算子下提升一条纯合取域规则（DEON □）。
 obligedLift :: Axiom -> Maybe Axiom
 obligedLift (Axiom body heads)
   | all isMatch body = Just (Axiom (map liftCond body) (map liftSent heads))
@@ -105,80 +95,56 @@ obligedLift (Axiom body heads)
     liftCond c         = c
     liftSent s = obligedLiftPrefix ++ s
 
--- | Close a world's axioms under the obligation operator (DEON property 1): the
--- authored rules plus the □-lifted twin of every all-'Match' rule. A deontic
--- world declares its closure with @setAxioms (obligedClose axs)@; the general
--- engine ("Prax.Derive") closes over exactly the list it is given, lift included.
+-- | 在义务算子下闭合世界公理（把可提升规则展开进列表）。
 obligedClose :: [Axiom] -> [Axiom]
 obligedClose axs = axs ++ mapMaybe obligedLift axs
 
 -- Asserting / discharging ------------------------------------------------------
 
--- | @oblige who content@ — assert that @who@ should bring about @content@ (@□content@).
+-- | @oblige who content@——断言 @who@ 应促成 @content@。
 oblige :: String -> String -> Outcome
 oblige who content = Insert (obligationPath who content)
 
--- | Retract an obligation (it has been met, or is cancelled).
+-- | 撤回义务（已履行或取消）。
 discharge :: String -> String -> Outcome
 discharge who content = Delete (obligationPath who content)
 
--- | Record that @who@ left a duty unmet. A breach /is/ a norm violation, so this
--- reuses "Prax.Reactions" verbatim (agents given a negative 'avoidBreach' want
--- steer clear of it, exactly as with any violation).
+-- | 记录 @who@ 未履行职责。违约 /是/ 可查询事实。
 breach :: String -> String -> Outcome
 breach = markViolation
 
--- | The reparative / contrary-to-duty obligation @□□content@ — "ideally you would
--- have brought about @content@; failing that, you now ought to". It is an
--- obligation /about an obligation/: the nested fact
--- @obliged.\<who\>.obliged.\<who\>.\<content\>@.
+-- | 修复性\/违反义务的义务 @□□content@。
 obligeReparative :: String -> String -> Outcome
 obligeReparative who content = oblige who (obligationPath who content)
 
 -- Querying ---------------------------------------------------------------------
 
--- | Condition: @who@ is currently obliged to bring about @content@.
+-- | 条件：@who@ 当前有义务促成 @content@。
 isObliged :: String -> String -> Condition
 isObliged who content = Match (obligationPath who content)
 
--- | Conditions for a met obligation: @who@ is obliged to @content@ /and/ it
--- actually holds. Ought does not collapse to is (paper §2.3, property 3), so both
--- conjuncts are required.
+-- | 已履行义务的条件：@who@ 有义务且内容已成立。
 fulfilled :: String -> String -> [Condition]
 fulfilled who content = [ isObliged who content, Match content ]
 
--- | Condition: @who@ is in breach of the duty @content@ (a recorded violation).
+-- | 条件：@who@ 违约于职责 @content@。
 inBreach :: String -> String -> Condition
 inBreach = violationOf
 
 -- Norm-conflict detection ------------------------------------------------------
 
--- | The paper's incompatibility test (property 2): are @c1@ and @c2@ jointly
--- unsatisfiable? Assert both into a scratch model; they conflict iff one
--- @!@-clears the other so they cannot both survive (e.g. @conflicts "go!true"
--- "go!false" == True@). Symmetric; @False@ for identical or compatible contents.
--- Pure and cheap (the DB is persistent).
---
--- (There is deliberately no world-seeded variant: our @!@ exclusion is applied
--- per-insert rather than as a persistent schema, so a live world can never change
--- whether two contents mutually conflict — such a function would just duplicate
--- this one.)
+-- | 论文的不相容测试（性质 2）：两内容是否冲突？
 conflicts :: String -> String -> Bool
 conflicts c1 c2 =
   let d = insertAll [c1, c2] emptyDb
   in not (exists c1 d && exists c2 d)
 
--- | Every incompatible pair among a list of candidate contents — for vetting a
--- /proposed/ set of duties for internal consistency before assigning them (two
--- genuinely incompatible obligations cannot be co-held, so this checks candidates,
--- not the live DB).
+-- | 候选内容列表中每一对不相容对。
 incompatiblePairs :: [String] -> [(String, String)]
 incompatiblePairs cs =
   [ (a, b) | (a : rest) <- tails cs, b <- rest, conflicts a b ]
 
--- | The contents @who@ is currently obliged to (for introspection / a drama
--- manager). Note: reading back from the trie flattens the @!@/@.@ distinction, so
--- results are for display, not to be fed back into 'conflicts'.
+-- | @who@ 当前有义务促成的内容（供检查）。
 obligationsOf :: String -> Db -> [String]
 obligationsOf who d =
   [ drop (length prefix) s | s <- dbToSentences d, prefix `isPrefixOf` s ]
@@ -186,13 +152,10 @@ obligationsOf who d =
 
 -- Behavioural coupling ---------------------------------------------------------
 
--- | A want to /fulfil/ an obligation: utility @k@ per met duty. Feeds the
--- unchanged planner ("Prax.Planner"), which then pursues the duty.
+-- | 想 /履行/ 义务的 want：每满足实例效用 @k@。
 wantFulfilled :: String -> String -> Int -> Want
 wantFulfilled who content = Want (fulfilled who content)
 
--- | A want to /avoid breaching/ a duty: applied as strong-negative @-|k|@ so the
--- planner steers away from the breach (the mechanism by which norms already shape
--- behaviour in "Prax.Worlds.Bar").
+-- | 想 /避免违约/ 的 want：作强负效用应用。
 avoidBreach :: String -> String -> Int -> Want
 avoidBreach who content k = Want [ inBreach who content ] (negate (abs k))

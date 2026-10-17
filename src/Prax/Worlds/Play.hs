@@ -1,20 +1,5 @@
--- | The Roman conspiracy, re-authored as a Prompter-lite __play-script__ — the
--- same drama as "Prax.Worlds.Intrigue" but written through "Prax.Script"'s
--- scene/beat/junction surface instead of hand-coded practices, and split across
--- two scenes so it exercises a scene __transition__ (a junction) and the auto
--- flow-chart.
---
--- Act I, /the confidence/: Cassia confides her plot to Marcus (the player). Once
--- she has, the story flows to Act II, /the banquet/, where — unless Marcus warns
--- Artus or strikes first himself — Cassia poisons the patron. Three endings:
--- betrayal (Cassia's poison), loyalty (Marcus warns), complicity (Marcus's hand);
--- Marcus may also warm to Cassia along the way (a romance, orthogonal to the
--- killing). This is a faithful recasting of "Prax.Worlds.Intrigue" — same cast,
--- same affordances, same endings — in fewer authored lines and split into scenes.
---
--- The engine's @"story"@ schedule rule (supplied by 'compile') advances the
--- scene and fires the ending silently at a round boundary, the moment a
--- junction's condition holds.
+-- | 场景创作戏剧世界（`prax play` / `prax flow`）。
+
 module Prax.Worlds.Play
   ( playScript
   , playWorld
@@ -27,11 +12,11 @@ import           Prax.Core (adjustScore, setBond, warmth)
 import           Prax.Emotion (feelToward, pleased)
 import           Prax.Script
 
--- | The player is Marcus, the poet.
+-- | 玩家是诗人 Marcus。
 playerName :: String
 playerName = "marcus"
 
--- | The whole episode as a play-script.
+-- | 整集作为剧本。
 playScript :: Script
 playScript = Script
   { scriptStart = "confidence"
@@ -94,6 +79,6 @@ banquet = (scene "banquet")
       ]
   }
 
--- | The compiled, ready-to-run world.
+-- | 已编译、可运行的世界。
 playWorld :: PraxState
 playWorld = compile playScript

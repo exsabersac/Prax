@@ -32,28 +32,21 @@ import           Prax.Beliefs (beliefAbout)
 -- actor-exclusion.
 type CoPresence = [Condition]
 
--- | The witness deposit as a first-class outcome: every co-present character
--- (except the actor) comes to believe @event@ with provenance @seen@. This is
--- what 'observable' appends; exported so generated actions (e.g.
--- "Prax.Project" stages) can carry observability in their own effects.
+-- | 作为一等结果的目击存款：每个同场角色（除行动者）获得对事件的 `.seen` 信念。
 witnessed :: CoPresence -> String -> Outcome
 witnessed copresence event =
   ForEach (copresence ++ [ Neq "Witness" "Actor" ])
           [ Insert (beliefAbout "Witness" event ++ ".seen") ]
 
--- | Declare an action's public appearance: every co-present character (except
--- the actor, who already knows what they did) comes to believe @event@ with
--- provenance @seen@. The event sentence may use the action's own variables.
+-- | 声明动作的公开外观：每个同场角色（除行动者）目击所给事件字符串。
 observable :: CoPresence -> String -> Action -> Action
 observable copresence event act =
   act { actionOutcomes = actionOutcomes act ++ [ witnessed copresence event ] }
 
--- | Condition: @who@ directly witnessed @event@.
+-- | 条件：@who@ 直接目击了 @event@。
 saw :: String -> String -> Condition
 saw who event = Match (beliefAbout who event ++ ".seen")
 
--- | Retarget a co-presence template: substitute a different variable for
--- @Witness@ (e.g. @Hearer@), so the template stays single-sourced in the
--- world while other layers quantify over their own role.
+-- | 重定向同场模板：把 @Witness@ 换成不同变量名。
 asRole :: String -> CoPresence -> [Condition]
 asRole v = map (groundCondition (Map.singleton (intern "Witness") (VSym (intern v))))

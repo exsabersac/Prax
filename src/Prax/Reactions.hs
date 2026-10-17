@@ -25,20 +25,19 @@ import           Prax.Types
 
 -- Reactions --------------------------------------------------------------------
 
--- | The DB path of a reaction instance: @practice.\<id\>.\<part…\>@. Parts may be
--- constants or action variables (grounded when the outcome runs).
+-- | 反应实例的 DB 路径：@practice.\<id\>.\<roles...\>@。
 reactionPath :: String -> [String] -> String
 reactionPath pid parts = intercalate "." ("practice" : pid : parts)
 
--- | Spawn a reaction practice instance (offer its responses to the participants).
+-- | 孵化反应实践实例（向被冒犯者提供其回应动作）。
 spawnReaction :: String -> [String] -> Outcome
 spawnReaction pid parts = Insert (reactionPath pid parts)
 
--- | Consume a reaction instance (a response has been taken).
+-- | 消费反应实例（已取回应）。
 endReaction :: String -> [String] -> Outcome
 endReaction pid parts = Delete (reactionPath pid parts)
 
--- | Condition: this reaction instance is currently pending.
+-- | 条件：此反应实例当前挂起。
 reactionActive :: String -> [String] -> Condition
 reactionActive pid parts = Match (reactionPath pid parts)
 
@@ -48,11 +47,10 @@ reactionActive pid parts = Match (reactionPath pid parts)
 violationPath :: String -> String -> String
 violationPath who norm = intercalate "." ["violated", who, norm]
 
--- | Record that @who@ violated the named @norm@. Agents are given strong
--- negative wants on their own violations, so the planner avoids causing them.
+-- | 记录 @who@ 违反了具名 @norm@。代理人可据此反应。
 markViolation :: String -> String -> Outcome
 markViolation who norm = Insert (violationPath who norm)
 
--- | Condition matching a recorded violation of @norm@ by @who@.
+-- | 匹配所记录的 @norm@ 违反的条件。
 violationOf :: String -> String -> Condition
 violationOf who norm = Match (violationPath who norm)

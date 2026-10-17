@@ -43,24 +43,7 @@ import           Prax.Query (CookedCondition (..), cookCondition, cookedReadAnch
 import           Prax.Sym (Sym, intern, symIsVar)
 import           Prax.Types
 
--- | Could a grounded instance of one path pattern be an instance (or a
--- prefix\/extension) of the other, on pre-split, pre-interned paths — the
--- planner-hot classification ('relevantDelta' runs it for every primitive
--- delta against every footprint pattern). Segments unify when either is a
--- variable or they are equal; length mismatch is prefix-compatible (a
--- 'Match' sees subtrees). A pair unifies only if some overlapping segment is
--- a shared /literal/ (both sides constant and equal) — Prax facts are
--- identified by their literal predicate-name segments, so an overlap covered
--- entirely by variables carries no evidence the two patterns denote the same
--- predicate at all (any string could occupy a variable slot, including
--- another pattern's unrelated literal, e.g. a role variable coincidentally
--- lining up against someone else's "lied"). Discarding such evidence-free
--- overlaps is where the module header's entity-names-vs-predicate-literals
--- invariant is spent: under it, a genuine correspondence between an authored
--- effect and a want always shares an aligned literal, so the anchor removes
--- only coincidence. Variable-ness is the parity bit ('Prax.Sym.symIsVar')
--- and a shared literal segment is Int equality — the hottest classification
--- in the engine, Int equality rather than String equality.
+-- | 一路径模式的落地实例能否为另一模式的实例？保守 may-unify。
 mayUnifySyms :: [Sym] -> [Sym] -> Bool
 mayUnifySyms as bs = anchored && and (zipWith seg as bs)
   where
@@ -68,17 +51,7 @@ mayUnifySyms as bs = anchored && and (zipWith seg as bs)
     anchored = or (zipWith literalMatch as bs)
     literalMatch x y = not (symIsVar x) && not (symIsVar y) && x == y
 
--- | The eviction shadows of an exclusion insert, computed directly on
--- already-split, interned tokens — the single name-shape every consumer
--- ('Prax.Engine.performCooked'\'s cooked hot path, 'Prax.Engine.relevantDelta',
--- and the atom-pool walk below) goes through, so there is one implementation.
--- One shadow per @!@ operator: the names up to and including that point,
--- followed by a fresh @"PraxEvicted"@ segment (interns as a variable —
--- uppercase initial, Prax-namespaced machinery — so 'mayUnifySyms' treats it
--- as the wildcard it denotes and no authored name can collide with it). Each
--- exclusion clears the displaced sibling's entire subtree — arbitrary depth
--- and shape — and 'mayUnifySyms' compares only up to the shorter path, so
--- the truncated shadow covers every want under it.
+-- | 排他插入的驱逐阴影，在 token 上计算（将被清除的兄弟路径）。
 evictionShadowNames :: [(Sym, Maybe Char)] -> [[Sym]]
 evictionShadowNames toks =
   [ map fst (take i toks) ++ [intern "PraxEvicted"]
@@ -185,10 +158,7 @@ axiomDerivable :: [CookedRule] -> [Sym] -> Bool
 axiomDerivable rules p = any (mayUnifySyms p) heads
   where heads = [ map fst h | r <- rules, h <- crHeads r ]
 
--- | The names of the desires some authored action might improve. Reads the
--- state's cooked tables ('cookedDefs'\/'cookedRules'\/'cookedDesires' —
--- 'Prax.Engine.retable' cooks before it analyzes). See the module header
--- for the conservativity contract.
+-- | 某些创作动作可能改善的欲望名（词汇相关性）。
 improvableDesires :: PraxState -> [String]
 improvableDesires st =
   [ desireName d | d <- desires st, improvable d ]
@@ -209,14 +179,7 @@ improvableDesires st =
                     || any (\i -> any (mayUnifySyms i) neg) inserted
       where (pos, neg, unc) = cookedWantPatterns (cookedDesires st Map.! desireName d)
 
--- | Classify every named desire's dead-now recipe (see 'Liveness'): a
--- negative want-kind is unconditionally 'FloorCheck'; a positive want-kind
--- gates on its top-level positive @Match@ conjuncts that are neither
--- action-insertable nor axiom-derivable (each such conjunct, cooked, is one
--- gate — 'null' qualifying conjuncts, an unresolvable\/wild outcome, or a
--- @Subquery@\/@Count@\/@Calc@-tainted want all fall back to 'AlwaysLive');
--- weight 0 is statically never-improvable already and is mapped 'AlwaysLive'
--- defensively (the static filter, 'improvableDesires', screens it first).
+-- | 分类每个具名欲望的此刻已死配方（见 'Liveness'）。
 livenessOf :: PraxState -> Map String Liveness
 livenessOf st =
   Map.fromList [ (desireName d, classify d) | d <- desires st ]
@@ -237,19 +200,7 @@ livenessOf st =
                     && not (derivable p)
         gates = [ [CMatch p] | p <- candidates, qualifies p ]
 
--- | Everything 'Prax.Planner.predictMove' (scope gate included) can read when
--- the pick's actor predicts mover @m@, as pattern anchors grounded to the
--- pair: the prediction-scope template (Actor:=actor, Witness:=m); the
--- believed-model source family (@\<actor\>.believes.desires.\<m\>.*@ — the
--- exact family "Prax.Minds" consults); the mover's death mark; every
--- practice's instance pattern, action conditions, and outcome-embedded
--- conditions (ForEach guards recursively, every function case — the imagined
--- apply queries these) with Actor:=m; and every vocabulary desire's
--- conditions with Owner:=m (model evaluation and the dead-now checks).
--- Ungrounded variables stay variables ('mayUnifySyms' wildcards): partial
--- grounding only ever widens the set, never narrows it — 'cpInits' and
--- function cases are left fully wild because their call-time bindings are
--- not the mover's.
+-- | 'Prax.Planner.predictMove'（作用域门）为预测行动者所读的一切。
 moverReadAnchors :: PraxState -> Character -> Character -> [[Sym]]
 moverReadAnchors st actor m =
   scopeReads ++ [believesRead, deadRead] ++ affordanceReads ++ functionReads ++ desireReads
@@ -289,17 +240,7 @@ outcomeCondReads b outs = concat
   where reads' cs os = cookedReadAnchors (map (groundCookedCondition b) cs)
                          ++ outcomeCondReads b os
 
--- | Per character, the affordance templates whose authored outcomes could
--- touch their own wants or desires — the opportunity-relevance half of the
--- v35 motive signature (spec @docs/specs/2026-07-13-v35-intentions.md@): a
--- newly available or vanished action interrupts a standing intention only
--- when some insert- or delete-shaped atom of its outcomes ('cookedOutcomeAtoms',
--- 'CCall's resolved through the declared functions) may-unify some pattern
--- the character's wants or held desires read ('cookedReadAnchors' — total,
--- subquery internals included). Conservative like everything here: an
--- unresolvable 'CCall' bears on everyone; over-bearing merely re-deliberates,
--- under-bearing would sleep through an arc (the probed "bold agent" failure:
--- dana serving Wait all drive while fresh deliberation wanted shun).
+-- | 每角色：其创作 want 所激励的 affordance 模板。
 bearingTemplates :: PraxState -> Map String [String]
 bearingTemplates st =
   Map.fromList [ (charName c, bearing (charPats c)) | c <- characters st ]
@@ -321,19 +262,7 @@ bearingTemplates st =
               Nothing -> True
               Just as -> any (\atom -> any (mayUnifySyms atom) pats) as ]
 
--- | Everything the registered world can ever contain, as pattern anchors:
--- the initial db's facts, every practice's insert-side atoms
--- ('cookedOutcomeAtoms'\'s insert half over ALL practices), every SCHEDULE
--- rule's insert-side atoms (unlike 'worldAtomPools', which ranges over movers
--- only: the consumer asks "can this fact ever exist", and schedule-moved facts
--- — @marketDay.*@, expiring feelings — exist), every axiom head
--- ('cookedRules'\' 'crHeads', □-lifted forms included — heads count regardless
--- of whether their rules can fire; conservative, which here only ever silences
--- the consumer), the engine's own @turn@ clock, and its @contradiction@ witness
--- ('Prax.Engine.reclose' inserts it at ⊥). @Nothing@ = wild (an
--- unresolvable 'CCall'): the caller must go silent. First consumer:
--- "Prax.TypeCheck"'s dead-condition lint
--- (spec @docs/specs/2026-07-15-v42-dead-condition-lint.md@).
+-- | 已注册世界最终可能包含的一切，用于死条件 lint；无法限界时为 @Nothing@。
 producibleAtoms :: PraxState -> Maybe [[Sym]]
 producibleAtoms st = do
   pairs <- sequence ( [ cookedOutcomeAtoms fns [] o

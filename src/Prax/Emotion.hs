@@ -30,30 +30,25 @@ annoyed = "annoyed"; pleased = "pleased"
 feelsPath :: String -> String -> String
 feelsPath who emotion = who ++ ".feels." ++ emotion
 
--- | @who@ comes to feel @emotion@ (untargeted).
+-- | @who@ 开始感到 @emotion@（无目标）。
 feel :: String -> String -> Outcome
 feel who emotion = Insert (feelsPath who emotion)
 
--- | @who@ comes to feel @emotion@ toward @target@. Arguments may be action
--- variables, grounded when the outcome runs.
+-- | @who@ 开始对 @target@ 感到 @emotion@。
 feelToward :: String -> String -> String -> Outcome
 feelToward who emotion target =
   Insert (feelsPath who emotion ++ ".toward." ++ target)
 
--- | Like 'feel', but the feeling EXPIRES @n@ round boundaries after onset (the
--- one lifetime mechanism, 'Prax.Types.InsertFor' — the same 'Prax.Schedule.lasts'
--- gives a schedule rule). Each onset lives its own @n@ rounds from when it
--- fired; re-feeling refreshes the timer, discharging ('unfeel') purges it.
+-- | 类似 'feel'，但情感在 @n@ 个回合边界后到期（经 'InsertFor'）。
 feelFor :: Int -> String -> String -> Outcome
 feelFor n who emotion = InsertFor n (feelsPath who emotion)
 
--- | Like 'feelToward', with an @n@-boundary lifetime (see 'feelFor').
+-- | 类似 'feelToward'，带 @n@ 边界寿命。
 feelTowardFor :: Int -> String -> String -> String -> Outcome
 feelTowardFor n who emotion target =
   InsertFor n (feelsPath who emotion ++ ".toward." ++ target)
 
--- | Discharge: the whole feeling goes, targets included (venting,
--- confronting, being won over — authored at the discharging action).
+-- | 释放：整段情感消失，目标一并清除。
 unfeel :: String -> String -> Outcome
 unfeel who emotion = Delete (feelsPath who emotion)
 
@@ -61,30 +56,11 @@ unfeelToward :: String -> String -> String -> Outcome
 unfeelToward who emotion target =
   Delete (feelsPath who emotion ++ ".toward." ++ target)
 
--- | @who@ currently feels @emotion@ — true the instant onset writes ANY
--- instance, targeted or not ('Match' sees subtrees). Since v39
--- ('Prax.Db.retract' prunes unasserted childless nodes; spec
--- @docs/specs/2026-07-15-v39-asserted-endpoints.md@) this correctly falls
--- back to 'False' the moment the last instance is discharged: 'unfeelToward'
--- deletes the targeted @.toward.\<target\>@ leaf, and the now-childless,
--- never-asserted @.toward@ scaffold is pruned rather than left standing, so
--- there is no residue for a subtree 'Match' to read. For PRICING that should
--- scale with how many targets remain, prefer 'feelingToward' with a fresh
--- variable as the target — not for safety (the residue trap is gone) but for
--- its per-target semantics.
+-- | @who@ 当前感到 @emotion@——一旦感到即为真（无目标或有目标皆可）。
 feeling :: String -> String -> Condition
 feeling who emotion = Match (feelsPath who emotion)
 
--- | @who@ feels @emotion@ toward @target@ — pass an already-known target for
--- a specific check, or a fresh variable (the caller's own choice of name) to
--- bind it to an ACTUAL remaining target, so a want priced over it counts once
--- per standing grudge (v38's reviewer note: −8 per target is the better
--- semantics than a single presence test over the bare subtree ('feeling')).
--- Since v39 both this and 'feeling' correctly stop matching once every
--- instance is discharged (the drained scaffold is pruned), so the choice
--- between them is about SEMANTICS — per-target pricing versus a single
--- presence test — not about avoiding a residue trap. The recommended shape
--- for any PRICING want over "still feels this, toward whoever".
+-- | @who@ 对 @target@ 感到 @emotion@。
 feelingToward :: String -> String -> String -> Condition
 feelingToward who emotion target =
   Match (feelsPath who emotion ++ ".toward." ++ target)

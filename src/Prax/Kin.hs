@@ -10,16 +10,7 @@ import           Prax.Types (Action, Outcome (..), action)
 import           Prax.Derive (Axiom, axiom)
 import           Prax.Faction (joins)
 
--- | Marriage symmetry, siblings, grandparents, in-laws — all derived, all
--- retraction-safe (dissolve the base fact and the closure forgets with it).
---
--- The two in-law rules are deliberately one-directional: the ACQUIRED
--- relative comes first, the ego (the spouse doing the acquiring) second —
--- @inLaw.P.B@ reads "P is B's in-law", where P is A's parent or sibling and B
--- is A's spouse, matching the spec's own "spouse's parent / sibling's spouse"
--- naming. No symmetric @inLaw.B.P@ is derived; a caller wanting the reverse
--- lookup adds it explicitly, the same way 'married' states its own symmetry
--- as a rule rather than assuming it.
+-- | 婚姻对称、兄弟姐妹、祖父母、姻亲——全部派生，全部由成员脊骨驱动。
 kinAxioms :: [Axiom]
 kinAxioms =
   [ axiom [ Match "married.A.B" ]                        [ "married.B.A" ]
@@ -30,9 +21,7 @@ kinAxioms =
   , axiom [ Match "married.A.B", Match "sibling.A.S" ]   [ "inLaw.S.B" ]
   ]
 
--- | @wed joiner faction spouse@: the marriage fact plus the joiner's membership
--- overwrite. WHO moves households (and to which faction) is the author's choice
--- per wedding — world content, not module policy.
+-- | @wed joiner faction spouse@：婚姻事实加上加入者的成员写入（嫁入即加入）。
 wed :: String -> String -> String -> [Outcome]
 wed joiner faction spouse
   | bad joiner || bad spouse =
@@ -43,9 +32,7 @@ wed joiner faction spouse
       , joins joiner faction ]
   where bad n = null n || any (`elem` (".!" :: String)) n
 
--- | Succession as exclusion: any child of the dead holder may claim; the
--- single-slot office takes one — first motivated claimant wins. No invented
--- primogeniture (age does not exist in the vocabulary).
+-- | 继承为排他：死者持有者的任何子女可主张；`!` 覆盖保证单一继承。
 succession :: String -> Action
 succession office
   | null office || any (`elem` (".!" :: String)) office =

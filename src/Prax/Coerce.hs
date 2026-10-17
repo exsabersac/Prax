@@ -44,7 +44,7 @@ import           Prax.Types (Action, Desire (..), Outcome (..), Want (..), actio
                              authoredVarClash, isPraxVar)
 import           Prax.Beliefs (beliefAbout)
 
--- | A coercion: the leverage skeleton with its content in named fields.
+-- | 胁迫：带内容槽的杠杆骨架（威胁欲望、服从、报复）。
 data Coercion = Coercion
   { coId            :: String       -- ^ single path segment; scopes this coercion's facts
   , coVictim        :: String       -- ^ the victim role variable (see the reserved set)
@@ -69,24 +69,7 @@ data Coercion = Coercion
                                     -- the racket cycles — one purchase per bought period.
   }
 
--- | @coerce coercion@ generates the threaten\/comply\/defy\/punish protocol
--- and the punitive 'Desire' it professes. The 'Desire' must be registered and
--- held (see the module haddock's registration contract).
---
--- Guards, all loud:
---
---   * 'coId' is a single path segment (no @.@\/@!@).
---   * 'coVictim' is not a reserved name — @Actor@\/@E@ (the generated actions'
---     own extorter\/victim roles), @Owner@ (the punitive desire's extorter),
---     @Hearer@, or the @Prax@ namespace. This also CLOSES a latent hole a
---     derive-and-filter design left open: a victim named @Actor@ would have
---     produced an unsatisfiable @Neq Actor Actor@ threaten, silently.
---   * the v40 splice guards on every authored field, each forbidding the
---     names that would CAPTURE in that field's own generated query — which is
---     frame-relative, not uniform: the trigger's own frame already binds
---     Actor to the extorter, so the trigger may name Actor (an
---     evidence-holding condition on the extorter, say); the Prax namespace
---     is reserved on every field regardless of frame.
+-- | @coerce coercion@ 生成威胁\/服从\/报复欲望与动作。
 coerce :: Coercion -> (Desire, [Action])
 coerce co
   | any (`elem` (".!" :: String)) sid =
@@ -197,33 +180,16 @@ coerce co
               : namespaceKernel victim (coKernel co) )
             (coWeight co))
 
--- | The generated punitive desire's name prefix (@punishes-@). The one home
--- both the mechanism (which builds @punishes-\<id\>@) and the well-formedness
--- checker ("Prax.TypeCheck", which recognizes a deposited punitive belief by
--- it) read — the v51\/v53 checker-imports-the-vocabulary precedent.
+-- | 生成的惩罚性欲望名前缀（@punishes-@）。
 punitivePrefix :: String
 punitivePrefix = "punishes-"
 
--- | The marker-insert selector shared by BOTH markers (the threat and the
--- @complied@ mark): Nothing compiles to a permanent 'Insert' (byte-identical
--- to the shipped default — 'Outcome' derives Eq), @Just n@ to v44's
--- boundary-exact 'InsertFor' (retraction at the nth 'Prax.Engine.roundBoundary',
--- delete-purges-pending, persistence via dues, all inherited). @n@ is the
--- author's fictional lifetime decision, exactly like every 'InsertFor' since
--- v44 — not a heuristic.
+-- | 两种标记共享的标记插入选择器：@Just n@ 为有寿命，@Nothing@ 为永久。
 lasting :: Maybe Int -> String -> Outcome
 lasting Nothing  s = Insert s
 lasting (Just n) s = InsertFor n s
 
--- | Alpha-rename an author-written kernel into the @Prax@ namespace,
--- op-preservingly (generalizing 'Prax.Blackmail'\'s @renameVictim@ from one
--- victim to the whole free-variable frame). The @victim@ variable → @PraxD@;
--- every other free variable, in first-appearance order and excluding the
--- mechanism interface name @Owner@, → @PraxW@, @PraxW2@, …. Renaming is by
--- NAME, applied uniformly through every 'Condition' constructor — so a
--- binder ('Subquery'\'s set\/find variables) and its interior uses move
--- together, and 'Match'\/'Not' pattern segments round-trip through 'tokens'
--- so each segment's following @.@\/@!@ operator is preserved.
+-- | 把作者写的内核 α-换名为 @Prax@ 命名空间（卫生）。
 namespaceKernel :: String -> [Condition] -> [Condition]
 namespaceKernel victim conds = map (renameCond subst) conds
   where
@@ -233,10 +199,7 @@ namespaceKernel victim conds = map (renameCond subst) conds
     praxNames = "PraxW" : [ "PraxW" ++ show n | n <- [2 :: Int ..] ]
     subst n = Map.findWithDefault n n m
 
--- | Apply a name substitution through every constructor of a 'Condition'.
--- 'Match'\/'Not' sentences are split via 'tokens', each segment name mapped,
--- and rejoined via 'tokensToSentence' — never a naive string substitution
--- that could corrupt @.@\/@!@ punctuation.
+-- | 对条件每个构造器应用名字替换。
 renameCond :: (String -> String) -> Condition -> Condition
 renameCond f = go
   where

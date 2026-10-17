@@ -22,8 +22,7 @@ import           Prax.Query (Condition (..))
 import           Prax.Types (Outcome (..))
 import           Prax.Deontic (oblige, discharge)
 
--- | The DB path of a debt: @debt.\<creditor\>.\<debtor\>.\<content\>@. Loudly
--- rejects a creditor or debtor name that isn't a single path segment.
+-- | 债务的 DB 路径：@debt.\<creditor\>.\<debtor\>.\<content\>@。多段名响亮拒绝。
 debtPath :: String -> String -> String -> String
 debtPath creditor debtor content
   | any (`elem` (".!" :: String)) creditor =
@@ -34,21 +33,16 @@ debtPath creditor debtor content
              ++ " must be a single path segment (no '.' or '!')")
   | otherwise = "debt." ++ creditor ++ "." ++ debtor ++ "." ++ content
 
--- | @owe creditor debtor content@ — debtor now owes creditor: the debt fact
--- AND the underlying 'Prax.Deontic.oblige', in one call (a debt IS an
--- obligation with a beneficiary; both facts assert together, or not at all).
+-- | @owe creditor debtor content@——债务人现欠债权人：债务事实加上双方动机。
 owe :: String -> String -> String -> [Outcome]
 owe creditor debtor content =
   [ Insert (debtPath creditor debtor content), oblige debtor content ]
 
--- | @settle creditor debtor content@ — the debt is cleared: deletes the debt
--- fact and 'Prax.Deontic.discharge's the obligation. The world supplies
--- whatever transfer action earns this (a repay\/gift\/forgive act); 'settle'
--- is only the bookkeeping that follows.
+-- | @settle creditor debtor content@——债务结清：删除债务事实并清除相关动机。
 settle :: String -> String -> String -> [Outcome]
 settle creditor debtor content =
   [ Delete (debtPath creditor debtor content), discharge debtor content ]
 
--- | Condition: @debtor@ currently owes @creditor@ @content@.
+-- | 条件：@debtor@ 当前欠 @creditor@ @content@。
 owes :: String -> String -> String -> Condition
 owes creditor debtor content = Match (debtPath creditor debtor content)

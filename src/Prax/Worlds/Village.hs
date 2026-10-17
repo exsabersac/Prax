@@ -1,26 +1,5 @@
--- | The village: the proving ground for the sandbox arc (spec
--- @docs/specs/2026-07-10-v19-witnessing-design.md@). v19 seeds it with the
--- witnessing keystone: bob steals a loaf in the square; whoever is /there/
--- comes to believe it and can act on the belief — whoever isn't, doesn't and
--- can't. v20 makes the news travel: carol tells; hearsay licenses suspicion,
--- not confrontation. v21 completes the arc: evidence settles into derived
--- standing, notoriety tips the thief into atonement, and forgiveness
--- follows; nothing is ever forgotten. v22 adds the adversarial layer: bob
--- keeps his secret by planning (waiting for an empty square), and eve's
--- whispered fabrication cascades through the same rumor/reputation
--- machinery as truth; the framed have no recourse (exculpation needs ground
--- truth the vocabulary deliberately lacks). v23 wires 'Prax.Sight' in:
--- everyone perceives (and, within a short horizon, remembers) where
--- everyone else is, which is what lets the planner's realistic,
--- belief-relative lookahead (@Prax.Planner@) predict a co-villager's next
--- move at all. v24 completes the moral arc: deterrence plus opportunity
--- yields industry (bob earns the loaf he cannot safely steal), with the
--- opportunism honestly kept.
---
--- v25 gives temperament teeth: eve and gale carry the same named spite, but
--- gale bears the honest trait — a conscience valuing her own lie-marks — so
--- eve whispers and gale never does, and anyone told of both spites predicts
--- the difference.
+-- | 村庄世界：目击、谣言、声誉、欺骗、事业、敲诈、告白的综合舞台。
+
 module Prax.Worlds.Village
   ( villageWorld
   , playerName
@@ -47,17 +26,16 @@ import           Prax.Confession (confess, absolve, incorrigible)
 import           Prax.Rng (draw)
 import           Prax.Emotion (feelTowardFor, unfeelToward, angry, feelingToward)
 
--- | You are a villager — one agent among many.
+-- | 你是村民——众代理之一。
 playerName :: String
 playerName = "you"
 
--- | Co-presence in the village: sharing a place.
+-- | 村庄同场：共享地点。
 together :: CoPresence
 together = [ Match "practice.world.world.at.Actor!P"
            , Match "practice.world.world.at.Witness!P" ]
 
--- | The village's sighting template, over the same movement vocabulary as
--- 'together': whoever shares a place with you is someone you see.
+-- | 村庄的目击模板，覆盖同一移动者变量。
 villageSighting :: [Condition]
 villageSighting = [ Match "practice.world.world.at.Seer!Spot"
                    , Match "practice.world.world.at.Seen!Spot" ]

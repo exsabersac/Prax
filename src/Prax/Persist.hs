@@ -28,9 +28,7 @@ import           Prax.Types (GroundedAction (..), Intention (..),
 import           Prax.Engine (withDb)
 import           Prax.Sym (intern, symName)
 
--- | A 'Val' crossing the file boundary as text, since interned symbols are
--- process-local (spec @docs/specs/2026-07-12-v29-interning.md@) — every
--- 'Prax.Sym.Sym' is written by name and re-interned on load.
+-- | 跨文件边界的文本化 'Val'，因符号不能直接序列化。
 data ValRepr = RS String | RN Integer | RT [[String]] deriving (Show, Read)
 
 reprVal :: Val -> ValRepr
@@ -60,19 +58,11 @@ unreprIntention (mga, (b, s, l, m)) =
              (Map.fromList [ (intern k, unreprVal v) | (k, v) <- bs ]) lbl) mga)
     (MotiveSignature b s l m)
 
--- | The save-format tag, first line of every serialized state. Bump it when the
--- line format below changes OR when the same bytes would carry different meaning
--- under the current world model (a Script save's fact vocabulary is part of that
--- model); 'deserializeState' rejects any other tag loudly — no silent misparse
--- of a save whose facts a freshly-constructed world no longer interprets.
+-- | 存档格式标签，每个序列化的首行。
 formatVersion :: String
 formatVersion = "prax-state v4"
 
--- | Serialize the mutable state (@cursor@ + standing intentions + all facts)
--- to text, with @!@/@.@ labels so the reload rebuilds the exclusion structure
--- exactly. Intention lines are prefixed @"intention "@; since fact sentences
--- are dot-paths with no spaces, that prefix cannot collide with a fact line
--- (the same disambiguation the @"cursor "@ header already relies on).
+-- | 序列化可变状态（@cursor@ + 站立实例等）为可存字符串。
 serializeState :: PraxState -> String
 serializeState st =
   unlines
@@ -88,10 +78,7 @@ serializeState st =
     ++ dbToLabeledSentences (db st)
     )
 
--- | Rebuild a saved state onto @world@ (a fresh world of the same kind, which
--- supplies the practice definitions and cast). Crashes loudly on malformed
--- input, including a malformed intention line, and on a save from another
--- format era (a version tag other than 'formatVersion').
+-- | 把已存状态重建到 @world@ 上（新鲜世界骨架 + 已存可变部分）。
 deserializeState :: String -> PraxState -> PraxState
 deserializeState text world =
   case lines text of
@@ -147,10 +134,10 @@ deserializeState text world =
         [nStr] | Just n <- readMaybe nStr -> n
         _ -> error ("Prax.Persist.deserializeState: malformed rngseed line: " ++ line)
 
--- | Save a session to a file.
+-- | 把会话保存到文件。
 saveState :: FilePath -> PraxState -> IO ()
 saveState path = writeFile path . serializeState
 
--- | Load a session from a file onto a fresh @world@.
+-- | 从文件加载会话到新鲜 @world@ 上。
 loadState :: FilePath -> PraxState -> IO PraxState
 loadState path world = deserializeState <$> readFile path <*> pure world

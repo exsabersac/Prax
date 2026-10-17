@@ -15,18 +15,18 @@ module Prax.Arc
 import           Prax.Query (Condition (..))
 import           Prax.Types (Outcome (..))
 
--- | The sentence @who.arc!stage@.
+-- | 句子 @who.arc!stage@。
 arcSentence :: String -> String -> String
 arcSentence who stage = who ++ ".arc!" ++ stage
 
--- | The path @who.arc@ (to bind the current stage: @Match (arcOf who ++ "!S")@).
+-- | 路径 @who.arc@（绑定当前阶段：@Match (arcOf who ++ "!S")@）。
 arcOf :: String -> String
 arcOf who = who ++ ".arc"
 
--- | Condition: @who@ is currently in arc stage @stage@.
+-- | 条件：@who@ 当前处于弧阶段 @stage@。
 arcIs :: String -> String -> Condition
 arcIs who stage = Match (arcSentence who stage)
 
--- | @who@ enters arc stage @stage@ (overriding any previous stage).
+-- | @who@ 进入弧阶段 @stage@（覆盖任何先前阶段）。
 enterArc :: String -> String -> Outcome
 enterArc who stage = Insert (arcSentence who stage)

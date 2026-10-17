@@ -1,33 +1,8 @@
--- | Readable JSON (de)serialization for a "Prax.Script" play-script.
+-- | "Prax.Script" 的 JSON 编解码（外部创作表面）。
 --
--- Rather than maintain a bespoke @.prompter@ grammar and parser, a play-script
--- round-trips through JSON: an author edits a @.json@ file and 'loadScript's it,
--- or dumps an existing 'Script' with 'encodeScript'. The schema is hand-written
--- (aeson's generic sum encoding is noisy) to stay legible — each condition and
--- effect is a single-key tagged object:
---
--- > { "start": "confidence",
--- >   "cast": [ { "name": "cassia", "playable": false,
--- >               "desires": [ { "utility": 100, "when": [ { "match": "dead.artus" } ] } ] } ],
--- >   "scenes": [ { "id": "confidence", "opening": "...",
--- >                 "beats": [ { "speaker": "cassia", "label": "...",
--- >                              "when": [ { "not": "confided" } ],
--- >                              "effects": [ { "insert": "confided" } ] } ],
--- >                 "junctions": [ { "name": "toBanquet", "to": "banquet",
--- >                                  "when": [ { "match": "confided" } ] },
--- >                                { "name": "gaveUp", "after": 5 } ] } ] }
---
--- A junction's optional @"after"@ is a round-count timeout (Prompter's timed
--- transition/@timeout_conclusion@, "Prax.Script"'s 'Prax.Script.after'\/
--- 'Prax.Script.timeout'): the ONLY way JSON expresses one. @"when"@ is always
--- 100% author content — the entry-stamp and timeout machinery ('compile'
--- expands @"after"@ into it at compile time) never appears in author data, so
--- it can never be spelled out literally in @"when"@ by hand.
---
--- The instances are (deliberately) orphans: keeping the JSON schema in one place
--- avoids coupling the core logic modules ("Prax.Query", "Prax.Types") to aeson.
-{-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
+-- @FromJSON@/@ToJSON@ 实例让剧本可从 JSON 进出；'Junction' 的解码是文档化的外部创作路径，
+-- 因此 v40 卫生检查放在 'Prax.Script.compile' 消费点，而非智能构造器。
+
 module Prax.Script.Json
   ( encodeScript
   , decodeScript
@@ -47,19 +22,19 @@ import           Prax.Script
 
 -- Public API ------------------------------------------------------------------
 
--- | Serialize a play-script to JSON (compact; pipe through @jq@ to pretty-print).
+-- | 把剧本序列化为 JSON（紧凑；可经美化管道）。
 encodeScript :: Script -> BL.ByteString
 encodeScript = encode
 
--- | Parse a play-script from JSON, reporting the error on failure.
+-- | 从 JSON 解析剧本，报告 aeson 错误。
 decodeScript :: BL.ByteString -> Either String Script
 decodeScript = eitherDecode
 
--- | Load and parse a play-script from a @.json@ file.
+-- | 从 @.json@ 文件加载并解析剧本。
 loadScript :: FilePath -> IO (Either String Script)
 loadScript path = decodeScript <$> BL.readFile path
 
--- | Write a play-script to a @.json@ file.
+-- | 把剧本写入 @.json@ 文件。
 saveScript :: FilePath -> Script -> IO ()
 saveScript path = BL.writeFile path . encodeScript
 
@@ -196,12 +171,7 @@ instance ToJSON Scene where
     object [ "id" .= sid, "opening" .= op, "setup" .= setup
            , "beats" .= beats, "junctions" .= juncs ]
 
--- | Loud, not silent, on a @"memories"@ field: aeson's 'withObject' otherwise
--- ignores unknown keys, which would let a script authored against the pre-v46
--- memory feature (deleted end-to-end, spec v46) decode with that content
--- quietly dropped. "Prax.Persist" took the same "same bytes, different
--- meaning" stance loudly (the v3 format bump rejects v1/v2 saves); a scene's
--- JSON schema gets the same treatment here.
+-- | 对 @"memories"@ 字段响亮而非沉默：aeson 的泛型会静默忽略未知字段；此处显式拒绝过时键。
 instance FromJSON Scene where
   parseJSON = withObject "Scene" $ \o -> do
     hasMemories <- isJust <$> (o .:? "memories" :: Parser (Maybe Value))

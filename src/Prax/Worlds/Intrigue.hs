@@ -1,17 +1,5 @@
--- | A dramatic vertical slice — "mini Blood & Laurels" — to verify empirically
--- that Versu-style drama is expressible on our primitives: a murder, a
--- character who can die (and leave the cast), betrayal vs. loyalty vs.
--- complicity, a light romance, and multiple distinct endings.
---
--- Rome. @cassia@ means to poison the patron @artus@; she confides the plot to
--- @marcus@ (the player). If no one warns Artus, Cassia poisons him — he dies and
--- is removed from play (ending: betrayal). Marcus, once he knows, may warn Artus
--- (ending: loyalty), do the deed himself (ending: complicity), or warm to
--- Cassia along the way. Left to the autonomous cast, the plot runs its course.
---
--- Uses: beliefs (Marcus learns the plot), the core model (gratitude/romance),
--- the FOL @Absent@ (freeze once an ending is reached), and the cast-removal
--- (`dead.<name>`) mechanic.
+-- | 阴谋世界：死亡与分支结局（`prax intrigue`）。
+
 module Prax.Worlds.Intrigue
   ( intrigueWorld
   , playerName
@@ -24,7 +12,7 @@ import           Prax.Core (coreFns, adjustScore, setBond, warmth)
 import           Prax.Emotion (feelToward, pleased)
 import           Prax.Beliefs
 
--- | The player is Marcus, the poet.
+-- | 玩家是诗人 Marcus。
 playerName :: String
 playerName = "marcus"
 
@@ -120,7 +108,7 @@ cassia = (character "cassia") { charDesires = ["kill-artus"] }
 
 -- Initial world ----------------------------------------------------------------
 
--- | The fully set-up episode.
+-- | 完全设置好的剧集。
 intrigueWorld :: PraxState
 intrigueWorld =
   foldl (flip performOutcome) withPractices setup

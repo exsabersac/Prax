@@ -36,17 +36,7 @@ poolRef :: IORef Pool
 poolRef = unsafePerformIO (newIORef (Pool Map.empty IntMap.empty 0 1))
 {-# NOINLINE poolRef #-}
 
--- | Intern a segment: total, idempotent, observably pure within a run.
---
--- __@name@ is forced to WHNF before the pool is touched__: a name built
--- from 'symName' (e.g. a re-interned rendered binding) is a thunk that
--- itself reads the pool; producing even its first character requires
--- 'symName'\'s whole @unsafePerformIO@ action to run to completion (an
--- already-known string comes back, not a further pool-dependent thunk).
--- Left lazy, that forcing would happen from /inside/ the
--- 'atomicModifyIORef'' callback below, nesting a second pool access inside
--- the first while the first's update is still in flight; forcing WHNF here
--- keeps every pool access strictly ordered, one at a time.
+-- | intern 一段：全、幂等、可观察纯（全局池）。
 intern :: String -> Sym
 intern !name =
   unsafePerformIO (atomicModifyIORef' poolRef step)
@@ -64,20 +54,7 @@ intern !name =
              , s )
 {-# NOINLINE intern #-}
 
--- | The segment a symbol names. Loud error on a foreign id (impossible for
--- any 'Sym' produced by 'intern').
---
--- __Bang pattern is load-bearing__, same hazard as 'intern'/'symOfId': a
--- @newtype@ pattern match has no runtime tag to match against, so
--- @(Sym i)@ alone does NOT force its scrutinee — matching it is a plain
--- coercion, not a demand. Without the bang, a caller passing a still-thunked
--- 'Sym' built from a fresh, not-yet-run 'intern' call could have
--- 'readIORef' race ahead of that 'intern' call's pool write. GHC's own
--- strictness analysis happens to erase this window at @-O1@ (it proves
--- @i@ is always demanded and reorders accordingly) — but that is an
--- optimizer coincidence, not a correctness guarantee this code should rely
--- on; the bang makes the ordering explicit and correct at any optimization
--- level.
+-- | 符号所命名的段。外来 id 响亮报错。
 symName :: Sym -> String
 symName (Sym !i) = unsafePerformIO $ do
   Pool _ rev _ _ <- readIORef poolRef
@@ -86,29 +63,15 @@ symName (Sym !i) = unsafePerformIO $ do
     Nothing -> error ("symName: unknown symbol id " ++ show i)
 {-# NOINLINE symName #-}
 
--- | Is this segment a logic variable? A bit test — see the module header.
+-- | 此段是否为逻辑变量？位测试——见模块头奇偶约定。
 symIsVar :: Sym -> Bool
 symIsVar (Sym i) = odd i
 
--- | The raw interned id, for 'Prax.Db', which needs a machine 'Int' to key
--- its trie's 'Data.IntMap.Strict.IntMap'. __Map-keying escape hatch only__ —
--- never compare, serialize, or render this id; it is first-encounter ordered
--- and run-dependent, exactly like the 'Sym' it came from. Pair with
--- 'symOfId' to recover the 'Sym' when reading a key back out of the map.
+-- | 原始 intern id，供 'Prax.Db' 需要 Int 键处使用。
 symId :: Sym -> Int
 symId (Sym i) = i
 
--- | Reconstruct a 'Sym' from a raw id — the read side of the map-keying
--- escape hatch (see 'symId'). The id must have originated from 'symId' on a
--- real 'Sym' (every id 'Prax.Db' ever stores as an 'IntMap' key satisfies
--- this); loud error on a foreign id, exactly as 'symName'.
---
--- __Bang pattern is load-bearing__: @i@ must be forced to WHNF before
--- 'poolRef' is read. Without it, @i@ is a lazy variable pattern, so a caller
--- passing an unforced @i@ derived from a fresh, not-yet-run 'intern' call
--- (e.g. @symOfId (symId (intern name))@) can have 'readIORef' race ahead of
--- that 'intern' call's pool write, observing a stale pool and failing on an
--- id that was, at that very moment, being assigned.
+-- | 从原始 id 重建 'Sym'——读侧，配对 'symId'。
 symOfId :: Int -> Sym
 symOfId !i = unsafePerformIO $ do
   Pool _ rev _ _ <- readIORef poolRef

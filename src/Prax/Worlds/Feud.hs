@@ -1,18 +1,5 @@
--- | An __emergent sandbox__ demo (the direction the engine is heading — a social
--- substrate for other games, not authored IF). It shows the derivation layer
--- ("Prax.Derive") doing the work: from /one/ authored fact and a handful of
--- domain rules, a whole feud emerges — people who never met come to resent
--- someone purely through the alliance network — and it is __defeasible__: make
--- amends and the enmity dissolves on its own.
---
--- Setup (v31): Alice wronged Bob; Bob, Carol, and Dave are house kestrel
--- ("Prax.Faction" membership — 'comrades' derives their alliances); Esme is
--- house wren, marriageable across the lines ("Prax.Kin"). The rules say
--- alliances are mutual, the wronged resent the wrongdoer, and "the enemy of my
--- ally is my enemy". Forward-chaining ('readView') then derives
--- @resents.bob.alice@, @resents.carol.alice@, @resents.dave.alice@ — Alice is shunned
--- by Bob's entire network though she only ever wronged Bob. Retract the wrong
--- (Alice "makes amends") and every derived @resents@ — and the shunning — vanishes.
+-- | 宿怨世界：派系与亲属的涌现派生演示。
+
 module Prax.Worlds.Feud
   ( feudWorld
   , bigFeud
@@ -27,7 +14,7 @@ import           Prax.Derive (Axiom, axiom)
 import           Prax.Faction (joins, comrades)
 import           Prax.Kin (kinAxioms)
 
--- | You are Alice — the one who gave offence.
+-- | 你是 Alice——冒犯者。
 playerName :: String
 playerName = "alice"
 
@@ -74,16 +61,7 @@ alice :: Character
 alice = (character playerName)
   { charWants = [ Want [ Match "shunned.Other.alice" ] (-10) ] }  -- dislikes being shunned
 
--- | The set-up sandbox: three domain rules + one act of offence, and a feud
--- assembles itself. Bob, carol and dave share one house (kestrel); 'comrades'
--- derives the @allied@ facts the old world used to assert directly. Esme
--- starts in a house of her own (wren) — inert to the feud until a wedding
--- moves her in (tested in "Prax.FeudSpec"). All of 'Prax.Kin.kinAxioms'
--- is wired in wholesale here — the families are namespace-disjoint, so
--- inclusion is free and the wedding needs only the marriage rules; an
--- authored choice for this world, not a spec mandate — harmless to the
--- unmodified feud tests since no @parent.*@/@married.*@ base fact exists
--- until a wedding inserts one.
+-- | 设置沙箱：三条域规则 + 一条义务闭合。
 feudWorld :: PraxState
 feudWorld =
   setAxioms (feudAxioms ++ kinAxioms) (foldl (flip performOutcome) withPractices setup)
@@ -102,13 +80,7 @@ feudWorld =
       , joins "esme" "wren"
       ]
 
--- | A scaled feud (for scale demos / benchmarks): @n@ grudge-bearers in an
--- alliance chain, all turned against Alice by the one original wrong — so the
--- closure derives @O(n)@ enmities and the planner has @n+1@ movers per node.
--- UNCHANGED by the faction refactor: the pairwise @allied@ chain is the
--- benchmark's own design, not the demo world's — base @allied.*@ facts
--- remain legal vocabulary (spec's ontology note: not every alliance is a
--- membership).
+-- | 放大的宿怨（供规模演示\/基准）：@n@ 户。
 bigFeud :: Int -> PraxState
 bigFeud n =
   setAxioms feudAxioms (foldl (flip performOutcome) withPractices setup)

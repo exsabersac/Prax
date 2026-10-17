@@ -16,9 +16,7 @@ module Prax.Sight
 import           Prax.Query (Condition (..), CmpOp (..), CalcOp (..))
 import           Prax.Types (turnPath)
 
--- | Scope fragment over @Actor@\/@Witness@: the Witness was sighted within the
--- last @h@ ticks. Worlds @Or@ this with co-presence-now in their
--- 'predictionScope'.
+-- | 关于 @Actor@\/@Witness@ 的作用域片段：Witness 在给定回合数内被看见过（共享地点的近期记忆）。
 sightedWithin :: Int -> [Condition]
 sightedWithin h =
   [ Match "Actor.believes.atSince.Witness!Since"

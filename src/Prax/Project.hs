@@ -32,9 +32,7 @@ import           Data.List (nub, (\\))
 import           Prax.Query (Condition (..))
 import           Prax.Types
 
--- | One moving part of the work: its ledger key, action label, the sibling
--- parts it depends on, what the world must provide, and what completing it
--- does to the world (beyond writing the ledger).
+-- | 工作的一个活动部分：其账本键、动作与完成结果。
 data Part = Part
   { partName   :: String       -- ^ single path segment; the ledger key
   , partLabel  :: String       -- ^ action label
@@ -43,21 +41,7 @@ data Part = Part
   , partYields :: [Outcome]
   }
 
--- | An authored endeavor: the undertake action (for the world to slot into
--- one of its own practices), the part-set practice, and the named pursuit
--- desire (for the world's vocabulary). One instance per owner; a finished
--- instance persists as the record of the work.
---
--- The undertake and the parts live in /different/ practices, so an endeavor
--- owner must not be 'charBoundTo' a single practice — a bound character could
--- undertake but never complete a part (or vice versa). Only bodiless
--- mechanism characters are ever bound; keep it that way for owners.
---
--- Every 'partAfter' name is validated against the actual part set — a dangling
--- or misspelled edge is a LOUD construction error, as is a name that forms or
--- feeds a cycle (the whole endeavor would be silently unreachable). The
--- fact-path convention is PRIVATE: the compiler builds the ledger conditions
--- itself, so a typo'd edge cannot fail silently as a never-available part.
+-- | 创作的事业：承接动作（对行动者）加上各部分，完成记入账本。
 endeavor :: String        -- ^ project id (a single path segment)
          -> Int           -- ^ pursuit weight: +w per completed part
          -> String        -- ^ undertake label

@@ -22,25 +22,22 @@ module Prax.Beliefs
 import           Prax.Query (Condition (..))
 import           Prax.Types (Outcome (..))
 
--- | The sentence @who.believes.\<issue\>!value@. @issue@ may be a dotted
--- sub-path (e.g. @"resentedBy.ada"@). Any part may be an action variable,
--- grounded when used in an outcome/condition.
+-- | 句子 @who.believes.\<issue\>!value@。@issue@ 可以是点分路径（多段议题）。
 beliefSentence :: String -> String -> String -> String
 beliefSentence who issue value = who ++ ".believes." ++ issue ++ "!" ++ value
 
--- | The path @who.believes.\<issue\>@, for binding the believed value:
--- @Match (beliefAbout who issue ++ "!V")@.
+-- | 路径 @who.believes.\<issue\>@，用于绑定所信的值。
 beliefAbout :: String -> String -> String
 beliefAbout who issue = who ++ ".believes." ++ issue
 
--- | @who@ comes to believe @issue@ has @value@ (overriding any prior value).
+-- | @who@ 开始相信 @issue@ 的值为 @value@（覆盖任何先前值）。
 believe :: String -> String -> String -> Outcome
 believe who issue value = Insert (beliefSentence who issue value)
 
--- | Condition: @who@ believes @issue@ is @value@.
+-- | 条件：@who@ 相信 @issue@ 为 @value@。
 believesThat :: String -> String -> String -> Condition
 believesThat who issue value = Match (beliefSentence who issue value)
 
--- | @who@ drops any belief about @issue@.
+-- | @who@ 丢掉关于 @issue@ 的任何信念。
 forget :: String -> String -> Outcome
 forget who issue = Delete (beliefAbout who issue)

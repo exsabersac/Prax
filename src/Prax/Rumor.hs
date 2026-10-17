@@ -18,23 +18,7 @@ import           Prax.Types (Action, Outcome (..), action, authoredVarClash, aut
 import           Prax.Beliefs (beliefAbout)
 import           Prax.Witness (CoPresence, asRole)
 
--- | An action: tell a co-present hearer about an event you have evidence for.
---
--- The event pattern may use variables (e.g. @\"stole.Culprit.Item\"@); its
--- __first__ variable is the rumor's subject, who is never offered as a hearer
--- (you don't tell bob about bob's theft). Also never offered: the teller
--- themself, an eyewitness (no news value), and anyone this teller has already
--- told (@.heard.\<teller\>@ doubles as the one-shot marker). The world adds its
--- own gate (e.g. "not someone you distrust") and its 'CoPresence' template —
--- written over @Witness@, retargeted at the @Hearer@ via 'Prax.Witness.asRole'.
---
--- The evidence condition is a /prefix/ match on @believes.\<event\>@: the node
--- exists iff some provenance edge sits beneath it, and matching the prefix
--- binds the pattern's variables exactly once per known event no matter how
--- many provenance edges there are — no duplicate tells for a teller who both
--- saw and heard. The event pattern's namespace must not overlap any valued-belief
--- issue path in the same world — 'Witness' and gossip deposits must be the only
--- writers under the pattern's @believes.@ prefix.
+-- | 一个动作：把你持有证据的事件告诉同场听者。世界可经额外条件加门（如不信任门）。
 gossip :: CoPresence -> [Condition] -> String -> String -> Action
 gossip copresence gate pat label
   | (v : _) <- offenders =
@@ -56,8 +40,6 @@ gossip copresence gate pat label
          , Not (beliefAbout "Hearer" pat ++ ".heard.Actor") ]
       ++ gate
 
--- | Condition: @who@ has hearsay evidence of @event@ (from anyone). A boolean
--- ∃, so multiple sources yield one row — corroboration never duplicates an
--- affordance.
+-- | 条件：@who@ 对 @event@ 有传闻证据（来自任何人）。该子树上的布尔 `Exists`。
 heard :: String -> String -> Condition
 heard who event = Exists [ Match (beliefAbout who event ++ ".heard.Src") ]

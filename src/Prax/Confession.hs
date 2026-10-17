@@ -18,24 +18,7 @@ import           Prax.Witness (CoPresence, asRole)
 segOk :: String -> Bool
 segOk n = not (null n) && all (`notElem` (".!" :: String)) n
 
--- | Confess ONE deed (one mark binding) to a co-present hearer. The lied-mark
--- is the precondition and it CONVERTS — a deed can be confessed once; further
--- hearers learn by gossip. @H@ is the mark's own original-hearer slot and is
--- reserved in the MARK pattern. The discharge @verb@ names what the mark
--- becomes (shipped worlds pass @\"confessed\"@; recant, boast, admit — same
--- machinery, a different word for what survives).
---
--- The MARK pattern and the DEPOSIT pattern are deliberately separate
--- (amended after implementation blocked on the anticipated shape finding): a
--- content-shaped mark (e.g. @\"stole.C.loaf\"@, priceable by conscience) and
--- an act-shaped standing (e.g. @\"whispered.V.H\"@, what confessing a LIE
--- actually reveals — the act and its falsity, not a re-assertion of the
--- fabricated content) cannot share one pattern. The deposit is grounded from
--- the mark's own bindings only (@Actor@, @H@, and the mark pattern's own
--- variables) — any other deposit variable would insert a variable-bearing
--- fact, so it is a loud error. Worlds whose deed IS self-shaped (the mark's
--- content and what it reveals coincide) pass the same pattern for both
--- arguments, explicitly — there is no default.
+-- | 向同场听者告白 *一桩* 行为（一个标记绑定）；听者可赦免。
 confess :: String -> String -> CoPresence -> String -> String -> String -> Action
 confess kind verb copresence markPat depositPat label
   | not (segOk kind) =
@@ -68,9 +51,7 @@ confess kind verb copresence markPat depositPat label
             , Insert confessedPath
             , Insert (beliefAbout "Hearer" depositPat ++ ".heard.Actor") ]
 
--- | Grant absolution: insert the world's defeater for a deed confessed TO YOU
--- (the belief must be heard from its own doer — gossip does not qualify),
--- unless your patience is spent (the incorrigibility regard).
+-- | 给予赦免：为该主体插入世界的击败者（通常清除恶名站队）。
 absolve :: String -> String -> String -> String -> Action
 absolve defeater pat incLabel label
   | not (segOk defeater) || not (segOk incLabel) =
@@ -88,28 +69,7 @@ absolve defeater pat incLabel label
         , Not (defeater ++ "." ++ confessor) ]
         [ Insert (defeater ++ "." ++ confessor) ]
 
--- | Patience as knowledge: the believer regards the offender @label@ once
--- they believe at least @k@ distinct instances of the deed — however they
--- learned them.
---
--- Mirrors 'Prax.Repute.notoriety''s Count idiom pointed inward, with one
--- correction the mirroring forces: 'notoriety' keeps its outer existence
--- check (@regards.W0.T.label@) and its counting 'Subquery' (@regards.W.T.label@)
--- on DIFFERENT names for the counted role (@W0@ vs @W@) — only the FIXED
--- role (@T@, the subject) is shared text between the two. A literal
--- transliteration that instead points the pattern's own deed variables
--- (@rest@) at both the outer 'Match' and the inner 'Subquery' verbatim binds
--- @rest@ before the subquery ever runs, so the subquery re-checks the single
--- already-known instance and 'Count' is always 1 — the threshold could never
--- fire for any @k > 1@ (checked directly against the engine: a believer of
--- two distinct instances of the same offender's deed failed to derive the
--- regard at @k = 2@ under that transliteration). The outer 'Match' here
--- instead witnesses existence over DUMMY names for @rest@ (the deed's
--- non-offender variables, each suffixed @0@ — 'notoriety''s own @W@\/@W0@
--- convention generalized to every deed variable) so they stay free entering
--- the 'Subquery', which alone does the real per-instance counting under
--- their true names. The axiom's own believer\/subquery-set\/count variables
--- live in the @Prax@ namespace (v40).
+-- | 耐心即知识：信徒在重复冒犯后 regard 冒犯者为不可救药。
 incorrigible :: String -> Int -> String -> Axiom
 incorrigible pat k label
   | not (segOk label) =

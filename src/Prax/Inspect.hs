@@ -18,18 +18,14 @@ import           Prax.Sym (intern)
 import           Prax.Types
 import           Prax.Engine (renderText)
 
--- | The first condition (in evaluation order) after which the conjunction has no
--- solution from @b0@ — the condition that blocks the query — or 'Nothing' if the
--- whole conjunction is satisfiable.
+-- | 求值序中合取首次无解之后的第一个条件——「此动作为何不可用？」的答案。
 firstFailing :: Db -> [Condition] -> Bindings -> Maybe Condition
 firstFailing d conds b0 =
   listToMaybe [ conds !! (k - 1)
               | k <- [1 .. length conds]
               , null (query d (take k conds) b0) ]
 
--- | For @actor@, explain every action whose name contains @needle@: for each
--- practice instance it could apply to, either it is @AVAILABLE@ or it is
--- @blocked by@ a specific condition.
+-- | 对 @actor@，解释名字含 @needle@ 的每个动作：对每个动作，报告 'firstFailing' 条件（若有）。
 explain :: PraxState -> String -> String -> [String]
 explain st actor needle =
   [ label ++ verdict

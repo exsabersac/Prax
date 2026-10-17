@@ -19,17 +19,15 @@ module Prax.Conversation
 import           Prax.Query (Condition (..))
 import           Prax.Types (Outcome (..), Action, action)
 
--- | Path of a conversation instance between @x@ and @y@ (in this order).
+-- | @x@ 与 @y@ 之间对话实例的路径（规范化序，使双向同一槽）。
 talkPath :: String -> String -> String
 talkPath x y = "practice.converse." ++ x ++ "." ++ y
 
--- | Condition: @x@ and @y@ are conversing (this ordering).
+-- | 条件：@x@ 与 @y@ 正在交谈（此序）。
 talkingWith :: String -> String -> Condition
 talkingWith x y = Match (talkPath x y)
 
--- | Outcomes that open a conversation: @opener@ becomes the first speaker,
--- @other@ the listener, starting on @topic@. Records @topic@ as visited and
--- marks the pair as having chatted (so a world can prevent re-opening).
+-- | 打开对话的结果：@opener@ 成为说话者，话题设为所给主题。
 beginConversation :: String -> String -> String -> [Outcome]
 beginConversation opener other topic =
   [ Insert base
@@ -60,11 +58,7 @@ passTurn =
   , Insert (convP ++ ".listener!Actor")
   ]
 
--- | A quip: a line the current speaker can say once, on the given @topic@, with
--- @effects@ (and any extra @conds@). Saying it passes the turn.
---
--- @key@ is a short unique tag used to record that this quip has been said (so it
--- is one-shot per speaker); @label@ is the displayed line template.
+-- | 一句 quip：当前说话者可说一次的台词，说完后换边。
 quip :: String -> String -> String -> [Condition] -> [Outcome] -> Action
 quip key label topic conds effects =
   action label
@@ -74,8 +68,7 @@ quip key label topic conds effects =
       ++ conds)
     ([ Insert (convP ++ ".said." ++ key ++ ".Actor") ] ++ effects ++ passTurn)
 
--- | Steer the conversation onto @newTopic@ (only if not already there and not
--- already covered). Passes the turn.
+-- | 把对话舵向 @newTopic@（仅当尚无人在该话题上）。
 changeSubject :: String -> String -> Action
 changeSubject label newTopic =
   action label
@@ -85,7 +78,7 @@ changeSubject label newTopic =
     ([ Insert (convP ++ ".topic!" ++ newTopic)
      , Insert (convP ++ ".visited." ++ newTopic) ] ++ passTurn)
 
--- | End the conversation (removes the instance).
+-- | 结束对话（移除实例）。
 endConversation :: String -> Action
 endConversation label =
   action label speakerConds [ Delete convP ]

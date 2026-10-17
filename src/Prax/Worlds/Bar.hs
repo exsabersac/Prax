@@ -1,23 +1,5 @@
--- | The demo storyworld: movement, greeting, and tending bar, wired to the Core
--- Model (v2) and now to Reactions & Norms (v3).
---
--- Cast: @you@ (the player), @ada@ (an NPC bartender) and @bex@ (an NPC patron).
---
--- Social loops (see @docs/WALKTHROUGH.md@):
---
---   * greeting/serving raise a numeric @warmth@ evaluation; once warm enough,
---     the "buy … a drink" affordance appears (a relationship creating a goal);
---   * a greeting spawns a @respondGreet@ reaction — the greeted party can greet
---     back (mutual warmth), rebuff (both cool), or, if they ignore it, be taken
---     to task for the snub;
---   * being served spawns a @settleUp@ obligation — tip (norm respected, warms
---     the bartender) or leave the tab (a norm violation that spawns the
---     bartender's disapproval). Agents given a strong aversion to their own
---     violation will tip rather than stiff;
---   * the engine's period-1 sighting rule ('Prax.Schedule.sightRule') keeps
---     everyone's sense of where everyone else is (or was, recently) current,
---     which is what the planner's belief-relative lookahead needs to ever
---     predict someone else's move.
+-- | 酒吧世界：导览 Part I 的核心舞台（移动、点单、情感、对话）。
+
 module Prax.Worlds.Bar
   ( barWorld
   , playerName
@@ -39,7 +21,7 @@ import           Prax.Sight (sightedWithin)
 import           Prax.Schedule (sightRule)
 import           Prax.Witness (CoPresence)
 
--- | The character the human player controls.
+-- | 人类玩家控制的角色。
 playerName :: String
 playerName = "you"
 
@@ -49,13 +31,12 @@ buyThreshold = 15
 
 -- Practices ---------------------------------------------------------------------
 
--- | Co-presence at the bar: sharing a place.
+-- | 酒吧同场：共享地点。
 together :: CoPresence
 together = [ Match "practice.world.world.at.Actor!P"
            , Match "practice.world.world.at.Witness!P" ]
 
--- | The bar's sighting template, over the same movement vocabulary as
--- 'together': whoever shares a place with you is someone you see.
+-- | 酒吧的目击模板，覆盖同一移动者变量。
 barSighting :: [Condition]
 barSighting = [ Match "practice.world.world.at.Seer!Spot"
                , Match "practice.world.world.at.Seen!Spot" ]
@@ -532,7 +513,7 @@ cai = (character "cai")
              , Match "practice.greet.world.bought.cai.T" ] (-8)
       ] }
 
--- | The name of the drama-manager the player controls in 'barDirectorWorld'.
+-- | 玩家可控制的戏剧管理器之名。
 directorName :: String
 directorName = "director"
 
@@ -554,8 +535,7 @@ barSorts =
   , ("place",        ["bar", "entrance"])
   ]
 
--- | The fully initialized bar: practices (core-model + reaction libraries)
--- defined, instances spawned, cast placed.
+-- | 完全初始化的酒吧：实践（核心模型等）与阵容已装。
 barWorld :: PraxState
 barWorld =
   (foldl' (flip performOutcome) withPractices setup)
@@ -593,10 +573,7 @@ barWorld =
       , Insert "practice.arc.bex"
       ]
 
--- | The same bar, but the human is the __drama manager__ (Versu §XI): the player
--- controls 'directorPlayer', steering an autonomous cast (ada, bex, cai) with
--- authorial nudges instead of embodying a character. There is no @you@ — the
--- player is the unseen hand shaping the evening.
+-- | 同一酒吧，但人类是 __戏剧管理器__ 而非酒吧常客。
 barDirectorWorld :: PraxState
 barDirectorWorld =
   (foldl' (flip performOutcome) withPractices setup)

@@ -1,12 +1,5 @@
--- | A short play-script that exercises two Prompter compilation features in one
--- story: a __character sketch__ (the ambitious Duke, whose /concern/ for royal
--- favour makes him flatter the king unbidden), and a __timed junction__ (the
--- audience ends of its own accord if you dawdle).
---
--- You are the envoy at a royal audience. Flatter the king to win a little favour,
--- then present your petition while you still have it — do it and the petition is
--- @granted@; dither and the king's patience runs out (@dismissed@). All the while
--- the Duke, who cares only for standing at court, works the room on his own.
+-- | 观众世界：演示 Prompter 编译特性（场景图、耐心标记、结局）。
+
 module Prax.Worlds.Audience
   ( audienceScript
   , audienceWorld
@@ -18,7 +11,7 @@ import           Prax.Types (PraxState, Outcome (..))
 import           Prax.Core (adjustScore, scoreAtLeast)
 import           Prax.Script
 
--- | You are the envoy.
+-- | 你是使节。
 playerName :: String
 playerName = "envoy"
 
@@ -61,6 +54,6 @@ audience = (scene "audience")
       ]
   }
 
--- | The compiled, ready-to-run audience.
+-- | 已编译、可运行的观众世界。
 audienceWorld :: PraxState
 audienceWorld = compile audienceScript

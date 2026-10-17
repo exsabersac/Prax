@@ -38,21 +38,7 @@ import           Prax.Witness (CoPresence, asRole)
 import           Prax.Debt (owe)
 import           Prax.Coerce (Coercion (..), coerce)
 
--- | @shakedown id copresence pat price w@ builds the exposure 'Coercion' and
--- returns @'coerce'@ of it: the threaten\/comply\/defy\/expose protocol and
--- the punitive 'Desire' it professes.
---
--- * @id@ — a single path segment scoping this shakedown's facts (the
---   primitive errors loudly otherwise), so more than one may coexist.
--- * @copresence@ — the world's co-presence template ("Prax.Witness"),
---   relating @Actor@ to whichever role it is retargeted onto.
--- * @pat@ — the evidence pattern, e.g. @\"stole.V.loaf\"@; its __first__
---   variable is the victim (mirrors 'Prax.Deceit.lie'\'s convention — loud
---   error if @pat@ names no one).
--- * @price@ — the debt content the victim pays to buy silence (e.g.
---   @\"favor\"@; "Prax.Debt" composes it into a real debt\/obligation).
--- * @w@ — the extorter's punitive weight: utility per believer of @pat@ once
---   the threat is live or has been defied.
+-- | @shakedown id copresence pat price w@ 构建完整敲诈实践：威胁、支付、报复。
 shakedown :: String        -- ^ id (single path segment)
           -> CoPresence    -- ^ co-presence template
           -> String        -- ^ evidence pattern; first variable = victim

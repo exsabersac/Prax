@@ -21,16 +21,14 @@ import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Derive (Axiom, axiom)
 
--- | A named bundle of conduct-valuations. The name must be a single path
--- segment (it becomes one in @trait.\<who\>.\<name\>@ facts).
+-- | 具名的行为估值包。名必须是单段路径段（用作欲望名）。
 data Trait = Trait
   { traitName    :: String
   , traitDesires :: [Desire]  -- ^ valuations over the bearer's own conduct-marks
   }
   deriving (Eq, Show)
 
--- | The desires a trait list contributes to a world's vocabulary. Loud error
--- on a duplicate desire name (bundles must not collide).
+-- | 特质列表向世界词汇贡献的欲望。重复名响亮报错。
 personaVocabulary :: [Trait] -> [Desire]
 personaVocabulary traits =
   case names \\ nub names of
@@ -40,23 +38,17 @@ personaVocabulary traits =
     ds    = concatMap traitDesires traits
     names = map desireName ds
 
--- | Endow a character with a trait: they hold each of its desires by name.
+-- | 赋予角色一种特质：他们按名持有其每个欲望。
 bearing :: Trait -> Character -> Character
 bearing t c = c { charDesires = charDesires c ++ map desireName (traitDesires t) }
 
--- | Temperament is worn on the sleeve: every character presumes a bearer's
--- conduct-valuations. Defeasible (@.presumed@) like all derived belief.
+-- | 性情写在袖口：每个角色假定持有者持有其特质欲望（透明）。
 transparent :: Axiom
 transparent = axiom
   [ Match "trait.M.T", Match "traitDesire.T.D", Match "character.P" ]
   [ "P.believes.desires.M.D.presumed" ]
 
--- | Deterministic roster assembly over hand-authored base characters: each
--- member 'bearing' their traits, plus the setup facts 'transparent' reads —
--- @trait.\<who\>.\<name\>@ per bearing, @traitDesire.\<trait\>.\<desire\>@
--- once per trait, @character.\<who\>@ per member. Loud errors: a trait name
--- that is not a single path segment; a duplicate trait; a borne trait missing
--- from the vocabulary list (its valuations would be silently illegible).
+-- | 在手写基角色上的确定性阵容装配：每名角色带上所列特质并贡献 setup 结果。
 cast :: [Trait] -> [(Character, [Trait])] -> ([Character], [Outcome])
 cast traits roster
   | (bad : _) <- [ n | n <- tnames, null n || any (`elem` (".!" :: String)) n ] =

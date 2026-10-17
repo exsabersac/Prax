@@ -47,16 +47,13 @@ endingReached st =
   listToMaybe [ e | b <- unify "ending.E" (db st) Map.empty
                   , Just e <- [valToString <$> Map.lookup (intern "E") b] ]
 
--- | The current member of a coverage @family@, if any (a @\<family\>.\<id\>@
--- path — e.g. a "Prax.Script" world's @currentScene!\<id\>@ fact). Worlds
--- with no fact in the family simply report nothing, so a caller can name any
--- family without checking first whether the world under test populates it.
+-- | 覆盖 @family@ 的当前成员（若有）（场景 id 等）。
 familyReached :: String -> PraxState -> Maybe String
 familyReached family st =
   listToMaybe [ s | b <- unify (family ++ ".S") (db st) Map.empty
                   , Just s <- [valToString <$> Map.lookup (intern "S") b] ]
 
--- | The result of one random play.
+-- | 一次随机游玩的结果。
 data RunResult = RunResult
   { runEnding  :: Maybe String   -- ^ the ending reached, if any
   , runActions :: Set String     -- ^ ids of actions performed
@@ -67,11 +64,7 @@ data RunResult = RunResult
   , runTurns   :: Int
   } deriving (Eq, Show)
 
--- | Play one game for up to @cap@ turns: each turn the next living character
--- performs a uniformly-random available action, stopping at an ending, the turn
--- cap, no one left alive, or a true dead end (a full round in which no living
--- character has any move). A character with no action simply passes.
--- @mFamily@ is the optional coverage family to track (see 'familyReached').
+-- | 最多 @cap@ 回合玩一局：每回合玩家随机选，NPC 经 planner。
 runRandom :: Int -> Word64 -> Maybe String -> PraxState -> RunResult
 runRandom cap seed mFamily st0 = go cap seed Set.empty (visit Set.empty st0) 0 0 st0
   where
@@ -107,7 +100,7 @@ runRandom cap seed mFamily st0 = go cap seed Set.empty (visit Set.empty st0) 0 0
                                (visit scs st2) (n + 1) 0 st2
       where living = livingCharacters st
 
--- | Aggregated report over many runs.
+-- | 多次跑程的聚合报告。
 data StressReport = StressReport
   { srRuns     :: Int
   , srEndings  :: Map String Int   -- ^ ending → how many runs reached it
@@ -117,10 +110,7 @@ data StressReport = StressReport
   , srNoEnding :: Int              -- ^ runs that hit the turn cap with no ending
   } deriving (Eq, Show)
 
--- | Run @runs@ seeded random games of up to @cap@ turns and aggregate the
--- report. @mFamily@ is the optional coverage family to track (see
--- 'familyReached'); the CLI's own callers pass the current-scene family
--- (@Just 'Prax.Script.currentScenePath'@).
+-- | 跑 @runs@ 次播种随机游戏，每局最多 @cap@ 回合，报告覆盖。
 stressTest :: Int -> Int -> Maybe String -> PraxState -> StressReport
 stressTest runs cap mFamily st0 =
   foldl' tally (StressReport runs Map.empty Set.empty Map.empty 0 0)
