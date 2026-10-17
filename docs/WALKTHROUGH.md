@@ -546,29 +546,13 @@ dana 从不得 `confront`——不在本回合，不在被告知二手之后（�
 → 代码：`Prax.Engine`（`ForEach`、`performOutcome`）、`Prax.Witness`（`observable`/`saw`）、
 `Prax.Worlds.Village`；在 `Prax.WitnessSpec`、`Prax.VillageSpec` 中断言。
 
-### 23. Rumor — the news travels (`prax village`) (v20)
+### 23. 谣言 — 消息在传播（`prax village`）（v20）
 
-`Prax.Rumor` closes the loop §22 left open: a belief someone holds — witnessed or already
-secondhand — can now be *told* to a co-present hearer.
+`Prax.Rumor` 合上了 §22 留下的环：某人持有的信念——目击所得或已是二手——现在可以 *告诉* 同场听者。
 
-The rest of this tour (§§23–24) goes back to following *bob*, not you: v21's reputation arc ends
-in an NPC's own remorse and self-deterrence, which only an autonomous character can exhibit, so it
-needs an NPC thief. As of v22, getting bob to actually take the loaf in free play stopped
-happening on its own (§22, §25): he conceals, and carol — who used to wander off on a tie-break
-before her first decision even arrived — now holds her own +1 square-anchor, added in v22 for
-exactly this reason (with no theft guaranteed on turn one anymore, her first turns are
-zero-utility ties, and an idle character with no anchor drifts on the tie-break, same idiom as
-bob's and dana's). The two anchors together mean the square never genuinely empties in autonomous
-play. As of v24, bob doesn't even try: from turn one he undertakes `earnBread` instead (§26) — a
-strictly better option than waiting out a watched square for a theft he'd have to conceal — so
-free play doesn't reach a theft by *any* route anymore, watched square or not.
+本游的余下部分（§§23–24）回到跟随 *bob*，而非你：v21 的声誉弧结束于 NPC 自身的悔意与自我威慑，这只有自主角色才能表现，因此需要一名 NPC 小偷。自 v22 起，自由游玩中让 bob 真的拿走面包已不再自行发生（§22、§25）：他隐瞒，而 carol——曾在第一次决策到来前就因平局决胜走开——现在持有自己的 +1 广场锚，正是 v22 为此加入（盗窃不再保证在第一回合发生后，她的前几回合是零效用平局，无锚的闲置角色会在平局决胜上漂移，与 bob、dana 同一惯用语）。两锚合在一起意味着自主游玩中广场从不清空。自 v24 起，bob 甚至不试：从第一回合起他就承接 `earnBread`（§26）——严格优于在被监视的广场上空等一场必须隐瞒的盗窃——因此自由游玩不再能经 *任何* 路径到达盗窃，无论广场是否被监视。
 
-So what follows is **forced**: bob's theft triggered directly (`doAct`, the exact technique
-`Prax.VillageSpec`'s tests use — precisely because free play can no longer reach this state), then
-the same production loop the CLI itself runs (`Prax.Loop.advance`/`npcAct`) driven headlessly for
-real, additional rounds. This is not `cabal run prax -- village` — it's the identical engine code,
-compiled and run directly against `Prax.Worlds.Village` from the scratchpad, real output captured
-from a live run, not fabricated or reused from any report:
+因此下文是 **强制的**：直接触发 bob 的盗窃（`doAct`，恰是 `Prax.VillageSpec` 测试所用的技术——正因为自由游玩再也到不了此状态），然后无头驱动 CLI 自身运行的同一生产循环（`Prax.Loop.advance`/`npcAct`）若干真实额外回合。这不是 `cabal run prax -- village`——是同一引擎代码，从草稿本编译并直接对着 `Prax.Worlds.Village` 跑，实时捕获的真实输出，非伪造、非从任何报告复用：
 
 ```
 -- forced: bob steals (doAct) --
@@ -582,14 +566,7 @@ from a live run, not fabricated or reused from any report:
   - you regards bob as a thief
 ```
 
-A round is **six** turns now (you, bob, carol, dana, eve, gale — v25 added gale to the cast;
-since v44 perception and the clock run at the engine's round boundary, so no ticker character
-occupies a turn). carol confronted bob the
-instant she witnessed it, same mechanism as §22. eve, independently and for her own reasons (§25 —
-not this story), whispers a lie about *carol* to dana in the very same round; the two plots run
-concurrently in one world, unprompted by each other. bob, meanwhile, has his own second track
-running: v24's `earnBread` doesn't care that he's already holding a stolen loaf, so he undertakes it
-in the very same round he's forced to steal:
+现在一轮是 **六** 个回合（you、bob、carol、dana、eve、gale——v25 把 gale 加入阵容；自 v44 起感知与时钟在引擎回合边界运行，因此无 ticker 角色占回合）。carol 目击的瞬间就质问了 bob，机制与 §22 相同。eve 独立地、出于她自己的理由（§25——不是本故事）在同一轮向 dana 低语关于 *carol* 的谎言；两条情节在同一世界并发，互不提示。与此同时 bob 有自己的第二轨道在跑：v24 的 `earnBread` 不在乎他已拿着偷来的面包，因此他在被强制盗窃的同一轮就承接它：
 
 ```
   you: (you wait)
@@ -600,8 +577,7 @@ in the very same round he's forced to steal:
   gale: Go to square
 ```
 
-Round 2: bob sweeps the square (`earnBread`'s first part, public per §26); carol shuns bob outright
-in the square:
+第 2 轮：bob 清扫广场（`earnBread` 的第一部分，公开，见 §26）；carol 在广场上直接疏远 bob：
 
 ```
   you: (you wait)
@@ -612,13 +588,9 @@ in the square:
   gale: Go to mill
 ```
 
-— and, a side effect of eve's whisper reaching her the round before, dana shuns *carol* too, for
-something carol never did.
+——而且，作为 eve 上一轮低语到达她的副作用，dana 也疏远 *carol*，为 carol 从未做过的事。
 
-Round 3: bob walks to the mill to fetch flour; carol sets off looking for a hearer — she has a want
-that others hear the truth about bob's theft *from her* (`Want [carol.believes.stole.bob.loaf,
-Other.believes.stole.bob.loaf.heard.carol] 5`) — and the nearest one, eve, has just walked into the
-square:
+第 3 轮：bob 走向磨坊取面粉；carol 出发寻找听者——她有一条 want，希望他人 *从她那里* 听到 bob 盗窃的真相（`Want [carol.believes.stole.bob.loaf, Other.believes.stole.bob.loaf.heard.carol] 5`）——而最近的一人 eve 刚走进广场：
 
 ```
   you: (you wait)
@@ -629,9 +601,7 @@ square:
   gale: Go to square
 ```
 
-Round 4: with *some* regard already standing against him since turn zero (carol and you both
-witnessed the forced theft), bob's own amends outweighs pressing on with the mill trip this round —
-he returns the stolen loaf before he's earned his own, and carol relents the same round he does:
+第 4 轮：自第零回合起已有 *一些* 对他不利的 regard（carol 与 you 都目击了强制盗窃），bob 自己的补偿压过本轮继续磨坊之行——他在挣到自己的面包之前归还了偷来的面包，carol 在他归还的同一轮就软化：
 
 ```
   you: (you wait)
@@ -642,14 +612,9 @@ he returns the stolen loaf before he's earned his own, and carol relents the sam
   gale: tell eve that carol stole the loaf
 ```
 
-That last line is the emergent finding this round is built around — §27 covers it in full: eve's
-whisper deceives gale too, and gale, now genuinely believing it, passes it straight back to *eve*
-by ordinary `tell`.
+最后一行是本轮所围绕的涌现发现——§27 完整覆盖：eve 的低语也欺骗了 gale，而 gale 现真正相信后，用普通 `tell` 径直传回给 *eve*。
 
-Round 5 (35 steps in), bob resumes `earnBread` at the mill (fetching flour — atonement didn't cost
-him the project) and carol reaches dana specifically and tells her too — a second, independent
-source, since `Other` in her want is satisfied by any hearer, not one in particular — and dana,
-hearsay in hand, acts on it the same round:
+第 5 轮（35 步时），bob 在磨坊恢复 `earnBread`（取面粉——补偿并未让他失去项目），carol 专门找到 dana 也告诉她——第二个独立来源，因她 want 中的 `Other` 由任意听者满足、非特定一人——而 dana 手里有传闻，同一轮就据此行动：
 
 ```
   you: (you wait)
@@ -660,74 +625,31 @@ hearsay in hand, acts on it the same round:
   gale: Go to mill
 ```
 
-confirmed directly: `dana.believes.stole.bob.loaf.heard.carol` holds true from here on. `gossip`
-only requires teller and hearer to be co-present — the mechanism itself doesn't route anyone toward
-anyone — but carol's own want reliably puts her wherever an uninformed hearer is, so *she* does the
-travelling, exactly as in the pre-v22 village.
+直接确认：自此 `dana.believes.stole.bob.loaf.heard.carol` 为真。`gossip` 只要求告知者与听者同场——机制本身不把任何人导向任何人——但 carol 自己的 want 可靠地把她放到未知情听者所在之处，因此 *她* 做旅行，恰如 v22 前的村庄。
 
-Driving on: bob returns to the square (round 6), bakes and earns his own loaf (round 7 — the same
-round dana, hearsay in hand, eyes him with suspicion, and eve, having heard her own lie told back to
-her by gale, uses plain `tell` rather than `lie` to reach bob directly with the fabrication about
-carol), and the village settles by round 10: `atoned.bob` holds, `regards.carol.bob.thief` and
-`notorious.bob.thief` are both false in the closed view, no shun toward bob survives, and
-`carol.believes.stole.bob.loaf.seen` is still true throughout — the same "atonement, not amnesia"
-shape §24 covers, now carrying gale's laundered lie alongside it as an unrelated, concurrent thread.
+继续驱动：bob 返回广场（第 6 轮），烘焙并挣得自己的面包（第 7 轮——同一轮 dana 手里有传闻用怀疑看他，而 eve 听过 gale 把她自己的谎言告诉她后，用普通 `tell` 而非 `lie` 把关于 carol 的捏造直接传给 bob），村庄到第 10 轮安顿：`atoned.bob` 成立，`regards.carol.bob.thief` 与 `notorious.bob.thief` 在闭合视图中皆假，对 bob 的疏远无一幸存，且 `carol.believes.stole.bob.loaf.seen` 全程仍真——§24 覆盖的同一「补偿，非失忆」形状，现旁载 gale 漂洗过的谎言作为无关并发线程。
 
-**The saw/heard affordance asymmetry.** dana, hearsay-only, gets `eye [Thief] with suspicion` — a
-milder trust hit (−5, reason `heardOfTheft`) — but never `confront`, which stays gated on `saw`
-(−10, reason `sawTheft`): hearsay doesn't license "I saw you." The asymmetry cuts the other way too:
-`VillageSpec`'s "hearsay licenses suspicion, not confrontation" confirms carol, the eyewitness, is
-never offered mere suspicion — `eye` is gated on `heard "Actor" "<event>"` **and**
-`Absent [Match "Actor.believes.<event>.seen"]`, so seeing subsumes hearing for the milder act.
+**看见/听说 affordance 不对称。** 仅有传闻的 dana 得到 `eye [Thief] with suspicion`——较轻的信任打击（−5，理由 `heardOfTheft`）——但永无 `confront`，后者仍门禁于 `saw`（−10，理由 `sawTheft`）：传闻不授权「我看见你了」。不对称也反向切割：`VillageSpec` 的「传闻授权怀疑，非质问」确认目击证人 carol 从不被提供单纯怀疑——`eye` 门禁于 `heard "Actor" "<event>"` **且** `Absent [Match "Actor.believes.<event>.seen"]`，因此看见对较轻行为吞没听说。
 
-**Sourced-hearsay vocabulary.** Provenance is no longer the single exclusive value v19 shipped
-(`!seen`) — it's multi-valued: `<W>.believes.<event>.seen` for direct witness, one
-`<W>.believes.<event>.heard.<source>` edge per teller, coexisting under the same `believes.<event>`
-node. A witness who is *also* told keeps their `.seen` edge rather than losing it to an overwriting
-`!heard` — the capture bug the v19 review flagged and banked for this round. Each further teller
-adds another `.heard.<source>` edge, so corroboration is just counting distinct sources; `heard`
-itself is a boolean `Exists` over that subtree, so two sources still yield one row in the menu, not
-a duplicate tell.
+**带源传闻词汇。** 出处不再是 v19 交付的单一排他值（`!seen`）——它是多值的：直接目击为 `<W>.believes.<event>.seen`，每位告知者一条 `<W>.believes.<event>.heard.<source>` 边，共存于同一 `believes.<event>` 节点下。*也被* 告知的目击证人保留其 `.seen` 边，而非被覆盖的 `!heard` 夺走——v19 评审标出并为本轮存下的捕获 bug。每位后续告知者再加一条 `.heard.<source>` 边，因此印证只是清点不同来源；`heard` 本身是该子树上的布尔 `Exists`，故两个来源仍在菜单中产生一行，而非重复告知。
 
-**The distrust gate.** `gossip`'s world-supplied gate (worlds add their own extra conditions, the
-way `Prax.Witness`'s `together` co-presence template is world-supplied) is "you don't gossip with
-someone you distrust":
+**不信任门。** `gossip` 的世界供给门（世界加自有额外条件，方式同 `Prax.Witness` 的 `together` 同场模板由世界供给）是「你不与你不信任的人闲聊」：
 
 ```haskell
 Absent [ Match "Actor.relationship.Hearer.trust.score!TrustScore", Cmp Lt "TrustScore" "0" ]
 ```
 
-The spec sketch named this variable `V`; the shipped code calls it `TrustScore`, because the
-village practice's own role is *also* named `V` (`roles = ["V"]` in `Prax.Worlds.Village`) — reusing
-`V` here would have silently captured that binding instead of introducing a fresh condition
-variable, a real bug caught before it shipped rather than a stylistic choice. With no trust score
-recorded, gossip flows freely; once trust drops below zero the tell disappears from the menu, same
-as any other gated affordance.
+规格草图把此变量名为 `V`；交付代码称之为 `TrustScore`，因为村庄实践自有角色也叫 `V`（`Prax.Worlds.Village` 中 `roles = ["V"]`）——此处复用 `V` 会静默捕获该绑定而非引入新鲜条件变量，是发货前抓住的真 bug 而非风格选择。无信任分记录时，闲聊自由流动；信任一旦降到零以下，告知就从菜单消失，与任何其他门禁 affordance 相同。
 
-→ code: `Prax.Rumor` (`gossip`/`heard`), `Prax.Worlds.Village`; asserted in `Prax.RumorSpec`,
-`Prax.VillageSpec`.
+→ 代码：`Prax.Rumor`（`gossip`/`heard`）、`Prax.Worlds.Village`；断言于 `Prax.RumorSpec`、`Prax.VillageSpec`。
 
-### 24. Reputation — standing, notoriety, atonement, and a thief who learns (`prax village`) (v21)
+### 24. 声誉 — 站队、恶名、补偿，以及学会的小偷（`prax village`）（v21）
 
-`Prax.Repute` closes the loop §§22–23 opened: evidence that reached someone — witnessed or only
-heard — now *settles into what they think of you*, a derived standing that shapes behaviour
-without anyone storing a reputation fact. Continuing straight on from §23's forced session (same
-compiled-against-the-library technique, same running world — bob's theft was forced there because
-free play no longer reaches this state; see §22/§25):
+`Prax.Repute` 合上了 §§22–23 打开的环：到达某人的证据——目击或仅听说——现在 *沉淀为他们对你的看法*，一种塑造行为的派生站队，无需任何人存储声誉事实。直接接续 §23 的强制会话（同一对着库编译的技术、同一运行中的世界——bob 的盗窃在那里被强制，因为自由游玩再也到不了此状态；见 §22/§25）：
 
-The instant carol (an eyewitness) believed the theft, she also came to *regard* bob a thief — a
-fact nobody wrote, derived from her belief — and standing already had teeth: `shun bob` was
-available to carol on the very same gate (`regardedAs "Actor" "T" "thief"`) that would offer the
-player `shun bob` too, that same beat (round 1, already shown in §23).
+carol（目击证人）一相信盗窃，也就开始 *regard* bob 为小偷——无人写入的事实，从她的信念派生——且站队已有牙齿：`shun bob` 在同一拍（第 1 轮，§23 已示）就对 carol 可用，门正是也会向玩家提供 `shun bob` 的同一门（`regardedAs "Actor" "T" "thief"`）。
 
-By round 3, carol has told eve, who — hearsay-only — comes to regard bob too: §23's saw/heard
-asymmetry (suspicion, not confrontation) carries straight into standing, since hearsay is evidence
-enough to *regard* exactly as it's evidence enough to *believe*. With carol (witness), you
-(witness), and eve (hearsay from carol) all regarding bob a thief, the third regard tips
-`notoriety "thief" 3` — "the whole village knows" — and bob's want against `notorious.bob.thief`
-(−15) now outweighs the loaf in his hands (+10). One round later, he returns it, the same round
-carol relents (dana never regards *bob* at all in this run — eve's lie reached her first, so her
-only regard is the wrongful one, §25):
+到第 3 轮，carol 已告诉 eve，后者——仅有传闻——也开始 regard bob：§23 的看见/听说不对称（怀疑，非质问）径直带入站队，因为传闻足以 *regard*，恰如足以 *believe*。随着 carol（目击）、you（目击）与 eve（来自 carol 的传闻）都 regard bob 为小偷，第三条 regard 触发 `notoriety "thief" 3`——「全村都知道」——而 bob 对抗 `notorious.bob.thief` 的 want（−15）现压过手里的面包（+10）。一轮之后他归还，同一轮 carol 软化（本跑程中 dana 从未 regard *bob*——eve 的谎言先到达她，故她唯一的 regard 是冤枉的，§25）：
 
 ```
   you: (you wait)
@@ -738,28 +660,11 @@ only regard is the wrongful one, §25):
   gale: tell eve that carol stole the loaf
 ```
 
-(dana, eve, and gale's lines here are entirely eve's frame-up of carol, §25 — and, as of v25, its
-unexpected sequel: gale's own line is her passing the lie right back to the liar, honestly believed
-— §27 has the full account. The two stories are threaded through the same seven-turn rounds, and
-all of it is real, unstaged output from the one run.)
+（此处 dana、eve 与 gale 的行完全是 eve 对 carol 的构陷，§25——且自 v25 起，其意外续集：gale 自己的行是把谎言径直传回说谎者，诚实相信——§27 有完整记述。两故事穿在同一七回合轮中，全部是一次跑程的真实、未编排输出。）
 
-**Atonement, not amnesia.** Every line derived from bob's own theft vanishes at once — not because
-anyone forgot, but because their only support (the absence of `atoned.bob`) is gone. Checked
-directly against the same session: `atoned.bob` holds; `regards.carol.bob.thief` and
-`notorious.bob.thief` are both false in the closed view; and — the point of the exercise —
-`carol.believes.stole.bob.loaf.seen` is still **true**, exactly as before. Nobody's belief moved;
-`standingUnless`'s defeater dissolved the *derivations*, on the same read, while the belief that
-supports them (when the defeater is later revoked) sits untouched. This is `VillageSpec`'s
-"atonement dissolves standing while memory persists," and it's not something a plain scene render
-shows directly (the scene prints derived standing, not raw beliefs) — which is exactly why this
-walkthrough checks the underlying facts instead of just the narration, here and below.
+**补偿，非失忆。** 从 bob 自己盗窃派生的每一行立刻消失——不是因为有人忘记，而是因为它们唯一的支撑（`atoned.bob` 的缺失）已去。对照同一会话直接检查：`atoned.bob` 成立；`regards.carol.bob.thief` 与 `notorious.bob.thief` 在闭合视图中皆假；而——练习的要点——`carol.believes.stole.bob.loaf.seen` 仍为 **真**，恰如先前。无人的信念移动；`standingUnless` 的击败者在同一读取上溶解了 *派生*，而支撑它们的信念（当击败者后来被撤销时）原封不动。这是 `VillageSpec` 的「补偿溶解站队而记忆持久」，不是普通场景渲染直接显示的东西（场景打印派生站队，非原始信念）——正因如此本导览在此及下文检查底层事实而非仅旁白。
 
-**Deterrence: the stall stays stocked — and, as of v24, bob really does end up holding a loaf, the
-one he earned.** Driving the same forced session onward — every shun toward bob already relented by
-round 4, shown above — out to round 15 (105 steps, seven-turn rounds — the same budget
-`VillageSpec`'s "an atoned thief is deterred" test drives), bob's `steal the loaf from the stall` is
-still on his own menu, unrefused by any gate, but he spends the early turns of the same window on
-`earnBread` instead of waiting on it, and finishes well within the 105:
+**威慑：摊位仍有货——且自 v24 起，bob 最终真的拿着一块面包，他自己挣的。** 把同一强制会话继续驱动——到第 4 轮时对 bob 的疏远已全部软化，如上所示——直到第 15 轮（105 步，七回合轮——同一预算 `VillageSpec` 的「已补偿小偷被威慑」测试所驱动），bob 的 `steal the loaf from the stall` 仍在他自己的菜单上，无任何门拒绝，但他在同一窗口的早回合花在 `earnBread` 上而非空等，并在 105 内完成：
 
 ```
 bob's steal-the-loaf option still on the menu, unrefused: True
@@ -769,104 +674,31 @@ the loaf he holds is the one he earned: True
 bob's atonement still stands: True
 ```
 
-— he never re-steals, for the whole remaining run. `stall.loaf` really is still there — his own
-`steal` action is the only thing that would take it, and he doesn't. `holding.bob.loaf` is true
-for a different reason than the pre-v24 story: not a still-unsatisfied theft-linked want lying in
-wait for a future re-offense, but `practice.earnBread.bob.done.s3` — the loaf he's holding is the
-one he baked, during this same 105-turn window. This is exactly what `VillageSpec`'s "an atoned
-thief is deterred" test now asserts directly (amended under v24, spec §3): its old proxy — "bob
-holds no loaf" — was falsified by the correctly-implemented redemption, not by a bug, so the test
-now pins non-re-offense on its own terms (atonement standing, the stall untouched, and the loaf he
-holds traced to the endeavor's own completion fact) rather than a fact the endeavor was always
-going to make false.
+——整个余下跑程他再不偷。`stall.loaf` 确实仍在——他自己的 `steal` 动作是唯一会拿走它的东西，而他没有。`holding.bob.loaf` 为真的理由与 v24 前的故事不同：不是仍未满足、等待未来再犯的盗窃关联 want，而是 `practice.earnBread.bob.done.s3`——他拿着的面包是他在此同一 105 回合窗口内烘焙的。这正是 `VillageSpec`「已补偿小偷被威慑」测试现直接断言的（v24 下修正，规格 §3）：其旧代理——「bob 不持有面包」——被正确实现的救赎证伪，而非 bug，因此测试现按自身条款钉死不再犯（补偿仍立、摊位未动、所持面包追溯到事业自身完成事实），而非事业总会使其为假的事实。
 
-Re-checked live against the current planner at this same terminal state, `scoreActions` at depth 0
-ranks `bob: Wait a moment` at **20.0** against `bob: steal the loaf from the stall`'s **5.0** —
-unchanged from v24's own numbers. What *has* changed under v25's cast: `20.0` is no longer bob's
-uniquely top score, it's a fourteen-way tie. bob was himself drawn into eve's frame-up of carol
-along the way (`eve: tell bob that carol stole the loaf`, round 7, §27 covers the mechanism that
-put "evidence" in eve's own hands to tell it plainly) — so his menu now carries a whole family of
-zero-marginal-utility options about carol (`eye carol with suspicion`, `shun carol`, `tell` each of
-several villagers), every one of them scoring exactly the same baseline as simply waiting. Stealing,
-at 5.0, remains far below all fourteen — the deterrence comparison itself is unaffected by how
-crowded the top of the ranking gets. Stealing again would instantly flip `notorious.bob.thief` back
-to true (the same defeater-deletion mechanism as before: the deed's own outcome deletes
-`atoned.Actor`, and the regards nobody ever stopped believing revive on the very next read, no
-lookahead required) and forfeit concealment's reward now that the deed would, once again, be
-witnessed. This isn't a foreseen future; it's an immediate consequence of the action, exactly like
-§8's stiffing aversion. An unatoned bob was tipped into atoning; an atoned bob, seeing that
-consequence right in front of him, doesn't re-offend — he has better things to do, and v24 gives him
-one. `VillageSpec` pins both facts — "re-offense revokes atonement: standing snaps back from memory"
-forces a second theft by hand and asserts the regards return, and "an atoned thief is deterred: the
-planner sees the snap-back" drives the same 105 autonomous turns and asserts non-re-offense (the
-full arc itself is driven for 70 turns in "the whole arc runs itself").
+在此同一终端状态对照当前 planner 现场重检，深度 0 的 `scoreActions` 把 `bob: Wait a moment` 排在 **20.0**，对照 `bob: steal the loaf from the stall` 的 **5.0**——与 v24 自身数字不变。v25 阵容下 *已* 变的是：`20.0` 不再是 bob 的唯一顶尖分，而是十四方平局。bob 一路上自己被拖进 eve 对 carol 的构陷（`eve: tell bob that carol stole the loaf`，第 7 轮，§27 覆盖把「证据」放进 eve 自己手里以便明文告知的机制）——因此他的菜单现携带一整族关于 carol 的零边际效用选项（`eye carol with suspicion`、`shun carol`、向几位村民各自 `tell`），每一个恰与单纯等待同一基线分。盗窃以 5.0 仍远低于全部十四——威慑比较本身不受排名顶部多么拥挤影响。再偷会立刻把 `notorious.bob.thief` 翻回真（与先前同一击败者删除机制：行为自身结果删除 `atoned.Actor`，无人曾停止相信的 regards 在下一次读取就复活，无需前瞻）并在行为将再度被目击时放弃隐瞒的回报。这不是预见的未来；是动作的直接后果，恰如 §8 的逃单厌恶。未补偿的 bob 被推去补偿；已补偿的 bob 看见眼前的后果，不再犯——他有更好的事做，而 v24 给了他一件。`VillageSpec` 钉死两事实——「再犯撤销补偿：站队从记忆弹回」用手强制第二次盗窃并断言 regards 返回，而「已补偿小偷被威慑：planner 看见弹回」驱动同一 105 自主回合并断言不再犯（完整弧本身在「整条弧自行运转」中驱动 70 回合）。
 
-The shun/relent/tell options never resurface either — with no live regard, the wants that drove
-them (carol and dana's shun-want is *conditioned* on `regardedAs`, per the design spec, so it
-evaporates with the regard rather than fighting a stale shun to a tie-break) simply have nothing
-left to pursue. The full mechanism — `standing`, `standingUnless`, `regardedAs`, `notoriety`, and
-the world's choice to key bob's shame on notoriety rather than any one regarder's contempt — is
-documented in `docs/specs/2026-07-10-v21-repute-design.md`.
+疏远/软化/告知选项也不再浮现——无存活 regard 时，驱动它们的 want（carol 与 dana 的疏远 want *条件于* `regardedAs`，按设计规格，故随 regard 蒸发而非与陈旧疏远打到平局决胜）只剩无可追求。完整机制——`standing`、`standingUnless`、`regardedAs`、`notoriety`，以及世界选择把 bob 的羞耻键在恶名而非任一 regard 者的轻蔑上——记于 `docs/specs/2026-07-10-v21-repute-design.md`。
 
-→ code: `Prax.Repute` (`standing`/`standingUnless`/`regardedAs`/`notoriety`), `Prax.Worlds.Village`
-(`shun`, `return the loaf with apologies`, `relent`, `villageAxioms`); asserted in
-`Prax.ReputeSpec`, `Prax.VillageSpec`.
+→ 代码：`Prax.Repute`（`standing`/`standingUnless`/`regardedAs`/`notoriety`）、`Prax.Worlds.Village`
+（`shun`、`return the loaf with apologies`、`relent`、`villageAxioms`）；断言于
+`Prax.ReputeSpec`、`Prax.VillageSpec`。
 
-### 25. Secrets & deception — a villain, and an honest injustice (`prax village`) (v22)
+### 25. 秘密与欺骗 — 反派，与诚实的不公（`prax village`）（v22）
 
-`Prax.Deceit` adds the adversarial layer §§22–24's information stack (witnessing → rumor →
-reputation) was always going to need: agents who *manage* what is known, rather than just
-carrying it. Two mechanisms, both authored as ordinary wants and an ordinary action — no stealth
-system, no lie-detection engine, nothing new in `Prax.Engine`:
+`Prax.Deceit` 加上 §§22–24 信息栈（目击 → 谣言 → 声誉）终将需要的对抗层：*管理* 已知内容的代理人，而非仅携带。两机制，皆创作为普通 want 与普通动作——无隐身系统、无测谎引擎、`Prax.Engine` 无新物：
 
-- **`conceal`** is a want that nobody believe some deed (`Absent [Anyone.believes.<event>]`). It
-  needs no enforcement of its own — the planner's lookahead already simulates the v19 witness
-  deposits before choosing an action, so an agent who values the secret simply never scores the
-  witnessed version of the theft as highly as the unwitnessed one. Waiting for privacy falls out
-  of ordinary utility maximization.
-- **`lie`** mirrors v20's `gossip`, inverted twice: the speaker must hold **no** evidence of the
-  event (that absence is what makes it a lie, and it's also the action's own undoing — the instant
-  the liar hears their own lie told back to them, they acquire evidence, the `lie` action's gate
-  closes, and plain `gossip` takes its place, seamlessly), and the fabricated subject is bound from
-  a world-supplied *fabrication* condition (whom you could plausibly frame) rather than from a
-  belief. The effect it inserts — `<Hearer>.believes.<event>.heard.<Actor>` — is *identical* to
-  `gossip`'s. That identity is the whole design: the deceived hold real hearsay, structurally
-  indistinguishable from the genuine article, and the entire v20/v21 machinery (retelling,
-  corroboration, standing, notoriety, shunning) runs on the falsehood unmodified.
+- **`conceal`** 是无人相信某行为的 want（`Absent [Anyone.believes.<event>]`）。它无需自有强制——planner 的前瞻在选择动作前已模拟 v19 目击存款，因此看重秘密的代理人只是从不把被目击版盗窃打得与未被目击版一样高。等待隐私从普通效用最大化中自然落下。
+- **`lie`** 镜像 v20 的 `gossip`，双重倒置：说话者必须对事件持有 **无** 证据（该缺失使它成为谎言，也是动作自身的瓦解——说谎者一听到自己的谎言被传回，就获得证据，`lie` 的门关闭，普通 `gossip` 无缝接替），且捏造主体从世界供给的 *捏造* 条件绑定（你可看似合理构陷谁）而非从信念。它插入的效果——`<Hearer>.believes.<event>.heard.<Actor>`——与 `gossip` *完全相同*。该同一性是整个设计：受骗者持有真实传闻，结构上与真货不可区分，整套 v20/v21 机械（复述、印证、站队、恶名、疏远）在虚假上未修改地运行。
 
-**bob conceals — but no longer by waiting.** `conceal "stole.bob.loaf" 12` — worth more than the
-loaf itself (+10) — is exactly the want it was in v22: it rewards a deed nobody comes to believe,
-and it still fails the instant anyone would see the theft. What changed in v24 is what a watched
-bob *does* about that: earlier, avoiding a witnessed theft meant simply waiting it out; now
-`earnBread` is on the table, and industry beats patience, so he takes it instead — §26 tells that
-story start to finish, live. Concealment itself hasn't gone anywhere; it still gates the same
-choice, just later in the story. Two scripted probes still isolate the mechanism on its own,
-unconfounded by the endeavor, and both still pass:
+**bob 隐瞒——但不再靠等待。** `conceal "stole.bob.loaf" 12`——比面包本身（+10）更值钱——恰是 v22 时的 want：它奖励无人开始相信的行为，且任何人会看见盗窃的瞬间它仍失败。v24 改变的是被监视的 bob *对此做什么*：早先，避开被目击盗窃意味着单纯等过去；现在 `earnBread` 在桌上，勤劳压过耐心，于是他改取它——§26 从头到尾现场讲述。隐瞒本身并未消失；它仍门控同一选择，只是更晚。两个脚本探针仍单独隔离该机制，不受事业混淆，且两者仍通过：
 
-- `Prax.DeceitSpec`'s minimal fixture probes `conceal` in isolation — watched vs. unwatched,
-  nothing else in play.
-- `VillageSpec`'s "a secret keeps: bob will not steal while the square watches" (28 driven turns
-  from a clean `villageWorld` — four seven-turn rounds) and "the perfect crime: alone, bob steals
-  and no one ever knows" (carol and you sent to the mill by hand, 14 driven turns — two rounds)
-  both hold. "The perfect crime" is
-  worth pausing on: even with `earnBread` now available, a *truly* alone bob still steals rather
-  than starting the endeavor — opportunism outranks patient industry the moment nobody's
-  watching, exactly as sharply as before v24. §26's "the opportunism stays honest" beat is the
-  same finding told mid-project instead of at the very first turn: concealment isn't about the
-  player, it's about *anyone* watching, wherever in the story the temptation lands.
+- `Prax.DeceitSpec` 的最小夹具单独探测 `conceal`——被监视 vs 未被监视，无其他在场。
+- `VillageSpec` 的「秘密保持：广场有人看时 bob 不偷」（从干净 `villageWorld` 驱动 28 回合——四个七回合轮）与「完美犯罪：独处时 bob 偷且永无人知」（用手把 carol 与 you 送到磨坊，驱动 14 回合——两轮）皆成立。「完美犯罪」值得停顿：即使现有 `earnBread`，*真正* 独处的 bob 仍偷而非开始事业——一无人监视，机会主义就压过耐心勤劳，锋利一如 v24 前。§26 的「机会主义保持诚实」拍是同一发现，讲在项目中途而非第一回合：隐瞒不关玩家，关 *任何人* 在看，无论诱惑落在故事何处。
 
-Free play itself no longer reaches "bob waits" at all — not with the player present, not with the
-player gone to the mill. Before v24 free play printed `bob: Wait a moment` on every idle press;
-today's identical input prints the redemption from turn one (§26 walks through it). What free play
-*does* still show, unprompted, in that very same session, is a second and wholly independent plot
-running in its gaps: eve's frame-up of carol.
+自由游玩本身再也到不了「bob 等待」——无论玩家在场，还是玩家去了磨坊。v24 前自由游玩每个空闲按键打印 `bob: Wait a moment`；今日同一输入从第一回合打印救赎（§26 走完）。自由游玩在同一会话空隙中 *仍* 无提示展示的，是第二条完全独立的情节：eve 对 carol 的构陷。
 
-**eve joins, and frames carol.** eve starts at the mill — placement matters: she must not witness
-the scripted thefts v19–21's own tests force, so their two-witness arithmetic stays intact — with
-one authored want, now a named vocabulary desire shared with gale (`spites-carol`, v25 — see §27):
-`Want [Match "regards.W.carol.thief"] 4`, wanting carol ill-regarded, per head, and not caring how.
-`lie` gives her the means. This is the same six-`m`-press, player-present run §26 draws bob's
-redemption from; eve's campaign runs alongside it from the first beat:
+**eve 加入，并构陷 carol。** eve 从磨坊起步——位置重要：她绝不可目击 v19–21 自有测试强制的脚本盗窃，以便其两目击算术保持完整——带一条创作 want，现为与 gale 共享的具名词汇欲望（`spites-carol`，v25——见 §27）：`Want [Match "regards.W.carol.thief"] 4`，希望 carol 被恶视，按头计，且不在乎如何。`lie` 给她手段。这是 §26 抽取 bob 救赎的同一六次 `m` 按键、玩家在场跑程；eve 的战役从第一拍并行：
 
 ```
 >   bob: take up honest work at the stall
@@ -876,8 +708,7 @@ redemption from; eve's campaign runs alongside it from the first beat:
   gale: Go to square
 ```
 
-— and `dana regards carol as a thief` derives on the very same beat, a fact nobody wrote, from a
-claim nobody witnessed. The very next round, dana acts on it, while bob is mid-sweep:
+——且 `dana regards carol as a thief` 在同一拍派生，无人写入的事实，来自无人目击的声称。下一轮，dana 据此行动，而 bob 仍在清扫中：
 
 ```
 >   bob: sweep the square
@@ -887,13 +718,7 @@ claim nobody witnessed. The very next round, dana acts on it, while bob is mid-s
   gale: Go to mill
 ```
 
-eve keeps moving to wherever an untold villager is and keeps whispering — dana first, while both are
-still at the mill, then you once she's walked to the square (press 3). gale, meanwhile, has been
-drifting on her own idle tie-break (mill → square → mill → square) and by press 4 is standing right
-beside eve in the square, untold — the same coincidence of place that made carol and you eyewitness
-bob's theft in §22. eve reaches her, and this is where the story changes shape from every earlier
-round of this world: eve's fabrication doesn't just add a fourth *believer*; it adds a *bystander
-who honestly spreads what she now believes*:
+eve 继续移向未告知村民所在并继续低语——先 dana，两人仍在磨坊时，然后一旦她走到广场就到 you（按键 3）。同时 gale 一直在自有空闲平局决胜上漂移（磨坊 → 广场 → 磨坊 → 广场），到按键 4 正站在广场 eve 身旁、未被告知——正是使 carol 与 you 成为 §22 中 bob 盗窃目击证人的同一地点巧合。eve 够到她，故事形状相对本世界每一先前轮次在此改变：eve 的捏造不只加第四个 *信徒*；它加一个 *诚实传播她现所信之物的旁观者*：
 
 ```
 >   bob: fetch flour from the mill
@@ -903,13 +728,7 @@ who honestly spreads what she now believes*:
   gale: tell eve that carol stole the loaf
 ```
 
-gale, deceived like everyone else eve reaches, comes to regard carol a thief on the strength of it
-— and, in the very same round, passes the belief on by ordinary `tell`, straight back to eve. That
-one round adds *two* regards at once: gale's own (from believing the lie) and eve's own (from
-gale's honest corroboration of her own fabrication — the liar now holds real hearsay for a claim
-she invented). Two regards land in the same round that only ever added one before, and it's enough:
-notoriety over *carol* tips on **press 4**, two presses earlier than the shape of every prior round
-of this world (§27 has the full account of why):
+gale 像 eve 够到的其他所有人一样受骗，据此开始 regard carol 为小偷——并在同一轮用普通 `tell` 把信念传回给 eve。那一轮一次加 *两条* regard：gale 自己的（因相信谎言）与 eve 自己的（因 gale 对她自有捏造的诚实印证——说谎者现为她发明的声称持有真实传闻）。两条 regard 落在先前每轮只加一条的同一轮，且够了：对 *carol* 的恶名在 **按键 4** 触发，比本世界每一先前轮次的形状早两按（§27 有完整原由）：
 
 ```
 -------------------- scene --------------------
@@ -927,10 +746,7 @@ of this world (§27 has the full account of why):
   - carol is notorious as a thief
 ```
 
-bob himself is caught up a round later still (press 5: `eve: tell bob that carol stole the loaf` —
-plain `tell`, not `lie`, since eve now holds gale's hearsay as her own evidence), and finishes
-baking his own loaf the round after that (press 6, §26). bob's own redemption and carol's frame-up
-run to completion in the same six-press window, unstaged and unprompted by either story:
+bob 自己再晚一轮仍被卷入（按键 5：`eve: tell bob that carol stole the loaf`——普通 `tell`，非 `lie`，因 eve 现持 gale 的传闻为自有证据），并在再下一轮完成烘焙自己的面包（按键 6，§26）。bob 自有救赎与 carol 的构陷在同一六按窗口跑完，两故事皆未编排、互不提示：
 
 ```
 -------------------- scene --------------------
@@ -949,38 +765,11 @@ run to completion in the same six-press window, unstaged and unprompted by eithe
   - carol is notorious as a thief
 ```
 
-**Update — v30.** This entire cascade — eve reaching "you" at press 3, then gale at press 4, gale's
-honest corroboration tipping carol into notoriety two presses early — was true through v25 alone. It
-no longer reproduces from the identical input once `Prax.Blackmail` lands (v30, §28): threshold fear
-makes eve prudent the instant she holds two regarders, which happens on her very *first* whisper
-(dana and gale are both co-present at the mill when she frames carol, so one whisper deposits two
-regards at once, the whispering ACT itself now being witnessable). Any whisper after that risks a
-third regarder and notoriety outright, so she never risks it. Driving the identical run today,
-checked directly: eve whispers exactly once, ever; only dana ever comes to regard carol a thief;
-carol is shunned by dana alone; nobody else — not "you", not gale, not bob — ever hears the claim
-from eve, and `notorious.carol.thief` never derives in free play. The two scene blocks above are
-kept as a historical (pre-v30) capture, because they show the mechanism this section is really
-teaching — a fabrication is structurally indistinguishable from truth once believed, and an honest
-believer can spread it just as effectively as the liar — which is still exactly true; §28 reproduces
-it on demand, forced rather than stumbled into, alongside the threshold-fear story that changed
-*this particular free-play outcome*, not the mechanism underneath it.
+**更新 — v30。** 整条级联——eve 在按键 3 够到「you」，再在按键 4 够到 gale，gale 的诚实印证使 carol 恶名早两按——仅在 v25 时为真。一旦 `Prax.Blackmail` 落地（v30，§28），同一输入不再复现：阈值恐惧使 eve 一持有两名 regard 者就谨慎，而这发生在她 *第一次* 低语（她构陷 carol 时 dana 与 gale 都在磨坊同场，一次低语同时存入两条 regard，低语 *行为本身* 现可被目击）。此后任何低语都有第三人 regard 与直接恶名的风险，故她再不冒险。今日驱动同一跑程，直接检查：eve 终其一生只低语一次；只有 dana 开始 regard carol 为小偷；carol 仅被 dana 疏远；无人——非「you」、非 gale、非 bob——曾从 eve 听到该声称，且自由游玩中 `notorious.carol.thief` 永不派生。上方两场景块保留为历史（v30 前）捕获，因它们展示本节真正在教的机制——一旦被相信，捏造结构上与真相不可区分，诚实信徒传播它与说谎者一样有效——这仍恰为真；§28 按需复现它，强制而非偶遇，旁载改变 *此特定自由游玩结果*、而非其下机制的阈值恐惧故事。
 
-Nobody in the scene captured above did anything wrong except eve — and, unwittingly, gale, whose only
-fault was believing what she was told and doing exactly what an honest villager does with a belief:
-sharing it. carol never went near the stall. And yet the regard, the shunning, and the notoriety were
-all real, derived facts, indistinguishable — to `Prax.Repute`, and to every villager but eve — from
-the ones bob earned honestly in §24. That's the design's central claim from the spec, borne out live:
-*fabrication planted ordinary `.heard.<liar>` hearsay ... the lie propagates as truth because
-hearsay and fabrication are indistinguishable to everyone but the liar* — and, as of v25, that
-includes propagating through someone who would never lie herself.
+上方捕获场景中除 eve 外无人做错——以及无意的 gale，其唯一过错是相信被告知之物并做诚实村民对信念所做之事：分享它。carol 从未靠近摊位。然而 regard、疏远与恶名皆为真实派生事实，对 `Prax.Repute` 及除 eve 外每个村民而言，与 bob 在 §24 诚实挣得的那些不可区分。那是规格的中心主张，现场应验：*捏造种下普通 `.heard.<liar>` 传闻……谎言作为真相传播，因为除说谎者外传闻与捏造对所有人不可区分*——且自 v25 起，这包括经永不自己说谎之人传播。
 
-**The injustice is honest: carol has no recourse.** eve's frame-up doesn't depend on bob at all —
-it's driven here from a fresh, *unforced* `villageWorld` (exactly `VillageSpec`'s own setup:
-`driveIdle "you" 40 villageWorld`); through v25, the same cascade shown above ran on its own from
-there, without anyone needing to force anything (as of v30, dana's own regard is as far as it gets
-unforced — the update above). What doesn't depend on the cascade completing at all: checking carol's
-own `possibleActions` directly at that point
-(compiled directly against the library from the scratchpad, live, same technique as §23–24):
+**不公是诚实的：carol 无救济。** eve 的构陷完全不依赖 bob——此处从新鲜、*未强制* 的 `villageWorld` 驱动（恰 `VillageSpec` 自有设置：`driveIdle "you" 40 villageWorld`）；到 v25，上方所示同一级联自行运转，无需任何人强制任何物（自 v30 起，未强制最远只到 dana 自有 regard——见上方更新）。完全不依赖级联完成的是：在该点直接检查 carol 自有 `possibleActions`（从草稿本对着库编译，现场，技术同 §23–24）：
 
 ```
 -- carol's menu after the frame-up cascade (40 driven turns) --
@@ -1002,35 +791,11 @@ carol: Go to mill
 carol: Wait a moment
 ```
 
-`take up honest work at the stall` is new here as of v24 — the undertake action is offered to
-*anyone* standing at the square, not just bob (`Prax.Project.endeavor` gates on place, not
-identity), so it's on carol's menu too. Nothing in her own wants motivates her to take it (only
-bob carries `charDesires = ["pursues-earnBread"]`), so it sits unchosen — an unmotivated
-affordance, not a live pursuit; §26's own opportunism beat rests on exactly this asymmetry: the
-option's availability doesn't imply anyone wants it.
+`take up honest work at the stall` 自 v24 起在此为新——承接动作提供给站在广场的 *任何人*，不仅 bob（`Prax.Project.endeavor` 门禁于地点，非身份），故也在 carol 菜单上。她自有 want 中无物激励她去取（只有 bob 携带 `charDesires = ["pursues-earnBread"]`），故它闲置未选——无动机的 affordance，非存活追求；§26 自有机会主义拍恰建立在此不对称上：选项可用并不意味着有人想要它。
 
-No `return the loaf with apologies` — and there never will be. That action's own precondition is
-`Match "holding.Actor.loaf"`, and carol never held one; amends requires the thing she never took.
-This isn't a missing feature — the vocabulary has no notion of *ground truth* an accusation could
-be checked against, so there is nothing for anyone (carol included) to point to that would clear
-her name. `Prax.VillageSpec`'s "the framed have no amends: carol is offered no return" pins exactly
-this. Exculpation would need an event record — something actions could be checked against — banked
-for a future round (`docs/LEDGER.md`'s backlog), not faked here with a shortcut that would make the
-injustice ring false. The player has the identical `whisper`/`lie` affordance eve does (visible in
-every menu throughout this section) — nothing stops *you* from framing someone too, or from
-clearing carol's name by simply not believing eve's lie, which changes nothing about what everyone
-else now believes.
+无 `return the loaf with apologies`——也永不会有。该动作自有前置条件是 `Match "holding.Actor.loaf"`，而 carol 从未持有；补偿要求她从未拿过的东西。这不是缺失特性——词汇无 *事实真相* 可供指控对照检查的概念，故无人（含 carol）可指向任何能洗清其名之物。`Prax.VillageSpec` 的「被构陷者无补偿：carol 不被提供归还」恰钉此点。洗清需要事件记录——动作可对照检查之物——存入未来轮次（`docs/LEDGER.md` 的 backlog），而非在此用捷径伪造使不公听来虚假。玩家拥有与 eve 相同的 `whisper`/`lie` affordance（本节每个菜单可见）——无物阻止 *你* 也构陷某人，或靠单纯不相信 eve 的谎言来洗清 carol 的名，而这改变不了其他所有人现所信之物。
 
-**Update — v32.** The central claim is still true, checked directly, not merely still-plausible:
-`Prax.Confession` (§30) gives the *liar* a road back — eve can confess and be absolved — but
-confession only converts the confessor's own mark and clears the confessor's own standing. Nothing
-in it lets anyone confess *on carol's behalf*, and no affordance retracts the false belief eve's lie
-already planted in dana, gale, and anyone else it reached. Re-checked live rather than assumed
-unchanged, carol's own menu after the identical 40-turn drive does differ from the dump above in
-one respect — not the one that would matter: eve, who never confesses in unforced play (her secret
-stays expensive, exactly as §30's own free-play pin shows), happens to be standing in the square
-by turn 40 rather than the mill, so four new `whisper to eve` options appear (she's now a reachable
-hearer, nothing more):
+**更新 — v32。** 中心主张仍真，直接检查，非仅仍看似合理：`Prax.Confession`（§30）给 *说谎者* 一条归路——eve 可告白并获赦免——但告白只转换告白者自有标记并清除告白者自有站队。其中无物让任何人 *代表 carol* 告白，也无 affordance 撤回 eve 的谎言已种在 dana、gale 及任何它够到之人中的假信念。现场重检而非假定不变，carol 在同一 40 回合驱动后的自有菜单与上方转储有一处不同——不是要紧的那处：eve 在未强制游玩中从不告白（她的秘密仍昂贵，恰如 §30 自有自由游玩钉所示），到第 40 回合碰巧站在广场而非磨坊，故出现四个新的 `whisper to eve` 选项（她现为可及听者，仅此而已）：
 
 ```
 carol: steal the loaf from the stall
@@ -1055,39 +820,15 @@ carol: Go to mill
 carol: Wait a moment
 ```
 
-Where a mover ends up by turn 40 is sensitive to the whole cast's candidate sets on every
-intervening turn (this trace was never one of `VillageSpec`'s own pinned trajectories — only
-`freePlayAt`/`whisperArcAt`/`redemptionArcSetup` are — so nothing in the suite depends on it
-holding byte-for-byte), and this round adds candidate actions to several characters' turns even
-when never taken. What matters is unaffected: still no `return the loaf with apologies`, still no
-exculpation affordance of any kind, for carol or anyone confessing on her behalf. The road back this
-round builds narrows the space of injustice — a liar can now make it right with the people she
-wronged directly — without touching this one at all.
+行动者到第 40 回合落在何处，对每个中间回合整阵容的候选集敏感（此轨迹从非 `VillageSpec` 自有钉死轨迹之一——只有 `freePlayAt`/`whisperArcAt`/`redemptionArcSetup` 是——故套件无物依赖它字节同一），且本轮即使未采取也会向若干角色的回合加候选动作。要紧的不受影响：仍无 `return the loaf with apologies`，仍无任何洗清 affordance，无论 carol 或任何代表她告白之人。本轮建造的归路收窄不公空间——说谎者现可与她直接伤害之人把事做对——而完全不触及此一桩。
 
-→ code: `Prax.Deceit` (`conceal`/`lie`), `Prax.Worlds.Village`; asserted in `Prax.DeceitSpec`,
-`Prax.VillageSpec`.
+→ 代码：`Prax.Deceit`（`conceal`/`lie`）、`Prax.Worlds.Village`；断言于 `Prax.DeceitSpec`、`Prax.VillageSpec`。
 
-### 26. Industry — endeavors, purpose read from watching, honest opportunism (`prax village`) (v24)
+### 26. 勤劳 — 事业、从旁观读出的目的、诚实的机会主义（`prax village`）（v24）
 
-`Prax.Project` gives the village's moral arc its resolution. An authored endeavor *type*
-(`endeavor pid weight undertakeLabel gate parts`, built from `Part`s) compiles to three things a
-world wires in once: an undertake `Action`, a `Practice` whose parts are a *set* (one instance per
-owner — undertaking twice is never offered again), and a named pursuit `Desire` that pays
-`+weight` for every completed part. Progress *is* the reward, so a long project needs no planner
-change: every available part is ordinary local utility the moment its gates are met, never a
-foreseen end the lookahead has to plan toward. A plan is a set, not a linear chain — parts complete
-independently and in parallel, not all required for success, so the set of completed-part facts is
-the state and there is no progress cursor; a part's `partAfter` names the sibling parts that must
-finish first (a validated, structural edge), and `partNeeds` carries world resources and threshold
-gates. The pursuit desire is **dormant** — zero bindings, zero utility — for any disposed character
-with no instance yet; undertaking (an ordinary planner choice) is what switches it on. bob carries
-the disposition from the start (`charDesires = ["pursues-earnBread"]`), silent until he acts on it.
-`Prax.Worlds.Village`'s `earnBread` is three parts in a chain — sweep the square (public —
-`witnessed together "swept.Actor"`, `Prax.Witness`'s deposit-builder now exported as a first-class
-combinator for exactly this), then fetch flour at the mill (`after ["sweep"]`), then bake at the
-square (`after ["fetch"]`) for the loaf he'd otherwise have to steal.
+`Prax.Project` 给村庄道德弧以收束。创作的事业 *类型*（`endeavor pid weight undertakeLabel gate parts`，由 `Part` 建成）编译为世界接线一次的三物：一个承接 `Action`、一个各部分为 *集合* 的 `Practice`（每所有者一实例——再承接永不提供）、以及一个具名追求 `Desire`，每完成一部分付 `+weight`。进度 *就是* 回报，因此长项目无需 planner 变更：每个可用部分在门满足的瞬间就是普通局部效用，从非前瞻必须规划趋向的预见终点。计划是集合，非线性链——部分独立并行完成，并非全部成功所必需，故已完成部分事实之集即状态，无进度光标；部分的 `partAfter` 命名必须先完成的兄弟部分（经验证的结构边），`partNeeds` 携带世界资源与阈值门。追求欲望对尚无实例的已配置角色是 **休眠的**——零绑定、零效用；承接（普通 planner 选择）将其打开。bob 从一开始就携带倾向（`charDesires = ["pursues-earnBread"]`），直到他据此行动前沉默。`Prax.Worlds.Village` 的 `earnBread` 是链上三部分——清扫广场（公开——`witnessed together "swept.Actor"`，`Prax.Witness` 的存款构建器现作为一等组合子导出正为此）、再在磨坊取面粉（`after ["sweep"]`）、再在广场烘焙（`after ["fetch"]`）得到他否则必须去偷的面包。
 
-**The redemption, captured live.** A completely clean start, pressing only `m`:
+**救赎，现场捕获。** 完全干净开局，只按 `m`：
 
 ```sh
 cabal run prax -- village
@@ -1122,8 +863,7 @@ Your move (you):
   gale: Go to square
 ```
 
-— and, one press at a time, the rest of the endeavor plays out entirely on its own. bob's own line,
-real and verbatim, one per round for the next five presses:
+——并且，一次一按，事业余下部分完全自行展开。bob 自己的行，真实逐字，接下来五按下每轮一行：
 
 ```
   bob: sweep the square
@@ -1133,23 +873,9 @@ real and verbatim, one per round for the next five presses:
   bob: bake and earn the loaf
 ```
 
-Six presses, deterred bob to fed bob, no forcing anywhere — the identical technique `VillageSpec`'s
-"deterrence plus opportunity yields industry: watched bob earns his loaf" drives headlessly
-(`driveIdle "you" 49 villageWorld` — seven-turn rounds now, so six full rounds is 42 turns, with a
-seventh round's margin in the test's own budget), which pins the turn this completes on: `s3`
-(baking) is first true after **turn 37** of that count, `holding.bob.loaf` true, `stall.loaf`
-untouched (he never went near it), and no theft belief about bob anywhere — this is a loaf he
-*baked*, not one anyone had to witness him take. (The very same six presses are also where carol's
-frame-up, running in parallel, plays out — through v25 alone it tipped into notoriety; as of v30 it
-no longer does, §25's own update explains why, and §28 tells the rest of that story.)
+六按，从被威慑的 bob 到吃饱的 bob，无处强制——恰是 `VillageSpec`「威慑加机会产生勤劳：被监视的 bob 挣面包」无头驱动的同一技术（`driveIdle "you" 49 villageWorld`——现为七回合轮，故六个完整轮是 42 回合，测试自有预算含第七轮余量），钉死完成回合：该计数下 `s3`（烘焙）在 **第 37 回合** 后首次为真，`holding.bob.loaf` 为真，`stall.loaf` 未动（他从未靠近），无处有关于 bob 的盗窃信念——这是他 *烘焙* 的面包，非任何人须目击他拿走的。 （同一六按也是 carol 构陷并行展开之处——仅到 v25 时触发恶名；自 v30 起不再，§25 自有更新解释为何，§28 讲述该故事余下。）
 
-**Watching him work teaches the village his purpose.** Sweeping is public, so anyone who saw it
-comes to believe `swept.bob` — and `villageAxioms` adds one inference rule for exactly this:
-whoever believes bob swept presumes he's pursuing `earnBread`, the same "watching settles into a
-belief about someone's mind" pattern v21 already used for reputation, now aimed at a desire instead
-of a deed. Because that presumed pursuit is an ordinary believed `Desire` (`Prax.Minds`), it feeds
-`predictMove` directly — with a genuine nuance live testing turned up, checked directly (compiled
-directly against the library, real output):
+**看着他工作教会村庄他的目的。** 清扫是公开的，故看见者开始相信 `swept.bob`——且 `villageAxioms` 恰为此加一条推理规则：凡相信 bob 清扫过的人，假定他在追求 `earnBread`，同一「旁观沉淀为关于某人心智的信念」模式 v21 已用于声誉，现瞄准欲望而非行为。因该假定追求是普通被信念的 `Desire`（`Prax.Minds`），它直接喂给 `predictMove`——带现场测试翻出的真实细微差别，直接检查（对着库编译，真实输出）：
 
 ```
 carol saw the sweep: True
@@ -1159,22 +885,9 @@ carol's predicted move for bob, now at the mill: Just "bob: fetch flour from the
 dana's predicted move for bob, co-present at the mill but never told: Nothing
 ```
 
-`predictMove` is **myopic**: even carol, who both saw the sweep and holds the presumed-pursuit
-belief, predicts *nothing* while bob's still standing at the square — the model only pays off once
-the next part is an available move (the sweep is done, the mill trip is next, and predicting
-"stand still" would gain nothing over the model's baseline). The instant bob reaches the mill, the
-same belief resolves to the exact next part. And prediction is **belief-relative, not
-proximity-relative**: dana, standing right next to bob at the mill the whole time, never saw the
-sweep and was never told — she predicts nothing either, even though she's more physically
-co-present with bob than carol is at that moment. The model reads the predictor's beliefs, not the
-mover's true state or the predictor's eyes — exactly the property v23 built `predictMove` to have,
-now exercised by a desire instead of a plot.
+预测者读的是他们 *相信* 的欲望，非行动者真状态或预测者的眼睛——恰是 v23 建造 `predictMove` 所具有的性质，现由欲望而非情节行使。
 
-**The opportunism stays honest.** Deterrence and industry both hold only because bob is being
-watched; the story would ring false if concealment quietly stopped mattering once he had somewhere
-respectable to be. Mid-project — undertaken, sweep already done — with the square genuinely
-empty (`carol` and `you` both sent to the mill by hand, the same forcing technique §25's scripted
-tests use), bob's own top-ranked move flips:
+**机会主义保持诚实。** 威慑与勤劳皆仅因 bob 被监视而成立；若他一有体面去处隐瞒就悄悄不再重要，故事会听来虚假。项目中途——已承接、清扫已做——广场真正空（`carol` 与 `you` 皆用手送到磨坊，同 §25 脚本测试的强制技术），bob 自有顶尖动作翻转：
 
 ```
 bob's top pick, square empty mid-project: Just "bob: steal the loaf from the stall"
@@ -1183,30 +896,17 @@ bob's top pick, square empty mid-project: Just "bob: steal the loaf from the sta
   50.46  bob: Go to mill
 ```
 
-Stealing (71.18 — concealment's +12 back in play now that nobody's watching, on top of the loaf
-itself) beats continuing toward the next part (`Go to mill`, 50.46 — the step that leads to the
-endeavor's comparatively modest flat `+3`) by a wide margin — the same shape of comparison the
-"perfect crime" beat of §25 shows at turn zero, here reproduced mid-project. bob is honest because
-honesty is *currently* the higher-scoring path, watched; the instant it stops being watched, the
-ranking reverts exactly as it would have before v24 existed. `VillageSpec`'s "the opportunism stays
-honest: an empty square mid-project still tempts" pins this precise comparison.
+盗窃（71.18——现无人监视，隐瞒的 +12 重回场，叠在面包本身上）大幅压过继续走向下一部分（`Go to mill`，50.46——导向事业相对谦逊的平坦 `+3` 的一步）——同一比较形状 §25「完美犯罪」拍在第零回合展示，此处在项目中途复现。bob 诚实是因为诚实 *当前* 是更高分路径、被监视时；一停止被监视，排名恰如 v24 存在前那样回退。`VillageSpec` 的「机会主义保持诚实：项目中途空广场仍诱惑」钉死此精确比较。
 
-→ code: `Prax.Project` (`endeavor`/`Part`), `Prax.Witness` (`witnessed`, now exported),
-`Prax.Worlds.Village` (`earnBreadTake`/`earnBreadP`/`earnBreadPursuit`, the inference axiom);
-asserted in `Prax.ProjectSpec`, `Prax.VillageSpec`.
+→ 代码：`Prax.Project`（`endeavor`/`Part`）、`Prax.Witness`（`witnessed`，现导出）、
+`Prax.Worlds.Village`（`earnBreadTake`/`earnBreadP`/`earnBreadPursuit`，推理公理）；断言于
+`Prax.ProjectSpec`、`Prax.VillageSpec`。
 
-### 27. Temperament: the honest villager (`prax village`) (v25)
+### 27. 性情：诚实村民（`prax village`）（v25）
 
-`Prax.Persona` gives the village its first character built from *conduct*, not just wants. gale
-joins the cast (via `cast`), eve's contrast pair: both women carry the identical named desire
-`spites-carol` (`Want [Match "regards.W.carol.thief"] 4` — eve's old, unnamed malice from §25, now
-vocabulary so it can be *believed*), but gale also bears `honest`, a `Trait` that costs her own
-`lied` marks (−6 each) rather than forbidding the lie outright. Nothing stops her from whispering —
-the arithmetic does.
+`Prax.Persona` 给村庄第一个从 *行为* 而非仅 want 建成的角色。gale 经 `cast` 加入阵容，是 eve 的对照对：两名女性携带同一具名欲望 `spites-carol`（`Want [Match "regards.W.carol.thief"] 4`——eve 在 §25 的旧无名恶意，现入词汇以便可被 *相信*），但 gale 还带着 `honest`，一种以自有 `lied` 标记为代价（各 −6）而非直接禁止说谎的 `Trait`。无物阻止她低语——算术会。
 
-**(a) Legible from t=0.** `transparent` derives that every character presumes a bearer's
-conduct-valuations, defeasibly, before a single turn is played. Checked directly against
-`readView villageWorld`:
+**(a) 自 t=0 起可读。** `transparent` 派生每个角色假定持有者的行为估值，可击败地，在单回合开玩前。直接对照 `readView villageWorld` 检查：
 
 ```
 carol presumes gale's conscience: True
@@ -1215,13 +915,9 @@ carol presumes gale's spite (unheralded, so no one presumes it): False
 carol presumes eve's conscience (eve bears no trait): False
 ```
 
-Temperament is worn on the sleeve; malice is not — spite stays exactly as unreadable as eve's old
-unnamed want (§25) until someone is actually told (as (c) below plants).
+性情写在袖口；恶意不是——怨恨在有人实际被告知前恰如 eve 旧无名 want（§25）一样不可读（如下 (c) 种植）。
 
-**(b) A driven run: eve's frame-up lands, gale's psyche stays unmarked — and the lie launders
-through her anyway.** This is the same six-press, player-idle run §25 and §26 both draw from
-(`driveIdle "you" 49 villageWorld`, or the identical CLI session pressing `m` six times). eve
-whispers to dana, then you, then reaches gale on press 4:
+**(b) 驱动跑程：eve 的构陷落地，gale 的心智保持无标记——而谎言仍经她漂洗。** 这是 §25 与 §26 皆抽取的同一六按、玩家空闲跑程（`driveIdle "you" 49 villageWorld`，或同一 CLI 会话按六次 `m`）。eve 向 dana 低语，再向 you，再在按键 4 够到 gale：
 
 ```
 >   bob: fetch flour from the mill
@@ -1231,10 +927,7 @@ whispers to dana, then you, then reaches gale on press 4:
   gale: tell eve that carol stole the loaf
 ```
 
-gale is deceived exactly like everyone else eve reaches — she has no way to know the claim is
-false — and an honest believer turns out to be the *perfect* vector: in the very same round she
-passes on what she now genuinely holds, by ordinary `tell`, not `lie`. Checked directly against the
-driven state:
+gale 恰如 eve 够到的其他所有人一样受骗——她无法知道声称为假——而诚实信徒原来是 *完美* 载体：在同一轮她用普通 `tell` 而非 `lie` 传出她现真正持有之物。直接对照驱动状态检查：
 
 ```
 eve's frame-up went ahead (dana.believes.stole.carol.loaf.heard.eve): True
@@ -1245,45 +938,22 @@ everything gale passed on, she honestly believes (gale.believes.stole.carol.loaf
 eve now holds evidence heard from gale — the lie laundered back to its own author: True
 ```
 
-gale never lies — the mark that would prove it is provably absent from the whole database — and yet
-the fabrication travels through her all the same, indistinguishable from truth on her end because,
-to gale, it *is* truth. She even carries it back to eve (`eve.believes.stole.carol.loaf.heard.gale`),
-handing the liar real "evidence" for her own invention: the very next round, eve reaches bob with a
-plain `tell`, not a `lie` — the gate closed the instant she acquired that evidence, exactly as
-hearing your own lie told back does (§25). **The honest villager launders the lie.** This was found
-in implementation, not predicted by the spec's first draft (which wrongly guessed gale would leave
-no trace at all); the spec was corrected in place once this run was observed
-(`docs/specs/2026-07-11-v25-persona-design.md` §4, "The laundering"), and it's also why carol's
-notoriety tips two presses earlier than any prior round of this world managed — §25 has that count.
+gale 从不说谎——可证明该标记在整个数据库中缺失——然而捏造照样经她旅行，在她一端与真相不可区分，因为对 gale 而言它 *就是* 真相。她甚至把它带回 eve（`eve.believes.stole.carol.loaf.heard.gale`），把真实「证据」交到说谎者手里以支撑其自有发明：下一轮 eve 用普通 `tell` 而非 `lie` 够到 bob——她获得该证据的瞬间门就关了，恰如听到自己的谎言被传回（§25）。**诚实村民漂洗谎言。** 这在实现中发现，非规格初稿所预测（初稿错误猜测 gale 会不留任何痕迹）；一旦观察此跑程，规格就地修正（`docs/specs/2026-07-11-v25-persona-design.md` §4，「漂洗」），这也是 carol 的恶名比本世界任何先前轮次早两按触发的原因——§25 有该计数。
 
-**Update — v30.** The transcript above — eve reaching gale directly, in free play, at press 4 — no
-longer reproduces from the identical input. `Prax.Blackmail`'s threshold-fear resolution (§28) makes
-eve prudent after her very first whisper (dana and gale both regard her the instant she frames
-carol, since both are co-present for the act): any further whisper risks the third regarder and
-notoriety outright, so in free play she never sends one, to gale or anyone else. The sharper,
-current free-play fact is "exactly one whisper, ever" (`Prax.VillageSpec`'s own assertion on the
-identical 49-turn trace), not the three-whisper cascade shown above. The laundering *mechanism*
-itself — an honest believer spreading a lie she was honestly deceived by — is still real; it just
-isn't something eve's own planner chooses to demonstrate anymore. §28 forces exactly the whisper her
-prudence now declines and shows gale relay it precisely as she does above, live, so the finding stays
-pinned rather than quietly losing its only test.
+**更新 — v30。** 上方转录——eve 在自由游玩按键 4 直接够到 gale——同一输入不再复现。`Prax.Blackmail` 的阈值恐惧解析（§28）使 eve 在第一次低语后就谨慎（她构陷 carol 的瞬间 dana 与 gale 都 regard 她，因两人同场目睹该行为）：再低语就有第三人 regard 与直接恶名的风险，故自由游玩中她再不向 gale 或任何人发送。更锋利、当前的自由游玩事实是「终其一生恰一次低语」（`Prax.VillageSpec` 对同一 49 回合轨迹的自有断言），非上方所示三次低语级联。漂洗 *机制* 本身——诚实信徒传播她被诚实欺骗而相信的谎言——仍真实；只是不再是 eve 自有 planner 选择演示之物。§28 强制恰是她的审慎现拒绝的低语，并现场展示 gale 恰如上复述，故发现保持钉死而非悄悄失去唯一测试。
 
-**(c) The prediction contrast.** Planting the identical motive-belief about both women in dana's
-head — `dana.believes.desires.eve.spites-carol.heard.you` and the same for gale — and asking
-`predictMove` for each, with gale's conscience already presumed since t=0 (a):
+**(c) 预测对照。** 在 dana 头脑中种下关于两名女性的同一动机信念——`dana.believes.desires.eve.spites-carol.heard.you` 与对 gale 的相同——并分别问 `predictMove`，gale 的良心自 t=0 (a) 起已被假定：
 
 ```
 predictMove dana eve  = Just "eve: whisper to dana that carol stole the loaf"
 predictMove dana gale = Nothing
 ```
 
-Believed malice alone predicts a whisper; believed malice netted against a believed conscience
-(+4 − 6) predicts nothing. A believed temperament changes what others expect you to do, not just
-what you actually do — the same believed-mind machinery v23 built for plots now carries character.
+仅被信念的恶意预测低语；被信念的恶意对上被信念的良心（+4 − 6）预测无物。被信念的性情改变他人期望你做什么，不只是你实际做什么——v23 为情节建造的同一信念心智机械现携带性格。
 
-→ code: `Prax.Persona` (`Trait`/`personaVocabulary`/`bearing`/`transparent`/`cast`), `Prax.Deceit`
-(`lie`'s new mark outcome), `Prax.Worlds.Village` (`honest`, `spitesCarol`, gale); asserted in
-`Prax.PersonaSpec`, `Prax.DeceitSpec`, `Prax.VillageSpec`.
+→ 代码：`Prax.Persona`（`Trait`/`personaVocabulary`/`bearing`/`transparent`/`cast`）、`Prax.Deceit`
+（`lie` 的新标记结果）、`Prax.Worlds.Village`（`honest`、`spitesCarol`、gale）；断言于
+`Prax.PersonaSpec`、`Prax.DeceitSpec`、`Prax.VillageSpec`。
 
 ### 28. Leverage: blackmail & debt, priced (`prax village`) (v30)
 
