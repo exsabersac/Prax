@@ -48,12 +48,11 @@ data Axiom = Axiom
   }
   deriving (Eq, Show)
 
--- | @axiom body heads@.
+-- | @axiom body heads@。
 axiom :: [Condition] -> [String] -> Axiom
 axiom = Axiom
 
--- | A detected contradiction (@⊥@): the head sentence whose assertion was
--- incompatible with the model.
+-- | 检测到的矛盾（@⊥@）：其断言与模型不相容的头句子。
 newtype Contradiction = Contradiction String
   deriving (Eq, Show)
 
@@ -62,12 +61,9 @@ closure :: [Axiom] -> Db -> Either Contradiction Db
 closure []  db0 = Right db0
 closure axs db0 = run axs db0 db0
 
--- | Continue an ALREADY-CLOSED model with new base facts. Exactly
--- 'closure'’s semi-naive loop, entered at (model ∪ facts, delta = facts).
--- Sound only when the facts are monotone for these axioms — '!'-free and
--- unifying no negated body pattern, with 'monotoneAxioms' true — which is
--- the CALLER's obligation ('Prax.Engine.monotoneInsert'); a violation is
--- caught by the ViewInvariant net, not silently absorbed.
+-- | 用新基事实延续 *已闭合* 模型。恰为 'closure' 的半朴素循环，从 (model ∪ facts, delta = facts) 进入。
+-- 仅当事实对这些公理单调时可靠——无 '!' 且不统一任何否定体模式，且 'monotoneAxioms' 为真——这是
+-- *调用方* 的义务（'Prax.Engine.monotoneInsert'）；违例由 ViewInvariant 网捕获，不静默吸收。
 closureFrom :: [Axiom] -> Db -> [String] -> Either Contradiction Db
 closureFrom axs closed facts =
   run axs (insertAll facts closed) (insertAll facts emptyDb)
@@ -117,38 +113,27 @@ run axs = go
         joinAt i = foldl step [Map.empty] (zip [0 :: Int ..] body)
           where step bs (j, c) = concatMap (query (if j == i then delta else model) [c]) bs
 
--- | An axiom's body and heads, precompiled once per world (see 'cookAxioms'):
--- the body pattern-split ('Prax.Query.cookCondition') and the head sentences
--- pre-tokenized and interned ('Prax.Db.internTokens') — the same compilation
--- 'run'\'s local @rules@ otherwise redoes on every call.
+-- | 公理的体与头，每世界预编译一次（见 'cookAxioms'）：体经模式拆分（'Prax.Query.cookCondition'），
+-- 头句子预分词并 intern（'Prax.Db.internTokens'）——否则 'run' 的局部 @rules@ 每次调用都会重做的同一编译。
 data CookedRule = CookedRule
   { crBody  :: [CookedCondition]
   , crHeads :: [[(Sym, Maybe Char)]]
   }
   deriving (Eq, Show)
 
--- | Precompile a domain's axioms to 'CookedRule's: exactly the rules in the
--- list, bodies pattern-split and heads pre-tokenized. Deontics-free — a world
--- that closes under the □ operator (DEON property 1) hands an already-expanded
--- list (the closure operator lives in "Prax.Deontic"), and its lifted rules
--- cook here like any other. The caller stores the result in
--- 'Prax.Types.cookedRules', so
--- 'runCooked' — invoked once per 'Prax.Engine.reclose'\/'Prax.Engine.applyGrowToks',
--- thousands of times a round — never re-cooks the axiom set.
+-- | 把域公理预编译为 'CookedRule'：恰为列表中的规则，体模式拆分、头预分词。无道义——在 □ 算子下闭合的世界
+-- （DEON 性质 1）交出已展开列表（闭包算子在 "Prax.Deontic"），其提升规则在此像其他规则一样煮。调用方把结果存入
+-- 'Prax.Types.cookedRules'，因此 'runCooked'——每次 'Prax.Engine.reclose'\/'Prax.Engine.applyGrowToks'
+-- 调用一次，每回合数千次——从不重煮公理集。
 cookAxioms :: [Axiom] -> [CookedRule]
 cookAxioms axs =
   [ CookedRule (map cookCondition body) (map internTokens hs)
   | Axiom body hs <- axs ]
 
--- | 'run'\'s cooked mirror: case-for-case the same semi-naive loop
--- (@go@\/@deltaJoin@), typed over precompiled 'CookedRule's and
--- 'Prax.Query.queryCooked' instead of re-deriving @rules@ from @axs@ and
--- re-splitting each body pattern via 'Prax.Query.query' on every call. A
--- deliberately independent, hand-verified parallel implementation — not a
--- delegation through 'run' — so 'closure'\/'closureFrom' (which still call
--- 'run') remain a genuinely separate code path from the engine's hot loop,
--- exactly the property "Prax.ViewInvariantSpec"'s net depends on to recompute
--- against something other than the code under test.
+-- | 'run' 的煮熟镜像：逐 case 同一半朴素循环（@go@\/@deltaJoin@），类型落在预编译 'CookedRule' 与
+-- 'Prax.Query.queryCooked' 上，而非每次从 @axs@ 重导 @rules@ 并用 'Prax.Query.query' 重拆体模式。
+-- 有意独立、手验的并行实现——不经 'run' 委托——因此 'closure'\/'closureFrom'（仍调用 'run'）相对引擎热循环
+-- 保持真正分离的代码路径，恰是 "Prax.ViewInvariantSpec" 网依赖的性质：对照非被测代码重算。
 runCooked :: [CookedRule] -> Db -> Db -> Either Contradiction Db
 runCooked rules = go
   where
@@ -170,33 +155,27 @@ runCooked rules = go
         joinAt i = foldl step [Map.empty] (zip [0 :: Int ..] body)
           where step bs (j, c) = concatMap (queryCooked (if j == i then delta else model) [c]) bs
 
--- | The facts the axioms /add/ to a world (closure minus base). Empty on
--- contradiction.
+-- | 公理向世界 /添加/ 的事实（闭包减基）。矛盾时为空。
 derived :: [Axiom] -> Db -> [String]
 derived axs db = case closure axs db of
   Right closed -> filter (`notElem` dbToSentences db) (dbToSentences closed)
   Left _       -> []
 
--- | The contradiction a world's axioms produce, if any (the @⊥@ witness).
+-- | 世界公理产生的矛盾（若有）（@⊥@ 见证）。
 contradiction :: [Axiom] -> Db -> Maybe String
 contradiction axs db = case closure axs db of
   Left (Contradiction h) -> Just h
   Right _                -> Nothing
 
--- | Every path pattern the axioms can read or write: body atoms at any
--- polarity (including inside Absent\/Exists\/Or\/Subquery — the
--- 'Prax.Query.cookedReadAnchors' walk), and head templates. Any □-lifted rules
--- a deontic world declared are ordinary rules in the list ('cookAxioms'), so
--- they need no second enumeration here. A ground delta that may-unify none of
--- these commutes with 'closure' (v27 spec theorem) — the basis of the engine's
--- delta-irrelevance fast path.
+-- | 公理可读或可写的每个路径模式：任意极性的体原子（含 Absent\/Exists\/Or\/Subquery 内——
+-- 'Prax.Query.cookedReadAnchors' 行走），以及头模板。道义世界声明的任何 □-提升规则已是列表中的普通规则
+-- （'cookAxioms'），故此处无需二次枚举。与这些均不可统一的落地 delta 与 'closure' 交换（v27 规格定理）——
+-- 引擎 delta 无关快路径的基础。
 axiomFootprint :: [CookedRule] -> [[Sym]]
 axiomFootprint rules =
   concat [ cookedReadAnchors (crBody r) ++ map (map fst) (crHeads r) | r <- rules ]
 
--- | Every pattern under a negation in any body: inserting a fact these
--- patterns match can UN-fire a rule (retraction), so such facts never take
--- the continuation tier.
+-- | 任一体中否定下的每个模式：插入这些模式匹配的事实可 *熄火* 规则（撤回），故此类事实永不走延续层。
 axiomNegPatterns :: [CookedRule] -> [[Sym]]
 axiomNegPatterns rules = concat [ concatMap negOf (crBody r) | r <- rules ]
   where
@@ -208,25 +187,17 @@ axiomNegPatterns rules = concat [ concatMap negOf (crBody r) | r <- rules ]
       CSubquery _ _ w -> concatMap negOf w
       _               -> []
 
--- | Every head template the axioms can write — any □-lifted rules a deontic
--- world declared included, for free, since 'cookAxioms' emitted them as rules
--- of their own. A delta that feeds some axiom can change derived facts only in
--- these families.
+-- | 公理可写的每个头模板——道义世界声明的任何 □-提升规则免费包含，因 'cookAxioms' 已把它们发成自有规则。
+-- 喂给某公理的 delta 只能在这些族中改变派生事实。
 axiomHeadPatterns :: [CookedRule] -> [[Sym]]
 axiomHeadPatterns rules = concat [ map (map fst) (crHeads r) | r <- rules ]
 
--- | Is the axiom set continuation-safe: does adding base facts only ever ADD
--- derived facts (given the caller also avoids negated patterns)? Conditions
--- must be monotone-up: CMatch/CNot/CAbsent (negations are handled via
--- 'axiomNegPatterns'), recursion through CExists/COr/CSubquery, CCount
--- freely, CCmp only in the grows-only direction — the count side growing
--- past a numeric literal (Gt/Gte with the literal right, Lt/Lte with it
--- left) — and CEq/CNeq only over pattern-bound variables. An Eq/Neq over an
--- aggregate-bound variable (a 'CCount' result or a 'CSubquery' set variable)
--- expresses exactly-k/not-k, which UN-fires as the aggregate grows past k —
--- anti-monotone despite Eq/Neq otherwise being a safe equality test. CCalc
--- (and any other CCmp shape) disables the tier for the world; the fallback
--- is today's full reclose, correct just slower.
+-- | 公理集是否延续安全：添加基事实是否只 *增加* 派生事实（假定调用方也避开否定模式）？条件必须单调向上：
+-- CMatch/CNot/CAbsent（否定经 'axiomNegPatterns' 处理）、经 CExists/COr/CSubquery 递归、CCount 自由、
+-- CCmp 仅在只增长方向——计数侧越过数值字面（字面在右的 Gt/Gte，字面在左的 Lt/Lte）——且 CEq/CNeq
+-- 仅在模式绑定变量上。聚合绑定变量上的 Eq/Neq（'CCount' 结果或 'CSubquery' 集合变量）表达恰好-k/非-k，
+-- 随聚合越过 k 而熄火——尽管 Eq/Neq 否则是安全相等测试，此处反单调。CCalc（及其他 CCmp 形状）对本世界禁用该层；
+-- 回退是今日的完整 reclose，正确只是更慢。
 monotoneAxioms :: [CookedRule] -> Bool
 monotoneAxioms = all (bodyOk . crBody)
   where

@@ -43,66 +43,53 @@ import           Prax.Sym (Sym, intern, symIsVar, symName)
 data CmpOp = Lt | Lte | Gt | Gte
   deriving (Eq, Show)
 
--- | Binary integer operators for 'Calc' (@add@, @sub@, @mul@, @mod@; Praxish
--- omits division deliberately to keep the DB integer-valued — 'Mod'
--- preserves that rationale, since modulo is itself integral. 'Mod' uses
--- Haskell's @mod@: the result carries the divisor's sign, so it is
--- non-negative for a positive modulus (e.g. @(-3) \`mod\` 5 == 2@).
+-- | 'Calc' 的二元整数算子（@add@、@sub@、@mul@、@mod@；Praxish 有意省略除法以保持 DB 整数值——
+-- 'Mod' 保留该理由，因为取模本身是整数）。
 data CalcOp = Add | Sub | Mul | Mod
   deriving (Eq, Show)
 
 -- | 查询中的单一条件。
 data Condition
   = Match String
-    -- ^ A bare logic sentence; unified against the DB (extends bindings).
+    -- ^ 裸逻辑句子；对照 DB 统一（扩展绑定）。
   | Not String
-    -- ^ Negation as failure: keep the binding iff the sentence has no match.
+    -- ^ 失败即否定：当且仅当句子无匹配时保留绑定。
   | Eq String String
-    -- ^ Equality that doubles as assignment: if exactly one operand is an
-    -- unbound variable, bind it to the other; if both are known, keep iff equal.
+    -- ^ 兼作赋值的相等：若恰一操作数是未绑定变量，则绑定到另一操作数；若两者皆已知，当且仅当相等时保留。
   | Neq String String
-    -- ^ Keep the binding iff the two (resolvable) operands differ.
+    -- ^ 当且仅当两（可解析）操作数不同时保留绑定。
   | Cmp CmpOp String String
-    -- ^ Numeric comparison of two resolvable operands.
+    -- ^ 两可解析操作数的数值比较。
   | Calc String CalcOp String String
-    -- ^ @Calc result op lhs rhs@: bind @result@ to @lhs op rhs@ (integers).
+    -- ^ @Calc result op lhs rhs@：把 @result@ 绑定到 @lhs op rhs@（整数）。
   | Count String String
-    -- ^ @Count result setVar@: bind @result@ to the size of a set-valued var.
+    -- ^ @Count result setVar@：把 @result@ 绑定到集合值变量的大小。
   | Subquery
-      { subSet   :: String     -- ^ variable to bind to the resulting set
-      , subFind  :: [String]   -- ^ variables projected out of each sub-result
-      , subWhere :: [Condition] -- ^ the sub-query's conditions
+      { subSet   :: String     -- ^ 绑定到结果集合的变量
+      , subFind  :: [String]   -- ^ 从每个子结果投影出的变量
+      , subWhere :: [Condition] -- ^ 子查询的条件
       }
-    -- ^ Run a nested query and bind @subSet@ to the list of projected rows.
+    -- ^ 跑嵌套查询并把 @subSet@ 绑定到投影行列表。
   | Or [[Condition]]
-    -- ^ Disjunction: at least one clause (each a conjunction) holds. A
-    -- /generator/ — it unions the (deduplicated) bindings from every satisfying
-    -- clause, so a disjunctive precondition can bind variables from either side.
+    -- ^ 析取：至少一个子句（各为合取）成立。/生成器/——它合并每个满足子句的（去重）绑定，因此析取前置条件
+  -- 可从任一侧绑定变量。
   | Absent [Condition]
-    -- ^ Negation-as-failure over a whole conjunction: keep the binding iff the
-    -- inner conjunction has no solution. Generalizes 'Not' from a single
-    -- sentence to @¬(compound)@ — e.g. @Absent [Match "leader.X", Match "X.sex!male"]@
-    -- is "there is no male leader" (@¬∃@).
+    -- ^ 整段合取上的失败即否定：当且仅当内部合取无解时保留绑定。把 'Not' 从单句推广到 @¬(compound)@——
+  -- 例如 @Absent [Match "leader.X", Match "X.sex!male"]@ 是「没有男性领袖」（@¬∃@）。
   | Exists [Condition]
-    -- ^ Dual of 'Absent': keep the binding iff the inner conjunction /has/ a
-    -- solution, discarding the witnesses (a boolean @∃@ that neither leaks nor
-    -- multiplies bindings downstream).
+    -- ^ 'Absent' 的对偶：当且仅当内部合取 /有/ 解时保留绑定，丢弃见证（布尔 @∃@，既不泄漏也不在下游倍增绑定）。
   deriving (Eq, Show)
 
--- | Universal quantification: for every binding of @guard@, @body@ holds
--- (@∀ x. guard(x) → body(x)@). Defined as "there is no @guard@-binding for which
--- @body@ fails". E.g. @forAll [Match "patron.P"] [Match "P.hasDrink"]@ = "every
--- patron has a drink".
+-- | 全称量化：对 @guard@ 的每个绑定，@body@ 成立（@∀ x. guard(x) → body(x)@）。定义为「不存在使 @body@
+-- 失败的 @guard@-绑定」。例如 @forAll [Match "patron.X"] [Match "happy.X"]@。
 forAll :: [Condition] -> [Condition] -> Condition
 forAll guard body = Absent (guard ++ [Absent body])
 
--- | Material implication @a → b@ (propositional: either @a@ is unsatisfiable
--- from the current binding, or @b@ holds).
+-- | 实质蕴涵 @a → b@（命题：从当前绑定看 @a@ 不可满足，或 @b@ 成立）。
 implies :: [Condition] -> [Condition] -> Condition
 implies a b = Or [ [Absent a], b ]
 
--- | Substitute bindings into every sentence/operand of a condition. Variables
--- not present in the bindings are left for the query to quantify.
+-- | 把绑定代入条件的每个句子\/操作数。绑定中不存在的变量留给查询去量化。
 groundCondition :: Bindings -> Condition -> Condition
 groundCondition b c = case c of
   Match s          -> Match (ground s b)
@@ -117,12 +104,8 @@ groundCondition b c = case c of
   Absent cs        -> Absent (map (groundCondition b) cs)
   Exists cs        -> Exists (map (groundCondition b) cs)
 
--- | Every name a condition /mentions/ — a total walk over every constructor,
--- including subquery internals (an over-approximation of what it binds: e.g.
--- 'Eq'\/'Neq'\/'Cmp'\/'Calc'\/'Count' operands are listed whether they are
--- variables or literal constants). The shared home for reserved-variable
--- guards ('Prax.Engine.setSchedule', 'Prax.Rng.draw') and similar checks that
--- need every name a condition could touch, not just its free variables.
+-- | 条件 /提及/ 的每个名字——对每个构造器的全行走，含子查询内部（对其所绑定之物的过近似：例如
+-- 'Eq'\/'Neq'\/'Cmp'\/'Calc'\/'Count' 操作数是名字，未必是变量）。
 conditionVars :: Condition -> [String]
 conditionVars c = case c of
   Match s          -> pathNames s
@@ -137,12 +120,8 @@ conditionVars c = case c of
   Calc v _ a b     -> [v, a, b]
   Count v s        -> [v, s]
 
--- | Every /sentence string/ a condition list mentions — the raw authored paths
--- ('Match'\/'Not' operands, recursing through 'Absent'\/'Exists'\/'Or'\/
--- 'Subquery'), as opposed to 'conditionVars''s split-and-flattened names. The
--- shared home for path-family checks that must inspect the head segment (e.g.
--- 'Prax.TypeCheck''s reserved-family scan and 'Prax.Script''s patience-marker
--- namespace guard).
+-- | 条件列表提及的每个 /句子字符串/——原始创作路径（'Match'\/'Not' 操作数，递归经
+-- 'Absent'\/'Exists'\/'Or'\/'Subquery'），相对于 'conditionVars' 的名字行走。
 condSents :: [Condition] -> [String]
 condSents = concatMap go
   where
@@ -154,11 +133,8 @@ condSents = concatMap go
     go (Subquery _ _ w) = condSents w
     go _                = []
 
--- | The cooked mirror of 'Condition': every operand is pre-interned to a
--- 'Sym' at cook time — 'Match'\/'Not''s sentence is pre-split
--- ('Prax.Db.pathNames') and interned; every other constructor's name
--- operands (variable or constant) are interned the same way. 'evalCookedCond'
--- never parses or interns a name at query time.
+-- | 'Condition' 的煮熟镜像：每个操作数在煮时预 intern 为 'Sym'——'Match'\/'Not' 的句子预拆分
+-- （'Prax.Db.pathNames'）并 intern；其他构造器的名字操作数同样。热路径查询从不重解析创作句子。
 data CookedCondition
   = CMatch [Sym]
   | CNot [Sym]
@@ -173,7 +149,7 @@ data CookedCondition
   | CExists [CookedCondition]
   deriving (Eq, Show)
 
--- | Compile a 'Condition' to its cooked form (see 'CookedCondition').
+-- | 把 'Condition' 编译为其煮熟形式（见 'CookedCondition'）。
 cookCondition :: Condition -> CookedCondition
 cookCondition c = case c of
   Match s          -> CMatch (map intern (pathNames s))
@@ -188,19 +164,18 @@ cookCondition c = case c of
   Absent cs        -> CAbsent (map cookCondition cs)
   Exists cs        -> CExists (map cookCondition cs)
 
--- | Substitute a single symbol: replaced iff it 'symIsVar' and bound (via
--- 'valToSym'), otherwise left as-is. The Sym-level rule 'Prax.Db.groundTokens'
--- applies per token.
+-- | 代入单个符号：当且仅当它 'symIsVar' 且已绑定（经 'valToSym'）时替换，否则原样。Sym 级规则
+-- 'Prax.Db.groundTokens' 按 token 应用。
 substSym :: Bindings -> Sym -> Sym
 substSym b n
   | symIsVar n = maybe n valToSym (Map.lookup n b)
   | otherwise  = n
 
--- | Substitute bindings into a list of symbols — no string round trip.
+-- | 把绑定代入符号列表——无字符串往返。
 groundNames :: Bindings -> [Sym] -> [Sym]
 groundNames b = map (substSym b)
 
--- | Substitute bindings into a cooked condition, mirroring 'groundCondition'.
+-- | 把绑定代入煮熟条件，镜像 'groundCondition'。
 groundCookedCondition :: Bindings -> CookedCondition -> CookedCondition
 groundCookedCondition b c = case c of
   CMatch ns        -> CMatch (groundNames b ns)
@@ -215,11 +190,8 @@ groundCookedCondition b c = case c of
   CAbsent cs       -> CAbsent (map (groundCookedCondition b) cs)
   CExists cs       -> CExists (map (groundCookedCondition b) cs)
 
--- | Every DB path a cooked-condition query can consult, at any polarity —
--- including inside Or\/Absent\/Exists\/Subquery. Complete by construction:
--- CEq\/CNeq\/CCmp\/CCalc compare already-bound values and CCount measures a
--- bound set (produced by a CSubquery, whose inner conditions ARE walked), so
--- none of them reads a path this walk misses.
+-- | 煮熟条件查询在任意极性可查阅的每个 DB 路径——含 Or\/Absent\/Exists\/Subquery 内。构造上完整：
+-- CEq\/CNeq\/CCmp\/CCalc 比较已绑定值（不读 DB）；CCount 读集合变量（已是值）。仅匹配形构造器贡献锚点。
 cookedReadAnchors :: [CookedCondition] -> [[Sym]]
 cookedReadAnchors = concatMap go
   where
@@ -236,23 +208,20 @@ cookedReadAnchors = concatMap go
       CCalc {}         -> []
       CCount {}        -> []
 
--- | Evaluate a conjunctive list of conditions from a starting binding, yielding
--- every consistent binding that satisfies them all.
+-- | 从起始绑定求值合取条件列表，产出满足全部条件的每个一致绑定。
 query :: Db -> [Condition] -> Bindings -> [Bindings]
 query = queryWith False
 
--- | The cooked-condition query entry: equivalent to 'query' but every
--- operand is already an interned 'Sym' (see 'CookedCondition') — the hot
--- path never re-parses or re-interns an authored sentence/name.
+-- | 煮熟条件查询入口：等价于 'query'，但每个操作数已是 intern 的 'Sym'（见 'CookedCondition'）——热路径
+-- 从不重解析或重 intern 创作句子。
 queryCooked :: Db -> [CookedCondition] -> Bindings -> [Bindings]
 queryCooked = queryCookedWith False
 
--- | True iff the conditions are satisfiable from the given binding.
+-- | 当且仅当条件从给定绑定可满足时为真。
 satisfies :: Db -> [Condition] -> Bindings -> Bool
 satisfies db conds b = not (null (query db conds b))
 
--- | Number of consistent bindings satisfying the conditions (used for utility
--- scoring: a want scores once per satisfying instantiation).
+-- | 满足条件的一致绑定数（用于效用打分：want 对每个满足实例计分一次）。
 countSatisfying :: Db -> [Condition] -> Bindings -> Int
 countSatisfying db conds b = length (query db conds b)
 

@@ -99,14 +99,7 @@ data Outcome
     -- （'CRoll'）。未播种状态上的 'Roll' 是大声错误（类型检查过的世界会播种骰）。
   deriving (Eq, Show)
 
--- | Every name an outcome /mentions/ — a total walk over every constructor,
--- 'ForEach' recursing through both its guard conditions ('conditionVars')
--- and its nested outcomes. Declared here (not alongside 'conditionVars' in
--- "Prax.Query") because 'Outcome' lives here and "Prax.Types" already
--- depends on "Prax.Query" — the reverse dependency would cycle. The shared
--- home for reserved-variable guards ('Prax.Engine.setSchedule',
--- 'Prax.Rng.draw') and similar checks that need every name an outcome could
--- touch.
+-- | 结果 /提及/ 的每个名字——对每个构造器的全行走，含 'ForEach' 守卫与体、'Roll' 条件\/结果。
 outcomeVars :: Outcome -> [String]
 outcomeVars o = case o of
   Insert s       -> pathNames s
@@ -116,11 +109,8 @@ outcomeVars o = case o of
   ForEach cs os  -> concatMap conditionVars cs ++ concatMap outcomeVars os
   Roll _ _ cs os -> concatMap conditionVars cs ++ concatMap outcomeVars os
 
--- | Every /sentence string/ an outcome list mentions — the raw authored paths
--- it inserts, deletes, or reads (a 'ForEach'\/'Roll' guard's own conditions
--- via 'condSents', its body recursively). The write-side companion to
--- "Prax.Query"'s 'condSents'; the shared home for path-family checks that need
--- the head segment of every path an outcome touches.
+-- | 结果列表提及的每个 /句子字符串/——原始创作路径（'Insert'\/'Delete'\/'InsertFor' 的句子，'Call' 忽略，
+-- 递归经 'ForEach'\/'Roll'），相对 'outcomeVars' 的名字行走。
 outcomeSents :: [Outcome] -> [String]
 outcomeSents = concatMap go
   where
@@ -131,25 +121,8 @@ outcomeSents = concatMap go
     go (ForEach conds outs)  = condSents conds ++ outcomeSents outs
     go (Roll _ _ conds outs) = condSents conds ++ outcomeSents outs
 
--- | Names an author-supplied fragment MUST NOT use when a combinator splices
--- it into generated conditions (the v40 hygiene boundary). Two sources of
--- capture, one check: the @Prax@ namespace (ALL machinery variables live
--- there — see the spec; authors can never collide with them by accident) and
--- @forbiddenSplices@, names the combinator ITSELF also binds in the SAME
--- generated query (e.g. 'Prax.Confession.confess' grounds @Actor@\/@H@ — an
--- authored mark pattern reusing either would capture, so both are listed
--- here). @forbiddenSplices@ is a BLOCKLIST, not an allowlist: a name that is
--- neither Prax-prefixed nor in it is unrestricted — do not pass a
--- combinator's legitimate CONTRACT variables (e.g. 'Prax.Schedule.sightRule'\'s
--- @Seer@\/@Seen@\/@Spot@) expecting them to be exempted; the empty list @[]@
--- is how "nothing extra is forbidden" is spelled. Returns the offenders;
--- each combinator raises its own contextual error.
---
--- This walker and its siblings here are the AUTHORING-BOUNDARY side of the
--- v41 one-surface rule: they run at combinator boundaries, before cooking
--- exists, so they read the authored strings — authoring boundary = string;
--- world model = cooked ("Prax.Relevance").
-authoredVarClash :: [String]      -- ^ forbiddenSplices: the combinator's OTHER bound names in this splice
+-- | 当组合器把作者片段拼进引擎规则时，作者供给片段 *不得* 使用的名字——响亮拒绝碰撞（v40 卫生）。
+authoredVarClash :: [String]      -- ^ forbiddenSplices：本拼接中组合器的 *其他* 已绑定名
                  -> [Condition] -> [Outcome] -> [String]
 authoredVarClash forbiddenSplices conds outs =
   [ v | v <- vars, isPraxVar v || v `elem` forbiddenSplices ]
@@ -157,14 +130,11 @@ authoredVarClash forbiddenSplices conds outs =
     vars = filter isVariable (concatMap conditionVars conds
                               ++ concatMap outcomeVars outs)
 
--- | 'authoredVarClash' for string-pattern arguments that are not
--- 'Condition's (e.g. 'Prax.Confession.confess'\'s mark\/deposit patterns,
--- 'Prax.Faction.factionStanding'\'s, 'Prax.Blackmail.shakedown'\'s, and
--- 'Prax.Repute.standing'\'s evidence\/deed patterns): same two-source,
--- @forbiddenSplices@-is-a-blocklist check, over already-split
--- 'Prax.Db.pathNames' instead of 'conditionVars'\/'outcomeVars' — callers
--- extract the names themselves (and drop any they mean to exempt, e.g.
--- 'Prax.Blackmail.shakedown'\'s own victim variable) before calling.
+-- | 针对非 'Condition' 的字符串模式参数的 'authoredVarClash'（例如 'Prax.Confession.confess' 的
+-- mark\/deposit 模式、'Prax.Faction.factionStanding'、'Prax.Blackmail.shakedown' 与
+-- 'Prax.Repute.standing' 的 evidence\/deed 模式）：同一双源、@forbiddenSplices@-是黑名单检查，
+-- 在已拆分的 'Prax.Db.pathNames' 上而非 'conditionVars'\/'outcomeVars'——调用方自行提取名字
+-- （并丢掉任何有意豁免者，例如 'Prax.Blackmail.shakedown' 自己的受害者变量）再调用。
 authoredPatClash :: [String] -> [String] -> [String]
 authoredPatClash forbiddenSplices names =
   [ v | v <- filter isVariable names, isPraxVar v || v `elem` forbiddenSplices ]
@@ -369,76 +339,51 @@ data PraxState = PraxState
   , sorts        :: [(String, [String])]  -- ^ sort → 成员常量，供类型检查器（默认无）
   , desires      :: [Desire]      -- ^ 可命名欲望词汇（默认无）
   , schedule       :: [ScheduleRule]
-    -- ^ Authored recurring-rule declarations (spec v44); declaration order is
-    -- firing order. Default none. Cooked into 'cookedSchedule' by
-    -- 'Prax.Engine.retable'.
+    -- ^ 创作的周期规则声明（规格 v44）；声明序即触发序。默认无。由
+    -- 'Prax.Engine.retable' 煮入 'cookedSchedule'。
   , engineRuleNames :: [String]
-    -- ^ The names of the schedule rules installed through the compiler door
-    -- ('Prax.Engine.registerEngineRules') rather than the authoring door
-    -- ('Prax.Engine.setSchedule') — provenance the reserved-family scan
-    -- ('Prax.TypeCheck') consults to exempt them: machinery MAY write reserved
-    -- families ("Prax.Script"'s @"story"@ rule writes @currentScene@), which is
-    -- v45's charter (the family of reserved-namespace writes only mechanism may
-    -- make). Written only by the engine door; dup-free because rule names are
-    -- globally unique across both doors ('addScheduleRules''s guard).
+    -- ^ 经编译器门（'Prax.Engine.registerEngineRules'）而非创作门
+    -- （'Prax.Engine.setSchedule'）安装的调度规则名——'Prax.TypeCheck' 查阅的出处，
+    -- 以便机械可写保留编译器族（规格 v53）。
   , cookedSchedule :: [CookedScheduleRule]
-    -- ^ 'schedule' compiled ('Prax.Cooked.cookScheduleRule'), maintained by
-    -- 'Prax.Engine.retable'. Its own cooked surface, NOT in 'cookedDefs'.
+    -- ^ 已编译的 'schedule'（'Prax.Cooked.cookScheduleRule'），由
+    -- 'Prax.Engine.retable' 维护。自有煮熟表面，*不* 在 'cookedDefs' 中。
   , scheduleDues   :: Map String Int
-    -- ^ Per recurring rule, the next round boundary it fires at (keyed by
-    -- 'csrName'\/'srName'). Runtime state like 'cursor'; re-associated by name
-    -- on load ('Prax.Persist').
+    -- ^ 每条周期规则下次触发的回合边界（键为
+    -- 'csrName'\/'srName'）。像 'cursor' 一样的运行时状态；加载时按名重关联（'Prax.Persist'）。
   , expiries       :: Map [(Sym, Maybe Char)] Int
-    -- ^ The one-shot expiry queue (spec v44): exact labeled path → the round
-    -- boundary at which the engine retracts it. Keyed by EXACT LABELED PATH so
-    -- refresh and cancel find entries by path. Runtime state.
-  , predictionScope :: [Condition]  -- ^ conditions the planner predicts over (default none)
+    -- ^ 一次性失效队列（规格 v44）：精确标签路径 → 引擎撤回它的回合边界。按 *精确标签路径* 键控，
+    -- 以便刷新与取消按路径查找条目。
+  , predictionScope :: [Condition]  -- ^ planner 预测所覆盖的条件（默认无）
   , improvables :: [String]
-    -- ^ Names of desires some authored action may improve
-    -- ('Prax.Relevance.improvableDesires') — rebuilt with the vocabulary
-    -- ('Prax.Engine.definePractices' / 'setAxioms' / 'setDesires'); the
-    -- planner skips predictions over models with no improvable desire.
+    -- ^ 某些创作动作可能改善的欲望名
+    -- （'Prax.Relevance.improvableDesires'）——与词汇表一起由
+    -- 'Prax.Engine.definePractices' / 'setAxioms' / 'setDesires' 重建。
   , liveness :: Map String Liveness
-    -- ^ Each named desire's dead-now recipe ('Liveness') —
-    -- ('Prax.Relevance.livenessOf') — rebuilt with the vocabulary alongside
-    -- 'improvables' by 'Prax.Engine.retable'; the planner consults it to
-    -- skip state-dead predictions for desires the static filter has already
-    -- let through.
+    -- ^ 每个具名欲望的此刻已死配方（'Liveness'）——
+    -- （'Prax.Relevance.livenessOf'）——与 'improvables' 一起由 'Prax.Engine.retable' 重建；
+    -- planner 查阅它以跳过已死 want。
   , footprint :: [[Sym]]
-    -- ^ Pre-tokenized ('pathNames'), pre-interned patterns the axioms read
-    -- or write; a ground delta unifying none of them commutes with closure
-    -- (fast path).
+    -- ^ 公理读写的预分词（'pathNames'）、预 intern 模式；与它们均不统一的落地 delta 与闭包交换
+    -- （快路径）。
   , axiomHeads :: [[Sym]]
-    -- ^ Interned anchors of every axiom head that can fire
-    -- ('Prax.Derive.axiomHeadPatterns') plus the @contradiction@ witness
-    -- ('Prax.Engine.reclose' inserts it when a delta trips ⊥). Maintained by
-    -- 'Prax.Engine.retable'; consumed by the planner's prediction-reuse cone:
-    -- a path delta that feeds any axiom ('footprint') can change derived
-    -- facts only in these families.
+    -- ^ 每个可触发公理头的 intern 锚点
+    -- （'Prax.Derive.axiomHeadPatterns'）加上 @contradiction@ 见证
+    -- （当 delta 触发 ⊥ 时 'Prax.Engine.reclose' 插入）。供相关性使用。
   , negFootprint :: [[Sym]]
-    -- ^ Pre-tokenized, pre-interned negated body interiors: a '!'-free
-    -- insert unifying none of these (in a 'contMonotone' world) only ADDS
-    -- derived facts and takes the continuation tier.
+    -- ^ 预分词、预 intern 的否定体内部：在 'contMonotone' 世界中与这些均不统一的无 '!' 插入
+    -- 只 *增加* 派生事实并走延续层。
   , contMonotone :: Bool
-    -- ^ 'Prax.Derive.monotoneAxioms' of this world's axioms.
+    -- ^ 本世界公理的 'Prax.Derive.monotoneAxioms'。
   , rngSeed :: Maybe Integer
-    -- ^ The drama die's stream position (spec v50): @Nothing@ = unseeded, @Just
-    -- s@ = the current Lehmer-stream value. Engine state, not a queryable world
-    -- fact — set by 'Prax.Engine.seedDie', advanced by 'Prax.Engine.performCooked'
-    -- on each 'CRoll'. 'Integer' matches the db's Calc arithmetic domain
-    -- exactly, so the residence move off the fact base is byte-identical.
-    -- Runtime state like 'cursor'; carried across saves by 'Prax.Persist'.
+    -- ^ 戏剧骰的流位置（规格 v50）：@Nothing@ = 未播种，@Just
+    -- s@ = 当前 Lehmer 流值。引擎状态，非可查询世界事实——由 'Prax.Engine.seedDie' 设置。
   , readView     :: Db
-    -- ^ The db closed under the axioms — established (lazily) whenever the
-    -- state is built, so reads share one closure per state. Change 'db' or
-    -- 'axioms' ONLY through 'Prax.Engine.withDb' / 'Prax.Engine.setAxioms',
-    -- which rebuild it; a raw record update of either leaves this stale.
+    -- ^ 在公理下闭合的 db——每当状态构建时（惰性）建立，因此读取每状态共享一次闭包。变更 'db' 或
+    -- 'axioms' *仅* 经 'Prax.Engine.withDb' / 'setAxioms'。
   }
 
--- | An empty interpreter state (cursor before the first actor). The engine's
--- clock is seeded @turn!0@ here — construction, not world setup — so every
--- path (worlds, Script compile, fixtures) carries a clock before anything
--- reads it (spec v44).
+-- | 空解释器状态（光标在第一行动者之前；时钟在回合 0；无实践、公理、欲望、角色、调度）。
 emptyState :: PraxState
 emptyState = PraxState
   { db = insert (turnPath ++ "!0") emptyDb
@@ -454,13 +399,11 @@ emptyState = PraxState
   , rngSeed = Nothing
   , readView = insert (turnPath ++ "!0") emptyDb }
 
--- | Death (and eviction) are represented by the fact @dead.\<name\>@. A dead
--- character stays in the cast list but is skipped in turn-taking and lookahead.
+-- | 死亡（与驱逐）由事实 @dead.\<name\>@ 表示。死者留在阵容列表中，但在轮转与前瞻中被跳过。
 deadSentence :: String -> String
 deadSentence name = "dead." ++ name
 
--- | The characters still in play (not marked dead). Used by the turn loop and
--- the planner so a removed character neither acts nor is planned around.
+-- | 仍在场的角色（未标死亡）。供回合循环与 planner 使用，使被移除角色既不行动也不被规划围绕。
 livingCharacters :: PraxState -> [Character]
 livingCharacters st =
   [ c | c <- characters st, not (exists (deadSentence (charName c)) (db st)) ]

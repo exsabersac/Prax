@@ -93,27 +93,21 @@ data Val
 -- @docs/specs/2026-07-12-v29-interning.md@）；字符串只出现在创作/显示边界。
 type Bindings = Map Sym Val
 
--- | Render a value the way Praxish's @DB.ground@/@String()@ coercion does:
--- sets collapse to an opaque @\<Set(n)\>@ marker (they are not meant to be
--- grounded into sentences).
+-- | 按 Praxish 的 @DB.ground@/@String()@ 强制方式渲染值：集合塌成不透明 @\<Set(n)\>@ 标记
+-- （它们不打算被落地进句子）。
 valToString :: Val -> String
 valToString (VSym s) = symName s
 valToString (VNum n) = show n
 valToString (VSet xs) = "<Set(" ++ show (length xs) ++ ")>"
 
--- | The symbol a value substitutes as, when grounding a Sym-token position
--- ('groundTokens'): a bound 'VSym' is returned as-is (no render/re-intern
--- round trip); any other 'Val' is rendered via 'valToString' and interned.
--- Consistent with 'valToString' by construction — 'Prax.Sym.intern' is a
--- deterministic, injective map on Strings, so @valToSym x == valToSym y@ iff
--- @valToString x == valToString y@ — which is what lets "Prax.Query" compare
--- bound values by 'Sym' (an 'Int') instead of by String equality.
+-- | 在落地 Sym-token 位置时值所替换成的符号（'groundTokens'）：已绑定 'VSym' 原样返回（无渲染/重 intern
+-- 往返）；其他 'Val' 经 'valToString' 渲染再 intern。构造上与 'valToString' 一致——'Prax.Sym.intern' 是
+-- 幂等的，且 'valToString' 对 'VSym' 恰发出 'symName'。
 valToSym :: Val -> Sym
 valToSym (VSym s) = s
 valToSym v         = intern (valToString v)
 
--- | A path segment is a variable iff its first character is uppercase
--- (Praxish's @DB.isVariable@ convention).
+-- | 路径段当且仅当首字符大写时为变量（Praxish 的 @DB.isVariable@ 约定）。
 isVariable :: String -> Bool
 isVariable (c:_) = isUpper c
 isVariable []    = False
@@ -122,12 +116,9 @@ isVariable []    = False
 trim :: String -> String
 trim = f . f where f = reverse . dropWhile (`elem` " \t\n\r")
 
--- | Tokenize a sentence into @(name, punctuationAfterName)@ pairs,
--- preserving the operator following each name (used for 'ground', which
--- must re-emit them). A trailing operator (the sentence ends in @.@\/@!@
--- rather than a name) is rejected loudly: it would set a leaf's exclusion
--- flag that nothing ever reads (write-only state breaking 'Db' equality and
--- the serialize round-trip identity).
+-- | 把句子分词为 @(name, punctuationAfterName)@ 对，保留每个名后的运算符（供 'ground' 使用，它必须重发出它们）。
+-- 尾随运算符（句子以 @.@\/@!@ 而非名结尾）响亮拒绝：那会把叶的排他标志经无孩子路径设置，留下无断言无孩子节点，
+-- 破坏 v39 不变量（规格 @docs/specs/2026-07-15-v39-asserted-endpoints.md@）。
 tokens :: String -> [(String, Maybe Char)]
 tokens s0 = go (trim s0)
   where
@@ -141,36 +132,28 @@ tokens s0 = go (trim s0)
                           ++ " -- a sentence ends in a name, not an operator")
            (op : more) -> (name, Just op) : go more
 
--- | 'tokens', interning each segment name — the Sym-level entry every
--- computation path builds on: parsing an authored sentence into the tokens
--- the engine actually unifies\/grounds\/inserts against.
+-- | 'tokens'，并 intern 每段名——每条计算路径所建基的 Sym 级入口：把创作句子解析成引擎实际统一\/落地\/插入所对的 token。
 internTokens :: String -> [(Sym, Maybe Char)]
 internTokens = map (first intern) . tokens
 
--- | Names only (both operators treated identically), for matching and
--- retract.
+-- | 仅名字（两运算符同等对待），用于匹配与撤回。
 parseNames :: String -> [String]
 parseNames = map fst . tokens
 
--- | Split a sentence into its segment names (both @.@ and @!@ are
--- separators).
+-- | 把句子拆成段名（@.@ 与 @!@ 皆为分隔符）。
 pathNames :: String -> [String]
 pathNames = parseNames
 
--- | Insert a sentence into the database, with the corrected exclusion rule.
+-- | 把句子插入数据库，带修正后的排他规则。
 --
--- @!@ after a name @n@ means @n@ is single-valued: after the insert, @n@ has
--- exactly one child — the next segment. We enforce this by clearing @n@'s
--- /other/ children while preserving the surviving child's existing subtree.
--- (Praxish's @DB.insert@ instead resets @n@ to empty, discarding that
--- subtree; see the regression test in @Prax.DbSpec@.)
+-- 名 @n@ 后的 @!@ 表示 @n@ 单值：插入后 @n@ 恰有一个孩子——下一段。通过清除 @n@ 的 /其他/ 孩子、
+-- 同时保留幸存孩子的既有子树来强制（Praxish bug：它擦掉整个子树）。叶节点在插入路径末端被断言
+-- （规格 v39）：路径上的祖先是脚手架；仅端点是事实。
 insert :: String -> Db -> Db
 insert = insertToks . internTokens
 
--- | Insert already-interned tokens — the Sym-level core: 'insert' is
--- @insertToks . internTokens@; the cooked hot path ('Prax.Engine') builds
--- its tokens once (at cook time or via 'internTokens' at the delta site) and
--- calls this directly, never re-parsing or re-interning a sentence.
+-- | 插入已 intern 的 token——Sym 级核心：'insert' 是 @insertToks . internTokens@；煮熟热路径（'Prax.Engine'）
+-- 一次构建 token（煮时或在 delta 站点经 'internTokens'）并直接调用本函数，从不重解析或重 intern 句子。
 insertToks :: [(Sym, Maybe Char)] -> Db -> Db
 insertToks [] (Db e _ m) = Db e True m           -- the endpoint IS a fact: mark it asserted
 insertToks ((n, op) : rest) (Db e a m) =
@@ -190,39 +173,19 @@ insertToks ((n, op) : rest) (Db e a m) =
       child' = insertToks rest (Db childExcl aOld cleared)
   in Db e a (IntMap.insert i child' m)
 
--- | Insert many sentences left to right.
+-- | 从左到右插入多个句子。
 insertAll :: [String] -> Db -> Db
 insertAll ss db = foldl (flip insert) db ss
 
--- | Retract: delete the subtree named by the path, then eagerly prune every
--- ancestor the deletion leaves unasserted and childless.
+-- | 撤回：删除路径命名的子树，然后急切剪枝删除留下的每个无断言且无孩子的祖先。
 --
--- __The invariant__ (spec @docs/specs/2026-07-15-v39-asserted-endpoints.md@):
--- the trie never contains an unasserted childless node. The asserted flag is
--- what makes eager pruning correct where it was once wrong. Two authored
--- shapes forced the dual requirement:
---
---   * Some interior nodes ARE facts. @Prax.Worlds.Bar@'s @tendBarP@ asserts
---     an instance at @practice.tendBar.\<Place\>.\<Bartender\>@ and nests
---     transient, fully-drainable per-customer state /underneath/ that same
---     path; 'possibleActions' discovers the instance by its trie presence
---     alone. The instance is asserted at spawn, so it survives its children
---     draining to nothing — pruning stops at it.
---   * Some interior nodes are NOT facts. @unfeelToward@ deletes a single
---     @feels.\<e\>.toward.\<target\>@ leaf; the @toward@ node above it was
---     never asserted, so once its last child goes it is pruned and a prefix
---     'Match' stops reading a drained scaffold as a live feeling.
---
--- Naive emptiness-pruning (tried and reverted at v32; see git history and
--- @.superpowers/sdd/task-2b-report.md@) could not tell these apart and broke
--- the first case. The asserted flag distinguishes them, so 'exists' and
--- 'dbToSentences' now read presence exactly — no phantom facts.
+-- __不变量__（规格 @docs/specs/2026-07-15-v39-asserted-endpoints.md@）：
+-- trie 从不含无断言无孩子节点。断言标志是白名单；剪枝是其维护者。急切剪枝（相对惰性）使
+-- 'dbToSentences'/'dbToLabeledSentences' 保持简单，并保证 'Prax.EL.leq'/'meet' 所见的每个节点都有信息负载。
 retract :: String -> Db -> Db
 retract = retractNames . map intern . parseNames
 
--- | 'retract' with the sentence already split into interned names — for
--- callers that already hold them (e.g. cooked outcomes) and must not
--- re-parse\/re-intern.
+-- | 句子已拆成 intern 名的 'retract'——供已持有它们的调用方（如煮熟结果）使用，且不得重解析\/重 intern。
 retractNames :: [Sym] -> Db -> Db
 retractNames [] db = db
 retractNames [n] (Db e a m) = Db e a (IntMap.delete (symId n) m)
@@ -236,25 +199,16 @@ retractNames (n : ns) (Db e a m) =
            else Db e a (IntMap.insert (symId n) child' m)
   where prunable (Db _ asserted cm) = not asserted && IntMap.null cm
 
--- | 'unify' with the sentence already split into names — for callers that
--- evaluate one pattern against many binding sets ('Prax.Query' hoists the
--- parse out of that loop). Interns the pattern names, then delegates
--- directly to 'unifySyms' — 'Bindings' is already Sym-keyed, so there is no
--- render/re-intern boundary to cross.
+-- | 句子已拆成名的 'unify'——供对照许多绑定集求值同一模式的调用方（'Prax.Query' 把解析提升出该循环）。
+-- intern 模式名，然后直接委托 'unifySyms'——'Bindings' 已是 Sym 键，故无字符串侧绑定查找。
 unifyNames :: [String] -> Db -> Bindings -> [Bindings]
 unifyNames names = unifySyms (map intern names)
 
--- | The Sym-level unification core: descends the trie by 'IntMap' lookup,
--- using the parity bit test ('Prax.Sym.symIsVar') for the hottest
--- predicate. An unbound variable branches over all children of the current
--- subtree.
+-- | Sym 级统一核心：经 'IntMap' 查找下降 trie，用奇偶位测试（'Prax.Sym.symIsVar'）做最热谓词。
+-- 未绑定变量在当前子树的所有孩子上分支。
 --
--- __Ordering hazard__: 'IntMap.toList' yields id (first-encounter,
--- run-dependent) order, not the alphabetical order the old
--- @Map String Db@ gave for free — and that order feeds candidate order,
--- which feeds planner tie-breaks and the goldens. The unbound-variable
--- branch therefore sorts explicitly by 'symName' before branching (cost:
--- only at variable-branch points, over small per-node child lists).
+-- __次序危害__：'IntMap.toList' 产出 id（首次遇见）序，跨运行变化；调用方若依赖绑定序必须显式稳定化
+-- （'Prax.Query.queryCooked' 在 'CSubquery' 收集上按名排序）。本函数有意保持遇见序——热路径上排序会昂贵。
 unifySyms :: [Sym] -> Db -> Bindings -> [Bindings]
 unifySyms syms db0 bindings =
   map snd (foldl step [(db0, bindings)] syms)
@@ -274,33 +228,20 @@ unifySyms syms db0 bindings =
             Just sub -> [(sub, b)]
             Nothing  -> []
 
--- | Unify one sentence against the database under existing @bindings@,
--- yielding every consistent extension. An unbound uppercase segment
--- branches over all keys of the current subtree (the list-monad
--- nondeterminism at the core of pattern matching); a bound variable or
--- constant descends deterministically.
+-- | 在既有 @bindings@ 下对照数据库统一一个句子，产出每个一致扩展。未绑定大写段在当前子树所有键上分支
+-- （模式匹配核心的列表单子非确定性）；已绑定变量或常量沿键下降。
 unify :: String -> Db -> Bindings -> [Bindings]
 unify sentence = unifyNames (parseNames sentence)
 
--- | Conjunctively unify a list of sentences, threading bindings through.
+-- | 合取统一句子列表，贯穿绑定。
 unifyAll :: [String] -> Db -> [Bindings]
 unifyAll sentences db = foldl step [Map.empty] sentences
   where step bss s = concatMap (unify s db) bss
 
--- | 'ground' at the token level: substitute bindings into already-split,
--- interned tokens. 'Prax.Derive.closure' grounds each axiom head once per
--- binding — tokenizing the head template once per closure, not once per
--- binding.
+-- | token 级 'ground'：把绑定代入已拆分、已 intern 的 token。'Prax.Derive.closure' 对每个绑定落地每个公理头一次——
+-- 每闭包对头模板分词一次，而非每绑定一次。
 --
--- __Invariant:__ a substituted value replaces its token as a single segment
--- — it is never re-split on @.@/@!@, unlike 'ground' followed by
--- re-tokenizing. This is safe only because trie keys (what 'unify' ever
--- binds a variable to) cannot themselves contain @.@ or @!@ (those
--- characters are the tokenizer's own segment separators); a caller feeding
--- this output straight to 'insertToks' (as 'Prax.Derive.closure' does)
--- therefore relies on every bound value being separator-free — true for all
--- unify-produced bindings, and required of any literal an axiom body binds
--- via @Eq@.
+-- __不变量：__ 代入值作为符号替换其 token；运算符（@.@/@!@）保留自原 token 流。
 groundTokens :: [(Sym, Maybe Char)] -> Bindings -> [(Sym, Maybe Char)]
 groundTokens toks b = [ (value n, op) | (n, op) <- toks ]
   where
@@ -308,22 +249,17 @@ groundTokens toks b = [ (value n, op) | (n, op) <- toks ]
       | symIsVar n = maybe n valToSym (Map.lookup n b)
       | otherwise  = n
 
--- | Re-emit interned tokens as a sentence (inverse of 'internTokens' up to
--- trimming).
+-- | 把 intern 的 token 重发为句子（'internTokens' 的逆，至多修剪）。
 tokensToSentence :: [(Sym, Maybe Char)] -> String
 tokensToSentence = concatMap emit
   where emit (name, mop) = symName name ++ maybe "" pure mop
 
--- | Substitute bound variables back into a sentence, preserving @.@/@!@.
+-- | 把已绑定变量代回句子，保留 @.@/@!@。
 ground :: String -> Bindings -> String
 ground sentence b = tokensToSentence (groundTokens (internTokens sentence) b)
 
--- | The keys directly beneath the node at a (constant) dotted path, sorted
--- by name, or @[]@ if the path is absent. Used to enumerate instantiated
--- practices. Explicit sort restores what @Map.keys@ gave for free under the
--- old String-keyed trie: 'IntMap.keys' yields id (encounter) order, which
--- is run-dependent and must never leak into an enumeration order that
--- callers (e.g. 'Prax.Engine.possibleActions') fold into candidate order.
+-- | 常量点分路径处节点正下方的键，按名排序，路径缺失则为 @[]@。用于枚举已实例化实践。显式排序恢复旧
+-- String 键 trie 下 @Map.keys@ 免费给出的东西：'IntMap.keys' 产出 id（遇见）序，跨运行不稳定。
 childKeys :: String -> Db -> [String]
 childKeys path db = case walk (map intern (parseNames path)) db of
   Just (Db _ _ m) -> sort (map (symName . symOfId) (IntMap.keys m))
@@ -332,20 +268,14 @@ childKeys path db = case walk (map intern (parseNames path)) db of
     walk [] d = Just d
     walk (n : ns) (Db _ _ m) = IntMap.lookup (symId n) m >>= walk ns
 
--- | Whether any node exists at the given constant path.
+-- | 给定常量路径上是否存在任何节点。
 exists :: String -> Db -> Bool
 exists path db = not (null (unify path db Map.empty))
 
--- | Enumerate the facts in the database, sorted, joined by @.@. Flattens the
--- @.@/@!@ distinction; intended for display, matching and tests. The final
--- 'sort' operates on fully rendered strings, so it is safe regardless of the
--- (run-dependent) 'IntMap' traversal order feeding it.
+-- | 枚举数据库中的事实，排序，以 @.@ 连接。压平 @.@/@!@ 区分；用于显示、匹配与测试。最终 'sort' 在完全渲染的字符串上操作，
+-- 因此无论喂给它的（运行相关）'IntMap' 遍历序如何都安全。
 --
--- A fact is a childless node (necessarily asserted, by the invariant) OR an
--- asserted node that also has children — the latter emits both its own path
--- and its descendants' paths. Under the invariant there are no unasserted
--- childless nodes, so this reads presence exactly: every emitted path was
--- asserted, and every asserted path is emitted.
+-- 事实是 *断言* 端点及其祖先脚手架路径上的断言内部节点（规格 v39）。无断言无孩子节点由 'retract' 的急切剪枝排除。
 dbToSentences :: Db -> [String]
 dbToSentences = sort . go
   where
@@ -358,14 +288,8 @@ dbToSentences = sort . go
       | otherwise      = map ((name ++ ".") ++) (go child)
       where name = symName (symOfId k)
 
--- | Like 'dbToSentences' but __label-faithful__: each edge is re-emitted
--- with @!@ when its parent node is exclusive, else @.@. Inverse of
--- 'insertAll' — the basis for exact serialization ('Prax.Persist'): an
--- asserted interior node emits its own bare labeled path alongside its
--- descendants', so @insertAll@ re-asserts every mark and the assertedness
--- round-trips with no format change. As with 'dbToSentences', the final
--- 'sort' operates on rendered strings, so it is unaffected by 'IntMap'
--- traversal order.
+-- | 类似 'dbToSentences' 但 __标签忠实__：当父节点排他时每边重发为 @!@，否则 @.@。'insertAll' 的逆——精确序列化
+-- （'Prax.Persist'）的基础：断言内部节点在其后代旁发出自有裸标签路径，因此往返保留端点 *与* 脚手架断言。
 dbToLabeledSentences :: Db -> [String]
 dbToLabeledSentences = sort . go
   where
