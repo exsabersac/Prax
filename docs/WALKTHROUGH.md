@@ -1,72 +1,63 @@
-# Walkthrough: understanding `prax` by playing it
+# 导览：通过游玩理解 `prax`
 
-This guide is in two parts.
+本指南分两部分。
 
-**Part I — the bar** walks you through the default demo world and, as you go, points out exactly
-which engine feature each thing exercises. The bar exercises the whole *engine core*: the
-exclusion-logic database, practices, the utility planner, the core model (emotions/relationships),
-reactions & norms, beliefs, conversation, the drama manager, character arcs, first-order queries,
-and — wired straight into "settling up" — the deontic obligation layer.
+**第一部分 — 酒吧** 带你走完默认演示世界，边玩边点出每件事恰好行使哪个引擎特性。
+酒吧行使整个*引擎核心*：排他逻辑数据库、实践、效用 planner、核心模型（情感/关系）、
+反应与规范、信念、对话、戏剧管理器、角色弧、一阶查询，以及——直接接入「结账」——
+道义义务层。
 
-**Part II — beyond the bar** is a shorter tour of the capabilities the bar *doesn't* show, each in
-its own world or tool: a branching dramatic episode with a death (`intrigue`), the QA tooling
-(`stress`), save/resume, scene-authored drama (`play`, `flow`), playing the drama manager yourself
-(`dm`), emergent derivation (`feud`), the static checker (`check`), the Prompter compilation
-features (`audience`), and the sandbox where who sees, who's told, and what that settles
-into decides how people treat you — including a villain who manages what's known, both his own
-secret and someone else's fabricated one, a thief who — once deterrence meets a lawful way to earn
-what he wanted all along — takes up honest work instead, and a temperament contrast where one
-woman's conscience costs her the exact lie the other tells freely, only for the lie to travel
-through her honestly anyway (`village` — witnessing, gossip, reputation, deception, endeavors, and
-temperament).
+**第二部分 — 酒吧之外** 是酒吧*没有*展示的能力的较短游览，各在自己的世界或工具中：
+带死亡的分支戏剧剧集（`intrigue`）、QA 工具（`stress`）、存档/继续、场景创作戏剧
+（`play`、`flow`）、自己扮演戏剧管理器（`dm`）、涌现派生（`feud`）、静态检查器（`check`）、
+Prompter 编译特性（`audience`），以及谁看见、谁被告知、以及那落入什么决定人们如何对待你的沙盒——
+包括管理已知内容的反派（他自己的秘密与别人捏造的秘密）、一旦威慑遇上赚取他一直想要之物的合法方式
+就转而诚实工作的贼，以及气质对照：一个女人的良心给她定价另一人自由说出的谎，而谎仍经她诚实传播
+（`village` — 目击、八卦、声誉、欺骗、事业与气质）。
 
-Start with the bar:
+从酒吧开始：
 
 ```sh
 cabal run prax
 ```
 
-You control **`you`**. The other two characters act on their own each turn. Turn order is
-round-robin: `you`, then `ada`, then `bex`, repeating. On your turn you pick a numbered action,
-or `m` to wait (let others act), `s` to save, or `q` to quit.
+你控制 **`you`**。另外两个角色每回合自行行动。回合顺序是轮转：`you`，然后 `ada`，然后 `bex`，
+重复。在你的回合挑选编号动作，或 `m` 等待（让他人行动）、`s` 存档、或 `q` 退出。
 
-> Menu **numbers shift** as options appear and disappear, so this guide names actions rather
-> than numbering them. Pick the option whose text matches.
+> 菜单**编号会随选项出现与消失而变动**，因此本指南点名动作而非编号它们。选文本匹配的选项。
 >
-> Note: `m` (pass your turn) and the in-world "Wait a moment" action do the same nothing, so the
-> player menu hides "Wait a moment" — use `m`. NPCs still have it (they need a "do nothing"
-> option so an idle agent isn't forced to wander).
+> 注：`m`（跳过你的回合）与世界内「Wait a moment」动作做同样的无事，因此玩家菜单隐藏
+> 「Wait a moment」——用 `m`。NPC 仍有它（它们需要「什么都不做」选项，以免空闲 agent 被迫闲逛）。
 
 ---
 
-# Part I — the bar (the engine core)
+# 第一部分 — 酒吧（引擎核心）
 
-## The world at a glance
+## 世界一览
 
-**Places:** `entrance` ⇄ `bar` (connected both ways).
+**地点：** `entrance` ⇄ `bar`（双向连通）。
 
-**Cast:**
-- `you` — the player. No built-in desires; you decide.
-- `ada` — the bartender. Wants: *don't leave orders outstanding* (utility −5 each) and *stay at
-  the bar* (+1). So she tends the bar and serves people without being told to.
-- `bex` — a patron. Wants: *a beer on order* (+4), *a beer in hand* (+9), *be at the bar* (+1).
-  So bex will walk in, order a beer, and settle once served.
+**阵容：**
+- `you` — 玩家。无内建欲望；你决定。
+- `ada` — 酒保。Wants：*不要留下未完成订单*（每个效用 −5）与 *留在酒吧*（+1）。
+  因此她照看酒吧并招待人，无需被告知。
+- `bex` — 顾客。Wants：*点了啤酒*（+4）、*手中有啤酒*（+9）、*在酒吧*（+1）。
+  因此 bex 会走进来、点啤酒，并在被招待后安顿。
 
-**Practices** (the reusable social situations):
-- `world` — locations and movement (`Go to`, plus a universal `Wait a moment` no-op used by
-  idle NPCs; hidden from your menu since `m` already passes your turn).
-- `greet` — greeting a co-located character (once each direction).
-- `patron` — marks someone a patron; seeds their drink counter when created.
-- `tendBar` — order → fulfill → drink, getting tipsy, plus a "busy bar" bell.
+**实践**（可复用的社交情境）：
+- `world` — 地点与移动（`Go to`，外加空闲 NPC 使用的通用 `Wait a moment` 空操作；
+  对你的菜单隐藏，因为 `m` 已跳过你的回合）。
+- `greet` — 问候同处角色（每个方向一次）。
+- `patron` — 标记某人为顾客；创建时播种其饮酒计数器。
+- `tendBar` — 点单 → 履行 → 饮用，变醉，外加「忙碌酒吧」铃。
 
 ---
 
-## Guided playthrough
+## 引导游玩
 
-### 1. Watch autonomy before you do anything
+### 1. 在动手前先看自主性
 
-On your first few turns, just press **`m`** (wait) three or four times and watch the narration.
-You'll see something like:
+在你最初几回合，只按 **`m`**（等待）三四次，并看旁白。你会看到类似：
 
 ```
   ada: Greet you
@@ -76,96 +67,82 @@ You'll see something like:
   ada: Fulfill bex's order
 ```
 
-**What this demonstrates:** *utility-based autonomous action selection with lookahead.* Nobody
-scripted bex to walk to the bar and order — bex evaluates the world that each action would
-produce, and (looking two moves ahead through its own future choices) sees that going to the bar
-enables ordering the beer it wants. ada, seeing an outstanding order (which she dislikes),
-fulfills it. This is the heart of Versu's "strong autonomy": practices only *offer* actions; the
-agents choose.
-→ code: `Prax.Planner` (wants, `scoreActions`/`pickAction` lookahead — the old `worldValue` this
-guide used to name here no longer exists; see the note below), `Prax.Loop` (turn taking).
+**这演示什么：** *带前瞻的基于效用的自主动作选择。* 无人脚本化 bex 走到酒吧并点单——
+bex 评估每个动作会产生的世界，并（经自身未来选择向前看两步）看到去酒吧使能点它想要的啤酒。
+ada 看到未完成订单（她不喜欢），就履行它。这是 Versu「强自主」的核心：实践只*提供*动作；
+agent 选择。
+→ 代码：`Prax.Planner`（wants、`scoreActions`/`pickAction` 前瞻——本指南曾在此点名的旧
+`worldValue` 已不存在；见下方注记）、`Prax.Loop`（轮流）。
 
-> **How lookahead treats *other* people (v23).** What you just watched is a special case: the
-> bar's cast has no authored believed-desire vocabulary (`Prax.Minds`), so bex's lookahead is
-> entirely about its own future moves, exactly as described above. In general the planner's
-> lookahead also imagines one round of *other* characters' moves — but only a character the actor
-> currently holds a *belief* about wanting something (`Prax.Minds`), and only if the actor
-> currently believes that character is around to act (co-present now, or sighted recently enough
-> — `Prax.Sight`, an authored *prediction scope*). A mind nobody has told you about, or a person
-> whose whereabouts you don't know, is imagined standing still — never as conveniently helping
-> your plan along. `prax village` (§22–24 below) is where this actually bites; the bar never
-> exercises it.
+> **前瞻如何对待*其他人*（v23）。** 你刚看到的是特例：酒吧阵容无创作的被相信欲望词汇
+> （`Prax.Minds`），因此 bex 的前瞻完全关于其自身未来移动，恰如上所述。一般地，planner 前瞻
+> 也想象其他角色一回合的移动——但仅当行动者当前持有关于某人*想要某物*的*信念*（`Prax.Minds`），
+> 且仅当行动者当前相信该角色在周围可行动（现在共现，或最近足够被目击——`Prax.Sight`，
+> 创作的*预测范围*）。无人告诉你的心智，或你不知下落的人，被想象为站着不动——从不方便地
+> 帮你推进计划。`prax village`（下方 §22–24）是这真正咬人处；酒吧从不行使它。
 
-### 2. Move around
+### 2. 四处移动
 
-On your turn, choose **`you: Go to bar`**.
+在你的回合，选 **`you: Go to bar`**。
 
-**What this demonstrates:** the `world` practice's movement action. Its precondition matches
-where you are (`at.you!OtherPlace`) and a connection (`connected.OtherPlace.Place`); its effect
-`Insert practice.world.world.at.you!Place` moves you. Because `at` is an **exclusion (`!`) slot**,
-inserting the new location automatically removes the old one — no explicit delete needed.
-→ features: `Match`, `Insert`, the corrected `!` semantics. code: `Prax.Worlds.Bar` `worldP`,
-`Prax.Db.insert`.
+**这演示什么：** `world` 实践的移动动作。其前置匹配你所在处（`at.you!OtherPlace`）与连接
+（`connected.OtherPlace.Place`）；其效果 `Insert practice.world.world.at.you!Place` 移动你。
+因为 `at` 是 **排他（`!`）槽**，插入新地点自动移除旧的——无需显式删除。
+→ 特性：`Match`、`Insert`、纠正后的 `!` 语义。代码：`Prax.Worlds.Bar` 的 `worldP`、
+`Prax.Db.insert`。
 
-### 3. Greet someone
+### 3. 问候某人
 
-At the bar with others present, choose **`you: Greet ada`** (or `bex`).
+在酒吧与他人同在时，选 **`you: Greet ada`**（或 `bex`）。
 
-**What this demonstrates:** a precondition that both parties are co-located and that you haven't
-already greeted them (`Not practice.greet.World.greeted.you.ada`), plus `Neq` to stop you
-greeting yourself. Greet once and the option disappears (the `Not` now fails).
-→ features: `Match`, `Neq`, `Not`, negation-as-failure. code: `greetP`.
+**这演示什么：** 双方共处且你尚未问候他们的前置（`Not practice.greet.World.greeted.you.ada`），
+外加 `Neq` 阻止你问候自己。问候一次后选项消失（`Not` 现失败）。
+→ 特性：`Match`、`Neq`、`Not`、失败即否定。代码：`greetP`。
 
-### 4. Order a drink and get served
+### 4. 点酒并被招待
 
-Choose **`you: Order beer`**. Then take your turn again (or press `m`) — on her turn **ada will
-fulfill your order on her own**, and the scene will show *"you has a beer in hand."*
+选 **`you: Order beer`**。然后再过你的回合（或按 `m`）——在她的回合 **ada 会自行履行你的订单**，
+场景会显示 *"you has a beer in hand."*
 
-**What this demonstrates:**
-- The **order → fulfill** hand-off between two roles of a **multi-role practice**
-  (`tendBar` has roles `Place` and `Bartender`). Ordering writes
-  `customer.you!order!beer`; fulfilling deletes the order and writes `customer.you!beverage!beer`.
-- ada serving *without being told* — her want *"no outstanding orders"* (−5) means the world
-  where your order is gone scores higher, so `Fulfill` is her best move.
-- `dataFacts`: the four beverages (`beer`, `cider`, …) come from the practice's static data,
-  which is why you get exactly those four order options.
-→ features: multi-role practices, `Match`/`Eq`, `Insert`/`Delete`, `dataFacts`, wants driving an
-NPC. code: `tendBarP` (Order/Fulfill), `ada`'s wants.
+**这演示什么：**
+- **多角色实践**两个角色之间的 **点单 → 履行** 交接（`tendBar` 有角色 `Place` 与 `Bartender`）。
+  点单写入 `customer.you!order!beer`；履行删除订单并写入 `customer.you!beverage!beer`。
+- ada *无需被告知* 就招待——她的 want *「无未完成订单」*（−5）意味着你的订单消失的世界得分更高，
+  因此 `Fulfill` 是她的最佳移动。
+- `dataFacts`：四种饮料（`beer`、`cider`、…）来自实践的静态数据，因此你恰好得到那四个点单选项。
+→ 特性：多角色实践、`Match`/`Eq`、`Insert`/`Delete`、`dataFacts`、驱动 NPC 的 wants。
+代码：`tendBarP`（Order/Fulfill）、`ada` 的 wants。
 
-### 5. Drink it — and drink another to get tipsy
+### 5. 喝掉它——再喝一杯变醉
 
-Choose **`you: Drink the beer`**. Then order another beer, get it served, and drink again. After
-the **second** alcoholic drink the scene shows *"you is looking tipsy."*
+选 **`you: Drink the beer`**。然后再点一杯啤酒，被招待，再喝。**第二**杯酒精饮料后场景显示
+*"you is looking tipsy."*
 
-**What this demonstrates — the richest single mechanic:**
-- **`init`-on-spawn:** when the world was created, `Insert practice.patron.you` spawned a patron
-  instance, and the practice's `init` seeded `practice.patron.you.drinks!0`. That counter exists
-  only because of spawn-time initialization.
-- **`Call` + functions with guarded cases:** `Drink` doesn't compute anything itself; it calls
-  `recordDrink`. That function has two cases — the first fires only for `alcoholic` drinks
-  (`Eq Kind alcoholic`), the second is a no-op fallback.
-- **`Calc`:** the alcoholic case increments the counter (`Calc M add N 1`) and writes it back.
-- **nested `Call` + `Cmp`:** it then calls `checkTipsy`, whose single case fires only when the
-  counter reaches the threshold (`Cmp gte M 2`), inserting `person.you.tipsy`.
+**这演示什么——最丰富的单一机制：**
+- **孵化时的 `init`：** 世界创建时，`Insert practice.patron.you` 孵化顾客实例，实践的 `init`
+  播种 `practice.patron.you.drinks!0`。该计数器仅因孵化时初始化而存在。
+- **`Call` + 带守卫 case 的函数：** `Drink` 自身不算任何东西；它调用 `recordDrink`。该函数有两个
+  case——第一个仅对 `alcoholic` 饮料触发（`Eq Kind alcoholic`），第二个是空操作回退。
+- **`Calc`：** 酒精 case 递增计数器（`Calc M add N 1`）并写回。
+- **嵌套 `Call` + `Cmp`：** 然后调用 `checkTipsy`，其单一 case 仅在计数器达阈值时触发
+  （`Cmp gte M 2`），插入 `person.you.tipsy`。
 
-Order a *soda* (non-alcoholic) and drink it: your counter won't move — that's the fallback case.
-→ features: `init`, `Call`, functions, `FnCase` guards, `Eq`, `Calc`, `Cmp`. code: `tendBarP`'s
-`Drink` action + `Bar.hs`'s `recordDrinkFn`/`checkTipsyFn` (registered via `defineFunctions`,
-not a practice field — functions live in the one world-level registry since v47).
+点一杯 *soda*（非酒精）并喝掉：你的计数器不会动——那是回退 case。
+→ 特性：`init`、`Call`、函数、`FnCase` 守卫、`Eq`、`Calc`、`Cmp`。代码：`tendBarP` 的
+`Drink` 动作 + `Bar.hs` 的 `recordDrinkFn`/`checkTipsyFn`（经 `defineFunctions` 注册，
+非实践字段——自 v47 起函数住在唯一世界级登记册）。
 
-### 6. Make the bar busy — the bell
+### 6. 让酒吧忙碌——铃
 
-Get **two** people to be customers at once (you've ordered, and bex has too — bex usually orders
-early on its own). Watch ada's turns: once there are two or more customers, **ada rings the bell
-on her own** and the scene shows *"the bar is busy — ada rang the bell."* (You can also confirm
-it only happens with two: early on, with just one customer, the bell never rings.)
+让 **两**人同时成为顾客（你已点单，bex 也点了——bex 通常自行早点）。看 ada 的回合：一旦有两个
+或更多顾客，**ada 会响铃**。
 
-**What this demonstrates:** an action precondition that **counts** things:
-- a **`Subquery`** gathers the set of customers (`Crowd`),
-- **`Count`** turns that set into a number (`NumCust`),
-- **`Cmp gte NumCust 2`** gates the action,
-- and `Not …rang` makes it fire only once.
-→ features: `Subquery`, `Count`, `Cmp`. code: `tendBarP` "Ring the bell" action.
+> **翻译进度（zh-Hans）：** 开篇、世界一览、以及引导游玩第 1–6 节已译。第 7 节起至第二部分全文
+> 仍为英文原文，将在后续轮次继续翻译。
+
+---
+
+<!-- 以下自第 7 节起仍为英文原文（zh-Hans 翻译进行中） -->
 
 ### 7. Feelings & relationships — the core model (v2)
 

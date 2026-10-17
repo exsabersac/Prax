@@ -1,35 +1,39 @@
-# Feature Ledger
+# 特性账本（Feature Ledger）
 
-Every capability we intend `prax` to support, derived from the Versu paper and Praxish. Status:
-- **v1** — in the first milestone (faithful engine core).
-- **v2** — the core-model round (emotions & relationships), built as `Prax.Core`.
-- **v3** — reactions-as-practices & a first norm, built as `Prax.Reactions`.
-- **v4** — per-agent beliefs (incl. false beliefs), built as `Prax.Beliefs`.
-- **v5** — conversation (speakers, topics, quips), built as `Prax.Conversation`.
-- **v6** — a story manager (DM) as a metalevel agent (the bar `director`).
-- **v7** — character arcs (internal high-level state), built as `Prax.Arc`.
-- **v8** — first-order connectives in the query language (∀/∃/∨/→).
-- **v9** — cast removal + a dramatic vertical slice (`Prax.Worlds.Intrigue`).
-- **v10** — QA tooling: the inspector (`Prax.Inspect`) and stress-test (`Prax.Stress`).
-- **v11** — persistence: save/load a session (`Prax.Persist`), CLI save + resume.
-- **v12** — a Prompter-lite scene-authoring layer (`Prax.Script`) that compiles a
-  CAST + scene-graph play-script to practices, with an auto flow-chart + scene coverage;
-  demonstrated by `Prax.Worlds.Play`. Play-scripts round-trip through readable JSON
-  (`Prax.Script.Json`) — the editable authoring format, chosen over a bespoke parser.
-- **v13** — player-as-DM: the human occupies the drama-manager slot, steering an
-  autonomous cast with metalevel nudges (`Prax.Worlds.Bar` `barDirectorWorld`, `prax dm`).
-- **v14** — a first-class deontic `should`/obligation layer (`Prax.Deontic`): `□φ` as the
-  fact `obliged.<who>.<φ>`, conflict detection via the `!` exclusion, and contrary-to-duty
-  (`□□`); the bar's settle-up is now a real obligation.
-- **v15** — a forward-chaining **derivation layer** (`Prax.EL` + `Prax.Derive`): domain rules
-  closed to a fixpoint via the paper's `m(X)`, exact `⊥` detection, auto-`□`-lift (obligation
-  closure), a defeasible closed *view* on the read path; `Prax.Worlds.Feud` is the emergent demo.
-- **v16** — a static **well-formedness checker** (`Prax.TypeCheck`): unbound-variable,
-  exclusion-cardinality, and dangling-reference checks over a world's authored sentences (`prax check`).
-- **v17** — **ML-style sort inference** completing #8: sorts declared by membership, every
-  position/variable sort inferred by unification, conflicts reported (`Prax.TypeCheck`).
-- **v18** — the remaining **Prompter compilation features** in `Prax.Script`: memories (one-shot
-  exposition), timed junctions (a scene clock), and character sketches (concerns→wants, traits→facts).
+我们意图让 `prax` 支持的每一项能力，源自 Versu 论文与 Praxish。状态：
+- **v1** — 第一里程碑（忠实引擎核心）。
+- **v2** — 核心模型轮（情感与关系），构建为 `Prax.Core`。
+- **v3** — 反应即实践与首个规范，构建为 `Prax.Reactions`。
+- **v4** — 按 agent 信念（含错误信念），构建为 `Prax.Beliefs`。
+- **v5** — 对话（说话者、话题、quips），构建为 `Prax.Conversation`。
+- **v6** — 故事管理器（DM）作为元层 agent（酒吧 `director`）。
+- **v7** — 角色弧（内部高层状态），构建为 `Prax.Arc`。
+- **v8** — 查询语言中的一阶联结词（∀/∃/∨/→）。
+- **v9** — 阵容移除 + 戏剧垂直切片（`Prax.Worlds.Intrigue`）。
+- **v10** — QA 工具：检查器（`Prax.Inspect`）与压力测试（`Prax.Stress`）。
+- **v11** — 持久化：存档/读档会话（`Prax.Persist`），CLI 存档 + 继续。
+- **v12** — Prompter-lite 场景创作层（`Prax.Script`），把 CAST + 场景图剧本编译为实践，
+  带自动流程图 + 场景覆盖；由 `Prax.Worlds.Play` 演示。剧本经可读 JSON（`Prax.Script.Json`）往返——
+  可编辑创作格式，选择它而非定制解析器。
+- **v13** — 玩家即 DM：人类占据戏剧管理器槽，用元层轻推引导自主阵容
+  （`Prax.Worlds.Bar` 的 `barDirectorWorld`，`prax dm`）。
+- **v14** — 一等道义 `should`/义务层（`Prax.Deontic`）：`□φ` 作为事实 `obliged.<who>.<φ>`，
+  经 `!` 排他检测冲突，以及违反义务（`□□`）；酒吧结账现为真正义务。
+- **v15** — 前向链 **派生层**（`Prax.EL` + `Prax.Derive`）：领域规则经论文的 `m(X)` 闭合到不动点，
+  精确 `⊥` 检测，自动 `□`-提升（义务闭包），读路径上的可废止闭合 *视图*；`Prax.Worlds.Feud` 是涌现演示。
+- **v16** — 静态 **合式性检查器**（`Prax.TypeCheck`）：对世界创作句子的未绑定变量、排他基数、
+  悬空引用检查（`prax check`）。
+- **v17** — 完成 #8 的 **ML 风格 sort 推断**：按成员声明 sort，经统一推断每个位置/变量 sort，
+  报告冲突（`Prax.TypeCheck`）。
+- **v18** — `Prax.Script` 中剩余的 **Prompter 编译特性**：memories（一次性说明）、定时 junction
+  （场景时钟）、以及角色速写（关切→wants，特质→事实）。
+
+> **翻译进度（zh-Hans）：** 上方为标题与版本图例导言的中文。下文从 v19 起的详细条目、
+> backlog 行与后续章节仍为英文原文，将在后续 commit 中分批翻译。标识符、模块名、CLI、
+> 规格路径保持不译。
+
+---
+
 - **v19** — **quantified outcomes** (`ForEach`, the dual of v8's condition quantifiers) and
   **authored witnessing** (`Prax.Witness`): co-present characters come to believe an action
   happened, with `.seen` provenance (multi-valued from v20 — see below); observability is a

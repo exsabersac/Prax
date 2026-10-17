@@ -1,52 +1,49 @@
-# Prax — Principles
+# Prax — 原则
 
-Cross-cutting design intents that govern the whole system and every game built on it.
-These are easy to lose: they live implicitly across many specs and plans (and, in at least
-one case below, survived only as a transliterated code comment). This document is the place
-to consolidate them so they stop being reinvented. Lift intents out of individual specs into
-here as they prove to be system-wide rather than local.
+贯穿整个系统、以及其上每一款游戏的设计意图。
+这些意图很容易散失：它们隐式地分布在许多规格与计划里（至少下面有一例，
+只作为转写的代码注释而幸存）。本文档把它们收拢在此，免得反复被重新发明。
+当某条意图被证明是系统级而非局部时，就从个别规格里提升到这里。
 
 ---
 
-## Time: a turn is ~5 minutes
+## 时间：一回合 ≈ 5 分钟
 
-**A turn represents ~5 minutes of fiction, by default.** The mapping is loose — some actions
-are a few seconds, some run a bit longer than five minutes — but **~5 minutes per turn is the
-default assumption, and every real game built on this system MUST be designed under it.**
+**默认情况下，一回合代表约 5 分钟的虚构时间。** 映射是松散的——有些动作
+只需几秒，有些会略长于五分钟——但 **每回合约 5 分钟是默认假设，
+基于本系统构建的每一款真实游戏都必须按此设计。**
 
-This is foundational, present from the system's inception. It was never recorded in a design
-document; its only surviving written trace is a comment on the village hunger-drift rule
-(origin: [`docs/specs/2026-07-14-v36-drift.md`](specs/2026-07-14-v36-drift.md)):
+这是奠基性的，从系统诞生起就存在。它从未写进设计文档；唯一幸存的书面痕迹
+是村庄饥饿漂移规则上的一条注释
+（出处：[`docs/specs/2026-07-14-v36-drift.md`](specs/2026-07-14-v36-drift.md)）：
 
-> real authoring is ~72 rounds — two meals a waking day at ~5 minutes a round
+> 真实创作约 72 回合——醒着的一天两顿饭，按每回合约 5 分钟计
 
-### What this scale implies
+### 这一尺度意味着什么
 
-At ~5 minutes per turn:
+在每回合约 5 分钟时：
 
-- **1 hour ≈ 12 turns; 24 hours ≈ 288 turns.**
-- A full **day/night cycle is hundreds of turns** — roughly 288 turns spanning a whole day
-  (its day/night split is an authoring choice, not one turn each).
-- A game covering **~20–30 days is on the order of thousands of turns**, not dozens.
+- **1 小时 ≈ 12 回合；24 小时 ≈ 288 回合。**
+- 完整的 **昼夜循环是数百回合** ——大约 288 回合覆盖一整天
+  （昼夜如何切分是创作选择，不是各一回合）。
+- 覆盖 **约 20–30 天的游戏量级是数千回合**，不是几十回合。
 
-### Test compression is allowed — but only when labelled as compression
+### 允许测试压缩——但必须标明是压缩
 
-Real games run long at the true scale, which is fine for authoring and play but expensive for
-test drives and mass runs. Compressing a cadence (a short period, a short day) to keep a test
-tractable is legitimate and has precedent (v36's hunger fires every 3 rounds in tests versus
-~72 rounds in real authoring). The rule is:
+真实游戏按真尺度会很长，这对创作与游玩没问题，但对测试驱动与批量跑很贵。
+把某种节奏（短周期、短一天）压缩以保持测试可处理，是正当的，且有先例
+（v36 的饥饿在测试中每 3 回合触发，相对真实创作中的约 72 回合）。规则是：
 
-- A compressed constant must be **named as compression**, with the real-scale value stated
-  beside it. Never assert a compressed value as the real time semantics.
-- The real ~5-minute scale is the semantic baseline the fiction is designed against; the
-  compressed value is a test/stress convenience layered on top of it.
+- 被压缩的常量必须 **标明为压缩**，并在旁边写明真尺度取值。切勿把压缩值
+  断言为真实时间语义。
+- 真实的约 5 分钟尺度是虚构所对照的语义基线；压缩值是叠在其上的
+  测试/压力便利。
 
-### Recorded violation (to be corrected)
+### 已记录的违规（待纠正）
 
-The vampire village skeleton (`rust/prax-worlds/src/vampire.rs`) violated this: its
-`TURN_DELAY`/`FEED_COOLDOWN = 2` were justified by a comment claiming "two turns is a full
-day-night cycle — the design's 24h window," i.e. a turn = 12 hours — a value invented to fit
-the design's "24h" timers because this principle was unrecorded. Its `phase_clock` also flips
-day↔night every single turn (every ~5 minutes). The vampire game's time model is being
-redesigned under this principle: real-scale day/night spans and timers, with any
-test-compressed constants clearly marked as such.
+吸血鬼村庄骨架（`rust/prax-worlds/src/vampire.rs`）违反了这一点：其
+`TURN_DELAY`/`FEED_COOLDOWN = 2` 由一条注释辩称「两回合就是完整昼夜循环——
+设计中的 24h 窗口」，即一回合 = 12 小时——这个值是为了迁就设计里的「24h」计时器
+而发明的，因为本原则当时未记录。其 `phase_clock` 也每个回合（每约 5 分钟）
+就翻转日↔夜。吸血鬼游戏的时间模型正在按本原则重设计：真尺度的昼夜跨度与计时器，
+任何测试压缩常量都须清楚标明。

@@ -1,108 +1,82 @@
-# Rust engine architecture — agent-side decision record
+# Rust 引擎架构 — agent 侧决策记录
 
-Not a user-facing document (the program plan's ruling); this is the shared
-contract for implementers, reviewers, and panels. Decisions here were produced
-by the program's design phase and are revised only through stage panels, with
-revisions recorded in place.
+非面向用户的文档（程序计划的裁定）；这是实现者、评审者与评审组的共享契约。
+此处的决策由程序的设计阶段产出，仅通过阶段评审组修订，修订就地记录。
 
-## Stance
+## 立场
 
-One representation, one implementation, no global state. The authoring AST
-(string-surfaced) and the runtime types (interned, pre-split) are DIFFERENT
-TYPE FAMILIES; only the install-time compiler converts. The v28 string war
-cannot recur because the un-compiled path does not type-check into the engine.
-Strings live at exactly three boundaries: authoring, rendering, persistence.
+一种表示、一种实现、无全局状态。创作 AST（字符串表面）与运行时类型
+（interned、预切分）是不同的类型族；只有安装时编译器做转换。v28 的字符串战
+不会重演，因为未编译路径在类型上进不了引擎。字符串恰好活在三个边界：
+创作、渲染、持久化。
 
-## Crates (workspace at rust/)
+## Crates（工作区在 rust/）
 
-prax-core (engine) · prax-vocab (20 content combinator modules — pure value
-builders) · prax-script (Prompter layer + serde format) · prax-worlds ·
-prax-cli · prax-oracle (comparator) · conformance (cross-module tests, one
-file per Haskell spec file). The script layer's engine-rule door
-(registerEngineRules, v53 provenance) is sealed: reachable by prax-script,
-not by the public authoring surface.
+prax-core（引擎）· prax-vocab（20 个内容组合子模块——纯值构建器）·
+prax-script（Prompter 层 + serde 格式）· prax-worlds · prax-cli ·
+prax-oracle（比较器）· conformance（跨模块测试，每个 Haskell 规格文件对应一个文件）。
+脚本层的引擎规则入口（registerEngineRules，v53 出处）已封死：prax-script 可到达，
+公共创作表面不可。
 
-## Core types (prax-core)
+## 核心类型（prax-core）
 
-- `Sym(u32)`, bit 0 = is-variable (v29 parity trick kept). `Interner` owned,
-  append-only; ids never observable — all output through resolve, all
-  observable orders sort BY NAME.
-  [AMENDED at S6, on the implementer's proposal, accepted as the better
-  design: the interner is ONE per State-lineage, threaded `&mut`, and a
-  planner fork clones only `Runtime` — mirroring the frozen engine's single
-  pool. This removes the per-fork interner clone entirely AND collapses the
-  cross-lineage Sym-comparison hazard the S6 panel found (delta syms vs
-  read-anchor syms) into a same-lineage compare BY CONSTRUCTION; the
-  fork-safety argument reduces to monotonic append. The S9 persist-reload
-  re-intern hazard is unaffected and stays flagged.]
-- `CompiledPath { segs: SmallVec<[Sym;6]>, excl: u32 }` — excl bit i = the
-  separator after seg i is `!`. One tokenizer at the authoring boundary
-  (trailing-operator rejection kept).
-- `Db(Arc<Node>)`, `Node { excl: bool, asserted: bool, kids: SmallVec<[(Sym,
-  Db);4]> sorted by id }` — persistence by Arc path-copy (fresh `Arc::new`
-  per touched node; `make_mut` is a banked micro-optimization for the
-  uniquely-owned case); clone = refcount bump (the planner's
-  apply-and-discard depends on this — GUARDED by the structural-sharing net
-  in db.rs's tests). Paths are capped at 32 segments (the excl bitmask's
-  width), rejected loudly at tokenize — a stated bound, not a divergence
-  (nothing shipped exceeds 7). Corrected
-  `!` insert (clear siblings, keep survivor's subtree) and the v39
-  asserted-flag law (no unasserted childless node; eager prune) verbatim.
-  Deterministic-enumeration contract: name-order at unify's unbound branch,
-  child_keys, sentence enumeration, expiry firing.
-- `el`: meet/leq as sorted-merge walks; ⊥ = exclusive node forced to two
-  children; assertedness ORs.
-- Authoring family: `Condition/Outcome/Action/Practice/Axiom/ScheduleRule/
-  Function` with String paths + builder functions (`matches/not_/eq/insert/
-  ...`; `Action::new(label).when([...]).then([...])`). Runtime family:
-  `Cond/Effect` over `CompiledPath`/`Sym`. ONE evaluator (`query`), ONE
-  performer, ONE closure implementation.
-- `Bindings`: sorted `SmallVec<[(Sym, Val);8]>`; `Val = Sym | Num(i64) |
-  Set(...)`. i64 replaces Integer with checked arithmetic (loud overflow —
-  recorded deviation).
-- `State { defs: Arc<Defs>, rt: Runtime }`. Defs: authored sources retained
-  (typecheck/persist/diagnostics) + compiled forms + derived analysis tables
-  (footprint, axiom_heads, neg_footprint, cont_monotone, improvables,
-  liveness, cares_about) — rebuilt wholesale by ONE compile choke point
-  (compilepipe::recompile, the retable heir) invoked by every setter.
-  Runtime: db, view (closure cache), cursor, intentions, schedule_dues,
-  expiries, rng_seed — plain clone, tries share structurally.
-  db/view private; writers are engine::perform (three-tier delta routing:
-  irrelevant → apply_direct; monotone insert → closure continuation; else
-  full reclose) and with_db. The view invariant is structural.
-- Errors: construction guards `Result<_, WorldError>` (thiserror; loud,
-  #[must_use], full diagnostics — worlds .expect() at build); engine
-  invariant breaches panic; contradiction = queryable fact, never an error.
-- Scores: i32 utilities × f64 0.9/0.5 discounts, accumulation order PINNED
-  (mirrors the Haskell fold order → bit-exact decision parity; ordering is
-  the contract, decimals never pinned). STATED BOUND (S6): the frozen
-  `wantUtility` is `Int` (64-bit); Rust's is `i32`. Authored weights are
-  small integers (nothing shipped exceeds two digits), evaluation accumulates
-  in i64, and the narrowing is loud at the builder — a bound in the
-  32-segment-path-cap sense, not an observable divergence. Recorded because
-  it is what makes the fold-order canary's "large base" formulation
-  infeasible (see S06-design [S-I2]).
-- RNG: MINSTD bit-exact in i64. Persist: serde JSON, versioned, facts as
-  labeled sentences; loud version rejection.
+- `Sym(u32)`，第 0 位 = 是否变量（保留 v29 奇偶技巧）。`Interner` 自有、仅追加；
+  id 不可观察——所有输出经 resolve，所有可观察顺序按名称排序。
+  [S6 修订，按实现者提案，作为更好设计被接受：interner 每个 State 谱系一个，
+  以 `&mut` 贯穿，planner fork 只克隆 `Runtime`——镜像冻结引擎的单一池。
+  这完全去掉了每 fork 克隆 interner，并把 S6 评审组发现的跨谱系 Sym 比较风险
+  （delta syms vs 读锚点 syms）在构造上收成同谱系比较；fork 安全论证简化为
+  单调追加。S9 持久化重载再 intern 风险不受影响，仍标记。]
+- `CompiledPath { segs: SmallVec<[Sym;6]>, excl: u32 }` — excl 第 i 位 = seg i 之后的
+  分隔符是 `!`。创作边界只有一个分词器（保留尾部运算符拒绝）。
+- `Db(Arc<Node>)`，`Node { excl: bool, asserted: bool, kids: SmallVec<[(Sym,
+  Db);4]> 按 id 排序 }` — 持久性靠 Arc 路径拷贝（每个触达节点新鲜 `Arc::new`；
+  `make_mut` 是针对唯一持有情况的储备微优化）；clone = 引用计数递增（planner 的
+  apply-and-discard 依赖此——由 db.rs 测试中的结构共享网守护）。路径上限 32 段
+  （excl 位掩码宽度），分词时大声拒绝——是声明的边界，不是分歧（已发布内容
+  都不超过 7）。纠正后的 `!` 插入（清兄弟姐妹、保留幸存者子树）与 v39
+  asserted-flag 法则（无未断言的无子节点；急切修剪）原文保留。
+  确定性枚举契约：unify 的未绑定分支、child_keys、句子枚举、到期触发均按名称序。
+- `el`：meet/leq 为有序归并遍历；⊥ = 排他节点被强制成两个孩子；assertedness 做 OR。
+- 创作族：`Condition/Outcome/Action/Practice/Axiom/ScheduleRule/Function`，带字符串路径
+  + 构建器函数（`matches/not_/eq/insert/...`；`Action::new(label).when([...]).then([...])`）。
+  运行时族：`Cond/Effect`，基于 `CompiledPath`/`Sym`。一个求值器（`query`）、一个执行器、
+  一个闭包实现。
+- `Bindings`：有序 `SmallVec<[(Sym, Val);8]>`；`Val = Sym | Num(i64) | Set(...)`。
+  i64 替代 Integer，带检查算术（溢出大声——已记录偏差）。
+- `State { defs: Arc<Defs>, rt: Runtime }`。Defs：保留的创作源（类型检查/持久化/诊断）
+  + 编译形式 + 派生分析表（footprint、axiom_heads、neg_footprint、cont_monotone、
+  improvables、liveness、cares_about）——由每个 setter 调用的单一编译 choke point
+  （compilepipe::recompile，retable 继承者）整表重建。
+  Runtime：db、view（闭包缓存）、cursor、intentions、schedule_dues、expiries、rng_seed
+  ——普通 clone，trie 结构共享。db/view 私有；写者是 engine::perform（三层 delta 路由：
+  无关 → apply_direct；单调插入 → 闭包延续；否则全量重闭）和 with_db。view 不变量是结构的。
+- 错误：构造守护 `Result<_, WorldError>`（thiserror；大声、#[must_use]、完整诊断——
+  世界在构建时 .expect()）；引擎不变量破坏 panic；矛盾 = 可查询事实，永非错误。
+- 分数：i32 效用 × f64 0.9/0.5 折扣，累积顺序钉死（镜像 Haskell fold 顺序 → 位精确决策对等；
+  顺序是契约，小数永不钉死）。声明边界（S6）：冻结的 `wantUtility` 是 `Int`（64 位）；
+  Rust 的是 `i32`。创作权重是小整数（已发布都不超过两位数），求值在 i64 累积，
+  收窄在构建器处大声——是 32 段路径上限意义上的边界，不是可观察分歧。记录它是因为
+  这使 fold 顺序金丝雀的「大基数」表述不可行（见 S06-design [S-I2]）。
+- RNG：MINSTD 在 i64 上位精确。持久化：serde JSON，带版本，事实为标注句子；
+  大声拒绝版本不匹配。
 
-## Verification machinery (in-crate)
+## 验证机制（crate 内）
 
-- testkit (feature): naive_closure oracle (~60 lines, shares only meet/leq +
-  trie with production) asserted view == naive_closure(axioms_src, db) after
-  every mutation in randomized + golden sequences — the ViewInvariant heir.
-- proptest law suites: trie laws (asserted-flag walker, `!` supersession,
-  insert/retract round-trips), EL lattice laws, query compiled==fresh-parse,
-  v44 expiry laws, persist round-trip.
-- Every re-expressed test carries `// H: <SpecFile> "<label>"`; the meta-gate
-  test audits all 849 manifest labels against these + KILLED.md.
+- testkit（feature）：naive_closure oracle（约 60 行，与生产只共享 meet/leq + trie）
+  在随机化 + 金标准序列的每次变更后断言 view == naive_closure(axioms_src, db)
+  ——ViewInvariant 继承者。
+- proptest 法则套件：trie 法则（asserted-flag walker、`!` 取代、insert/retract 往返）、
+  EL 格法则、query compiled==fresh-parse、v44 expiry 法则、persist 往返。
+- 每个重表达测试带 `// H: <SpecFile> "<label>"`；meta-gate 测试对照这些与 KILLED.md
+  审计全部 849 个清单标签。
 
-## Deps
+## 依赖
 
-smallvec, rustc-hash, thiserror, serde(+json); dev: proptest. Nothing else
-without a stage-panel decision.
+smallvec、rustc-hash、thiserror、serde(+json)；dev：proptest。无阶段评审组决定，
+不加其他。
 
-## Banked levers (measure first)
+## 储备杠杆（先测量）
 
-Arena trie + undo log (if Arc path-copy dominates profiles); fixed-point
-scores (if f64 platform issues appear); im-style maps for intentions/expiries
-(if a world holds thousands).
+Arena trie + undo log（若 Arc 路径拷贝主导剖析）；定点分数（若出现 f64 平台问题）；
+im 风格 map 用于 intentions/expiries（若某世界持有数千个）。
