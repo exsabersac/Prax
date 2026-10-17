@@ -1,8 +1,7 @@
--- | Factions: one membership spine (spec docs/specs/2026-07-12-v31-faction-kin.md §1).
--- Membership is a base, single-slot fact — @member.\<who\>!\<faction\>@ — and the
--- @!@ IS the semantics: joining, defecting, and marrying-in are all the same
--- exclusion overwrite. Base @allied.*@ facts remain legal vocabulary (not every
--- alliance is a membership); 'comrades' derives additional ones.
+-- | 派系：一条成员脊骨（规格 docs/specs/2026-07-12-v31-faction-kin.md §1）。
+-- 成员是基、单槽事实——@member.\<who\>!\<faction\>@——且 @!@ 即是语义：加入、叛逃、婚入
+-- 都是同一排他覆盖。基 @allied.*@ 事实仍是合法词汇（并非每个联盟都是成员）；'comrades'
+-- 派生额外的。
 module Prax.Faction
   ( memberPath
   , joins

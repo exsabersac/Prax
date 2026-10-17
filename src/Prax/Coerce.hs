@@ -1,53 +1,32 @@
--- | Coercion: leverage as a content-agnostic primitive.
+-- | 强制：作为内容无关原语的杠杆。
 --
--- __A threat is conditional intent made credible by a desire.__ 'coerce'
--- generates the four-action protocol — threaten\/comply\/defy\/punish — and
--- the punitive 'Desire' that professes the intent, exactly as
--- "Prax.Blackmail" does for its exposure instance, but with the /content/
--- (what makes the threat available, what compliance costs, what punishment
--- does, and what the extorter VALUES about the punished state) lifted out into
--- the 'Coercion' record. Blackmail is one instance ("Prax.Blackmail"); a
--- protection racket burning a barn is another (see @Prax.CoerceSpec@).
+-- __威胁是由欲望使可信的条件意图。__ 'coerce' 生成四动作协议——threaten\/comply\/defy\/punish——
+-- 以及表白意图的惩罚性 'Desire'，恰如 "Prax.Blackmail" 对其曝光实例所做，但把 /内容/
+-- （什么使威胁可用、服从代价、惩罚做什么、以及勒索者对受罚状态看重什么）提升进 'Coercion' 记录。
+-- 勒索是一个实例（"Prax.Blackmail"）；烧谷仓的保护费是另一个（见 @Prax.CoerceSpec@）。
 --
--- __Evidence is optional.__ Unlike 'Prax.Blackmail.shakedown' (whose threaten
--- hardcodes an evidence belief and whose motivation counts believers), the
--- primitive owns none of that: the trigger (including how the victim is
--- reached — co-presence for an in-person threat, a letter in absentia) is
--- author content, and the punitive kernel — the state the extorter values —
--- is whatever the instance names. Exposure of held evidence and vengeance for
--- a burned barn are the same skeleton with different kernels.
+-- __证据可选。__ 不像 'Prax.Blackmail.shakedown'（其 threaten 硬编码证据信念且动机计数信者），
+-- 原语不拥有那些：触发（含如何到达受害者——当面威胁的共现、缺席时的信）是作者内容，惩罚核——
+-- 勒索者看重的状态——是实例所命名的。持有证据的曝光与烧谷仓的报复是同一骨架配不同核。
 --
--- __The kernel variable law.__ The author writes the kernel ('coKernel') with
--- NO @Prax@-namespaced variables (the v40 splice guards forbid them on every
--- authored field). The kernel references the victim by 'coVictim'\'s name and
--- any fresh quantifier (a believer, a witness) by an ordinary plain name.
--- 'coerce' then alpha-renames the kernel INTO the @Prax@ namespace,
--- op-preservingly ('namespaceKernel'): the victim → @PraxD@, and every other
--- author-introduced free variable that is not the mechanism interface name
--- @Owner@ → @PraxW@, @PraxW2@, … in first-appearance order. Only the
--- post-rename OUTPUT is @Prax@-namespaced; no author ever writes one.
+-- __核变量法则。__ 作者写核（'coKernel'）时无 @Prax@ 命名空间变量（v40 拼接守护禁止它们出现在每个
+-- 创作字段上）。核按 'coVictim' 的名引用受害者，按普通名引用任何新鲜量词（信者、目击者）。
+-- 'coerce' 随后把核 alpha-重命名进 @Prax@ 命名空间，保留运算符（'namespaceKernel'）：受害者 →
+-- @PraxD@，每个其他作者引入的、非机制接口名 @Owner@ 的自由变量 → @PraxW@、@PraxW2@、…按首次出现序。
+-- 只有重命名后输出是 @Prax@ 命名空间的；作者从不写一个。
 --
--- __Credibility is three world states (spec v54 §2).__ 'threaten' itself
--- plants the victim's fear (a mechanism-owned @believes.desires.\<E\>.punishes-\<id\>@
--- deposit); what distinguishes the cases is authored world state, not a flag:
+-- __可信性是三种世界状态（规格 v54 §2）。__ 'threaten' 自身种植受害者恐惧（机制拥有的
+-- @believes.desires.\<E\>.punishes-\<id\>@ 存入）；区分情形的是创作世界状态，非标志：
 --
---   * __GENUINE__ — the punitive 'Desire' (@punishes-\<id\>@) is REGISTERED in
---     the world's vocabulary ('Prax.Engine.setDesires') AND HELD by the
---     extorter ('Prax.Types.charDesires'). The threat is self-motivated (v49's
---     credibility): the extorter, defied, actually chooses to punish.
---   * __BLUFF__ — registered but NOT held. Because the deposit is
---     mechanism-owned and the victim's believed-desire resolution filters on
---     @desires st@ (the REGISTERED vocabulary, not who holds it), the victim's
---     fear is REAL and identical to the genuine case; the extorter, holding no
---     punitive want, never chooses punish. Holding is the positive authoring
---     act that separates the two — no flag needed, and both are inspectable
---     world state.
---   * __THE ACCIDENT__ — an UNREGISTERED punitive name is neither setting:
---     believed-desire resolution dangles and the threat is silently inert.
---     "Prax.TypeCheck"'s 'CoercionUnmotivated' net catches exactly this — a
---     deposited @punishes-*@ belief for a name absent from the registered
---     desire vocabulary — so the genuine\/bluff pair are both EARNED, not
---     asserted over an unguarded omission.
+--   * __真实__ —— 惩罚性 'Desire'（@punishes-\<id\>@）在世界词汇中注册（'Prax.Engine.setDesires'）
+--     且被勒索者持有（'Prax.Types.charDesires'）。威胁是自动机的（v49 可信性）：被违抗时勒索者
+--     实际选择惩罚。
+--   * __虚张__ —— 已注册但未持有。因为存入是机制拥有的，且受害者被相信欲望解析过滤于 @desires st@
+--     （注册词汇，非谁持有），受害者恐惧是真实的且与真实情形相同；勒索者不持惩罚 want，从不选择
+--     punish。持有是分离两者的正创作行为——无需标志，且两者都是可检查世界状态。
+--   * __事故__ —— 未注册的惩罚名两者皆非：被相信欲望解析悬空，威胁静默惰性。"Prax.TypeCheck" 的
+--     'CoercionUnmotivated' 网恰好抓住这个——对注册欲望词汇中缺失之名的已存入 @punishes-*@ 信念——
+--     因此真实/虚张对都是挣得的，非对无守卫省略的断言。
 module Prax.Coerce
   ( Coercion(..)
   , coerce

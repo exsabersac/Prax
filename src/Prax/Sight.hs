@@ -1,17 +1,14 @@
--- | Sightings: knowing where people are is itself information.
+-- | 目击：知道人们在何处本身就是信息。
 --
--- Perception rides the engine schedule (spec
--- @docs/specs/2026-07-16-v44-the-schedule.md@): a world declares
--- 'Prax.Schedule.sightRule' over its sighting template (reserved variables
--- @Seer@\/@Seen@\/@Spot@), a period-1 recurring rule the engine fires at every
--- round boundary, refreshing location-beliefs for every co-present pair:
+-- 感知骑引擎调度（规格 @docs/specs/2026-07-16-v44-the-schedule.md@）：世界在其目击模板上声明
+-- 'Prax.Schedule.sightRule'（保留变量 @Seer@\/@Seen@\/@Spot@），引擎在每回合边界触发的周期-1
+-- 循环规则，为每个共现对刷新地点信念：
 --
--- > <seer>.believes.at.<seen>!<place>      -- best guess (single-slot: overwritten)
--- > <seer>.believes.atSince.<seen>!<turn>  -- when it was formed
+-- > <seer>.believes.at.<seen>!<place>      -- 最佳猜测（单槽：被覆盖）
+-- > <seer>.believes.atSince.<seen>!<turn>  -- 形成时间
 --
--- Sightings persist after separation ("last known location"), and
--- 'sightedWithin' turns the stamp into a prediction-scope window: the horizon
--- is an authored world parameter with stated meaning, not an engine constant.
+-- 目击在分离后持续（「最后已知位置」），且 'sightedWithin' 把时间戳变为预测范围窗口：视界是
+-- 带声明含义的创作世界参数，非引擎常量。
 module Prax.Sight
   ( sightedWithin
   ) where

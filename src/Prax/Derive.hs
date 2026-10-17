@@ -1,29 +1,19 @@
--- | A forward-chaining derivation layer: domain knowledge as implication rules
--- @body → head@, closed to a fixpoint over the world (LEDGER #17).
+-- | 前向链派生层：领域知识作为蕴含规则 @body → head@，在世界上闭合到不动点（LEDGER #17）。
 --
--- This is the paper's canonical-model construction @m(G,A)@ (Def 16–18): repeatedly
--- apply each implication to the model until it stops growing. The crucial part is
--- that facts are combined with the exclusion-logic 'Prax.EL.meet' (greatest lower
--- bound), so a rule that would force an exclusive slot to two values yields the
--- paper's @⊥@ — a __detected contradiction__, never a silent overwrite (the trap
--- the earlier naive spike fell into).
+-- 这是论文的规范模型构造 @m(G,A)@（Def 16–18）：反复对模型应用每个蕴含直到停止增长。关键部分是
+-- 事实用排他逻辑 'Prax.EL.meet'（最大下界）组合，因此会强制排他槽成两个值的规则产生论文的 @⊥@ ——
+-- __被检测的矛盾__，从不静默覆盖（更早朴素尖峰落入的陷阱）。
 --
--- Two deliberate design choices:
+-- 两个有意设计选择：
 --
---   * __Closure is a view.__ 'closure' takes a base 'Db' and returns the /closed/
---     one; it never mutates the base. Callers keep the base as the source of truth
---     and recompute — so a conclusion whose premise is retracted simply disappears
---     (defeasibility for free), which a churning sandbox needs.
---   * __Relational, not merely propositional.__ The paper's antecedent test @X ≤ A@
---     is generalized to /querying/ the body with "Prax.Query" so rules bind
---     variables (@parent.X.Y ∧ parent.Y.Z → grandparent.X.Z@). For a ground body
---     this coincides with @≤@; with variables it is the natural generalization.
+--   * __闭包是视图。__ 'closure' 取基 'Db' 并返回 /闭合/ 的；它从不变更基。调用者保持基为真相源
+--     并重算——因此前提被撤回的结论简单消失（免费可废止性），这是搅动沙盒所需要的。
+--   * __关系性，非仅命题。__ 论文的前件测试 @X ≤ A@ 推广为用 "Prax.Query" /查询/ 体，使规则绑定变量
+--     （@parent.X.Y ∧ parent.Y.Z → grandparent.X.Z@）。对基身体这与 @≤@ 重合；带变量时是自然推广。
 --
--- This engine is deontics-free: it closes a world under exactly the axiom list
--- it is handed. A world whose logic closes under the □ operator (DEON property
--- 1) declares that by expanding its own list (the closure operator lives in
--- "Prax.Deontic"); 'closure'\/'run'\/'cookAxioms' treat the lifted rules as
--- ordinary axioms.
+-- 本引擎无道义：它恰好在交给它的公理列表下闭合世界。其逻辑在 □ 运算符下闭合的世界（DEON 性质 1）
+-- 通过扩展自身列表声明（闭包运算符住在 "Prax.Deontic"）；'closure'\/'run'\/'cookAxioms' 把提升的
+-- 规则当作普通公理。
 module Prax.Derive
   ( Axiom(..)
   , axiom

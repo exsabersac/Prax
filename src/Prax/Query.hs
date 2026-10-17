@@ -1,22 +1,17 @@
--- | The condition language layered over 'Prax.Db.unify'.
+-- | 叠在 'Prax.Db.unify' 上的条件语言。
 --
--- A typed reconstruction of Praxish's @Praxish.query@ (its @praxish.js@ encodes
--- conditions as whitespace-split strings; we use a 'Condition' ADT instead). A
--- query is a conjunctive list of conditions evaluated left to right, threading a
--- growing set of variable bindings (the list-monad nondeterminism from 'unify').
+-- Praxish 的 @Praxish.query@ 的类型化重建（其 @praxish.js@ 把条件编码为空白切分字符串；我们改用
+-- 'Condition' ADT）。查询是从左到右求值的合取条件列表，串过增长的变量绑定集（来自 'unify' 的
+-- 列表单子非确定性）。
 --
--- Operand strings follow the language's variable convention: an operand whose
--- first character is uppercase is a logic variable (resolved against the current
--- bindings), otherwise it is a literal constant. When a comparison's operand
--- cannot be resolved (an unbound variable), that binding simply fails the
--- condition and is dropped — the defined behaviour of the DSL, matching Praxish
--- (e.g. the tic-tac-toe tie action relies on it). Structural errors that cannot
--- depend on runtime state (a subquery nested inside a subquery) crash loudly.
+-- 操作数字符串遵循语言的变量约定：首字符大写的操作数是逻辑变量（对照当前绑定解析），否则是
+-- 字面常量。当比较的操作数无法解析（未绑定变量）时，该绑定简单地未通过条件并被丢弃——DSL 的
+-- 定义行为，匹配 Praxish（例如井字棋平局动作依赖它）。不能依赖运行时状态的结构错误（子查询
+-- 嵌套在子查询内）大声崩溃。
 --
--- 'Condition' itself stays String-authored (the DSL authors write); its cooked
--- mirror 'CookedCondition' carries every operand as an interned 'Prax.Sym.Sym'
--- (spec @docs/specs/2026-07-12-v29-interning.md@) — the hot evaluator
--- ('queryCooked') never parses or re-interns a name at query time.
+-- 'Condition' 本身保持字符串创作（DSL 作者书写）；其煮熟镜像 'CookedCondition' 把每个操作数
+-- 携带为 interned 'Prax.Sym.Sym'（规格 @docs/specs/2026-07-12-v29-interning.md@）——热求值器
+-- （'queryCooked'）在查询时从不解析或再 intern 名称。
 module Prax.Query
   ( CmpOp(..)
   , CalcOp(..)

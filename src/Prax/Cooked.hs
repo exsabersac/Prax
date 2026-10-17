@@ -1,19 +1,12 @@
--- | The cooked mirror of the outcome language — the authored world compiled
--- to token/name form once. Strings remain the authoring surface; they stop
--- being the computation surface (see
--- @docs/specs/2026-07-12-v28-cooked-world.md@). The cooked condition side
--- ('CookedCondition', 'cookCondition', 'groundNames', 'groundCookedCondition')
--- lives in "Prax.Query" — its one home — and is imported here, not
--- re-exported; callers needing it import "Prax.Query" directly.
+-- | 结果语言的煮熟镜像——创作的世界一次编译为 token/名称形式。字符串仍是创作表面；它们停止
+-- 作为计算表面（见 @docs/specs/2026-07-12-v28-cooked-world.md@）。煮熟条件侧
+-- （'CookedCondition'、'cookCondition'、'groundNames'、'groundCookedCondition'）住在
+-- "Prax.Query"——其唯一归宿——在此导入，不重导出；需要它的调用者直接导入 "Prax.Query"。
 --
--- 'CookedOutcome'\/'CookedAction'\/'CookedPractice' themselves are declared in
--- "Prax.Types" (not here): 'Prax.Types.PraxState' embeds a
--- 'Prax.Types.CookedPractice' in its 'Prax.Types.cookedDefs' field, and
--- "Prax.Cooked" already depends on "Prax.Types" for 'Outcome'\/'Practice' — a
--- two-module cycle, the same shape Task 1 hit for the condition side. This
--- module owns the conversion functions only; callers needing the types import
--- "Prax.Types" directly (already the case for every module that touches
--- 'PraxState').
+-- 'CookedOutcome'\/'CookedAction'\/'CookedPractice' 本身在 "Prax.Types" 中声明（不在此）：
+-- 'Prax.Types.PraxState' 在其 'Prax.Types.cookedDefs' 字段嵌入 'Prax.Types.CookedPractice'，且
+-- "Prax.Cooked" 已为 'Outcome'\/'Practice' 依赖 "Prax.Types"——双模块环，与 Task 1 条件侧同一形状。
+-- 本模块只拥有转换函数；需要类型的调用者直接导入 "Prax.Types"（触及 'PraxState' 的每个模块已如此）。
 module Prax.Cooked
   ( cookOutcome
   , groundCookedOutcome

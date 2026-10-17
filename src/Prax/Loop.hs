@@ -1,8 +1,7 @@
--- | The turn loop: round-robin turn taking over the cast (Praxish's @tick@).
+-- | 回合循环：阵容上的轮转（Praxish 的 @tick@）。
 --
--- Pure stepping primitives so the same core drives both the interactive CLI and
--- deterministic replay tests. The planner is deterministic, so 'runNpcTicks'
--- yields a reproducible narration trace.
+-- 纯步进原语，使同一核心驱动交互 CLI 与确定性重放测试。planner 是确定的，因此
+-- 'runNpcTicks' 产生可复现的旁白轨迹。
 module Prax.Loop
   ( advance
   , npcAct

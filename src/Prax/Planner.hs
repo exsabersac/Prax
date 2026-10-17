@@ -1,15 +1,11 @@
--- | Utility-based action selection (Versu §IX) with a beyond-source lookahead
--- extension, redesigned in v23 (spec: docs/specs/2026-07-10-v23-planner-realism-design.md).
+-- | 基于效用的动作选择（Versu §IX），带超出源的前瞻扩展，在 v23 重设计
+-- （规格：docs/specs/2026-07-10-v23-planner-realism-design.md）。
 --
--- Selection is the paper's apply-and-evaluate: score each candidate by the
--- world it produces. The lookahead is a __round-walk over believed minds__:
--- one imagined round in which each other character within the actor's
--- 'predictionScope' takes one /motivated/ move chosen from the actor's
--- __believed model__ of them ("Prax.Minds" — which can be wrong), followed by
--- the actor's own next choice, recursively. Discounts: 0.9 own future move,
--- 0.5 another's. Accumulation is a discounted stream of absolute utilities
--- over the imagined round. Unknown minds and out-of-scope characters are
--- modeled as still — never as helpful.
+-- 选择是论文的 apply-and-evaluate：按每个候选产生的世界打分。前瞻是 __对被相信心智的回合漫步__：
+-- 一个想象回合，其中 actor 的 'predictionScope' 内每个其他角色从 actor 对他们的 __被相信模型__
+-- （"Prax.Minds"——可能错误）取一次 /有动机的/ 移动，随后是 actor 自身下一选择，递归。折扣：
+-- 0.9 自身未来移动，0.5 他人。累积是想象回合上绝对效用的折扣流。未知心智与范围外角色被建模为
+-- 静止——从不「帮忙」。
 module Prax.Planner
   ( evaluate
   , evaluateCooked

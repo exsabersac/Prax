@@ -1,19 +1,12 @@
--- | Personality as conduct, not goals (spec
--- @docs/specs/2026-07-11-v25-persona-design.md@).
+-- | 性格即行为，非目标（规格 @docs/specs/2026-07-11-v25-persona-design.md@）。
 --
--- A trait is a named bundle of (mostly negative) desires over the bearer's
--- /own/ conduct-marks — @honest@ values each of your own @lied@ marks
--- ("Prax.Deceit") at a cost. A bearer can do anything: trait-contrary conduct
--- carries negative utility, never prohibition, and the arithmetic is the
--- meaning ("her honesty outweighs her spite, by exactly the margin written").
--- Because the mark lands in the very state the planner evaluates, deterrence
--- needs no lookahead; and because trait desires are named vocabulary
--- ("Prax.Minds"), a /believed/ temperament nets against believed motives
--- inside prediction — knowing someone honest changes what you expect of them,
--- not just what they do.
+-- 特质是命名的（多为负）欲望包，覆盖承载者 /自身/ 行为标记——@honest@ 给每个你自己的 @lied@
+-- 标记（"Prax.Deceit"）定价。承载者可做任何事：逆特质行为携带负效用，从不禁止，算术即含义
+-- （「她的诚实压过恶意，恰是所写的边距」）。因为标记落入 planner 评价的同一状态，威慑无需前瞻；
+-- 且因为特质欲望是命名词汇（"Prax.Minds"），/被相信的/ 气质在预测中与被相信动机对冲——知道某人诚实
+-- 改变你对他们的期望，不只是他们做什么。
 --
--- Goal-bundles are deliberately NOT traits: a goal is a plain desire needing
--- no bundle. A trait says how you're willing to act, not what you're after.
+-- 目标包有意不是特质：目标是不需包的普通欲望。特质说你愿意如何行动，而非你追求什么。
 module Prax.Persona
   ( Trait (..)
   , personaVocabulary

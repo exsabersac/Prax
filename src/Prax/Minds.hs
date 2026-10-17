@@ -1,16 +1,11 @@
--- | Minds as objects of belief.
+-- | 作为信念对象的心智。
 --
--- To believe something about a mind, minds must be nameable: a world declares
--- a vocabulary of named, @Owner@-parameterized 'Desire's, and a motive-belief
--- is an ordinary belief over the issue @desires.\<owner\>.\<name\>@ in the v20
--- provenance shape (@.seen@ \/ @.heard.\<src\>@ \/ @.presumed@) — so the whole
--- information stack (gossip, lies, confides, forgetting, derivation) works on
--- minds unchanged. An unnamed 'charWants' want has no name to believe and is
--- therefore inherently unreadable (right for the story manager's metalevel
--- desires). Common knowledge is /derived/, defeasibly: 'professed' spreads a
--- character's openly-held desire; 'conventional' presumes a desire of everyone
--- — even of those who do not actually have it (you expect strangers to be
--- conventional, and can be wrong).
+-- 要相信关于心智的某事，心智必须可命名：世界声明命名的、@Owner@-参数化的 'Desire' 词汇，
+-- 且动机信念是 v20 出处形状（@.seen@ \/ @.heard.\<src\>@ \/ @.presumed@）下议题
+-- @desires.\<owner\>.\<name\>@ 上的普通信念——因此整个信息栈（八卦、谎言、倾诉、遗忘、派生）
+-- 对心智不变地工作。未命名的 'charWants' want 无可相信的名字，因此固有地不可读（适合故事管理器的
+-- 元层欲望）。共同知识是 /派生的/、可废止的：'professed' 传播角色公开持有的欲望；'conventional'
+-- 假定人人有某欲望——甚至假定实际没有它的人（你期望陌生人是约定的，且可能错）。
 module Prax.Minds
   ( wantFor
   , selfWants

@@ -1,13 +1,9 @@
--- | A seeded drama die as ENGINE STATE (spec
--- @docs/specs/2026-07-18-v50-machinery-state.md@): the Lehmer stream lives in
--- 'Prax.Types.rngSeed', not the fact base, and 'draw' is the only authoring
--- surface. This module keeps ALL the die math — the Park & Miller MINSTD
--- constants, the one-step advance ('rollStep'), and the seed-domain bounds
--- ('seedBounds', consumed by 'Prax.Engine.seedDie'); 'draw' compiles authored
--- odds to a first-class 'Roll' outcome that 'Prax.Engine.performCooked'
--- executes against the engine stream. This is a drama die, not a statistics
--- library: low bits of a MINSTD stream are plenty to decide whether a temper
--- flares, and nothing here is fit for cryptography or simulation science.
+-- | 作为引擎状态的播种戏剧骰（规格 @docs/specs/2026-07-18-v50-machinery-state.md@）：
+-- Lehmer 流住在 'Prax.Types.rngSeed' 中，非事实基，且 'draw' 是唯一创作表面。本模块保留
+-- 全部骰子数学——Park & Miller MINSTD 常量、单步推进（'rollStep'）、以及种子域边界
+-- （'seedBounds'，由 'Prax.Engine.seedDie' 消费）；'draw' 把创作赔率编译为
+-- 'Prax.Engine.performCooked' 对照引擎流执行的一等 'Roll' 结果。这是戏剧骰，非统计库：
+-- MINSTD 流的低位足以决定脾气是否爆发，此处无物适合密码学或仿真科学。
 module Prax.Rng
   ( draw
   , rollStep

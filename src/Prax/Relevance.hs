@@ -1,45 +1,27 @@
--- | Which desires can authored action even in principle improve? Computed once
--- per world from the vocabulary (spec
--- @docs/specs/2026-07-11-v26-planner-work.md@ §2) and consulted by the planner
--- to skip predictions that are provably fruitless: a believed model none of
--- whose desires any available action can improve admits no motivated move.
+-- | 哪些欲望是创作动作原则上甚至能改善的？每世界从词汇计算一次（规格
+-- @docs/specs/2026-07-11-v26-planner-work.md@ §2），由 planner 咨以跳过可证明无果的预测：
+-- 其欲望无一能被可用动作改善的被相信模型，不容有动机的移动。
 --
--- The analysis is __conservative__: it answers "not improvable" only when
--- that is provable from the authored patterns. Anything uncertain — outcomes
--- behind unresolvable 'Call's, wants over facts an axiom may derive, wants
--- gated by 'Subquery'\/'Count'\/'Calc' — counts as improvable. An unsound
--- "not improvable" is a planner behavior change and a defect; a spurious
--- "improvable" merely costs the evaluation we would have done anyway.
+-- 分析是 __保守的__：仅在可从创作模式证明时回答「不可改善」。任何不确定——不可解析 'Call' 后的
+-- 结果、公理可能派生的事实上的 wants、由 'Subquery'\/'Count'\/'Calc' 门禁的 wants——计为可改善。
+-- 不健全的「不可改善」是 planner 行为变更与缺陷；虚假的「可改善」只花费我们本来就会做的评价。
 --
--- One stated invariant carries the conservativity (an assumption about
--- authored worlds, not a construction guarantee): __entity names never
--- collide with predicate-name literals__ — no character, place, or value is
--- named @lied@, @believes@, @regards@, and so on. 'mayUnifySyms' spends it in
--- exactly one place (the anchor below). A world that named a character after
--- a predicate segment would void the analysis; every shipped world satisfies
--- the invariant, and the golden decision-sequence tests would surface a
--- violation as a dropped prediction.
+-- 一条声明不变量承载保守性（对创作世界的假设，非构造保证）：__实体名永不与谓词名字面碰撞__ ——
+-- 无角色、地点或值命名为 @lied@、@believes@、@regards@ 等。'mayUnifySyms' 恰好在一处花费它
+-- （下方锚点）。以谓词段命名角色的世界会使分析作废；每个已发布世界满足不变量，且金标准决策序列
+-- 测试会把违规呈现为丢弃的预测。
 --
--- __Authoring boundary = string, world model = cooked.__ The string surface
--- ('Prax.Types.conditionVars' and the v40 authoring guards) runs before
--- cooking exists — it validates what the author wrote. Everything here is a
--- world-model analysis and reads the cooked form: the state's precooked
--- tables ('cookedDefs'\/'cookedRules'\/'cookedDesires'\/'cookedWants'), never
--- the authored strings.
+-- __创作边界 = 字符串，世界模型 = 煮熟。__ 字符串表面（'Prax.Types.conditionVars' 与 v40 创作
+-- 守护）在煮熟存在前运行——它验证作者所写。此处一切是世界模型分析并读煮熟形式：状态的预煮表
+-- （'cookedDefs'\/'cookedRules'\/'cookedDesires'\/'cookedWants'），从不读创作字符串。
 --
--- 'livenessOf' (spec @docs/specs/2026-07-13-v33-live-relevance.md@) adds the
--- state-conditioned dimension over the same vocabulary: not just "could
--- anything ever improve this want-kind?" but "is that improvability LIVE
--- right now?" Each named desire's per-'Prax.Types.Liveness' recipe — a
--- negative want-kind's floor check, a positive want-kind's environment
--- gates, or 'Prax.Types.AlwaysLive' when no cheap state test applies — is
--- computed once per world and cached on 'Prax.Types.PraxState' (like
--- 'improvableDesires' itself), for the planner's per-state dead-now test to
--- consult cheaply. Conservativity runs the same direction as above: a gate
--- only ever removes work when provably safe (axiom-derivable or otherwise
--- uncertain candidates are never gates), and every uncertainty — an
--- unresolvable outcome, a @Subquery@\/@Count@\/@Calc@-tainted want — keeps
--- the desire 'Prax.Types.AlwaysLive'.
+-- 'livenessOf'（规格 @docs/specs/2026-07-13-v33-live-relevance.md@）在同一词汇上添加状态条件维度：
+-- 不只「是否有任何东西能改善此 want 类？」还有「那可改善性现在是否活着？」每个命名欲望的按
+-- 'Prax.Types.Liveness' 配方——负 want 类的地板检查、正 want 类的环境门禁、或无便宜状态测试适用时的
+-- 'Prax.Types.AlwaysLive'——每世界计算一次并缓存在 'Prax.Types.PraxState' 上（像 'improvableDesires'
+-- 自身），供 planner 的按状态死-现在测试便宜咨用。保守性方向方向同向：门禁仅在可证明安全时移除工作
+-- （公理可派生或其他不确定候选永不当门禁），且每个不确定——不可解析结果、@Subquery@\/@Count@\/@Calc@
+-- 污染的 want——保持欲望为 'Prax.Types.AlwaysLive'。
 module Prax.Relevance
   ( mayUnifySyms
   , improvableDesires

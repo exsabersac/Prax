@@ -1,18 +1,12 @@
--- | Conversation: speakers, topics, and quips (Versu paper §X; Emily Short's
--- blog on Versu conversation).
+-- | 对话：说话者、话题与 quips（Versu 论文 §X；Emily Short 关于 Versu 对话的博客）。
 --
--- A conversation is a two-party practice with a /selected speaker/ (turn-taking)
--- and a single current /topic/. A **quip** is an ordinary action that says a line
--- and applies effects — on the core model and beliefs — exactly the machinery
--- from "Prax.Core" and "Prax.Beliefs"; "a response is just a normal type of
--- action … the same utility-planner." Characters stay on topic (a quip is only
--- available on its topic) until someone deliberately changes the subject.
+-- 对话是带 /选定说话者/（轮流）与单一当前 /话题/ 的两方实践。**quip** 是说一行并应用效果的
+-- 普通动作——对核心模型与信念——正是 "Prax.Core" 与 "Prax.Beliefs" 的机制；「响应只是普通类型的
+-- 动作…同一效用 planner。」角色保持话题（quip 仅在其话题上可用），直到有人有意改变主题。
 --
--- This is a reusable library on the existing engine (no new machinery): the
--- conversation is @practice.converse.\<A\>.\<B\>@ with @speaker!@, @listener!@,
--- @topic!@ facts. A world supplies the concrete quips via the 'quip' /
--- 'changeSubject' / 'endConversation' builders inside a practice with
--- roles @["A","B"]@.
+-- 既有引擎上的可复用库（无新机制）：对话是带 @speaker!@、@listener!@、@topic!@ 事实的
+-- @practice.converse.\<A\>.\<B\>@。世界经 'quip' / 'changeSubject' / 'endConversation' 构建器
+-- 在角色为 @["A","B"]@ 的实践内提供具体 quips。
 module Prax.Conversation
   ( talkPath
   , talkingWith

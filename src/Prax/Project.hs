@@ -1,43 +1,27 @@
--- | Endeavors: long-horizon behavior as part-sets.
+-- | 事业（Endeavors）：作为部件集的长视界行为。
 --
--- A project __type__ is authored vocabulary (like practices, deeds, and
--- desires); a project __instance__ emerges when a disposed character's planner
--- chooses the undertake action. The pursuit is a named 'Desire' counting the
--- owner's completed parts — __dormant__ without an instance (zero bindings,
--- zero utility), which is how disposed characters carry it permanently and
--- undertaking switches it on: conditioned wants /are/ injectable wants.
+-- 项目 __类型__ 是创作词汇（像实践、事迹与欲望）；项目 __实例__ 在已处置角色的 planner 选择承担
+-- 动作时涌现。追求是计数所有者完成部件的命名 'Desire' ——无实例时 __休眠__（零绑定、零效用），
+-- 这是已处置角色永久携带它、承担打开它的方式：带条件 wants /就是/ 可注入 wants。
 --
--- Progress itself is rewarding (+w per completed part — the authored weight is
--- how invested this character is in this kind of work), so horizon length is
--- irrelevant: every next part is locally visible to the ordinary planner. The
--- agent pursues because pursuing is rewarding, not because the planner derives
--- the end from the means — the truer model of commitment anyway.
+-- 进展本身有回报（每完成部件 +w——创作权重是此角色对此类工作的投入程度），因此视界长度无关：
+-- 每个下一步部件对普通 planner 局部可见。agent 追求因为追求有回报，非因为 planner 从手段导出目的——
+-- 无论如何是对承诺的更真模型。
 --
--- A plan is a SET of parts, not a linear chain: parts complete independently
--- and in parallel, and NOT ALL are required for success. There is no single
--- number encoding progress, so the set of completed-part facts is the primary
--- state — the linear cursor is gone. Topology is authored two ways: 'partAfter'
--- names sibling parts that must finish first (a validated, privately-compiled
--- dependency edge), and 'partNeeds' carries world resources and genuine
--- threshold gates (raw conditions — @Subquery@\/@Count@\/@Cmp@ over the ledger
--- family expresses "fire when any 3 of 5 are done"). A culminating part's
--- 'partAfter' names the REQUIRED parts; optional parts hang off the side, each
--- +w when taken, never blocking.
+-- 计划是部件集合，非线性链：部件独立并行完成，且成功不必全部。无单一数字编码进展，因此完成部件
+-- 事实集是主状态——线性光标已去。拓扑以两种方式创作：'partAfter' 命名必须先完成的兄弟部件
+-- （经验证、私有编译的依赖边），'partNeeds' 携带世界资源与真正阈值门禁（原始条件——账本族上的
+-- @Subquery@\/@Count@\/@Cmp@ 表达「任 5 中 3 完成时触发」）。收官部件的 'partAfter' 命名
+-- 必需部件；可选部件挂在旁边，各取时 +w，从不阻塞。
 --
--- Completing a part writes the per-part completion ledger
--- (@practice.\<pid\>.Owner.did.\<partName\>@) — JUSTIFIED infrastructure, not
--- world-visible fiction: with parallel\/optional parts progress is a set, and a
--- uniform ledger family is the only honest countable form for one 'Want'. The
--- ledger entry doubles as the once-guard, so each part fires ONCE per instance
--- (a stated boundary — repeatable\/counted parts are parked). A part whose
--- completion should be world-visible fiction ALSO writes a real deed via
--- 'partYields' (@swept.Actor@, witnessed) — the ledger and the fiction are
--- separate facts with separate jobs.
+-- 完成部件写入按部件完成账本（@practice.\<pid\>.Owner.did.\<partName\>@）——正当基础设施，
+-- 非世界可见虚构：带并行/可选部件时进展是集合，统一账本族是一个 'Want' 唯一诚实的可计数形式。
+-- 账本条目兼作一次守卫，因此每个部件每实例触发一次（声明边界——可重复/计数部件已搁置）。完成应
+-- 为世界可见虚构的部件也经 'partYields' 写真实事迹（@swept.Actor@，被目击）——账本与虚构是
+-- 分职的分离事实。
 --
--- Because the pursuit is a named desire, projects are theory-of-mind content
--- ("Prax.Minds"): whoever comes to believe you pursue one predicts your next
--- available part. Make a part public by placing 'Prax.Witness.witnessed' in its
--- 'partYields'.
+-- 因为追求是命名欲望，项目是心智理论内容（"Prax.Minds"）：谁开始相信你追求一个，就预测你下一个
+-- 可用部件。把 'Prax.Witness.witnessed' 放进 'partYields' 使部件公开。
 module Prax.Project
   ( Part (..)
   , endeavor

@@ -1,5 +1,4 @@
--- | Kinship: base facts + derived closure (spec §2). Marriage moves membership —
--- the fold's payoff in one line.
+-- | 亲属：基事实 + 派生闭包（规格 §2）。婚姻移动成员——折叠的回报浓缩为一行。
 module Prax.Kin
   ( kinAxioms
   , wed

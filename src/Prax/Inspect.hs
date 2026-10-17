@@ -1,11 +1,8 @@
--- | Authoring inspector: "why is this action unavailable?" (Versu's runtime
--- inspector — "find out why an action's preconditions have failed").
+-- | 创作检查器：「此动作为何不可用？」（Versu 的运行时检查器——「查明动作为何前置失败」）。
 --
--- An action's conditions are a conjunctive @[Condition]@ evaluated left to right.
--- 'firstFailing' finds the first condition whose prefix empties the binding set —
--- i.e. the one that ruled the action out — reviving Praxish's @killsPerStep@.
--- 'explain' surfaces that for every practice instance an action could apply to.
--- Reuses the query evaluator; no engine changes.
+-- 动作的条件是从左到右求值的合取 @[Condition]@。'firstFailing' 找到其前缀清空绑定集的第一个
+-- 条件——即裁定动作出局的那个——复活 Praxish 的 @killsPerStep@。'explain' 为动作可应用到的每个
+-- 实践实例呈现它。复用查询求值器；无引擎变更。
 module Prax.Inspect
   ( firstFailing
   , explain

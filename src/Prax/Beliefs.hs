@@ -1,22 +1,16 @@
--- | Beliefs (Versu paper §X).
+-- | 信念（Versu 论文 §X）。
 --
--- Versu keeps a single shared world state, and stores /individual/ beliefs only
--- for the specific issues where an agent's view may diverge from the truth — for
--- "false beliefs, or factual disagreements." This module is the reusable
--- convention for those per-issue beliefs, on top of the existing engine (no new
--- machinery): a belief is just a fact under the believing agent.
+-- Versu 保持单一共享世界状态，仅对 agent 观点可能与真相分歧的特定议题存储 /个体/ 信念——用于
+-- 「错误信念，或事实分歧。」本模块是那些按议题信念的可复用约定，建于既有引擎之上（无新机制）：
+-- 信念只是相信者之下的事实。
 --
 --   @X.believes.\<issue\>!Value@
 --
--- Beliefs are single-slot per issue (via the corrected @!@): a new value for an
--- issue overrides the old. Because a belief lives under the agent, two agents can
--- hold different values for the same issue (divergence), and either can differ
--- from the corresponding shared-world fact (a false belief).
+-- 信念按议题单槽（经纠正后的 @!@）：议题的新值覆盖旧值。因为信念住在 agent 下，两个 agent 可对
+-- 同一议题持有不同值（分歧），且任一方可相对应共享世界事实不同（错误信念）。
 --
--- Note: this models explicit per-issue beliefs, not the paper's un-built
--- quantified/nested beliefs (LEDGER #28). There is also no single "believe X, or
--- else fall back to the world" query operator — that needs disjunction (LEDGER
--- #7); author it as two conditioned actions instead.
+-- 注：这建模显式按议题信念，非论文未构建的量化/嵌套信念（LEDGER #28）。也没有单一
+-- 「相信 X，否则回退到世界」查询运算符——那需要析取（LEDGER #7）；改为创作两个带条件的动作。
 module Prax.Beliefs
   ( beliefSentence
   , beliefAbout

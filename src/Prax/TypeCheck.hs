@@ -1,34 +1,22 @@
--- | A static well-formedness checker for a world (LEDGER #8, first cut).
+-- | 世界的静态合式性检查器（LEDGER #8，首刀）。
 --
--- Versu ships a type checker to "find errors early" (Evans & Short 2014, §VII-E):
--- it is strongly but /implicitly/ typed — the author declares nothing and the
--- system complains when a consistent assignment cannot be found. This module is
--- the __sound, declaration-free subset__ of that: static checks over every
--- sentence a world authors ('practiceDefs' + 'axioms' + facts), each of which
--- flags only unambiguous bugs (no false positives, so the report is trustworthy).
--- It adds no logic engine — just a pass over the existing sentence structure.
--- One 'TypeError' constructor per check, nine in all — the four below plus
--- declared-sort conflicts ('SortConflict', the opt-in sort pass), an authored
--- touch of an engine-owned fact family ('ReservedFamily', spec v45\/v53 —
--- @turn@, @contradiction@, @scenePatience@, and @currentScene@), an unseeded
--- die ('SeedlessDraw'), an undeclared obligation closure ('DeonticUnclosed',
--- spec v51), and a coercion whose motive belief names an unregistered punitive
--- desire ('CoercionUnmotivated', spec v54).
+-- Versu 发布类型检查器以「尽早发现错误」（Evans & Short 2014, §VII-E）：它强但 /隐式/ 类型化——
+-- 作者声明无物，系统在无法找到一致赋值时抱怨。本模块是其 __健全、无声明子集__：对世界创作的每个
+-- 句子（'practiceDefs' + 'axioms' + facts）的静态检查，每个只标记无歧义 bug（无假阳性，因此报告
+-- 可信）。它不加逻辑引擎——只是对既有句子结构的一遍。每个检查一个 'TypeError' 构造器，共九个——
+-- 下方四个，外加声明 sort 冲突（'SortConflict'，可选加入的 sort 遍）、触及引擎拥有事实族的创作
+-- （'ReservedFamily'，规格 v45\/v53——@turn@、@contradiction@、@scenePatience@、@currentScene@）、
+-- 未播种骰（'SeedlessDraw'）、未声明义务闭包（'DeonticUnclosed'，规格 v51）、以及动机信念命名
+-- 未注册惩罚欲望的强制（'CoercionUnmotivated'，规格 v54）。
 --
---   * __Unbound variables__ — a variable used in an outcome (or an axiom head) that
---     no precondition, role, or @Actor@ can bind is ungroundable: it silently
---     inserts a literal @\"X\"@ or a no-op. (The most common real bug.)
---   * __Exclusion-cardinality clashes__ — a relation used both single-valued (@!@)
---     and multi-valued (@.@); the paper's exclusion-information check, done
---     statically.
---   * __Dangling references__ — a @Call@ to an undefined function, or a spawn of an
---     undefined practice.
---   * __Dead conditions__ (v41 cooked surface, first new check on it) — a positive
---     conjunct that may-unifies nothing the world can ever produce, so its site
---     (an action, function case, @ForEach@ guard, or want) can never fire.
+--   * __未绑定变量__ —— outcome（或公理头）中使用的变量，无前置、角色或 @Actor@ 能绑定，则不可落地：
+--     它静默插入字面 @"X"@ 或空操作。（最常见的真实 bug。）
+--   * __排他基数冲突__ —— 关系同时单值（@!@）与多值（@.@）使用；论文的排他信息检查，静态完成。
+--   * __悬空引用__ —— 对未定义函数的 @Call@，或孵化未定义实践。
+--   * __死条件__（v41 煮熟表面，其上的首个新检查）——正合取可能与世界永不能产生之物统一，因此其位点
+--     （动作、函数 case、@ForEach@ 守卫或 want）永不能触发。
 --
--- Full ML-style /sort/ inference (agent-vs-gender) needs a declaration layer and
--- is the documented next step; this checker does not attempt it.
+-- 完整 ML 风格 /sort/ 推断（agent-vs-gender）需要声明层，是文档化的下一步；本检查器不尝试它。
 module Prax.TypeCheck
   ( TypeError(..)
   , typeCheck

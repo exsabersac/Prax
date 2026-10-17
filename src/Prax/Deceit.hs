@@ -1,27 +1,17 @@
--- | Secrets and deception: managing what is known.
+-- | 秘密与欺骗：管理已知内容。
 --
--- __Concealment is authoring, not machinery.__ 'conceal' is a want that nobody
--- believe an event; the planner's lookahead already simulates the witness
--- deposits ("Prax.Witness"), so an agent who values a secret avoids being seen
--- /by planning/ — waiting for the room to empty falls out of utility.
+-- __隐瞒是创作，非机制。__ 'conceal' 是 want 无人相信某事件；planner 前瞻已模拟目击存入
+-- （"Prax.Witness"），因此珍视秘密的 agent /经规划/ 避免被看见——等房间空落在效用之外。
 --
--- __A lie is an assertion without evidence.__ 'lie' mirrors 'Prax.Rumor.gossip'
--- with two inversions: the speaker must hold /no/ evidence (if they ever hear
--- their own lie back, the lie action vanishes and plain gossip appears), and
--- the fabricated subject binds from world-supplied conditions (whom you
--- /could/ frame) rather than from a belief. The effect is identical to
--- gossip's — the deceived hold real hearsay, indistinguishable from truth, and
--- the whole rumor/reputation stack cascades on the falsehood unmodified.
+-- __谎言是无证据断言。__ 'lie' 镜像 'Prax.Rumor.gossip'，带两个反转：说话者必须持有 /无/ 证据
+-- （若他们听说自己的谎返回，谎言动作消失，普通八卦出现），且捏造主体从世界提供的条件绑定
+-- （你 /能/ 嫁祸谁）而非从信念。效果与八卦相同——受骗者持有真传闻，与真相不可区分，且整个
+-- 谣言/声誉栈对虚假未修改地级联。
 --
--- __A lie marks the liar.__ The only residue is the liar's own memory —
--- @\<liar\>.lied.\<hearer\>.\<event\>@, rooted under their name like all
--- mental state: owned, forgettable (one 'Delete' on its root), perishing with
--- its bearer. There is deliberately no objective record: history persists
--- only through the marks it makes, and the truth can become unrecoverable.
--- Exculpation, if ever authored, flows through mark-bearers (confession,
--- testimony), never through consulting a ledger. What the mark buys now is
--- conscience: a trait that values your own @lied@ marks negatively
--- ("Prax.Persona") is a reason not to.
+-- __谎言标记撒谎者。__ 唯一残余是撒谎者自身记忆——@\<liar\>.lied.\<hearer\>.\<event\>@，
+-- 像所有心智状态一样根于其名下：自有、可遗忘（对其根一次 'Delete'）、随承载者消亡。有意无客观记录：
+-- 历史仅经其留下的标记持续，真相可变得不可恢复。洗清若曾创作，经标记承载者流动（坦白、证词），
+-- 从不经查阅账本。标记现在买到的是良心：负向评价你自己 @lied@ 标记的特质（"Prax.Persona"）是不撒谎的理由。
 module Prax.Deceit
   ( conceal
   , lie

@@ -1,54 +1,37 @@
--- | Deontic Exclusion Logic — a first-class "should"/obligation layer
--- (Evans, "Introducing Exclusion Logic as a Deontic Logic", DEON 2010; the full
--- distillation is in @docs/research/deon-notes.md@).
+-- | Deontic Exclusion Logic — 一等「应当」/义务层
+-- （Evans, "Introducing Exclusion Logic as a Deontic Logic", DEON 2010；完整精炼见
+-- @docs/research/deon-notes.md@）。
 --
--- The paper's result is that a deontic logic needs /no new semantics/ over
--- Exclusion Logic: @□P@ ("P should be the case") is mere syntactic sugar for the
--- ordinary sentence @Ob:P@. Our world DB is already an Exclusion-Logic model (our
--- @.@ is the paper's multi-valued operator; our @!@ is its exclusion), so this
--- module adds /no machinery/ — like "Prax.Core"/"Prax.Reactions" it is only a
--- library of smart constructors over the existing engine (no change to the DB,
--- the 'Prax.Query.Condition' language, or the planner).
+-- 论文结果是道义逻辑在 Exclusion Logic 之上 /无需新语义/：@□P@（「P 应当成立」）只是普通句子
+-- @Ob:P@ 的语法糖。我们的世界 DB 已是 Exclusion-Logic 模型（我们的 @.@ 是论文的多值运算符；
+-- 我们的 @!@ 是其排他），因此本模块 /不加机制/ ——像 "Prax.Core"/"Prax.Reactions" 一样，只是
+-- 既有引擎上的智能构造器库（不改 DB、'Prax.Query.Condition' 语言或 planner）。
 --
--- An obligation "@who@ should bring about @content@" is the fact
--- @obliged.\<who\>.\<content\>@ (mirroring "Prax.Reactions"'s
--- @violated.\<who\>.\<norm\>@). Obligations are multi-valued, so one agent may
--- hold many at once. Iterated @□□@ — the reparative / contrary-to-duty
--- obligation — is the nested fact @obliged.\<who\>.obliged.\<who\>.\<content\>@
--- ('obligeReparative').
+-- 义务「@who@ 应当实现 @content@」是事实 @obliged.\<who\>.\<content\>@（镜像 "Prax.Reactions"
+-- 的 @violated.\<who\>.\<norm\>@）。义务是多值的，因此一个 agent 可同时持有多个。迭代 @□□@ ——
+-- 修复性 / 违反义务的义务——是嵌套事实 @obliged.\<who\>.obliged.\<who\>.\<content\>@
+-- （'obligeReparative'）。
 --
--- __Stratification is the whole point.__ It is what avoids the Standard-Deontic-
--- Logic paradoxes (Ross's paradox, "tautologies are obligatory", Chisholm): @□@
--- applies only to a /simple term/, never to @∧@/@∨@/@→@. So 'oblige'/'isObliged'
--- take a plain sentence 'String', never a @['Condition']@ — do not relax this.
+-- __分层是全部要点。__ 正是它避开标准道义逻辑悖论（Ross 悖论、「重言式义务」、Chisholm）：
+-- @□@ 只应用于 /简单项/，从不应用于 @∧@/@∨@/@→@。因此 'oblige'/'isObliged' 取普通句子 'String'，
+-- 从不取 @['Condition']@ ——不要放松这一点。
 --
--- __What this faithfully implements__ (paper §2.3): the /representation/ (□ = a
--- fact), /conflict detection/ (property 2 — incompatible obligations collapse to
--- ⊥: 'conflicts'), /behavioural coupling/ (wants over obligations drive the
--- unchanged utility planner — 'wantFulfilled'/'avoidBreach'), and /closure under
--- implication/ (property 1 — @Ob.P@ together with a domain rule @P→Q@ derives
--- @Ob.Q@: 'obligedClose' lifts each all-@Match@ domain rule under the operator so
--- an obligation closes over the consequences of its content. Which logic a world's
--- axioms close under is an authored declaration — a deontic world writes
--- @setAxioms (obligedClose axs)@; the general derivation engine ("Prax.Derive")
--- neither knows the vocabulary nor decides the moment. "Prax.TypeCheck" nets the
--- forgot-to-declare accident: a world that can invoke an obligation but omits the
--- closure is flagged 'Prax.TypeCheck.DeonticUnclosed').
+-- __忠实实现的__（论文 §2.3）：/表示/（□ = 事实）、/冲突检测/（性质 2——不兼容义务塌缩为 ⊥：
+-- 'conflicts'）、/行为耦合/（义务上的 wants 驱动未变更的效用 planner——'wantFulfilled'/'avoidBreach'）、
+-- 以及 /在蕴含下闭合/（性质 1——@Ob.P@ 与领域规则 @P→Q@ 一起派生 @Ob.Q@：'obligedClose' 在运算符下
+-- 提升每个全-@Match@ 领域规则，使义务对其内容的后果闭合。世界公理在何种逻辑下闭合是创作声明——
+-- 道义世界写 @setAxioms (obligedClose axs)@；通用派生引擎（"Prax.Derive"）既不知词汇也不决定时刻。
+-- "Prax.TypeCheck" 网住忘记声明的事故：能调用义务却省略闭包的世界被标记
+-- 'Prax.TypeCheck.DeonticUnclosed'）。
 --
--- __What it deliberately does not implement__ (documented, not hidden): the
--- LRT/@m(X)@ decision procedure (that machinery would belong to a future static
--- type checker, LEDGER #8), and priority orderings between conflicting
--- obligations (Alchourrón–Makinson).
+-- __有意不实现的__（文档化，非隐藏）：LRT/@m(X)@ 决策程序（那机制属于未来静态类型检查器，
+-- LEDGER #8），以及冲突义务间的优先级排序（Alchourrón–Makinson）。
 --
--- __Conflict: detection vs. resolution.__ 'conflicts' is a /predictive/ test —
--- "are these two contents jointly satisfiable?". Two genuinely incompatible
--- obligations /cannot be co-held/ in the DB: asserting the second @!@-clears the
--- part of the first they disagree on, which is exactly the paper's ⊥ (you cannot
--- coherently owe both). Live drama instead comes from /distinct/ duties whose
--- fulfilments compete for an exclusive world-resource; those are held together and
--- __resolved emergently__ — the utility planner fulfils the higher-valued duty and
--- the loser falls 'inBreach'. An explicit priority ordering (Alchourrón–Makinson)
--- is a clean later extension, not built here.
+-- __冲突：检测 vs. 解决。__ 'conflicts' 是 /预测性/ 测试——「这两个内容是否联合可满足？」两个真正
+-- 不兼容的义务 /不能共持/ 于 DB：断言第二个 @!@-清除它们分歧的第一部分，正是论文的 ⊥（你不能
+-- 连贯地欠两者）。现场戏剧反而来自履行竞争排他世界资源的 /不同/ 职责；那些被共持并 __涌现解决__ ——
+-- 效用 planner 履行更高价值职责，失败者落入 'inBreach'。显式优先级排序（Alchourrón–Makinson）
+-- 是干净的后续扩展，不在此构建。
 module Prax.Deontic
   ( -- * Fact convention
     obligationPath

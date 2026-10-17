@@ -1,35 +1,17 @@
--- | Reputation: standing derived from evidence.
+-- | 派生声誉：地位从不存储，只从观察者证据派生。
 --
--- Nobody /stores/ reputation. @regards.\<observer\>.\<subject\>.\<label\>@ is
--- __derived__ ("Prax.Derive") from the observer's event-beliefs
--- ("Prax.Witness" \/ "Prax.Rumor"), so it lives only in the defeasible view:
--- it inherits information asymmetry (only those the news reached hold the
--- regard) and dissolves the moment its support does.
+-- @regards.\<observer\>.\<subject\>.\<label\>@ 是公理派生事实，直接读自观察者证据（目击或传闻），
+-- 因此免费继承信息不对称，并在其支持消解时瞬间消解。
 --
--- Standing is defeated by __atonement, not amnesia__: 'standingUnless' guards
--- the derivation with a /base-fact/ defeater (e.g. @atoned.\<culprit\>@) — one
--- insertion dissolves every derived regard at once while every belief (the
--- memory of the deed) persists. The defeater must name only base facts, never
--- derived heads, keeping the closure stratified.
+-- 地位由 __赎罪而非失忆__ 击败：'standingUnless' 用 /基事实/ 击败者守卫派生（例如
+-- @atoned.\<culprit\>@）——一次插入同时消解每个派生 regard，而每个信念（事迹记忆）持续。
+-- 击败者必须只命名基事实，从不命名派生头，保持闭包分层。
 --
--- 'notoriety' turns corroboration into a /global/ derived fact:
--- @notorious.\<subject\>.\<label\>@ holds while at least @k@ distinct observers
--- hold the regard — counting derived facts across fixpoint rounds. The
--- threshold is an authored world parameter with stated meaning ("the whole
--- village knows").
+-- 'notoriety' 把佐证变成 /全局/ 派生事实：@notorious.\<subject\>.\<label\>@ 在至少 @k@ 个不同
+-- 观察者持有 regard 时成立——跨不动点回合计数派生事实。阈值是带声明含义的创作世界参数
+-- （「全村皆知」）。
 --
--- Conventions (as in "Prax.Rumor"): the deed pattern's __first__ variable is
--- the subject (who the standing attaches to), and the variable @Regarder@ is
--- an INTERFACE variable in the v40 two-tier sense: worlds read it first-class
--- (the village's fear wants), and it is forbidden only inside spliced deed
--- patterns, where it would capture the axiom's own join (enforced, v40:
--- 'standingWith' runs the deed pattern through the shared 'Prax.Types.authoredPatClash'
--- guard before splicing it beside the axiom's own @Regarder@ join variable —
--- previously a documented-but-unchecked convention, the same latent-capture
--- shape the schedule's sighting rule ('Prax.Schedule.sightRule',
--- guarded by 'Prax.Engine.setSchedule') carries). The deed
--- pattern's namespace must not overlap any valued-belief issue path in the
--- same world (the same invariant 'Prax.Rumor.gossip' documents).
+-- 约定（如 "Prax.Rumor"）：事迹模式的 __第一个__ 变量是主体（地位所指之人）。
 module Prax.Repute
   ( standing
   , standingUnless

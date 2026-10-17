@@ -1,19 +1,13 @@
--- | Persistence: save/load a running session (Versu — "it is trivial to
--- serialize and deserialize the world state").
+-- | 持久化：存档/读档运行中的会话（Versu——「序列化与反序列化世界状态是平凡的」）。
 --
--- The whole mutable state is the fact database, the turn cursor, the standing
--- intentions, the engine schedule's runtime half — per-rule next-dues and
--- the one-shot expiry queue (spec @docs/specs/2026-07-16-v44-the-schedule.md@) —
--- and the drama die's stream position (@rngSeed@, spec v50). Practices,
--- characters, wants, and the schedule DECLARATIONS are code (the world's
--- rules), so a save captures only @db@ + @cursor@ + @intentions@ +
--- @scheduleDues@ + @expiries@ + @rngSeed@ and is reloaded onto a
--- freshly-constructed world of the same kind (which supplies the rule bodies
--- the dues re-associate to BY NAME). Facts serialize as sentences (one per
--- line, via @dbToLabeledSentences@ / @insertAll@); intentions, dues, expiries,
--- and the seed serialize on their own labelled lines (below), so the round
--- trip is exact. The @rngseed@ line is emitted ONLY for a seeded state — an
--- unseeded world's save carries no line and reloads as 'Nothing'.
+-- 全部可变状态是事实数据库、回合光标、站立意图、引擎调度的运行时半边——按规则的下次到期与
+-- 一次性到期队列（规格 @docs/specs/2026-07-16-v44-the-schedule.md@）——以及戏剧骰的流位置
+-- （@rngSeed@，规格 v50）。实践、角色、wants 与调度声明是代码（世界的规则），因此存档只捕获
+-- @db@ + @cursor@ + @intentions@ + @scheduleDues@ + @expiries@ + @rngSeed@，并重载到同一种类的
+-- 新鲜构建世界上（世界提供 dues 按名称再关联到的规则体）。事实序列化为句子（每行一句，经
+-- @dbToLabeledSentences@ / @insertAll@）；意图、dues、expiries 与种子在各自标注行上序列化
+-- （下方），因此往返精确。@rngseed@ 行仅对已播种状态发出——未播种世界的存档无该行，重载为
+-- 'Nothing'。
 module Prax.Persist
   ( serializeState
   , deserializeState

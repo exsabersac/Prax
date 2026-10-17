@@ -1,17 +1,12 @@
--- | Rumor propagation: telling what you have evidence for.
+-- | 谣言传播：告知你所持证据。
 --
--- With witnessing ("Prax.Witness") this closes the information loop: what
--- happens in front of people travels beyond them. A tell plants the same
--- event-belief in the hearer with __hearsay provenance__ —
--- @\<hearer\>.believes.\<event\>.heard.\<teller\>@, one edge per teller, beside any
--- @.seen@ edge — so evidence accumulates (corroboration is countable) and an
--- eyewitness record is never overwritten.
+-- 配合目击（"Prax.Witness"）闭合信息环：在人们面前发生的事传出他们之外。告知在听者中以
+-- __传闻出处__ 种植同一事件信念——@\<hearer\>.believes.\<event\>.heard.\<teller\>@，
+-- 每告知者一边，旁于任何 @.seen@ 边——因此证据累积（佐证可计数），目击记录永不被覆盖。
 --
--- Like observability, __what is tellable is authored__: 'gossip' declares one
--- tell-action per event pattern (a generic "share any belief" is impossible
--- anyway — a query variable binds a single path segment). Spreading is
--- want-driven: author a character who wants others to know, and the ordinary
--- planner carries the news.
+-- 像可观察性一样，__什么可告知是创作的__：'gossip' 按事件模式声明一个告知动作（通用
+-- 「分享任何信念」本不可能——查询变量绑定单路径段）。传播是 want 驱动：创作想要他人知道的角色，
+-- 普通 planner 携带消息。
 module Prax.Rumor
   ( gossip
   , heard

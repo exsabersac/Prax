@@ -1,20 +1,15 @@
--- | Authored witnessing: information asymmetry from observation.
+-- | 创作目击：来自观察的信息不对称。
 --
--- An action's public appearance is a semantic property its author states with
--- 'observable' — undeclared actions are not events (waiting is not news), and
--- the declared appearance may deliberately differ from what the action /does/
--- (poisoning the cup can look like pouring wine).
+-- 动作的公共外观是作者用 'observable' 陈述的语义属性——未声明动作不是事件（等待不是新闻），
+-- 且声明外观可有意不同于动作 /所做/（毒杯子可看起来像倒酒）。
 --
--- A witnessed event is an ordinary belief ("Prax.Beliefs"):
--- @\<witness\>.believes.\<event\>.seen@ — the @.seen@ leaf records /provenance/
--- (direct observation, /multi-valued/). The rumor layer (@Prax.Rumor@, v20) adds
--- @.heard.\<source\>@ edges beside @.seen@, one per teller, so evidence accumulates
--- instead of overwriting — an exclusive slot would let hearsay destroy an eyewitness
--- record, and mixing @!@ and @.@ on the slot is a @CardinalityClash@ the checker rejects.
+-- 被目击事件是普通信念（"Prax.Beliefs"）：@\<witness\>.believes.\<event\>.seen@ —— @.seen@ 叶
+-- 记录 /出处/（直接观察，/多值/）。谣言层（@Prax.Rumor@，v20）在 @.seen@ 旁添加 @.heard.\<source\>@
+-- 边，每告知者一边，因此证据累积而非覆盖——排他槽会让传闻摧毁目击记录，且在槽上混用 @!@ 与 @.@
+-- 是检查器拒绝的 @CardinalityClash@。
 --
--- Co-presence is __world vocabulary__ (the engine has no notion of place): each
--- world supplies a 'CoPresence' template once, relating the fixed variables
--- @Witness@ and @Actor@ in its own terms.
+-- 共现是 __世界词汇__（引擎无地点概念）：每个世界一次提供 'CoPresence' 模板，以其自身术语关联
+-- 固定变量 @Witness@ 与 @Actor@。
 module Prax.Witness
   ( CoPresence
   , witnessed

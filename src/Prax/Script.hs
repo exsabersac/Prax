@@ -1,40 +1,30 @@
--- | A Prompter-lite scene-authoring layer (Versu's Prompter, Nelson 2014).
+-- | Prompter-lite 场景创作层（Versu 的 Prompter，Nelson 2014）。
 --
--- Prompter let Versu authors write drama as a /screenplay/ — a @CAST@ plus a
--- graph of @scene@s — instead of hand-coding Praxis practices, and this is what
--- brought Blood & Laurels (126 scenes) into reach. This module reconstructs that
--- surface as an eDSL that /compiles to our existing engine/. Nothing new is added
--- to the interpreter: a 'Script' lowers to ordinary 'Practice'/'Character' values
--- (the same target the hand-written "Prax.Worlds.Intrigue" uses), so every engine
--- feature — the core model, beliefs, FOL desires, cast removal — composes in.
+-- Prompter 让 Versu 作者把戏剧写成 /剧本/ —— @CAST@ 加 @scene@ 图——而非手写 Praxis 实践，这正是
+-- 使 Blood & Laurels（126 场景）可达的原因。本模块把该表面重建为 /编译到既有引擎/ 的 eDSL。
+-- 解释器无新物添加：'Script' 降为普通 'Practice'/'Character' 值（手写 "Prax.Worlds.Intrigue"
+-- 使用的同一目标），因此每个引擎特性——核心模型、信念、FOL 欲望、阵容移除——都组合进来。
 --
--- The model (from Nelson 2014 and Emily Short's writing):
+-- 模型（出自 Nelson 2014 与 Emily Short 的写作）：
 --
---   * a __playtext = CAST + scenes__; exactly one scene is "current" at a time;
---   * a __scene__ has opening text, a @setup@ (facts asserted on entry), a body of
---     scene-local __beats__ (dialogue/affordances, available only while that scene
---     is current), and one or more __junctions__ (routes that fire when a
---     condition holds, either transitioning to another scene or ending the story);
---   * a __character__ carries its desires (FOL 'Want's) directly.
+--   * __playtext = CAST + scenes__；恰好一个场景在任一时刻为「当前」；
+--   * __scene__ 有开场文本、@setup@（进入时断言的事实）、场景本地 __beats__ 体（对话/affordance，
+--     仅在该场景当前时可用）、以及一个或多个 __junctions__（条件成立时触发的路由，或转到另一场景
+--     或结束故事）；
+--   * __character__ 直接携带其欲望（FOL 'Want's）。
 --
--- Compilation model (spec v46 — /the world's own dynamics fire silently; only
--- characters' actions surface as fiction/):
+-- 编译模型（规格 v46——/世界自身动力学安静触发；只有角色动作作为虚构呈现/）：
 --
---   * the current scene is the single-slot fact @currentScene!\<id\>@;
---   * beats become actions of a @beats@ practice, each gated on
---     @currentScene!\<id\>@ (+ @character.Actor@ so only a cast member may speak)
---     and the beat's own conditions;
---   * junctions and endings compile to ONE plain period-1 engine schedule rule,
---     @"story"@ — clauses in authored order (scenes in declaration order, a
---     scene's junctions in declaration order) — registered through the internal
---     'Prax.Engine.registerEngineRules' door (it carries Prax-namespaced
---     machinery 'Prax.Engine.setSchedule' rightly rejects). The engine fires it
---     silently at each round boundary; there is no story manager and no actor;
---   * an ending reuses the engine-wide @ending.\<key\>@ convention the loop and
---     "Prax.Stress" already detect.
+--   * 当前场景是单槽事实 @currentScene!\<id\>@；
+--   * beats 成为 @beats@ 实践的动作，各门禁于 @currentScene!\<id\>@（+ @character.Actor@ 使只有
+--     阵容成员可说话）以及 beat 自身条件；
+--   * junctions 与结局编译为一条普通周期-1 引擎调度规则，@"story"@ ——按创作序的子句（场景声明序，
+--     场景内 junction 声明序）——经内部 'Prax.Engine.registerEngineRules' 门注册（它携带
+--     'Prax.Engine.setSchedule' 正当拒绝的 Prax 命名空间机制）。引擎在每回合边界安静触发它；
+--     无故事管理器、无 actor；
+--   * 结局复用循环与 "Prax.Stress" 已检测的引擎级 @ending.\<key\>@ 约定。
 --
--- 'flowChart' renders the scene graph (Prompter's signature development view);
--- "Prax.Stress" reports which scenes random play reaches.
+-- 'flowChart' 渲染场景图（Prompter 的标志性开发视图）；"Prax.Stress" 报告随机游玩到达哪些场景。
 module Prax.Script
   ( -- * The AST
     Script(..)

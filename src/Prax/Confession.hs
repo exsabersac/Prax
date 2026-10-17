@@ -1,8 +1,6 @@
--- | Confession & absolution (spec @docs/specs/2026-07-12-v32-confession.md@).
--- Marks convert, never delete; confession self-incriminates through the
--- ordinary hearsay channel; absolution is a refusable second-party grant;
--- an absolver's patience is what they KNOW (per-regarder, permanent by
--- memory, fed by gossip and confession alike).
+-- | 坦白与赦免（规格 @docs/specs/2026-07-12-v32-confession.md@）。
+-- 标记转换，永不删除；坦白经普通传闻通道自我牵连；赦免是可拒绝的第二方授予；
+-- 赦免者的耐心是他们所知道的（按 regarder、凭记忆永久、由八卦与坦白同样喂养）。
 module Prax.Confession
   ( confess
   , absolve

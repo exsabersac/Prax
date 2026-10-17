@@ -1,27 +1,18 @@
--- | Stress-testing and coverage (Versu's stress-test tool — "runs hundreds of
--- instances of the game … with all characters controlled by the computer … we
--- are able to find bugs and anomalies quickly" — plus Prompter's scene-coverage
--- reporting).
+-- | 压力测试与覆盖（Versu 的压力测试工具——「用计算机控制全部角色跑数百局游戏实例…我们能快速
+-- 发现 bug 与异常」——外加 Prompter 的场景覆盖报告）。
 --
--- 'stressTest' plays many seeded games in which /every/ character takes a
--- uniformly-random available action each turn, and reports which endings were
--- reached, which action ids ever fired (coverage), and how many runs hit a
--- dead end (a living character with no move). Pure and deterministic given the
--- seeds — uses a tiny built-in LCG so there is no extra dependency.
+-- 'stressTest' 玩许多播种局，其中 /每个/ 角色每回合取均匀随机的可用动作，并报告到达哪些结局、
+-- 哪些动作 id 曾触发（覆盖）、以及多少跑程撞上死胡同（活角色无移动）。给定种子则纯且确定——使用
+-- 微型内建 LCG，无额外依赖。
 --
--- Coverage over a single-valued fact family (a @\<family\>!\<id\>@ or
--- @\<family\>.\<id\>@ path — e.g. a "Prax.Script" world's @currentScene@) is
--- an optional, DECLARED parameter (@Maybe String@): the caller names the
--- family it wants tracked, or @Nothing@ to skip tracking. There is no
--- default family — @currentScene@ is not privileged by this module, only by
--- the CLI's own callers, which happen to name it.
+-- 对单值事实族（@\<family\>!\<id\>@ 或 @\<family\>.\<id\>@ 路径——例如 "Prax.Script" 世界的
+-- @currentScene@）的覆盖是可选、声明的参数（@Maybe String@）：调用者命名想跟踪的族，或 @Nothing@
+-- 跳过跟踪。无默认族——@currentScene@ 不被本模块特权化，只被碰巧命名它的 CLI 调用者特权化。
 --
--- STATED LIMIT of the dead-end detector (v46): the idle-pass counter tolerates
--- exactly ONE round boundary of move-less progression — a scene that advances
--- only via the engine schedule across TWO OR MORE boundaries (e.g. a beat-less
--- scene whose sole exit is @after n@ with n ≥ 2) reports a spurious dead end.
--- No shipped world has that shape (every scene offers a character beat); drive
--- such a world with 'Prax.Loop.runNpcTicks' instead, which has no detector.
+-- 死胡同检测器的声明限制（v46）：空闲通过计数器恰好容忍一个无移动进展的回合边界——仅经引擎调度
+-- 跨两个或更多边界推进的场景（例如无 beat、唯一出口为 @after n@ 且 n ≥ 2 的场景）报告虚假死胡同。
+-- 无已发布世界有该形状（每个场景提供角色 beat）；对此类世界用无检测器的 'Prax.Loop.runNpcTicks'
+-- 驱动。
 module Prax.Stress
   ( RunResult(..)
   , StressReport(..)

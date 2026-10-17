@@ -140,367 +140,247 @@ agent 选择。
 > **翻译进度（zh-Hans）：** 开篇、世界一览、以及引导游玩第 1–6 节已译。第 7 节起至第二部分全文
 > 仍为英文原文，将在后续轮次继续翻译。
 
----
+### 7. 情感与关系 — 核心模型（v2）
 
-<!-- 以下自第 7 节起仍为英文原文（zh-Hans 翻译进行中） -->
+角色在互动中积累情感与关系内在，且该内在改变他们做什么。看场景的新行
+（`… feels … toward …`、`…'s warmth toward …`）。
 
-### 7. Feelings & relationships — the core model (v2)
+- **与某人升温。** 在你的回合，**`Greet ada`**，然后**点啤酒**并让 ada 招待你。
+  每一项都提升你对 ada 的 `warmth`（问候 +10，被招待 +8）。看场景：
+  *"you's warmth toward ada"* 从 10 升到 18。
+  → 特性：数值关系评价。代码：`Prax.Core` 的 `adjustScore`；接入 `Prax.Worlds.Bar`
+  中的 `greetP`/`tendBarP`。
 
-Characters now build up an emotional and relational interior as they interact, and that interior
-changes what they do. Watch the scene's new lines (`… feels … toward …`, `…'s warmth toward …`).
+- **关系创造出新目标。** 一旦你对 ada 的温暖越过 15，全新选项出现：**`Buy ada a drink`**——
+  一个在你升温之前字面上不存在的 affordance。这就是核心模型的要点：关系打开行为。
+  → 特性：关系门禁前置（`Prax.Core` 的 `scoreAtLeast` = `Match` + `Cmp`）。
 
-- **Warm up to someone.** On your turn, **`Greet ada`**, then **order a beer** and let ada serve
-  you. Each of those raises your `warmth` toward ada (greeting +10, being served +8). Watch the
-  scene: *"you's warmth toward ada"* climbs from 10 to 18.
-  → features: numeric relationship evaluation. code: `Prax.Core` `adjustScore`; wired into
-  `greetP`/`tendBarP` in `Prax.Worlds.Bar`.
+- **冷落某人并看他们变冷。** 当 NPC 问候你而你**不回礼**时，稍后他们 *"Take offense at you
+  ignoring your greeting."* 场景随后显示他们 *"feel annoyed toward you"*，且对你的温暖变**负**。
+  烦躁**不会**扣留他们友好的「请你喝酒」姿态——他们仍**能**请客；情感使他们不**想**要
+  （v38 不变量：情感改变决策制定，从不改变哪些决策可被做出——不情愿是定价的，非门禁的）。
+  → 特性：共存情感（`Prax.Emotion.feelToward`）、负 `adjustScore`、定价的不情愿（读
+  `feelingToward` 的负 `Want`，带新鲜目标变量——v48 删除了自 v39 起的字面别名
+  `feelingSomeone`；其携带的按目标定价指引迁到 `feelingToward` 自身 haddock），以及分数门禁
+  前置（`scoreAtLeast`）。
 
-- **A relationship creating a new goal.** Once your warmth toward ada crosses 15, a brand-new
-  option appears: **`Buy ada a drink`** — an affordance that literally did not exist until you'd
-  warmed up to her. This is the point of the core model: relationships open up behaviour.
-  → features: relationship-gated precondition (`Prax.Core` `scoreAtLeast` = `Match` + `Cmp`).
+- **情感是片刻的；记录持久。** 情感共存（对一个顾客愤怒同时对另一个满意），且各自消退——
+  起始声明寿命（`feelTowardFor`，v44），引擎在那么多回合后撤回情感——或更早被行为解除。
+  角色冷静后情感消失——但持久的 **grievance** 与降低的 **warmth 分数**仍在。这就是短暂情感
+  与耐久关系的差别。
 
-- **Snub someone and watch them cool.** When an NPC greets you and you **don't greet back**, on a
-  later turn they *"Take offense at you ignoring your greeting."* The scene then shows they
-  *"feel annoyed toward you"* and their warmth toward you goes **negative**. The annoyance does
-  NOT withhold their friendly "buy you a drink" gesture — they still CAN buy the round; the
-  feeling makes them not WANT to (v38's invariant: emotions change decision-making, never what
-  decisions can be made — the reluctance is priced, not gated).
-  → features: coexisting feelings (`Prax.Emotion.feelToward`), a negative `adjustScore`, priced
-  reluctance (a negative `Want` reading `feelingToward` with a fresh target variable — v48 deleted
-  `feelingSomeone`, a literal alias since v39; the per-target-pricing guidance it carried moved to
-  `feelingToward`'s own haddock), and score-gated preconditions (`scoreAtLeast`).
+- **情感是不对称的。** 因为温暖是有方向的，你会常规看到一方比另一方更暖（例如
+  `bex's warmth toward ada: 38` 而 `ada's warmth toward bex: 30`），且两个 NPC 都对从不回礼的
+  玩家冷淡。
+  → 特性：不对称角色评价。代码：`Prax.Core`。
 
-- **Feelings are momentary; the record persists.** Feelings coexist (angry at one patron while
-  pleased with another) and each fades on its own — the onset declares a lifetime
-  (`feelTowardFor`, v44) and the engine retracts the feeling that many rounds later — or is
-  discharged sooner by an act.
-  After a character cools off, the feeling is gone — but the lasting **grievance** and the
-  lowered **warmth score** remain. That's how a fleeting feeling differs from a durable
-  relationship.
+*（信念与对话接下来在 §9–§10；经 `setBond` 的公开「纽带」作为 §14 的 `lovers` 浪漫出现。）*
 
-- **Feelings are asymmetric.** Because warmth is directional, you'll routinely see one character
-  warmer than the other (e.g. `bex's warmth toward ada: 38` while `ada's warmth toward bex: 30`),
-  and both NPCs cold toward a player who never reciprocates.
-  → features: asymmetric role evaluation. code: `Prax.Core`.
+### 8. 反应与规范（v3）
 
-*(Beliefs and conversation come next, in §9–§10; public "bonds" via `setBond` show up as the
-`lovers` romance in §14.)*
+动作现会激起*响应*，且酒吧有一条带牙齿的社交规则。看场景的
+`… hasn't returned …'s greeting`、`… owes … a tip`、以及 `… broke a norm …` 行。
 
-### 8. Reactions & norms (v3)
+- **问候是两部分交换。** 当有人问候你时，场景注明你 *"hasn't returned"* 他们的问候，且你的菜单
+  获得片刻前不存在的响应：**`Greet … back`**（相互温暖）或 **`Rebuff …`**（双方变冷）。
+  *回*礼是反应在消费自身——不是新的问候。
+  → 特性：由动作孵化的反应；消费它的响应。代码：`Prax.Reactions` 的 `spawnReaction`/`endReaction`；
+  `Prax.Worlds.Bar` 中的 `respondGreetP`。
 
-Actions now provoke *responses*, and the bar has a social rule with teeth. Watch the scene's
-`… hasn't returned …'s greeting`, `… owes … a tip`, and `… broke a norm …` lines.
+- **忽视问候会反噬你。** 若你*不*响应，问候者可——在他们的回合——**因你忽视他们而见怪**，
+  留下 grievance 并对你变冷。（在 NPC 重放中，ada 对总是沉默的玩家正是如此。）
 
-- **A greeting is a two-part exchange.** When someone greets you, the scene notes you *"hasn't
-  returned"* their greeting, and your menu gains responses that didn't exist a moment ago:
-  **`Greet … back`** (mutual warmth) or **`Rebuff …`** (both cool). Greeting *back* is the reaction
-  consuming itself — not a fresh greeting.
-  → features: a reaction spawned by an action; a response that consumes it. code: `Prax.Reactions`
-  `spawnReaction`/`endReaction`; `respondGreetP` in `Prax.Worlds.Bar`.
+- **带后果的规范。** 点酒并被招待：场景显示你现*欠 ada 小费*。选 **`Tip ada`**（她对你升温）
+  或 **`Leave ada's tab unpaid`**。赖账则场景标记 *"you broke a norm (stiffedTheBartender)"*；
+  在她下一回合 ada **不赞成**，且对你的温暖急剧下降。
+  → 特性：`markViolation`；违规孵化 `disapproval` 反应；核心模型后果。代码：`Prax.Reactions`
+  （`markViolation`、反应机制）+ `Prax.Worlds.Bar`（`disapprovalP`、`settleUpP`——v48 把现成反应
+  移出机制模块进入其唯一消费者；`Prax.Reactions` 现只发布孵化/消费/违规机制，无内容）。
 
-- **Ignore a greeting and it comes back on you.** If you *don't* respond, the greeter can — on
-  their turn — **take offense that you ignored them**, leaving a grievance and cooling toward you.
-  (In the NPC replay, ada does exactly this to the always-silent player.)
+- **NPC 自行尊重规范。** bex 被赋予对赖账的强烈厌恶（`Want [violationOf "bex" "stiffedTheBartender"] (-40)`）
+  加上对小费的小偏好，因此被招待时它**付小费**而非走开。这不是预见的未来：「Leave ada's tab unpaid」
+  本身插入违规事实，因此 bex 自身的 −40 已在即时、无前瞻评价（`scoreActions 0`）中谴责它——现场确认：
+  小费得分 13.0 对赖账的 −30.0，前瞻深度 0，在 planner 前瞻之前。bex 从不需要*预测* ada 的不赞成；
+  它对违反规范有自己的强烈意见。那是论文「尊重规范的强烈欲望」从普通效用评价落下，无特殊规则引擎，
+  且（自 v23 起）无需预测任何他人反应。
+  → 特性：经大负自 `Want` 的规范回避，在深度 0 打分——`Prax.Planner` 的 `evaluate`/`scoreActions`。
 
-- **A norm with consequences.** Order a drink and get served: the scene shows you now *owe ada a
-  tip*. Choose **`Tip ada`** (she warms to you) or **`Leave ada's tab unpaid`**. Stiff her and the
-  scene marks *"you broke a norm (stiffedTheBartender)"*; on her next turn ada **disapproves**, and
-  her warmth toward you drops sharply.
-  → features: `markViolation`; a violation spawning the `disapproval` reaction; core-model
-  consequences. code: `Prax.Reactions` (`markViolation`, the reaction mechanism) + `Prax.Worlds.Bar`
-  (`disapprovalP`, `settleUpP` — v48 moved the ready-made reaction out of the mechanism module and
-  into its one consumer; `Prax.Reactions` now ships no content, only the spawn/consume/violation
-  machinery).
+- **「欠小费」是真正义务（v14）。** 那小费不只是反应——被招待升起一等 **道义 □**：
+  `obliged.you.(you.tipped.ada)`（场景的 *"you owes ada a tip"*）。**付小费** *解除* 义务
+  （已履行并关闭）；**赖账** *违约*，且因原义务无法再履行，升起 **修复性 □□**——违反义务的弥补义务。
+  planner 追求义务是因为小 `Want` 看重已履行职责；冲突义务在 `!` 排他下塌缩为 ⊥，留给效用解决。
+  因此你所见的同一「结账」规范，底层是 Evans 的排他逻辑道义逻辑（DEON 2010）。
+  → 特性：`oblige`/`discharge`/`breach`/`obligeReparative`（`Prax.Deontic`）；接入
+  `Prax.Worlds.Bar` 的 `settleUpP`。在 `Prax.DeonticSpec` 中断言。
 
-- **NPCs respect norms on their own.** bex is given a strong aversion to stiffing
-  (`Want [violationOf "bex" "stiffedTheBartender"] (-40)`) plus a small liking for tipping, so
-  when served it **tips** rather than walking out. This isn't a foreseen future: "Leave ada's tab
-  unpaid" inserts the violation fact itself, so bex's own −40 already condemns it in the immediate,
-  no-lookahead evaluation (`scoreActions 0`) — confirmed live: tipping scores 13.0 against
-  stiffing's −30.0 with lookahead depth 0, before the planner has looked ahead at all. bex never
-  needs to *predict* ada's disapproval; it has a strong opinion of its own about breaking norms.
-  That's the paper's "strong desire to respect norms" falling out of ordinary utility evaluation,
-  no special rule engine, and (as of v23) no prediction of anyone else's reaction required.
-  → features: norm avoidance via a large negative self-`Want`, scored at depth 0 — `Prax.Planner`
-  `evaluate`/`scoreActions`.
+### 9. 信念 — 角色所想未必为真（v4）
 
-- **"Owes a tip" is a real obligation (v14).** That tip isn't just a reaction — being served
-  raises a first-class **deontic □**: `obliged.you.(you.tipped.ada)` (the scene's *"you owes ada a
-  tip"*). **Tipping** *discharges* the duty (it's met and closed); **stiffing** *breaches* it and,
-  because the original duty can no longer be met, raises a **reparative □□** — a contrary-to-duty
-  obligation to make amends. The planner pursues obligations because a small `Want` values fulfilled
-  duties; conflicting duties collapse to ⊥ under the `!` exclusion and are left for utility to
-  resolve. So the same "settle up" you saw as a norm is, underneath, Evans' exclusion-logic deontic
-  logic (DEON 2010).
-  → features: `oblige`/`discharge`/`breach`/`obligeReparative` (`Prax.Deontic`); wired into
-  `settleUpP` in `Prax.Worlds.Bar`. Asserted in `Prax.DeonticSpec`.
+世界状态是共享的，但角色可对特定议题持有与真相分歧的私人信念——并按信念而非事实行动。
+在酒吧这表现为被相信的积怨。
 
-### 9. Beliefs — what a character thinks may not be true (v4)
+- **植入谣言。** 若你对某人*生气*（例如你回绝了 ada，因此对她烦躁），则——在她**不在房间**时——
+  你可以 **`Warn [someone] that ada resents them`**。那在听者中植入信念：场景会读
+  *"… believes ada resents them."* 主张不必为真；ada 可能实际喜欢他们。
+  → 特性：由告知形成的按 agent 信念。代码：`Prax.Beliefs` 的 `believe`；`Prax.Worlds.Bar` 中的
+  「Warn …」动作（门禁于真实烦躁 + 对象缺席，因此无人闲散八卦）。
 
-The world state is shared, but a character can hold a private belief about a specific issue that
-diverges from the truth — and act on the belief, not the fact. In the bar this shows up as
-believed grudges.
+- **错误信念覆盖真实感受。** 相信某人怨恨自己的角色**不会问候或请那人喝酒**——即使其实际
+  `warmth` 很高。对驱动行为而言信念胜过事实（Versu 单独建模信念的全部要点）。
+  → 特性：信念门禁前置（`Not …believes.resentedBy…`）。
 
-- **Plant a rumour.** If you're *cross with* someone (e.g. you rebuffed ada, so you're annoyed at
-  her), then — while she's **out of the room** — you can **`Warn [someone] that ada resents them`**.
-  That plants a belief in the hearer: the scene will read *"… believes ada resents them."* The
-  claim needn't be true; ada may actually like them.
-  → features: a per-agent belief formed by telling. code: `Prax.Beliefs` `believe`; the "Warn …"
-  action in `Prax.Worlds.Bar` (gated on real annoyance + the subject's absence, so nobody gossips
-  idly).
+- **信念是私有的且可分歧。** 谣言只改变听者的想法；他人（与真相）未触动——两个角色可对同一议题
+  持有相反信念。
 
-- **A false belief overrides real feeling.** A character who believes someone resents them **won't
-  greet or buy a drink for** that person — even if their actual `warmth` is high. Belief beats
-  fact for driving behaviour (Versu's whole point in modelling beliefs separately).
-  → features: belief-gated preconditions (`Not …believes.resentedBy…`).
+- **证据可改变想法。** 若据称敌对的人实际**问候**信者，他们可以
+  **`Realize [they] don't resent you after all`** 并丢掉错误信念。
+  → 特性：信念修正（`Prax.Beliefs` 的 `forget`）。
 
-- **Beliefs are private and can disagree.** The rumour changes only the hearer's mind; others (and
-  the truth) are untouched — two characters can hold opposite beliefs about the same issue.
+*（v4 不做的，按 `docs/LEDGER.md`：量化/嵌套信念——「X 相信人人都认为…」——Versu 自身也无法表示；
+且没有单一「相信否则取真相」查询运算符，因为那需要析取，是更后的条目。）*
 
-- **Evidence can change a mind.** If the supposedly-hostile person actually **greets** the
-  believer, they can **`Realize [they] don't resent you after all`** and drop the false belief.
-  → features: belief revision (`Prax.Beliefs` `forget`).
+### 10. 对话 — quips、话题与轮流（v5）
 
-*(What v4 doesn't do, per `docs/LEDGER.md`: quantified/nested beliefs — "X believes that everyone
-thinks …" — which Versu itself couldn't represent; and there's no single "believe-or-else-the-truth"
-query operator, since that needs disjunction, a later item.)*
+彼此喜欢的两个角色可以真正*交谈*，且他们说的改变世界。
 
-### 10. Conversation — quips, topics, and taking turns (v5)
+- **开始聊天。** 一旦你对某人足够温暖（与请客同一阈值），**`Strike up a conversation with [them]`**
+  出现。它以*闲聊*打开；场景显示 *"you and ada are chatting (smallTalk)"*。
+  → 特性：对话是带*选定说话者*与*话题*的孵化实践。代码：`Prax.Conversation` 的
+  `beginConversation`；`Prax.Worlds.Bar` 中的「Strike up …」动作。
 
-Two characters who like each other can actually *talk*, and what they say changes the world.
+- **Quips 是带后果的台词，且你们轮流。** 只有当前**说话者**可 quip，且仅在当前**话题**上；
+  说一句 quip 应用其效果并把地板交给对方。在*闲聊*上你可以闲聊（一点相互温暖）；转到*rapport*
+  你可以**恭维**他们（提升他们对你的评价）；转到*gossip*，若你对第三方生气，你可以
+  **倾诉他们怨恨你的同伴**——植入（可能为假）**信念**的八卦 quip，正是经对话交付的 v4 机制。
+  → 特性：`quip`（说话者 + 话题门禁、一次性、交班）、`changeSubject`；效果复用 `Prax.Core` 与
+  `Prax.Beliefs`。「响应只是普通动作…同一 planner。」
 
-- **Strike up a chat.** Once you're warm enough toward someone (the same threshold as buying a
-  drink), **`Strike up a conversation with [them]`** appears. It opens on *small talk*; the scene
-  shows *"you and ada are chatting (smallTalk)"*.
-  → features: a conversation is a spawned practice with a *selected speaker* and a *topic*. code:
-  `Prax.Conversation` `beginConversation`; the "Strike up …" action in `Prax.Worlds.Bar`.
+- **你保持话题直到改变它。** 离题 quips 根本不提供；要说它们你须先把对话转到那里。那在无特殊
+  规则下建模对话连贯。
 
-- **Quips are lines with consequences, and you take turns.** Only the current **speaker** may
-  quip, and only on the current **topic**; saying a quip applies its effect and hands the floor to
-  the other person. On *small talk* you can make small talk (a little mutual warmth); steer to
-  *rapport* and you can **compliment** them (raising their regard for you); steer to *gossip* and,
-  if you're cross with a third party, you can **confide that they resent your companion** — a
-  gossip quip that plants a (possibly-false) **belief**, exactly the v4 mechanic delivered through
-  dialogue.
-  → features: `quip` (speaker + topic gated, one-shot, passes the turn), `changeSubject`; effects
-  reuse `Prax.Core` and `Prax.Beliefs`. "A response is just a normal action … the same planner."
+- **它也会自行涌现。** 一旦阵容升温，空闲角色会与朋友开始聊天（每对限一次对话）——因此跑程后期
+  你会看到 NPC 交谈、恭维、甚至八卦，无需你。
 
-- **You stay on topic until you change it.** Off-topic quips simply aren't offered; to say them you
-  first steer the conversation there. That models conversational coherence without any special
-  rule.
+*（延期，按 `docs/LEDGER.md`：多方对话、更丰富的 quip 库、以及保持参与者投入聊天而非话说到一半走开。）*
 
-- **It emerges on its own, too.** Once the cast has warmed up, an idle character will strike up a
-  chat with a friend (bounded to one conversation per pair) — so late in a run you'll see NPCs
-  talking, complimenting, and even gossiping without you.
+### 11. 导演 — 塑造戏剧的故事管理器（v6）
 
-*(Deferred, per `docs/LEDGER.md`: multi-party conversations, a richer quip library, and keeping
-participants engaged in the chat rather than wandering off mid-sentence.)*
+有一个你从未看见的第四个角色：**`director`**，Versu 的 Drama Manager。它无身体
+（无地点——不能被问候，从不点酒），只有关于夜晚形状的*元层*欲望。它不操控任何人；它轻推情境
+并让自主阵容反应。
 
-### 11. The director — a story manager that shapes the drama (v6)
+- **留意这一拍。** 玩（或按 `m`）直到房间升温——两个真正彼此喜欢的角色。然后，在它的某个回合，
+  旁白显示 **`director: turn ada against bex to stir up the evening`**。导演判定夜晚过于融洽，
+  并注入 **失和**：它使一方对立另一方（烦躁情感、grievance、以及温暖急剧下降）。
+  → 特性：建模为普通 agent 的 DM——元层 `Want` 加元层动作实践——「DM 只是一种特殊类型的实践。」
+  代码：`Prax.Worlds.Bar` 中的 `dmPractice` + `director` 角色。
 
-There is a fourth character you never see: **`director`**, Versu's Drama Manager. It has no body
-(no location — it can't be greeted, and never orders a drink) and only *metalevel* desires about
-the shape of the evening. It doesn't puppet anyone; it nudges the situation and lets the autonomous
-cast react.
+- **戏剧随后自行展开。** 导演不脚本化接下来发生什么。其注入的 grievance 流经你已见的*同一*系统：
+  受害一对停止友善（信念、定价情感、温暖阈值），可见怪、彼此八卦，等等。导演点火；自主角色供火。
 
-- **Watch for the beat.** Play (or press `m`) until the room has warmed up — two characters who
-  genuinely like each other. Then, on one of its turns, the narration shows
-  **`director: turn ada against bex to stir up the evening`**. The director has decided the evening
-  is too cosy and injected a **falling-out**: it sets one against the other (an annoyed feeling, a
-  grievance, and a sharp drop in warmth).
-  → features: a DM modeled as an ordinary agent — a metalevel `Want` plus a practice of metalevel
-  actions — "the DM is just a particular type of practice." code: `dmPractice` + the `director`
-  character in `Prax.Worlds.Bar`.
+- **它知道何时停止。** 干预只触发一次（它只能以一种方式满足的元层 want），因此导演不会把房间
+  磨成无尽冲突——正是「不喜欢微观管理的高层导演」。
 
-- **The drama then plays itself out.** The director doesn't script what happens next. Its injected
-  grievance flows through the *same* systems you've already seen: the wronged pair stop being
-  friendly (beliefs, priced feelings, warmth thresholds), can take offense, gossip about each
-  other, and so on. The
-  director sets the spark; the autonomous characters supply the fire.
+*（你也可以自己占据此槽——见 §18，`prax dm`。仍延期，按 `docs/LEDGER.md`：更丰富的元层剧目与节奏，
+以及导演可监视的通用事件流。）*
 
-- **It knows when to stop.** The intervention fires once (a metalevel want it can satisfy just one
-  way), so the director doesn't grind the room into endless conflict — exactly the "high-level
-  director who does not like to micromanage."
+### 12. 角色弧 — 重塑你所想要的内在生活（v7）
 
-*(You can also take this slot yourself — see §18, `prax dm`. Still deferred, per `docs/LEDGER.md`:
-richer metalevel repertoire and pacing, and a generic event stream the director could watch.)*
+实践给角色*外部*选择；**弧**是角色的*内部*、高层状态——其夜晚的贯穿线。人人以 **`hopeful`**
+到达（看场景：*"bex feels hopeful"*）。
 
-### 12. Character arcs — an inner life that reshapes what you want (v7)
+- **看 bex 找到自己的位置。** 当 bex 在夜晚对某人升温，一旦真正喜欢（自身温暖越过阈值），
+  它采取这一拍 **`bex: settle in, feeling you belong here`**，场景转为 *"bex feels at home here"*。
+  其 wants 随阶段移位——归属感的 bex 满足于逗留。
+  → 特性：阶段门禁的 `Want`——推进弧改变角色追求什么。代码：`Prax.Arc`；`Prax.Worlds.Bar` 中的
+  `arc` 实践 + bex 的弧 wants。
 
-Practices give characters *external* choices; an **arc** is a character's *internal*, high-level
-state — the through-line of their evening. Everyone arrives **`hopeful`** (watch the scene:
-*"bex feels hopeful"*).
+- **弧对戏剧稳健。** 即使导演使 ada 对立 bex，bex 仍安顿到归属——因为 bex *自身*对 ada 的温暖
+  保持了。弧反映角色内在，不只是对他们做了什么。
 
-- **Watch bex find its place.** As bex warms to someone over the evening, once it feels genuinely
-  fond (its own warmth crosses a threshold) it takes the beat **`bex: settle in, feeling you belong
-  here`** and the scene turns to *"bex feels at home here"*. Its wants shift with the stage — a
-  belonging bex is content to linger.
-  → features: a stage-gated `Want` — advancing the arc changes what the character pursues. code:
-  `Prax.Arc`; the `arc` practice + bex's arc wants in `Prax.Worlds.Bar`.
+- **真正转变只属于玩家。** 每个希望的顾客都被*提供*下行移动，**`give up on the evening,
+  resigning yourself to solitude`**（→ lonely）。但无 NPC 曾采取它：滑入孤独只会断绝他们渴求的
+  归属，无归路，因此效用 planner 拒绝它。只有人类——不受 planner 约束——才会选择逆自己欲望改变。
+  这是 Versu 的「真正转变…只对玩家可用」，在此直接从架构落下（NPC 最大化效用；玩家从菜单挑选）。
 
-- **Arcs are robust to the drama.** Even when the director turns ada against bex, bex still settles
-  into belonging — because bex's *own* warmth toward ada held. The arc reflects the character's
-  interior, not just what's done to them.
+*（延期，按 `docs/LEDGER.md`：更丰富的多阶段弧，以及反馈进导演节奏的弧。）*
 
-- **True transformation is the player's alone.** Every hopeful patron is *offered* the downward
-  move, **`give up on the evening, resigning yourself to solitude`** (→ lonely). But no NPC ever
-  takes it: sliding into loneliness only forecloses the belonging they crave, with no way back, so
-  the utility planner refuses it. Only a human — who isn't bound by the planner — would ever choose
-  to change against their own desires. This is Versu's "true transformation … is only available to
-  the player," and here it falls straight out of the architecture (NPCs maximize utility; the
-  player picks from the menu).
+### 13. 一阶查询（v8）
 
-*(Deferred, per `docs/LEDGER.md`: richer multi-stage arcs and arcs that feed back into the
-director's pacing.)*
-
-### 13. First-order queries (v8)
-
-Everything above uses preconditions of the form "this fact holds" / "this fact doesn't." v8 added
-the missing logical connectives so a precondition or a desire can be **disjunctive** (`Or`),
-**negative-existential** (`Absent` — "there is no X such that…"), or **quantified** (`Exists`,
-plus `forAll`/`implies` built on them). You've already seen them at work without naming them: the
-bell's `Subquery`+`Count` gathers a set, and — in Part II — every scripted ending is frozen by
-`Absent [Match "ending.E"]` ("no ending exists yet"). These are the grammar the later worlds lean
-on. → code: `Prax.Query`; exercised throughout `Prax.QuerySpec`.
+以上一切使用「此事实成立」/「此事实不成立」形式的前置。v8 添加了缺失的逻辑联结词，使前置或欲望
+可为**析取**（`Or`）、**否定存在**（`Absent`——「不存在使…的 X」）、或**量化**（`Exists`，
+外加建于其上的 `forAll`/`implies`）。你已在未点名的情况下见过它们运作：铃的 `Subquery`+`Count`
+收集集合，且——在第二部分——每个脚本结局由 `Absent [Match "ending.E"]`（「尚无结局存在」）冻结。
+这些是后续世界所倚赖的语法。→ 代码：`Prax.Query`；贯穿 `Prax.QuerySpec` 行使。
 
 ---
 
-# Part II — beyond the bar (the rest of the system)
+# 第二部分 — 酒吧之外（系统其余部分）
 
-The bar is deliberately cosy. The remaining capabilities each get their own world or command, so
-you can see them in isolation. Each is a one- or two-line invocation.
+酒吧有意舒适。剩余能力各有自己的世界或命令，因此你可以孤立地看见它们。每个是一行或两行调用。
 
-### 14. A death, and branching endings — `prax intrigue` (v9)
+### 14. 死亡与分支结局 — `prax intrigue`（v9）
 
 ```sh
 cabal run prax -- intrigue
 ```
 
-> You are **Marcus, the poet.** *"The others act on their own."* On the first turn **cassia
-> confides the plot** — *"cassia: confide the plot against artus to marcus"* — and your menu opens
-> up:
-> ```
->   1) marcus: warn artus that cassia means to kill them
->   2) marcus: poison artus with your own hand
->   3) marcus: warm to cassia's charms
-> ```
+你是 **Marcus**，罗马阴谋中的共谋者之一。共谋者 **Cassia** 意图毒害你的恩主 **Lucius**。
+不作为则情节自行其道（有人死亡）；或警告他、自己动手、或与共谋者恋爱。它到达不同结局，并在同一
+引擎上演示 Blood & Laurels 风格戏剧。
 
-Four outcomes, on the *same* engine you learned in the bar:
+- **什么都不做并看死亡。** 反复按 `m`。Cassia 会向 Lucius 倾诉、下毒、等待……Lucius 死亡并离开阵容。
+  场景显示结局。→ 特性：阵容移除（死亡）；`Prax.Worlds.Intrigue`。
+- **分支。** 试着 **警告 Lucius**、**自己下毒**、或 **追求 Cassia**——不同路径到达不同结局
+  （背叛、谋杀、浪漫）。
+- **公开纽带。** 浪漫路径经 `setBond` 设定对称的 `lovers` 纽带（§7 预告的公开关系状态）。
 
-- **Do nothing** (press `m`). Cassia poisons Artus; he **dies and leaves the cast**, and the story
-  ends **`THE END — betrayal`**. A character being *removed from play* — not just marked dead — is
-  the v9 capability.
-- **Warn Artus** → **`loyalty`** (the plot is foiled).
-- **Poison Artus yourself** → **`complicity`**.
-- **Warm to Cassia's charms** forms a `lovers` **bond** — a romance thread that runs *alongside* the
-  ending logic rather than being one (you can romance her and still warn, or still let it run).
+→ 代码：`Prax.Worlds.Intrigue`；死亡经从阵容移除角色。
 
-Once any ending is reached, `Absent [Match "ending.E"]` **freezes** every further affordance, so the
-credits don't keep rolling. → code: `Prax.Worlds.Intrigue`; cast removal in `Prax.Engine`; asserted
-in `Prax.IntrigueSpec`.
-
-### 15. QA tooling — `prax stress` (v10)
-
-Before shipping a world you want to know: does every ending actually reach? Any dead ends? The
-stress-tester plays hundreds of seeded, all-AI games and reports.
+### 15. QA 工具 — `prax stress`（v10）
 
 ```sh
 cabal run prax -- stress intrigue
-```
-```
-  endings:   [("complicity",100),("loyalty",100)]
-  coverage:  4 distinct actions fired
-  dead ends: 0
-  no ending: 0 / 200 runs
+cabal run prax -- stress bar
 ```
 
-Note that `betrayal` doesn't appear: betrayal is the *do-nothing* ending, and a utility-driven AI
-always acts, so a purely autonomous cast never produces it — a real, useful signal about the world.
-Its companion is the **inspector** `explain`, which answers "why *can't* this character do X right
-now?" by walking the failed preconditions (used from tests and the REPL). → code: `Prax.Stress`,
-`Prax.Inspect`.
+压力测试器玩许多播种的全 AI 局，并报告结局、动作覆盖与死胡同。用于在手工游玩前发现卡住与
+未达结局。→ 代码：`Prax.Stress`；检查器用 `Prax.Inspect.explain` 解释动作为何不可用。
 
-Coverage tracking isn't hardcoded to scenes: `stressTest` takes an optional **coverage family**
-(`Maybe String`, e.g. `"currentScene"`), a single-valued fact family the caller wants visit-counted,
-or `Nothing` to skip tracking. The CLI's single stress entry passes `currentScene` for every
-world — that's the CLI's own choice, not a privilege `Prax.Stress` grants the name (**v48**).
-The second, non-Script application is proven in the suite: `StressSpec` runs the village
-under `"marketDay"` coverage and observes the market's phases counted.
+### 16. 存档与继续（v11）
 
-### 16. Save & resume (v11)
-
-Session state *is* the fact database, so saving is trivial. In any world, press **`s`** to write a
-save file; then continue later:
+游玩中按 **`s`** 存档。稍后：
 
 ```sh
-cabal run prax -- intrigue resume
+cabal run prax -- bar resume
 ```
 
-The world reloads exactly where you left it. → code: `Prax.Persist`.
+世界状态是全部事实——存档/读档即序列化事实库。→ 代码：`Prax.Persist`。
 
-### 17. Scene-authored drama — `prax play` and `prax flow` (v12)
-
-The same Intrigue drama, but written as a **screenplay** instead of hand-built practices — a `CAST`
-plus a graph of `scene`s, each with `beat`s (dialogue/affordances) and `junction`s (labelled routes
-that end the story or move to the next scene), all `compile`d down to ordinary practices.
-
-```sh
-cabal run prax -- flow      # print the scene graph (Mermaid)
-```
-```
-graph TD
-  _start((start)) --> confidence
-  confidence["confidence"]
-  confidence -->|toBanquet| banquet
-  banquet["banquet"]
-  banquet -->|betrayal| _end_betrayal((betrayal))
-  banquet -->|loyalty| _end_loyalty((loyalty))
-  banquet -->|complicity| _end_complicity((complicity))
-```
+### 17. 场景创作戏剧 — `prax play` 与 `prax flow`（v12）
 
 ```sh
 cabal run prax -- play
+cabal run prax -- flow
+cabal run prax -- dump-play
+cabal run prax -- play examples/play.json
 ```
 
-> Now the drama is split across **two scenes**. In *confidence*, cassia confides; the `toBanquet`
-> junction fires silently at the next round boundary (the compiled scene graph is one engine
-> schedule rule — **v46**: no bodiless narrator character takes a turn to do it, matching how every
-> other engine dynamic, like hunger, fires unannounced) and the curtain rises on *banquet*, where
-> the same warn/poison/charm choices await. It's a *faithful* recasting of `intrigue` — same cast
-> and endings — in fewer authored lines, plus the scene transition and flow-chart for free.
+同一 Intrigue 戏剧创作成 Prompter-lite 剧本（CAST + 场景图），编译为普通实践。`flow` 打印
+Mermaid 场景流图；JSON 是可编辑创作格式。→ 代码：`Prax.Script`、`Prax.Script.Json`、
+`Prax.Worlds.Play`。
 
-Play-scripts round-trip through **readable JSON** (the editable authoring format, chosen over a
-bespoke grammar):
-
-```sh
-cabal run prax -- dump-play                 # print the built-in play as JSON
-cabal run prax -- play examples/play.json   # load and play an edited script
-```
-→ code: `Prax.Script`, `Prax.Script.Json`, `Prax.Worlds.Play`.
-
-### 18. You *as* the drama manager — `prax dm` (v13)
-
-In the bar the director was an NPC. Here **you occupy the drama-manager slot** — you have no body
-and never order a drink; your menu is *authorial nudges* over an autonomous cast (ada, bex, cai).
+### 18. 你*作为*戏剧管理器 — `prax dm`（v13）
 
 ```sh
 cabal run prax -- dm
 ```
 
-> *"You are the drama manager: nudge the autonomous cast (ada, bex, cai)."*
-> ```
->   1) director: stir up a rivalry between ada and bex
->   …
->   7) director: kindle warmth between ada and bex
->   …
->  13) director: cast a pall over ada's evening
-> ```
+你占据导演槽：菜单是作者性轻推（煽动竞争、点燃温暖、投下阴影），覆盖自主阵容 ada/bex/cai。
+他们经普通社交机制演完后果。→ 代码：`barDirectorWorld`；经 `candidateActions` 的实践绑定玩家。
 
-Pick a nudge and the cast plays out the consequences through the ordinary social machinery you
-learned in Part I. A practice-bound player is offered only its practice's affordances — the
-metalevel `direct` moves — nothing else. → code: `Prax.Worlds.Bar` `barDirectorWorld`;
-`candidateActions` in `Prax.Engine`.
+---
+
+> **翻译进度（zh-Hans）：** Part I（§1–§13）与 Part II §14–§18 已译。自下方 §19 起仍为英文原文。
 
 ### 19. Emergent derivation — `prax feud` (v15)
 

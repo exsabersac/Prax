@@ -1,13 +1,10 @@
--- | Character arcs (Versu paper §X).
+-- | 角色弧（Versu 论文 §X）。
 --
--- Where a social practice offers /external, low-level/ actions, a character arc
--- represents a character's /internal, high-level/ state — the through-line of
--- their evening. It is a single fact @X.arc!\<stage\>@ (single-slot via the
--- corrected @!@, so entering a new stage overrides the old). A character's wants
--- can be gated on their arc stage, so advancing the arc reshapes what they
--- pursue; and the arc advances in response to what happens to them.
+-- 社会实践提供 /外部、低层/ 动作，而角色弧表示角色的 /内部、高层/ 状态——其夜晚的贯穿线。
+-- 它是单一事实 @X.arc!\<stage\>@（经纠正后的 @!@ 单槽，因此进入新阶段覆盖旧的）。角色的 wants
+-- 可门禁于其弧阶段，因此推进弧重塑其追求；且弧响应发生在他们身上的事而推进。
 --
--- A tiny reusable library on the existing engine, like "Prax.Beliefs".
+-- 既有引擎上的微型可复用库，类似 "Prax.Beliefs"。
 module Prax.Arc
   ( arcSentence
   , arcOf

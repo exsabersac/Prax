@@ -1,16 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 
--- | Interned path segments (spec @docs/specs/2026-07-12-v29-interning.md@).
+-- | Interned 路径段（规格 @docs/specs/2026-07-12-v29-interning.md@）。
 --
--- A process-global intern pool in the FastString style: within a run,
--- 'intern' is observably a pure function. No 'Sym' numeric identity may ever
--- be serialized, rendered into output, or compared across processes — all
--- observable text goes through 'symName'. Ids are first-encounter ordered
--- and therefore run-dependent by design.
+-- FastString 风格的进程全局 intern 池：在一次运行内，'intern' 可观察地是纯函数。任何 'Sym'
+-- 数值身份永不可序列化、渲染进输出、或跨进程比较——所有可观察文本经 'symName'。Id 按首次遭遇
+-- 排序，因此按设计依赖运行。
 --
--- Variable-ness is packed into id parity — a variable segment (uppercase
--- first letter, the engine's existing convention) interns ODD, a constant
--- EVEN — so 'symIsVar', the hottest predicate in unification, is a bit test.
+-- 变量性打包进 id 奇偶——变量段（首字母大写，引擎既有约定）intern 为奇数，常量偶数——因此
+-- 'symIsVar'（统一中最热谓词）是位测试。
 module Prax.Sym
   ( Sym
   , intern

@@ -1,16 +1,12 @@
--- | Reactions and norms (Versu paper §X and §VIII-D).
+-- | 反应与规范（Versu 论文 §X 与 §VIII-D）。
 --
--- Versu implements reactivity as ordinary social practices: performing an action
--- spawns a /reaction/ practice that offers the affected characters responses,
--- and a response is itself an action that can spawn further reactions. Norms use
--- the same machinery — a norm-violating action marks a violation and spawns a
--- reaction (here, disapproval) offering bystanders a response.
+-- Versu 把反应性实现为普通社会实践：执行动作孵化向受影响角色提供响应的 /反应/ 实践，且响应
+-- 本身是可再孵化反应的动作。规范使用同一机制——违反规范的动作标记违规并孵化反应（此处为
+-- 不赞成）向旁观者提供响应。
 --
--- Like "Prax.Core", this is a reusable standard library on top of the existing
--- engine; it adds no new machinery. A reaction instance is just a spawned
--- practice keyed on its participants; a response consumes it by deleting the
--- instance. Register your own reaction practices (e.g.
--- 'Prax.Worlds.Bar.disapprovalP') with 'Prax.Engine.definePractice'.
+-- 像 "Prax.Core" 一样，这是既有引擎上的可复用标准库；不增加新机制。反应实例只是按参与者键控的
+-- 孵化实践；响应通过删除实例消费它。用 'Prax.Engine.definePractice' 注册你自己的反应实践
+-- （例如 'Prax.Worlds.Bar.disapprovalP'）。
 module Prax.Reactions
   ( -- * Spawning and ending reactions
     reactionPath

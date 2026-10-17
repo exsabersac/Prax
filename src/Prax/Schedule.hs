@@ -1,22 +1,14 @@
--- | The v44 authoring surface for engine time (spec
--- @docs/specs/2026-07-16-v44-the-schedule.md@): declare recurring rules and
--- lifetimes; the engine owns every firing. The 'ScheduleRule' TYPE stays in
--- "Prax.Types" (one home, no re-export) — this module is the combinator
--- surface only. A world installs its schedule with
--- 'Prax.Engine.setSchedule', beside 'Prax.Engine.setDesires' /
--- 'Prax.Engine.definePractices'.
+-- | v44 引擎时间的创作表面（规格 @docs/specs/2026-07-16-v44-the-schedule.md@）：声明循环规则与
+-- 寿命；引擎拥有每次触发。'ScheduleRule' 类型留在 "Prax.Types"（唯一归宿，不重导出）——本模块
+-- 只是组合子表面。世界用 'Prax.Engine.setSchedule' 安装其调度，旁于 'Prax.Engine.setDesires' /
+-- 'Prax.Engine.definePractices'。
 --
--- __Authoring periods for real games__: a round (everyone acts once) is a few
--- MINUTES of fiction — roughly 12 rounds an hour, ~150 to a waking day — and
--- games run hundreds to thousands of rounds, so author periods at fiction
--- scale: hunger ~72 rounds (two meals a day), a drink wearing off ~12 (an
--- hour), a daily market ~150, a feeling wearing off ~24-48 (hours). The
--- SHIPPED worlds compress these (hunger 3, metabolism 2, market 6, feelings
--- 4) so the test suite's short drives can reach the pulses — a deliberate,
--- NON-STANDARD truncation for testing, not a model for real authoring. Tests
--- wanting a distant pulse should clock-jump (drive 'Prax.Engine.roundBoundary'
--- or 'Prax.Engine.performOutcome' the clock directly) rather than inherit
--- compressed periods.
+-- __真实游戏的创作周期__：一回合（人人行动一次）是几分钟虚构——大约每小时 12 回合，醒着的一天
+-- ~150——且游戏跑数百到数千回合，因此按虚构尺度创作周期：饥饿 ~72 回合（一天两顿）、酒劲消退 ~12
+-- （一小时）、每日市场 ~150、情感消退 ~24-48（数小时）。已发布世界压缩这些（饥饿 3、代谢 2、市场 6、
+-- 情感 4）以便测试套件的短驱动能到达脉冲——有意的、非标准的测试截断，非真实创作的模型。想要遥远
+-- 脉冲的测试应时钟跳（驱动 'Prax.Engine.roundBoundary' 或直接 'Prax.Engine.performOutcome' 时钟）
+-- 而非继承压缩周期。
 module Prax.Schedule
   ( lasts
   , gathering
