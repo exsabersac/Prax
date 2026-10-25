@@ -322,4 +322,8 @@ tests = testGroup "Prax.Kin"
   , testCase "everInLaw / neverInLaw are Exists/Absent over inLaw.<who>.*" $ do
       everInLaw "pat" @?= Exists [ Match "inLaw.pat.Other" ]
       neverInLaw "pat" @?= Absent [ Match "inLaw.pat.Other" ]
+
+  , testCase "everSibling / neverSibling are Exists/Absent of sibling leaves" $ do
+      everSibling "ada" @?= Exists [ Match "sibling.ada.Other" ]
+      neverSibling "ada" @?= Absent [ Match "sibling.ada.Other" ]
   ]

@@ -266,4 +266,23 @@ tests = testGroup "Prax.Host"
       notoriousOf st "ana" @?= ["notorious.ana.thief"]
       notoriousOf st "ben" @?= ["notorious.ben.liar"]
       notoriousOf st "void" @?= []
+
+  , testCase "esteemedOf / scornedOf / beliefsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "esteemed.ana.ben.hero"
+                , Insert "esteemed.ana.cass.sage"
+                , Insert "scorned.ana.dave.thief"
+                , Insert "scorned.ben.dave.thief"
+                , Insert "ana.believes.at.ben.yard"
+                , Insert "ana.believes.stole.loaf.seen"
+                , Insert "ben.believes.flag.x"
+                , Insert "flag.x" ]
+      sort (esteemedOf st "ana") @?= ["esteemed.ana.ben.hero", "esteemed.ana.cass.sage"]
+      esteemedOf st "void" @?= []
+      scornedOf st "ana" @?= ["scorned.ana.dave.thief"]
+      scornedOf st "ben" @?= ["scorned.ben.dave.thief"]
+      sort (beliefsOf st "ana") @?=
+        ["ana.believes.at.ben.yard", "ana.believes.stole.loaf.seen"]
+      beliefsOf st "ben" @?= ["ben.believes.flag.x"]
+      beliefsOf st "void" @?= []
   ]

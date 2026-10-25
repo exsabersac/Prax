@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -216,6 +216,24 @@ runNotorious (who : ws) =
   in mapM_ putStrLn (notoriousOf st who)
 runNotorious _ = putStrLn "usage: prax notorious <who> <world>"
 
+runEsteemed :: [String] -> IO ()
+runEsteemed (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (esteemedOf st who)
+runEsteemed _ = putStrLn "usage: prax esteemed <who> <world>"
+
+runScorned :: [String] -> IO ()
+runScorned (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (scornedOf st who)
+runScorned _ = putStrLn "usage: prax scorned <who> <world>"
+
+runBeliefs :: [String] -> IO ()
+runBeliefs (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (beliefsOf st who)
+runBeliefs _ = putStrLn "usage: prax beliefs <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -297,6 +315,9 @@ usageText = unlines
   , "  prax bonds <who> <world>               list bond leaves for who"
   , "  prax kin <who> <world>                 list kin leaves involving who"
   , "  prax notorious <who> <world>           list notoriety leaves for who"
+  , "  prax esteemed <who> <world>            list esteemed leaves for who"
+  , "  prax scorned <who> <world>             list scorned leaves for who"
+  , "  prax beliefs <who> <world>             list belief leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -336,6 +357,9 @@ main = do
     ("bonds" : ws)    -> runBonds ws
     ("kin" : ws)      -> runKin ws
     ("notorious" : ws) -> runNotorious ws
+    ("esteemed" : ws) -> runEsteemed ws
+    ("scorned" : ws)  -> runScorned ws
+    ("beliefs" : ws)  -> runBeliefs ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

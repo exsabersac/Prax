@@ -13,6 +13,7 @@ module Prax.Sight
   ( sightedWithin
   , lastKnownAt
   , unknownWhere
+  , lacksKnownWhere
   , knownWhere
   ) where
 
@@ -36,6 +37,10 @@ lastKnownAt seer seen place =
 unknownWhere :: String -> String -> Condition
 unknownWhere seer seen =
   Absent [ Match (seer ++ ".believes.at." ++ seen ++ "!Place") ]
+
+-- | 条件：@seer@ 对 @seen@ 无最后已知位置（@unknownWhere@ 同体；对齐 lacks* 命名）。
+lacksKnownWhere :: String -> String -> Condition
+lacksKnownWhere = unknownWhere
 
 -- | 条件：@seer@ 对 @seen@ 持有某一最后已知位置（子树存在）。
 knownWhere :: String -> String -> Condition

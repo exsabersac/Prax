@@ -279,6 +279,9 @@ tests = testGroup "Prax.Emotion"
 
   , testCase "hasMood matches mood subtree" $
       hasMood "ana" @?= Match "mood.ana"
+  , testCase "everMood / neverMood are Exists/Absent of mood leaf" $ do
+      everMood "ana" @?= Exists [ Match "mood.ana!Emotion" ]
+      neverMood "ana" @?= Absent [ Match "mood.ana!Emotion" ]
 
   , testCase "lacksMood is Not of mood subtree" $
       lacksMood "ana" @?= Not "mood.ana"

@@ -10,6 +10,7 @@
 -- v203：'breachesOf' 枚举闭合视图中某人的违规叶。
 -- v208：'feelingsOf'/'liesOf'/'chattedWithOf' 枚举情感/谎言/聊天叶。
 -- v211：'traitsOf'/'moodsOf'/'bondsOf'/'kinOf'/'notoriousOf' 枚举性格/心境/纽带/亲属/恶名叶。
+-- v217：'esteemedOf'/'scornedOf'/'beliefsOf' 枚举赞誉/蔑视/信念叶。
 module Prax.Host
   ( step
   , stepExact
@@ -49,6 +50,9 @@ module Prax.Host
   , bondsOf
   , kinOf
   , notoriousOf
+  , esteemedOf
+  , scornedOf
+  , beliefsOf
   , checkpoint
   , restore
   ) where
@@ -351,6 +355,21 @@ kinOf st who = sort
 notoriousOf :: PraxState -> String -> [String]
 notoriousOf st who =
   sort [ s | s <- queryView st, ("notorious." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 发出的赞誉叶（@esteemed.<who>.*@）。
+esteemedOf :: PraxState -> String -> [String]
+esteemedOf st who =
+  sort [ s | s <- queryView st, ("esteemed." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 发出的蔑视叶（@scorned.<who>.*@）。
+scornedOf :: PraxState -> String -> [String]
+scornedOf st who =
+  sort [ s | s <- queryView st, ("scorned." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的信念叶（@<who>.believes.*@）。
+beliefsOf :: PraxState -> String -> [String]
+beliefsOf st who =
+  sort [ s | s <- queryView st, (who ++ ".believes.") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

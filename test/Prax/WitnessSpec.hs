@@ -76,4 +76,6 @@ tests = testGroup "Prax.Witness"
   , testCase "lacksSaw is Not of saw path" $
       lacksSaw "ada" "theft" @?= Not "ada.believes.theft.seen"
 
+  , testCase "hasSaw aliases saw" $
+      hasSaw "ada" "theft" @?= saw "ada" "theft"
   ]

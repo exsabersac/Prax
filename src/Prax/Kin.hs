@@ -31,6 +31,8 @@ module Prax.Kin
   , lacksInLawOf
   , everInLaw
   , neverInLaw
+  , everSibling
+  , neverSibling
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -199,3 +201,11 @@ everInLaw who = Exists [ Match ("inLaw." ++ who ++ ".Other") ]
 -- | 条件：@who@ 无任何姻亲叶（@everInLaw@ 的 Absent 对偶）。
 neverInLaw :: String -> Condition
 neverInLaw who = Absent [ Match ("inLaw." ++ who ++ ".Other") ]
+
+-- | 条件：@who@ 有任一兄弟姐妹叶。
+everSibling :: String -> Condition
+everSibling who = Exists [ Match ("sibling." ++ who ++ ".Other") ]
+
+-- | 条件：@who@ 无任何兄弟姐妹叶（@everSibling@ 的 Absent 对偶）。
+neverSibling :: String -> Condition
+neverSibling who = Absent [ Match ("sibling." ++ who ++ ".Other") ]

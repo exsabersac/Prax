@@ -63,4 +63,6 @@ tests = testGroup "Prax.Beliefs"
       everBelieves "bex" @?= Exists [ Match "bex.believes.Issue" ]
       neverBelieves "bex" @?= Absent [ Match "bex.believes.Issue" ]
 
+  , testCase "lacksBelief aliases neverBelieves" $
+      lacksBelief "bex" @?= neverBelieves "bex"
   ]

@@ -33,6 +33,8 @@ module Prax.Emotion
   , setMood, clearMood, inMood
   , moodFromFeeling
   , hasMood
+  , everMood
+  , neverMood
   , lacksMood
   ) where
 
@@ -253,3 +255,11 @@ hasMood who = Match ("mood." ++ who)
 -- | 条件：@who@ 当前无任一基线心境（@hasMood@ 的对偶）。
 lacksMood :: String -> Condition
 lacksMood who = Not ("mood." ++ who)
+
+-- | 条件：@who@ 持有任一基线心境叶（Exists of @mood.<who>!<Emotion>@）。
+everMood :: String -> Condition
+everMood who = Exists [ Match ("mood." ++ who ++ "!Emotion") ]
+
+-- | 条件：@who@ 无任何基线心境（@everMood@ 的 Absent 对偶）。
+neverMood :: String -> Condition
+neverMood who = Absent [ Match ("mood." ++ who ++ "!Emotion") ]

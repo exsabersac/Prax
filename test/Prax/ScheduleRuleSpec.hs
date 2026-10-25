@@ -15,6 +15,7 @@ import           Prax.Engine (performOutcome, performAction, setSchedule, regist
 import           Prax.TypeCheck (TypeError (..), typeCheck)
 import           Prax.Schedule (gathering, festival, duringFestival, outsideFestival, pulse)
 import           Prax.Deontic (oblige, discharge, isObliged, breach)
+import           Prax.Emotion (setMood, inMood, clearMood)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -404,6 +405,50 @@ tests = testGroup "Prax.ScheduleRule"
         let stFeast = doAct "feast" stAfter
         assertBool "feasted" (exists "feasted.ada" (db stFeast))
         assertBool "feast once" (not (hasAct "feast" stFeast))
+
+    , testCase "harvest revel arc: revel during → sober mood after" $ do
+        -- 节庆门禁 + 心境：节中狂欢种 festive 心境，节后醒酒清除；不改 Village。
+        let revel = practice
+              { practiceId = "harvestRevel"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: revel at the fair"
+                      [ duringFestival "harvest"
+                      , Not "mood.Actor!festive" ]
+                      [ setMood "Actor" "festive"
+                      , Insert "reveled.Actor" ]
+                  , action "[Actor]: sober up after harvest"
+                      [ outsideFestival "harvest"
+                      , inMood "Actor" "festive" ]
+                      [ clearMood "Actor"
+                      , Insert "sobered.Actor" ]
+                  ]
+              }
+            base = definePractices [revel]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestRevel" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: revel no" (not (hasAct "revel" st0))
+        assertBool "before: sober no" (not (hasAct "sober" st0))
+        let stOpen = iterate roundBoundary st0 !! 3
+        assertBool "open: revel yes" (hasAct "revel" stOpen)
+        let stRev = doAct "revel" stOpen
+        assertBool "festive mood" (exists "mood.ada!festive" (db stRev))
+        assertBool "reveled" (exists "reveled.ada" (db stRev))
+        assertBool "open: revel once" (not (hasAct "revel" stRev))
+        let stAfter = roundBoundary stRev
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: sober yes" (hasAct "sober" stAfter)
+        let stSob = doAct "sober" stAfter
+        assertBool "mood cleared" (not (exists "mood.ada!festive" (db stSob)))
+        assertBool "sobered" (exists "sobered.ada" (db stSob))
+        assertBool "sober once" (not (hasAct "sober" stSob))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

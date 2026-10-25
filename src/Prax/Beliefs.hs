@@ -22,6 +22,7 @@ module Prax.Beliefs
   , disbelievesThat
   , everBelieves
   , neverBelieves
+  , lacksBelief
   ) where
 
 import           Prax.Query (Condition (..))
@@ -66,3 +67,7 @@ everBelieves who = Exists [ Match (who ++ ".believes.Issue") ]
 -- | 条件：@who@ 无任何信念叶（@everBelieves@ 的 Absent 对偶）。
 neverBelieves :: String -> Condition
 neverBelieves who = Absent [ Match (who ++ ".believes.Issue") ]
+
+-- | 条件：@who@ 无任何信念叶（@neverBelieves@ 同体；对齐 lacks* 命名）。
+lacksBelief :: String -> Condition
+lacksBelief = neverBelieves

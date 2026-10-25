@@ -19,6 +19,7 @@ module Prax.Witness
   , neverSaw
   , everSaw
   , lacksSaw
+  , hasSaw
   ) where
 
 import qualified Data.Map.Strict as Map
@@ -49,6 +50,10 @@ observable copresence event act =
 -- | 条件：@who@ 直接目击了 @event@。
 saw :: String -> String -> Condition
 saw who event = Match (beliefAbout who event ++ ".seen")
+
+-- | 条件：@who@ 直接目击了 @event@（@saw@ 同体；对齐 has* 命名）。
+hasSaw :: String -> String -> Condition
+hasSaw = saw
 
 -- | 重定向同场模板：把 @Witness@ 换成不同变量名。
 asRole :: String -> CoPresence -> [Condition]
