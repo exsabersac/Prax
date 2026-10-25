@@ -47,4 +47,7 @@ tests = testGroup "Prax.Arc"
                   [] -> error "no adopt"
       assertBool "new" (exists "bex.arc!belonging" (db st1))
       assertBool "old gone" (not (exists "bex.arc!hopeful" (db st1)))
+  , testCase "lacksArcIs is Not of arc stage path" $
+      lacksArcIs "ada" "hopeful" @?= Not "ada.arc!hopeful"
+
   ]

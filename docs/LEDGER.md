@@ -1091,3 +1091,13 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：补齐 `neverMarried` / `neverParent` 的 Exists 对偶。
 - **测**：KinSpec everMarried / everParent。
+
+## v195 — Witness lacksSaw
+
+- **做了什么**：@saw@ 的点级 Not 对偶（与 Exists/Absent 的 everSaw/neverSaw 区分）。
+- **测**：WitnessSpec lacksSaw。
+
+## v196 — Arc lacksArcIs
+
+- **做了什么**：@arcIs@ 的 Not 对偶（特定舞台）。
+- **测**：ArcSpec lacksArcIs。

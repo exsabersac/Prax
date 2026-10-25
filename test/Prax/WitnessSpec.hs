@@ -73,4 +73,7 @@ tests = testGroup "Prax.Witness"
   , testCase "everSaw is Exists over the seen leaf" $
       everSaw "W" "waved.ann" @?= Exists [ Match "W.believes.waved.ann.seen" ]
 
+  , testCase "lacksSaw is Not of saw path" $
+      lacksSaw "ada" "theft" @?= Not "ada.believes.theft.seen"
+
   ]

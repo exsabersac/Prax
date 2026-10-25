@@ -18,6 +18,7 @@ module Prax.Witness
   , asRole
   , neverSaw
   , everSaw
+  , lacksSaw
   ) where
 
 import qualified Data.Map.Strict as Map
@@ -60,3 +61,7 @@ neverSaw who event = Absent [ Match (beliefAbout who event ++ ".seen") ]
 -- | 条件：@who@ 曾直接目击 @event@（Exists of Match `.seen`）。
 everSaw :: String -> String -> Condition
 everSaw who event = Exists [ Match (beliefAbout who event ++ ".seen") ]
+
+-- | 条件：@who@ 未见过 @event@（@saw@ 的 Not 对偶；与 Exists/Absent 的 ever/neverSaw 不同）。
+lacksSaw :: String -> String -> Condition
+lacksSaw who event = Not (beliefAbout who event ++ ".seen")
