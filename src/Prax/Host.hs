@@ -15,6 +15,7 @@
 -- v231：'demandedOf'/'festivalsOf' 催收叶与节庆叶。
 -- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
+-- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 module Prax.Host
   ( step
   , stepExact
@@ -68,6 +69,8 @@ module Prax.Host
   , shunnedOf
   , threatenedOf
   , extortedOf
+  , compliedOf
+  , defiedOf
   , checkpoint
   , restore
   ) where
@@ -481,6 +484,40 @@ extortedOf st who = sort
   , length parts >= 4
   , parts !! 1 == "extorted"
   , head parts == who || (parts !! 2) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的顺从叶（@complied.<sid>.<extorter>.<victim>@，任一侧）。
+compliedOf :: PraxState -> String -> [String]
+compliedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "complied." `isPrefixOf` s
+  , let rest = drop (length ("complied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , (parts !! 1) == who || (parts !! 2) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的违抗叶（@defied.<sid>.<victim>.<extorter>@，任一侧）。
+defiedOf :: PraxState -> String -> [String]
+defiedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "defied." `isPrefixOf` s
+  , let rest = drop (length ("defied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , (parts !! 1) == who || (parts !! 2) == who
   ]
   where
     splitDots :: String -> [String]

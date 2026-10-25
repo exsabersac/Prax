@@ -183,4 +183,7 @@ tests = testGroup "Prax.Repute"
   , testCase "hasNotorious aliases isNotorious" $
       hasNotorious "eve" "heretic" @?= isNotorious "eve" "heretic"
 
+  , testCase "hasRegardedAs aliases regardedAs" $
+      hasRegardedAs "ada" "bex" "thief" @?= regardedAs "ada" "bex" "thief"
+
   ]

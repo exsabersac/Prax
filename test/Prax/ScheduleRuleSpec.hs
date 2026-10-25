@@ -601,6 +601,54 @@ tests = testGroup "Prax.ScheduleRule"
         let stB = doAct "bury" stAfter
         assertBool "buried" (exists "buried.ada" (db stB))
         assertBool "bury once" (not (hasAct "bury" stB))
+
+    , testCase "harvest market arc: stock outside → haggle during → settle after" $ do
+        let mkt = practice
+              { practiceId = "harvestMarket"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: stock the stall"
+                      [ outsideFestival "harvest"
+                      , Not "stocked.Actor" ]
+                      [ Insert "stocked.Actor" ]
+                  , action "[Actor]: haggle at the fair"
+                      [ duringFestival "harvest"
+                      , Match "stocked.Actor"
+                      , Not "haggled.Actor" ]
+                      [ Insert "haggled.Actor" ]
+                  , action "[Actor]: settle the accounts"
+                      [ outsideFestival "harvest"
+                      , Match "haggled.Actor"
+                      , Not "settled.Actor" ]
+                      [ Insert "settled.Actor" ]
+                  ]
+              }
+            base = definePractices [mkt]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestMarket" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: stock yes" (hasAct "stock" st0)
+        assertBool "before: haggle no" (not (hasAct "haggle" st0))
+        let stS = doAct "stock" st0
+        assertBool "stocked" (exists "stocked.ada" (db stS))
+        let stOpen = iterate roundBoundary stS !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: haggle yes" (hasAct "haggle" stOpen)
+        assertBool "open: settle no" (not (hasAct "settle the accounts" stOpen))
+        let stH = doAct "haggle" stOpen
+        assertBool "haggled" (exists "haggled.ada" (db stH))
+        let stAfter = roundBoundary stH
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: settle yes" (hasAct "settle the accounts" stAfter)
+        let stSet = doAct "settle the accounts" stAfter
+        assertBool "settled" (exists "settled.ada" (db stSet))
+        assertBool "settle once" (not (hasAct "settle the accounts" stSet))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

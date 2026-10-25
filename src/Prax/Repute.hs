@@ -16,6 +16,7 @@ module Prax.Repute
   ( standing
   , standingUnless
   , regardedAs
+  , hasRegardedAs
   , notoriety
   , scornStanding
   , esteemStanding
@@ -76,6 +77,10 @@ standingWith pat extra label
 regardedAs :: String -> String -> String -> Condition
 regardedAs observer subject label =
   Match ("regards." ++ observer ++ "." ++ subject ++ "." ++ label)
+
+-- | 条件：@observer@ 将 @subject@ 视为 @label@（@regardedAs@ 同体；对齐 has* 命名）。
+hasRegardedAs :: String -> String -> String -> Condition
+hasRegardedAs = regardedAs
 
 -- | 当至少 @n@ 名观察者 regard 主体时，@notorious.\<subject\>.\<label\>@ 成立。
 notoriety :: String -> Int -> Axiom

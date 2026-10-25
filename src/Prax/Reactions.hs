@@ -16,6 +16,7 @@ module Prax.Reactions
     -- * Norm violations
   , markViolation
   , violationOf
+  , hasViolation
   , noViolation
   , lacksViolation
   , everViolated
@@ -60,6 +61,10 @@ markViolation who norm = Insert (violationPath who norm)
 -- | 匹配所记录的 @norm@ 违反的条件。
 violationOf :: String -> String -> Condition
 violationOf who norm = Match (violationPath who norm)
+
+-- | 条件：@who@ 有 @norm@ 违规记录（@violationOf@ 同体；对齐 has* 命名）。
+hasViolation :: String -> String -> Condition
+hasViolation = violationOf
 
 -- | 条件：@who@ 无 @norm@ 违规记录（@violationOf@ 对偶）。
 noViolation :: String -> String -> Condition

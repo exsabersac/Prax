@@ -474,11 +474,11 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧）*。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧）*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`；v178 `regardsToward`；v179 `factionsNamed`；v189 `debtsOf`；v197 `obligationsOf`；v203 `breachesOf`；v208 `feelingsOf`/`liesOf`/`chattedWithOf`；v211 `traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`；v217 `esteemedOf`/`scornedOf`/`beliefsOf`；v225 `arcsOf`/`agesOf`/`projectsOf`；v234–v235 `demandedOf`/`festivalsOf`；v243 `locationsOf`；v247 `holdingOf`/`carryingOf`/`shunnedOf`；v256 `threatenedOf`/`extortedOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`/`debtsOf`/`obligationsOf`/`breachesOf`/`feelingsOf`/`liesOf`/`chattedWithOf`/`traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`/`esteemedOf`/`scornedOf`/`beliefsOf`/`arcsOf`/`agesOf`/`projectsOf`/`demandedOf`/`festivalsOf`/`locationsOf`/`holdingOf`/`carryingOf`/`shunnedOf`/`threatenedOf`/`extortedOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）、`prax factions`（v180）、`prax regards`（v181）、`prax debts`（v190）、`prax obligations`（v198）、`prax breaches`（v204）、`prax feelings`/`lies`/`chatted`（v209）、`prax traits`/`moods`/`bonds`/`kin`/`notorious`（v212）、`prax esteemed`/`scorned`/`beliefs`（v218）、`prax arcs`/`ages`/`projects`（v226）、`prax demanded`/`festivals`（v234–v235）、`prax locations`（v243）、`prax holding`/`carrying`/`shunned`（v247）、`prax threatened`/`extorted`（v256）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`；v178 `regardsToward`；v179 `factionsNamed`；v189 `debtsOf`；v197 `obligationsOf`；v203 `breachesOf`；v208 `feelingsOf`/`liesOf`/`chattedWithOf`；v211 `traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`；v217 `esteemedOf`/`scornedOf`/`beliefsOf`；v225 `arcsOf`/`agesOf`/`projectsOf`；v234–v235 `demandedOf`/`festivalsOf`；v243 `locationsOf`；v247 `holdingOf`/`carryingOf`/`shunnedOf`；v256 `threatenedOf`/`extortedOf`；v260 `compliedOf`/`defiedOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`/`debtsOf`/`obligationsOf`/`breachesOf`/`feelingsOf`/`liesOf`/`chattedWithOf`/`traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`/`esteemedOf`/`scornedOf`/`beliefsOf`/`arcsOf`/`agesOf`/`projectsOf`/`demandedOf`/`festivalsOf`/`locationsOf`/`holdingOf`/`carryingOf`/`shunnedOf`/`threatenedOf`/`extortedOf`/`compliedOf`/`defiedOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）、`prax factions`（v180）、`prax regards`（v181）、`prax debts`（v190）、`prax obligations`（v198）、`prax breaches`（v204）、`prax feelings`/`lies`/`chatted`（v209）、`prax traits`/`moods`/`bonds`/`kin`/`notorious`（v212）、`prax esteemed`/`scorned`/`beliefs`（v218）、`prax arcs`/`ages`/`projects`（v226）、`prax demanded`/`festivals`（v234–v235）、`prax locations`（v243）、`prax holding`/`carrying`/`shunned`（v247）、`prax threatened`/`extorted`（v256）、`prax complied`/`defied`（v260）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -1406,4 +1406,24 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：ScheduleRuleSpec 沙盒：窗外守灵 → 窗内悼词 → 窗外下葬。
 - **测**：ScheduleRuleSpec harvest mourning arc。
+
+## v258 — Reactions hasViolation
+
+- **做了什么**：`hasViolation` = `violationOf` 同体。
+- **测**：ReactionsSpec hasViolation。
+
+## v259 — Repute hasRegardedAs
+
+- **做了什么**：`hasRegardedAs` = `regardedAs` 同体。
+- **测**：ReputeSpec hasRegardedAs。
+
+## v260 — Host compliedOf / defiedOf + CLI
+
+- **做了什么**：闭合视图枚举顺从/违抗叶；CLI `prax complied`/`defied`；help 同步。
+- **测**：HostSpec compliedOf / defiedOf。
+
+## v261 — 节庆市集叙事弧
+
+- **做了什么**：ScheduleRuleSpec 沙盒：窗外备货 → 窗内议价 → 窗外结账。
+- **测**：ScheduleRuleSpec harvest market arc。
 
