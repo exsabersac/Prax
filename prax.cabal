@@ -46,6 +46,7 @@ library
                       Prax.Rumor
                       Prax.Repute
                       Prax.Chronicle
+                      Prax.Host
                       Prax.Faction
                       Prax.Kin
                       Prax.Deceit
@@ -136,6 +137,7 @@ test-suite prax-test
                       Prax.ChronicleSpec
                       Prax.FactionSpec
                       Prax.KinSpec
+                      Prax.HostSpec
                       Prax.DeceitSpec
                       Prax.MindsSpec
                       Prax.PersonaSpec
