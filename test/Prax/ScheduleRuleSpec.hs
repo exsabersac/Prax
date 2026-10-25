@@ -11,9 +11,10 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (exists)
 import           Prax.Query (Condition (..))
 import           Prax.Types
-import           Prax.Engine (performOutcome, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions)
+import           Prax.Engine (performOutcome, performAction, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
 import           Prax.Schedule (gathering, festival, duringFestival, outsideFestival, pulse)
+import           Prax.Deontic (oblige, discharge, isObliged)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -246,6 +247,63 @@ tests = testGroup "Prax.ScheduleRule"
         assertBool "inside window: wait no" (not (canWait st3))
         assertBool "after expire: wait yes" (canWait st4)
         assertBool "after expire: dance no" (not (canDance st4))
+
+    , testCase "harvest vow arc: prepare outside → vow during → fulfill after" $ do
+        -- 可玩弧（不改 Village 金标准）：节前备祭 → 节中起誓种义务 → 节后兑现 discharge。
+        let vow = practice
+              { practiceId = "harvestVow"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: prepare the offering"
+                      [ outsideFestival "harvest"
+                      , Not "prepared.Actor" ]
+                      [ Insert "prepared.Actor" ]
+                  , action "[Actor]: vow at the altar"
+                      [ duringFestival "harvest"
+                      , Match "prepared.Actor"
+                      , Not "vowed.Actor" ]
+                      [ Insert "vowed.Actor"
+                      , oblige "Actor" "offered.harvest" ]
+                  , action "[Actor]: make the offering"
+                      [ outsideFestival "harvest"
+                      , isObliged "Actor" "offered.harvest"
+                      , Not "offered.harvest" ]
+                      [ Insert "offered.harvest"
+                      , discharge "Actor" "offered.harvest" ]
+                  ]
+              }
+            base = definePractices [vow]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestVow" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: prepare yes" (hasAct "prepare the offering" st0)
+        assertBool "before: vow no" (not (hasAct "vow at the altar" st0))
+        assertBool "before: offer no" (not (hasAct "make the offering" st0))
+        let stPrep = doAct "prepare the offering" st0
+        assertBool "prepared leaf" (exists "prepared.ada" (db stPrep))
+        let stOpen = iterate roundBoundary stPrep !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: vow yes" (hasAct "vow at the altar" stOpen)
+        assertBool "open: prepare no (already done / inside)" (not (hasAct "prepare the offering" stOpen))
+        assertBool "open: offer no (still inside)" (not (hasAct "make the offering" stOpen))
+        let stVow = doAct "vow at the altar" stOpen
+        assertBool "vowed" (exists "vowed.ada" (db stVow))
+        assertBool "obligation planted" (exists "obliged.ada.offered.harvest" (db stVow))
+        let stAfter = roundBoundary stVow
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: offer yes" (hasAct "make the offering" stAfter)
+        assertBool "after: vow no" (not (hasAct "vow at the altar" stAfter))
+        let stDone = doAct "make the offering" stAfter
+        assertBool "offered" (exists "offered.harvest" (db stDone))
+        assertBool "obligation discharged"
+          (not (exists "obliged.ada.offered.harvest" (db stDone)))
+        assertBool "offer gone once done" (not (hasAct "make the offering" stDone))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

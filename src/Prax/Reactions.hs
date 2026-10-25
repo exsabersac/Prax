@@ -17,6 +17,9 @@ module Prax.Reactions
   , markViolation
   , violationOf
   , noViolation
+  , lacksViolation
+  , everViolated
+  , neverViolated
   ) where
 
 import           Data.List (intercalate)
@@ -59,3 +62,15 @@ violationOf who norm = Match (violationPath who norm)
 -- | 条件：@who@ 无 @norm@ 违规记录（@violationOf@ 对偶）。
 noViolation :: String -> String -> Condition
 noViolation who norm = Not (violationPath who norm)
+
+-- | 条件：@who@ 无 @norm@ 违规记录（@noViolation@ 同体；对齐 lacks* 命名）。
+lacksViolation :: String -> String -> Condition
+lacksViolation = noViolation
+
+-- | 条件：@who@ 有至少一条违规叶（@violated.<who>.*@）。
+everViolated :: String -> Condition
+everViolated who = Exists [ Match ("violated." ++ who ++ ".Norm") ]
+
+-- | 条件：@who@ 无任何违规叶（@everViolated@ 的 Absent 对偶）。
+neverViolated :: String -> Condition
+neverViolated who = Absent [ Match ("violated." ++ who ++ ".Norm") ]

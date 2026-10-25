@@ -6,6 +6,8 @@
 -- v85：'queryChronicle'/'explainActor' 薄封编年史与检查器。
 -- v109：'queryMatching'/'queryViewMatching' 批量过滤；'factDelta' 事件订阅钩底物（两态差分）。
 -- v158：'regardsOf' 枚举闭合视图中某人发出的站队叶。
+-- v197：'obligationsOf' 枚举闭合视图中某人的义务叶。
+-- v203：'breachesOf' 枚举闭合视图中某人的违规叶。
 module Prax.Host
   ( step
   , stepExact
@@ -35,6 +37,8 @@ module Prax.Host
   , regardsToward
   , factionsNamed
   , debtsOf
+  , obligationsOf
+  , breachesOf
   , checkpoint
   , restore
   ) where
@@ -274,6 +278,17 @@ debtsOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的义务叶（@obliged.<who>.*@，含 whenAt 作用域）。
+-- 与 Deontic.obligationsOf（返回内容后缀、读基库）对照：此处返回完整叶、读闭合视图，对齐 debtsOf/regardsOf。
+obligationsOf :: PraxState -> String -> [String]
+obligationsOf st who =
+  sort [ s | s <- queryView st, ("obliged." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的违规叶（@violated.<who>.*@）。
+breachesOf :: PraxState -> String -> [String]
+breachesOf st who =
+  sort [ s | s <- queryView st, ("violated." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

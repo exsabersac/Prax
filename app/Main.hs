@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -146,6 +146,20 @@ runDebts (who : ws) =
   in mapM_ putStrLn (debtsOf st who)
 runDebts _ = putStrLn "usage: prax debts <who> <world>"
 
+-- | List obligation leaves for a character: @prax obligations <who> <world>@.
+runObligations :: [String] -> IO ()
+runObligations (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (obligationsOf st who)
+runObligations _ = putStrLn "usage: prax obligations <who> <world>"
+
+-- | List breach leaves for a character: @prax breaches <who> <world>@.
+runBreaches :: [String] -> IO ()
+runBreaches (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (breachesOf st who)
+runBreaches _ = putStrLn "usage: prax breaches <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -217,6 +231,8 @@ usageText = unlines
   , "  prax factions <world>              list faction names in view"
   , "  prax regards <who>|<toward t> <world>  list regards leaves"
   , "  prax debts <who> <world>               list debt leaves involving who"
+  , "  prax obligations <who> <world>         list obligation leaves for who"
+  , "  prax breaches <who> <world>            list violation leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -246,6 +262,8 @@ main = do
     ("factions" : ws)  -> runFactions ws
     ("regards" : ws)   -> runRegards ws
     ("debts" : ws)     -> runDebts ws
+    ("obligations" : ws) -> runObligations ws
+    ("breaches" : ws)  -> runBreaches ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

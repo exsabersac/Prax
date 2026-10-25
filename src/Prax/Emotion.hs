@@ -19,6 +19,8 @@ module Prax.Emotion
   , feeling, feelingToward, lacksFeeling, lacksFeelingToward
   , everFeeling
   , neverFeeling
+  , everFeelingToward
+  , neverFeelingToward
     -- * Making feelings visible to co-present others (ordinary .seen beliefs)
   , express, expressToward
     -- * Intensity (exclusive leaf under the feeling)
@@ -98,6 +100,16 @@ neverFeeling :: String -> Condition
 neverFeeling who = Absent [ Match (who ++ ".feels.Emotion") ]
 lacksFeelingToward who emotion target =
   Not (feelsPath who emotion ++ ".toward." ++ target)
+
+-- | 条件：@who@ 对某人持有任一指向性情感叶（@who.feels.Emotion.toward.Target@）。
+everFeelingToward :: String -> Condition
+everFeelingToward who =
+  Exists [ Match (who ++ ".feels.Emotion.toward.Target") ]
+
+-- | 条件：@who@ 无任何指向性情感叶（@everFeelingToward@ 的 Absent 对偶）。
+neverFeelingToward :: String -> Condition
+neverFeelingToward who =
+  Absent [ Match (who ++ ".feels.Emotion.toward.Target") ]
 
 -- | Single path-segment guard (emotion tokens must not contain @.@ / @!@).
 segOk :: String -> Bool

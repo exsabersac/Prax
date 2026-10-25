@@ -146,4 +146,11 @@ tests = testGroup "Prax.Reactions"
   , testCase "noViolation is Not of violation path" $
       noViolation "bex" "tipping" @?= Not "violated.bex.tipping"
 
+  , testCase "lacksViolation aliases noViolation" $
+      lacksViolation "bex" "tipping" @?= noViolation "bex" "tipping"
+
+  , testCase "everViolated / neverViolated are Exists/Absent over violated.<who>.*" $ do
+      everViolated "bex" @?= Exists [ Match "violated.bex.Norm" ]
+      neverViolated "bex" @?= Absent [ Match "violated.bex.Norm" ]
+
   ]

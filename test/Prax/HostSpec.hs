@@ -189,6 +189,27 @@ tests = testGroup "Prax.Host"
       debtsOf st "dave" @?= ["debt.dave.eve.secret"]
       debtsOf st "void" @?= []
 
+  , testCase "obligationsOf lists obliged.<who>.* from the closed view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "obliged.ana.settle.up"
+                , Insert "obliged.ana.whenAt.bar.greet.ben"
+                , Insert "obliged.ben.tip.carol"
+                , Insert "flag.x" ]
+      sort (obligationsOf st "ana") @?=
+        ["obliged.ana.settle.up", "obliged.ana.whenAt.bar.greet.ben"]
+      obligationsOf st "ben" @?= ["obliged.ben.tip.carol"]
+      obligationsOf st "void" @?= []
+
+  , testCase "breachesOf lists violated.<who>.* from the closed view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "violated.ana.tipping"
+                , Insert "violated.ana.queue"
+                , Insert "violated.ben.courtesy"
+                , Insert "flag.x" ]
+      sort (breachesOf st "ana") @?= ["violated.ana.queue", "violated.ana.tipping"]
+      breachesOf st "ben" @?= ["violated.ben.courtesy"]
+      breachesOf st "void" @?= []
+
   , testCase "regardsToward / factionsNamed from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "regards.dave.bob.thief"
