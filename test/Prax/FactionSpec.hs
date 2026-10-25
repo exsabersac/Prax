@@ -213,4 +213,26 @@ tests = testGroup "Prax.Faction"
       lacksAffiliate "ada" "guild" @?= Not "affiliate.ada.guild"
       lacksLeader "ada" "guild" @?= Not "leads.guild!ada"
 
+  , testCase "regardsAs / lacksRegard / everRegards / neverRegards duals" $ do
+      regardsAs "dave" "bob" "thief" @?= Match "regards.dave.bob.thief"
+      lacksRegard "dave" "bob" "thief" @?= Not "regards.dave.bob.thief"
+      everRegards "dave" @?= Exists [ Match "regards.dave.Target.Label" ]
+      neverRegards "eve" @?= Absent [ Match "regards.eve.Target.Label" ]
+
+  -- Village-shaped mill fixture: mill co-members regard the thief when they
+  -- believe the theft (still Spec-only; Village golden untouched).
+  , testCase "village-shaped mill fixture: mill co-members regard thief" $ do
+      let world = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
+                    (foldl (flip performOutcome) emptyState
+                       [ joins "bob" "guild", joins "carol" "mill", joins "dave" "mill"
+                       , joins "fran" "mill"
+                       , Insert "dave.believes.stole.bob.carol"
+                       , Insert "fran.believes.stole.bob.carol"
+                       , Insert "bob.believes.stole.bob.carol"
+                       ])
+          v = readView world
+      assertBool "dave regards bob" (exists "regards.dave.bob.thief" v)
+      assertBool "fran (mill co-member) regards bob" (exists "regards.fran.bob.thief" v)
+      assertBool "bob no self-regard" (not (exists "regards.bob.bob.thief" v))
+
   ]

@@ -147,4 +147,16 @@ tests = testGroup "Prax.Host"
       assertBool "ana" ("ana" `elem` castNames stC)
       assertBool "bob" ("bob" `elem` castNames stC)
 
+  , testCase "regardsOf lists regards.<who>.* from the closed view" $ do
+      let st = inject world
+                 [ Insert "regards.dave.bob.thief"
+                 , Insert "regards.dave.eve.liar"
+                 , Insert "regards.fran.bob.thief"
+                 , Insert "flag.x" ]
+          hits = regardsOf st "dave"
+      assertBool "dave->bob" ("regards.dave.bob.thief" `elem` hits)
+      assertBool "dave->eve" ("regards.dave.eve.liar" `elem` hits)
+      assertBool "fran excluded" ("regards.fran.bob.thief" `notElem` hits)
+      assertBool "flag excluded" ("flag.x" `notElem` hits)
+
   ]

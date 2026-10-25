@@ -13,6 +13,8 @@ module Prax.Schedule
   ( lasts
   , gathering
   , festival
+  , duringFestival
+  , outsideFestival
   , sightRule
   , pulse
   ) where
@@ -41,6 +43,22 @@ gathering name period duration openOuts
 festival :: String -> Int -> Int -> [Outcome] -> ScheduleRule
 festival name period duration openOuts =
   gathering name period duration (Insert ("festival." ++ name) : openOuts)
+
+-- | 条件：节庆 @name@ 开放窗内（匹配 @festival.<name>@ 叶）。
+duringFestival :: String -> Condition
+duringFestival name
+  | null name || any (`elem` (".!" :: String)) name =
+      error ("Prax.Schedule.duringFestival: name " ++ show name
+             ++ " must be a single path segment")
+  | otherwise = Match ("festival." ++ name)
+
+-- | 条件：节庆 @name@ 窗外（@duringFestival@ 的 Not 对偶）。
+outsideFestival :: String -> Condition
+outsideFestival name
+  | null name || any (`elem` (".!" :: String)) name =
+      error ("Prax.Schedule.outsideFestival: name " ++ show name
+             ++ " must be a single path segment")
+  | otherwise = Not ("festival." ++ name)
 
 -- | 感知作为周期-1 循环规则：创作的目击模板，用读作事实的时钟打戳（'Prax.Types.turnPath'——
 -- tick 机制现属引擎）。@Now@\/@Seer@\/@Seen@\/@Spot@ 是其契约变量——模板绑定它们，结果直接读回——

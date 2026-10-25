@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames)
+import           Prax.Host (practiceNames, castNames, livingCast)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -85,6 +85,15 @@ runPractices :: [String] -> IO ()
 runPractices ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (practiceNames st)
+
+-- | List cast names for a named built-in world (@living@ = survivors only).
+runCast :: [String] -> IO ()
+runCast ("living" : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (livingCast st)
+runCast ws =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (castNames st)
 
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
@@ -149,6 +158,7 @@ usageText = unlines
   , "  prax worlds                        list built-in storyworlds"
   , "  prax version                       persist format / build label"
   , "  prax practices <world>             list top-level practice ids"
+  , "  prax cast [living] <world>         list cast (or living only)"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -170,6 +180,7 @@ main = do
     ("worlds" : _)    -> runWorlds
     ("version" : _)   -> putStrLn formatVersion
     ("practices" : ws) -> runPractices ws
+    ("cast" : ws)      -> runCast ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

@@ -20,6 +20,10 @@ module Prax.Faction
   , transferLeadership
   , isMember
   , lacksMember
+  , regardsAs
+  , lacksRegard
+  , everRegards
+  , neverRegards
   ) where
 
 import           Prax.Query (Condition (..))
@@ -142,3 +146,36 @@ isMember who faction = Match (memberPath who faction)
 -- | 条件：@who@ 非 @faction@ 主成员（@isMember@ 对偶）。
 lacksMember :: String -> String -> Condition
 lacksMember who faction = Not (memberPath who faction)
+
+
+-- | 条件：@who@ 视 @target@ 为 @label@（@regards.<who>.<target>.<label>@）。
+regardsAs :: String -> String -> String -> Condition
+regardsAs who target label
+  | bad who || bad target || bad label =
+      error ("regardsAs: names must be nonempty single path segments: "
+             ++ show (who, target, label))
+  | otherwise = Match ("regards." ++ who ++ "." ++ target ++ "." ++ label)
+  where bad n = null n || any (`elem` (".!" :: String)) n
+
+-- | 条件：无该站队叶（@regardsAs@ 的 Not 对偶）。
+lacksRegard :: String -> String -> String -> Condition
+lacksRegard who target label
+  | bad who || bad target || bad label =
+      error ("lacksRegard: names must be nonempty single path segments: "
+             ++ show (who, target, label))
+  | otherwise = Not ("regards." ++ who ++ "." ++ target ++ "." ++ label)
+  where bad n = null n || any (`elem` (".!" :: String)) n
+
+-- | 条件：@who@ 对任何人持有任意站队标签。
+everRegards :: String -> Condition
+everRegards who
+  | null who || any (`elem` (".!" :: String)) who =
+      error ("everRegards: who " ++ show who ++ " must be a single path segment")
+  | otherwise = Exists [ Match ("regards." ++ who ++ ".Target.Label") ]
+
+-- | 条件：@who@ 对任何人无站队标签。
+neverRegards :: String -> Condition
+neverRegards who
+  | null who || any (`elem` (".!" :: String)) who =
+      error ("neverRegards: who " ++ show who ++ " must be a single path segment")
+  | otherwise = Absent [ Match ("regards." ++ who ++ ".Target.Label") ]

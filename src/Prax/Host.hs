@@ -5,6 +5,7 @@
 -- v97：'checkpoint'/'restore' 薄封 Persist 存档。
 -- v85：'queryChronicle'/'explainActor' 薄封编年史与检查器。
 -- v109：'queryMatching'/'queryViewMatching' 批量过滤；'factDelta' 事件订阅钩底物（两态差分）。
+-- v158：'regardsOf' 枚举闭合视图中某人发出的站队叶。
 module Prax.Host
   ( step
   , stepExact
@@ -27,11 +28,12 @@ module Prax.Host
   , deadCast
   , livingMatching
   , practiceNames
+  , regardsOf
   , checkpoint
   , restore
   ) where
 
-import           Data.List (isInfixOf, (\\))
+import           Data.List (isInfixOf, isPrefixOf, (\\))
 import qualified Data.Map.Strict as Map
 
 import           Prax.Db (dbToSentences, exists)
@@ -150,6 +152,11 @@ deadCast st =
 -- | 过滤存活阵容：名含 @needle@ 的角色。
 livingMatching :: PraxState -> String -> [String]
 livingMatching st needle = filter (needle `isInfixOf`) (livingCast st)
+
+-- | 闭合视图中 @who@ 发出的站队叶（@regards.<who>.*@）。
+regardsOf :: PraxState -> String -> [String]
+regardsOf st who =
+  filter (("regards." ++ who ++ ".") `isPrefixOf`) (queryView st)
 
 -- | 把状态写入 @path@（JSON 格式，见 'Prax.Persist'）。
 checkpoint :: FilePath -> PraxState -> IO ()

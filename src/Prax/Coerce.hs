@@ -32,6 +32,14 @@ module Prax.Coerce
   , coerce
   , namespaceKernel
   , punitivePrefix
+    -- * Condition smart constructors (fact-path duals)
+  , isThreatened, lacksThreatened
+  , isDefied, lacksDefied
+  , hasComplied, lacksComplied
+  , hasExtorted, lacksExtorted
+  , everThreatened, neverThreatened
+  , everDefied, neverDefied
+  , everComplied, neverComplied
   ) where
 
 import           Data.List (nub)
@@ -216,3 +224,111 @@ renameCond f = go
       Absent cs        -> Absent (map go cs)
       Exists cs        -> Exists (map go cs)
     renameSentence s = tokensToSentence [ (intern (f name), op) | (name, op) <- tokens s ]
+
+
+-- ---------------------------------------------------------------------------
+-- Condition smart constructors over the coerce fact conventions
+-- (threatened.<id>.<extorter>.<victim>, defied.<id>.<victim>.<extorter>,
+--  complied.<id>.<extorter>.<victim>, <extorter>.extorted.<victim>.<id>).
+-- ---------------------------------------------------------------------------
+
+segOk :: String -> Bool
+segOk n = not (null n) && all (`notElem` (".!" :: String)) n
+
+guardSeg :: String -> String -> String
+guardSeg who n
+  | segOk n = n
+  | otherwise = error ("Prax.Coerce." ++ who ++ ": " ++ show n
+                       ++ " must be a nonempty single path segment")
+
+-- | 条件：@extorter@ 对 @victim@ 正持有 @sid@ 威胁标记。
+isThreatened :: String -> String -> String -> Condition
+isThreatened sid extorter victim =
+  Match ("threatened." ++ guardSeg "isThreatened" sid
+         ++ "." ++ guardSeg "isThreatened" extorter
+         ++ "." ++ guardSeg "isThreatened" victim)
+
+-- | 条件：无该威胁标记（@isThreatened@ 的 Not 对偶）。
+lacksThreatened :: String -> String -> String -> Condition
+lacksThreatened sid extorter victim =
+  Not ("threatened." ++ guardSeg "lacksThreatened" sid
+       ++ "." ++ guardSeg "lacksThreatened" extorter
+       ++ "." ++ guardSeg "lacksThreatened" victim)
+
+-- | 条件：@victim@ 已违抗 @extorter@ 的 @sid@ 威胁。
+isDefied :: String -> String -> String -> Condition
+isDefied sid victim extorter =
+  Match ("defied." ++ guardSeg "isDefied" sid
+         ++ "." ++ guardSeg "isDefied" victim
+         ++ "." ++ guardSeg "isDefied" extorter)
+
+-- | 条件：无该违抗标记。
+lacksDefied :: String -> String -> String -> Condition
+lacksDefied sid victim extorter =
+  Not ("defied." ++ guardSeg "lacksDefied" sid
+       ++ "." ++ guardSeg "lacksDefied" victim
+       ++ "." ++ guardSeg "lacksDefied" extorter)
+
+-- | 条件：@victim@ 已向 @extorter@ 就 @sid@ 服从（买断）。
+hasComplied :: String -> String -> String -> Condition
+hasComplied sid extorter victim =
+  Match ("complied." ++ guardSeg "hasComplied" sid
+         ++ "." ++ guardSeg "hasComplied" extorter
+         ++ "." ++ guardSeg "hasComplied" victim)
+
+-- | 条件：无该服从标记。
+lacksComplied :: String -> String -> String -> Condition
+lacksComplied sid extorter victim =
+  Not ("complied." ++ guardSeg "lacksComplied" sid
+       ++ "." ++ guardSeg "lacksComplied" extorter
+       ++ "." ++ guardSeg "lacksComplied" victim)
+
+-- | 条件：@extorter@ 对 @victim@ 留有 @sid@ 勒索痕（threaten 永久存入）。
+hasExtorted :: String -> String -> String -> Condition
+hasExtorted extorter victim sid =
+  Match (guardSeg "hasExtorted" extorter ++ ".extorted."
+         ++ guardSeg "hasExtorted" victim ++ "."
+         ++ guardSeg "hasExtorted" sid)
+
+-- | 条件：无该勒索痕。
+lacksExtorted :: String -> String -> String -> Condition
+lacksExtorted extorter victim sid =
+  Not (guardSeg "lacksExtorted" extorter ++ ".extorted."
+       ++ guardSeg "lacksExtorted" victim ++ "."
+       ++ guardSeg "lacksExtorted" sid)
+
+-- | 条件：@sid@ 下存在任意威胁标记。
+everThreatened :: String -> Condition
+everThreatened sid =
+  Exists [ Match ("threatened." ++ guardSeg "everThreatened" sid
+                  ++ ".Extorter.Victim") ]
+
+-- | 条件：@sid@ 下从未有过威胁标记。
+neverThreatened :: String -> Condition
+neverThreatened sid =
+  Absent [ Match ("threatened." ++ guardSeg "neverThreatened" sid
+                  ++ ".Extorter.Victim") ]
+
+-- | 条件：@sid@ 下存在任意违抗标记。
+everDefied :: String -> Condition
+everDefied sid =
+  Exists [ Match ("defied." ++ guardSeg "everDefied" sid
+                  ++ ".Victim.Extorter") ]
+
+-- | 条件：@sid@ 下从未有过违抗标记。
+neverDefied :: String -> Condition
+neverDefied sid =
+  Absent [ Match ("defied." ++ guardSeg "neverDefied" sid
+                  ++ ".Victim.Extorter") ]
+
+-- | 条件：@sid@ 下存在任意服从标记。
+everComplied :: String -> Condition
+everComplied sid =
+  Exists [ Match ("complied." ++ guardSeg "everComplied" sid
+                  ++ ".Extorter.Victim") ]
+
+-- | 条件：@sid@ 下从未有过服从标记。
+neverComplied :: String -> Condition
+neverComplied sid =
+  Absent [ Match ("complied." ++ guardSeg "neverComplied" sid
+                  ++ ".Extorter.Victim") ]

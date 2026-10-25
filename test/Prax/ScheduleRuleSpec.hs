@@ -3,6 +3,7 @@ module Prax.ScheduleRuleSpec (tests) where
 
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
+import           Data.List (isInfixOf)
 import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
@@ -10,9 +11,9 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (exists)
 import           Prax.Query (Condition (..))
 import           Prax.Types
-import           Prax.Engine (performOutcome, setSchedule, registerEngineRules, roundBoundary, definePractices)
+import           Prax.Engine (performOutcome, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
-import           Prax.Schedule (gathering, festival, pulse)
+import           Prax.Schedule (gathering, festival, duringFestival, outsideFestival, pulse)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -208,6 +209,43 @@ tests = testGroup "Prax.ScheduleRule"
                 (setSchedule [ScheduleRule "story" 2 []] engineFirst)))))
         assertBool "authoring door rejected: 'story' already registered by the engine"
           (isLeft (r2 :: Either ErrorCall Int))
+    ]
+
+  , testGroup "festival gate sandbox (Match/Not festival.<name>)"
+    [ testCase "duringFestival / outsideFestival are Match/Not duals" $ do
+        duringFestival "harvest" @?= Match "festival.harvest"
+        outsideFestival "harvest" @?= Not "festival.harvest"
+
+    , testCase "rite action available only inside the festival window" $ do
+        let rite = practice
+              { practiceId = "harvestRite"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: dance the harvest"
+                      [ duringFestival "harvest" ]
+                      [ Insert "danced.Actor" ]
+                  , action "[Actor]: wait out the season"
+                      [ outsideFestival "harvest" ]
+                      [ Insert "waited.Actor" ]
+                  ]
+              }
+            base = definePractices [rite]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestRite" ])
+            canDance st = any (("dance the harvest" `isInfixOf`) . gaLabel)
+                                (possibleActions st "ada")
+            canWait  st = any (("wait out the season" `isInfixOf`) . gaLabel)
+                                (possibleActions st "ada")
+            st0 = base                          -- turn 0; due at 3 — outside
+            st3 = iterate roundBoundary base !! 3  -- festival opens
+            st4 = roundBoundary st3                -- festival expires
+        assertBool "outside before open: wait yes" (canWait st0)
+        assertBool "outside before open: dance no" (not (canDance st0))
+        assertBool "festival leaf at open" (exists "festival.harvest" (db st3))
+        assertBool "inside window: dance yes" (canDance st3)
+        assertBool "inside window: wait no" (not (canWait st3))
+        assertBool "after expire: wait yes" (canWait st4)
+        assertBool "after expire: dance no" (not (canDance st4))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

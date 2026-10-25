@@ -16,7 +16,14 @@ import           Prax.Planner (pickAction, scoreActions)
 import           Prax.Debt (owe, owes)
 import           Prax.Witness (CoPresence, asRole)
 import           Prax.Persist (serializeState, deserializeState)
-import           Prax.Coerce (Coercion (..), coerce)
+import           Prax.Coerce (Coercion (..), coerce,
+                             isThreatened, lacksThreatened,
+                             isDefied, lacksDefied,
+                             hasComplied, lacksComplied,
+                             hasExtorted, lacksExtorted,
+                             everThreatened, neverThreatened,
+                             everDefied, neverDefied,
+                             everComplied, neverComplied)
 
 -- A protection racket, the SECOND instance of the leverage skeleton (blackmail
 -- is the first): mob threatens to burn a barn-owner's barn unless they do a
@@ -506,5 +513,31 @@ tests = testGroup "Prax.Coerce"
           (not (exists "complied.racket.mob.vic" (db expired)))
         assertBool "the cycle resumes: comply is available again"
           (any (("favor" `isInfixOf`) . gaLabel) (possibleActions expired "vic"))
+    ]
+
+  , testGroup "condition duals over coerce fact paths"
+    [ testCase "isThreatened / lacksThreatened are Match/Not duals" $ do
+        isThreatened "racket" "mob" "vic" @?= Match "threatened.racket.mob.vic"
+        lacksThreatened "racket" "mob" "vic" @?= Not "threatened.racket.mob.vic"
+    , testCase "isDefied / lacksDefied duals" $ do
+        isDefied "racket" "vic" "mob" @?= Match "defied.racket.vic.mob"
+        lacksDefied "racket" "vic" "mob" @?= Not "defied.racket.vic.mob"
+    , testCase "hasComplied / lacksComplied duals" $ do
+        hasComplied "racket" "mob" "vic" @?= Match "complied.racket.mob.vic"
+        lacksComplied "racket" "mob" "vic" @?= Not "complied.racket.mob.vic"
+    , testCase "hasExtorted / lacksExtorted duals" $ do
+        hasExtorted "mob" "vic" "racket" @?= Match "mob.extorted.vic.racket"
+        lacksExtorted "mob" "vic" "racket" @?= Not "mob.extorted.vic.racket"
+    , testCase "ever*/never* are Exists/Absent over an id" $ do
+        everThreatened "racket" @?= Exists [ Match "threatened.racket.Extorter.Victim" ]
+        neverThreatened "racket" @?= Absent [ Match "threatened.racket.Extorter.Victim" ]
+        everDefied "racket" @?= Exists [ Match "defied.racket.Victim.Extorter" ]
+        neverDefied "racket" @?= Absent [ Match "defied.racket.Victim.Extorter" ]
+        everComplied "racket" @?= Exists [ Match "complied.racket.Extorter.Victim" ]
+        neverComplied "racket" @?= Absent [ Match "complied.racket.Extorter.Victim" ]
+    , testCase "after threaten, isThreatened and hasExtorted hold on the world" $ do
+        let st = doAct "mob" "threaten" racketWorld
+        assertBool "threatened leaf" (exists "threatened.racket.mob.vic" (db st))
+        assertBool "extorted mark" (exists "mob.extorted.vic.racket" (db st))
     ]
   ]

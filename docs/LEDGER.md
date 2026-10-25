@@ -468,17 +468,17 @@ Tier 2 — 长时间跨度的代理内在性：
 - **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22；v88 liePublic）*：`conceal`/`lie`/`liePublic`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
 - **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司/族长薄门禁于 v86 `absolveAsLeader` 清偿。
-- **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环）*。虚张/威胁到期/反敲诈于 v54 清偿。
+- **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环；v154–v155 Condition 对偶）*。虚张/威胁到期/反敲诈于 v54 清偿。
 - **重复 / 连环敲诈** *（v30 存；v54 完成）*：`coComplianceLasts`。
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`）*。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒）*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -881,3 +881,38 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：全阵容名（含死者）。
 - **测**：HostSpec castNames。
+
+## v153 — Schedule duringFestival / outsideFestival
+
+- **做了什么**：节庆叶的 Match/Not 条件对偶，供创作门禁「节庆中才可 / 节庆外拒绝」。
+- **测**：ScheduleRuleSpec duringFestival 对偶 + harvest rite 沙盒门禁弧。
+
+## v154 — Coerce isThreatened / lacksThreatened 等精确叶对偶
+
+- **做了什么**：`threatened` / `defied` / `complied` / `extorted` 事实路径的 Match/Not 智能构造器。
+- **测**：CoerceSpec condition duals。
+
+## v155 — Coerce ever*/never*（按 coercion id）
+
+- **做了什么**：对某一 `sid` 下任意威胁/违抗/服从标记的 Exists/Absent 对偶。
+- **测**：CoerceSpec ever*/never*。
+
+## v156 — Faction regardsAs / lacksRegard / everRegards / neverRegards
+
+- **做了什么**：站队叶 `regards.<who>.<target>.<label>` 的条件对偶与存在量词。
+- **测**：FactionSpec regards duals。
+
+## v157 — Village 形 mill 夹具（仍不改金标准）
+
+- **做了什么**：在 FactionSpec 再补 mill 共成员站队夹具（dave/fran 视 bob 为 thief）。
+- **测**：FactionSpec village-shaped mill fixture。
+
+## v158 — Host regardsOf
+
+- **做了什么**：从闭合视图枚举 `@who@` 发出的 `regards.<who>.*` 叶。
+- **测**：HostSpec regardsOf。
+
+## v159 — CLI prax cast [living] \<world\>
+
+- **做了什么**：对内置世界打印 `castNames` 或 `livingCast`。
+- **测**：手工 `prax cast village` / `prax cast living village`。
