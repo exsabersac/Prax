@@ -21,6 +21,7 @@ facts = dbToSentences . db
 
 -- Coexistence -------------------------------------------------------------------
 
+
 tests :: TestTree
 tests = testGroup "Prax.Emotion"
   [ testGroup "coexisting feelings"
@@ -232,6 +233,18 @@ tests = testGroup "Prax.Emotion"
         assertBool "zero lifetime" (isLeft (r :: Either ErrorCall Int))
         r2 <- try (evaluate (length (show (feelAtFor 2 0 "ada" angry))))
         assertBool "zero intensity" (isLeft (r2 :: Either ErrorCall Int))
+    ]
+
+  , testGroup "default lifetimes"
+    [ testCase "defaultLifetime table + feelDefault / feelTowardDefault" $ do
+        defaultLifetime "surprised" @?= 1
+        defaultLifetime "happy" @?= 5
+        defaultLifetime "unknown-mood" @?= 3
+        let st0 = foldl (flip performOutcome) emptyState
+                    [ feelDefault "ana" happy
+                    , feelTowardDefault "ana" angry "bob" ]
+        assertBool "happy" (exists "ana.feels.happy" (db st0))
+        assertBool "toward" (exists "ana.feels.angry.toward.bob" (db st0))
     ]
 
   , testGroup "the invariant: feelings never gate action availability"
