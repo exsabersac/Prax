@@ -1,11 +1,14 @@
 -- | 坦白与赦免（规格 @docs/specs/2026-07-12-v32-confession.md@）。
 -- 标记转换，永不删除；坦白经普通传闻通道自我牵连；赦免是可拒绝的第二方授予；
 -- 赦免者的耐心是他们所知道的（按 regarder、凭记忆永久、由八卦与坦白同样喂养）。
+-- v64：'penance' 课补赎义务；'atone' 履行并 discharge。
 module Prax.Confession
   ( confess
   , confessPublic
   , absolve
   , incorrigible
+  , penance
+  , atone
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -15,6 +18,7 @@ import           Prax.Types (Action, Outcome (..), action, authoredPatClash)
 import           Prax.Derive (Axiom, axiom)
 import           Prax.Beliefs (beliefAbout)
 import           Prax.Witness (CoPresence, asRole)
+import           Prax.Deontic (oblige, discharge, isObliged)
 
 segOk :: String -> Bool
 segOk n = not (null n) && all (`notElem` (".!" :: String)) n
@@ -133,3 +137,17 @@ incorrigible pat k label
           witnessPat = tokensToSentence
             [ (intern (if name `elem` rest then name ++ "0" else name), op)
             | (name, op) <- tokens pat ]
+
+-- | 忏悔者侧补赎：断言 @who@ 有义务促成 @content@（薄骑 'Prax.Deontic.oblige'）。
+penance :: String -> String -> [Outcome]
+penance who content
+  | not (segOk who) =
+      error ("penance: who " ++ show who ++ " must be a single path segment")
+  | otherwise = [ oblige who content ]
+
+-- | 履行补赎：门禁于 @obliged.Actor.<content>@，写入 @donePat@，并 discharge。
+atone :: String -> String -> String -> Action
+atone content donePat label = action label
+  [ isObliged "Actor" content ]
+  [ Insert donePat
+  , discharge "Actor" content ]

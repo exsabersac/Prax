@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -600,6 +600,32 @@ publicConfessionTests = testGroup "public confession (one-to-many)"
       assertBool "dotted kind errors" (isLeft (r :: Either ErrorCall Action))
   ]
 
+
+penanceTests :: TestTree
+penanceTests = testGroup "penance / atone"
+  [ testCase "penance imposes obliged; atone discharges and writes the done fact" $ do
+      let penanceP = practice
+            { practiceId = "penance"
+            , roles = []
+            , actions = [ atone "said.prayer" "atoned.Actor" "[Actor]: atone" ]
+            }
+          st0 = definePractices [penanceP]
+                  (foldl (flip performOutcome) emptyState
+                    (Insert "practice.penance" : penance "bob" "said.prayer"))
+      assertBool "obliged" (exists "obliged.bob.said.prayer" (db st0))
+      assertBool "atone offered" (any ("atone" `isInfixOf`) (map gaLabel (possibleActions st0 "bob")))
+      let st1 = case filter (("atone" `isInfixOf`) . gaLabel) (possibleActions st0 "bob") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no atone"
+      assertBool "done" (exists "atoned.bob" (db st1))
+      assertBool "discharged" (not (exists "obliged.bob.said.prayer" (db st1)))
+      assertBool "atone gone" (not (any ("atone" `isInfixOf`) (map gaLabel (possibleActions st1 "bob"))))
+
+  , testCase "penance rejects dotted who" $ do
+      r <- try (evaluate (length (penance "bo.b" "said.prayer")))
+      assertBool "dotted who" (isLeft (r :: Either ErrorCall Int))
+  ]
+
 tests :: TestTree
 tests = testGroup "Prax.Confession"
   [ conversionTests
@@ -610,4 +636,5 @@ tests = testGroup "Prax.Confession"
   , reoffenseTests
   , decoupledDepositTests
   , guardTests
+  , penanceTests
   ]
