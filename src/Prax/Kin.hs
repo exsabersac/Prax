@@ -1,6 +1,7 @@
 -- | 亲属：基事实 + 派生闭包（规格 §2）。婚姻移动成员——折叠的回报浓缩为一行。
 -- v61：'divorce' 把既有「撤回婚姻」契约暴露为可创作动作（成员不变）。
 -- v62：'birth'/'birthInto' 写入亲子事实；后者一并加入家庭派系。
+-- v67：'bequeath' 持有物继承（镜像 succession 的死亡+亲子门禁，作用于 holds.<thing>!<holder>）。
 module Prax.Kin
   ( kinAxioms
   , wed
@@ -8,6 +9,7 @@ module Prax.Kin
   , birth
   , birthInto
   , succession
+  , bequeath
   ) where
 
 import           Prax.Query (Condition (..))
@@ -70,3 +72,16 @@ succession office
       , Match "parent.H.Actor"
       , Neq "Actor" "H" ]
       [ Insert ("office." ++ office ++ "!Actor") ]
+
+-- | 持有物继承：死者持有者的子女可主张 @holds.<thing>!<holder>@；`!` 覆盖保证单一继承人。
+-- 与 'succession' 同形，但作用于普通持有物而非 office。
+bequeath :: String -> Action
+bequeath thing
+  | null thing || any (`elem` (".!" :: String)) thing =
+      error ("bequeath: thing " ++ show thing ++ " must be a single path segment")
+  | otherwise = action ("[Actor]: claim the holding " ++ thing)
+      [ Match ("holds." ++ thing ++ "!H")
+      , Match "dead.H"
+      , Match "parent.H.Actor"
+      , Neq "Actor" "H" ]
+      [ Insert ("holds." ++ thing ++ "!Actor") ]

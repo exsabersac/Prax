@@ -209,6 +209,29 @@ tests = testGroup "Prax.Kin"
       assertBool "ana cannot re-claim her own office (she is not dead)"
         (not (any ("claim the office of throne" `isInfixOf`) (opts claimed "ana")))
 
+  , testCase "bequeath: child claims holding after holder dies" $ do
+      let bequeathP = practice
+            { practiceId = "bequeath"
+            , roles = []
+            , actions = [ bequeath "farm" ]
+            }
+          world = setAxioms kinAxioms
+                    (definePractice bequeathP
+                      (foldl (flip performOutcome) emptyState
+                        [ Insert "practice.bequeath"
+                        , Insert "holds.farm!rex"
+                        , Insert "parent.rex.ana"
+                        , Insert "dead.rex" ]))
+      assertBool "offered to child" (any ("holding farm" `isInfixOf`) (opts world "ana"))
+      assertBool "not to stranger" (not (any ("holding farm" `isInfixOf`) (opts world "chris")))
+      claimed <- perform world "ana" "holding farm"
+      assertBool "ana holds" (exists "holds.farm!ana" (db claimed))
+      assertBool "rex cleared" (not (exists "holds.farm!rex" (db claimed)))
+
+  , testCase "bequeath: guards forced" $ do
+      r <- try (evaluate (length (show (bequeath "far.m"))))
+      assertBool "dotted thing" (isLeft (r :: Either ErrorCall Int))
+
   , testCase "succession: guards forced — office names must be single path segments" $ do
       r1 <- try (evaluate (length (actionName (succession ""))))
       assertBool "an empty office name errors" (isLeft (r1 :: Either ErrorCall Int))
