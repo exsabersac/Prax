@@ -9,7 +9,8 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (exists)
 import           Prax.Query (Condition (..))
 import           Prax.Types
-import           Prax.Engine (definePractices, performOutcome, possibleActions, setAxioms, setCharacters)
+import           Prax.Engine (definePractices, defineFunctions, performOutcome, possibleActions, performAction, setAxioms, setCharacters)
+import           Prax.Core (coreFns)
 import           Prax.Derive (Axiom (..))
 import           Prax.Repute
 
@@ -96,4 +97,33 @@ tests = testGroup "Prax.Repute"
              (standingUnless "stole.Regarder.loaf" "atoned.Regarder" "thief"))))
       assertBool "Regarder is reserved for standingUnless too"
         (isLeft (r :: Either ErrorCall Int))
+
+  , testCase "scornStanding: regard gates a one-shot score drop" $ do
+      let base = defineFunctions coreFns
+                   (setAxioms [ standing "kicked.Brute.dog" "brute" ]
+                     (setCharacters (map character ["ana", "kai"])
+                       (definePractices [p] emptyState)))
+          p = practice
+            { practiceId = "yard", roles = ["R"]
+            , actions = [ scornStanding "brute" "warmth" (-8) "regardedBrute" ] }
+          st0 = foldl (flip performOutcome) base
+                  [ Insert "practice.yard.here"
+                  , Insert "ana.believes.kicked.kai.dog.seen" ]
+      assertBool "scorn offered while regard holds"
+        (any (("scorn kai as brute" `isInfixOf`) . gaLabel) (possibleActions st0 "ana"))
+      let st1 = case [ ga | ga <- possibleActions st0 "ana"
+                          , "scorn kai as brute" `isInfixOf` gaLabel ga ] of
+                  (ga:_) -> performAction st0 ga
+                  []     -> error "no scorn"
+      assertBool "score seeded negative"
+        (exists "ana.relationship.kai.warmth.score!-8" (db st1))
+      assertBool "one-shot guard planted"
+        (exists "scorned.ana.kai.brute" (db st1))
+      assertBool "scorn not re-offered"
+        (not (any (("scorn kai as brute" `isInfixOf`) . gaLabel)
+                  (possibleActions st1 "ana")))
+
+  , testCase "scornDesire names the scorns-<label> desire" $
+      let Desire n _ = scornDesire "ana" "brute" 4
+      in n @?= "scorns-brute"
   ]

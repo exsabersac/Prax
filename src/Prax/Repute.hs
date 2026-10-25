@@ -17,12 +17,16 @@ module Prax.Repute
   , standingUnless
   , regardedAs
   , notoriety
+  , scornStanding
+  , esteemStanding
+  , scornDesire
   ) where
 
 import           Prax.Db (isVariable, pathNames)
 import           Prax.Query (Condition (..), CmpOp (..))
 import           Prax.Derive (Axiom, axiom)
-import           Prax.Types (authoredPatClash)
+import           Prax.Types (Action, Desire (..), Want (..), Outcome (..), action, authoredPatClash)
+import           Prax.Core (adjustScore)
 
 -- | 每个对行为有证据的观察者都将其 regard 为主体。
 standing :: String -> String -> Axiom
@@ -74,3 +78,55 @@ subjectOf pat = case filter isVariable (pathNames pat) of
   (v : _) -> v
   []      -> error ("standing: deed pattern " ++ show pat
                     ++ " names no one (a standing is about someone)")
+
+-- 站队的分数效果反应 -----------------------------------------------------------
+
+segOk :: String -> Bool
+segOk n = not (null n) && all (`notElem` (".!" :: String)) n
+
+-- | 站队的分数效果反应：观察者一旦 regard 主体，可一次性调整关系分（默认轻蔑）。
+-- 与 "Prax.Reactions" 同风格——普通实践动作，门禁于派生 @regards@，一次守卫防止反复扣分。
+-- 世界须已 'Prax.Engine.defineFunctions' 注册 'Prax.Core.coreFns'。
+scornStanding :: String  -- ^ standing label (e.g. "thief")
+              -> String  -- ^ relationship role (warmth / respect / trust …)
+              -> Int     -- ^ score delta (typically negative)
+              -> String  -- ^ reason token (single path segment)
+              -> Action
+scornStanding label role delta reason
+  | not (segOk label) =
+      error ("scornStanding: label " ++ show label ++ " must be a single path segment")
+  | not (segOk role) =
+      error ("scornStanding: role " ++ show role ++ " must be a single path segment")
+  | not (segOk reason) =
+      error ("scornStanding: reason " ++ show reason ++ " must be a single path segment")
+  | otherwise = action ("[Actor]: scorn [T] as " ++ label)
+      [ regardedAs "Actor" "T" label
+      , Neq "T" "Actor"
+      , Not ("scorned.Actor.T." ++ label) ]
+      [ Insert ("scorned.Actor.T." ++ label)
+      , adjustScore "Actor" "T" role delta reason ]
+
+-- | 正向对应：regard 为褒义标签时抬分（一次）。
+esteemStanding :: String -> String -> Int -> String -> Action
+esteemStanding label role delta reason
+  | not (segOk label) =
+      error ("esteemStanding: label " ++ show label ++ " must be a single path segment")
+  | not (segOk role) =
+      error ("esteemStanding: role " ++ show role ++ " must be a single path segment")
+  | not (segOk reason) =
+      error ("esteemStanding: reason " ++ show reason ++ " must be a single path segment")
+  | otherwise = action ("[Actor]: esteem [T] as " ++ label)
+      [ regardedAs "Actor" "T" label
+      , Neq "T" "Actor"
+      , Not ("esteemed.Actor.T." ++ label) ]
+      [ Insert ("esteemed.Actor.T." ++ label)
+      , adjustScore "Actor" "T" role delta reason ]
+
+-- | NPC 自动取 scorn 的欲望：在仍 regard 且尚未 scorn 时想完成 scorn。
+scornDesire :: String -> String -> Int -> Desire
+scornDesire who label w
+  | not (segOk label) =
+      error ("scornDesire: label " ++ show label ++ " must be a single path segment")
+  | otherwise = Desire ("scorns-" ++ label)
+      (Want [ Match ("scorned." ++ who ++ ".T." ++ label)
+            , Match ("regards." ++ who ++ ".T." ++ label) ] w)
