@@ -68,4 +68,8 @@ tests = testGroup "Prax.Beliefs"
   
   , testCase "hasBelief aliases everBelieves" $
       hasBelief "bex" @?= everBelieves "bex"
+  , testCase "hasBelievesThat / hasHoldsBelief aliases" $ do
+      hasBelievesThat "ada" "weather" "rain" @?= believesThat "ada" "weather" "rain"
+      hasHoldsBelief "ada" "weather" @?= holdsBelief "ada" "weather"
+
   ]

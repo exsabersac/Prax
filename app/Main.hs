@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -287,6 +287,18 @@ runShunned (who : ws) =
   in mapM_ putStrLn (shunnedOf st who)
 runShunned _ = putStrLn "usage: prax shunned <who> <world>"
 
+runThreatened :: [String] -> IO ()
+runThreatened (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (threatenedOf st who)
+runThreatened _ = putStrLn "usage: prax threatened <who> <world>"
+
+runExtorted :: [String] -> IO ()
+runExtorted (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (extortedOf st who)
+runExtorted _ = putStrLn "usage: prax extorted <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -374,6 +386,14 @@ usageText = unlines
   , "  prax arcs <who> <world>                list arc stage leaves for who"
   , "  prax ages <who> <world>                list age leaves for who"
   , "  prax projects <who> <world>            list practice instance leaves for who"
+  , "  prax demanded <who> <world>            list demand leaves involving who"
+  , "  prax festivals <world>                 list open festival leaves"
+  , "  prax locations <who> <world>           list at.<who>.* location leaves"
+  , "  prax holding <who> <world>             list holding.<who>.* leaves"
+  , "  prax carrying <who> <world>            list carrying.<who>.* leaves"
+  , "  prax shunned <who> <world>             list shunned.<who>.* leaves"
+  , "  prax threatened <who> <world>          list threatened leaves involving who"
+  , "  prax extorted <who> <world>            list extorted leaves involving who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -425,6 +445,8 @@ main = do
     ("holding" : ws)   -> runHolding ws
     ("carrying" : ws)  -> runCarrying ws
     ("shunned" : ws)   -> runShunned ws
+    ("threatened" : ws) -> runThreatened ws
+    ("extorted" : ws)  -> runExtorted ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

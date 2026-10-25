@@ -16,9 +16,11 @@ module Prax.Beliefs
   , beliefAbout
   , believe
   , believesThat
+  , hasBelievesThat
   , forget
   , doubts
   , holdsBelief
+  , hasHoldsBelief
   , disbelievesThat
   , everBelieves
   , hasBelief
@@ -45,6 +47,10 @@ believe who issue value = Insert (beliefSentence who issue value)
 believesThat :: String -> String -> String -> Condition
 believesThat who issue value = Match (beliefSentence who issue value)
 
+-- | 条件：@who@ 相信 @issue@ 为 @value@（@believesThat@ 同体；对齐 has* 命名）。
+hasBelievesThat :: String -> String -> String -> Condition
+hasBelievesThat = believesThat
+
 -- | @who@ 丢掉关于 @issue@ 的任何信念。
 forget :: String -> String -> Outcome
 forget who issue = Delete (beliefAbout who issue)
@@ -56,6 +62,10 @@ doubts who issue = Absent [ Match (beliefAbout who issue) ]
 -- | 条件：@who@ 对 @issue@ 持有某一值（匹配议题子树）。
 holdsBelief :: String -> String -> Condition
 holdsBelief who issue = Match (beliefAbout who issue)
+
+-- | 条件：@who@ 对 @issue@ 持有某一值（@holdsBelief@ 同体；对齐 has* 命名）。
+hasHoldsBelief :: String -> String -> Condition
+hasHoldsBelief = holdsBelief
 
 -- | 条件：@who@ 不相信 @issue@ 为 @value@（@believesThat@ 的 Not 对偶）。
 disbelievesThat :: String -> String -> String -> Condition

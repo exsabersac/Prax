@@ -331,4 +331,7 @@ tests = testGroup "Prax.Emotion"
       hasFeeling "ada" "angry" @?= feeling "ada" "angry"
       hasFeelingToward "ada" "angry" "ben" @?= feelingToward "ada" "angry" "ben"
 
+  , testCase "hasInMood aliases inMood" $
+      hasInMood "ada" "gloomy" @?= inMood "ada" "gloomy"
+
   ]

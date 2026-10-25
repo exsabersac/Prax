@@ -200,4 +200,7 @@ tests = testGroup "Prax.Deontic"
 
   , testCase "everObliged aliases hasObligations" $
       everObliged "ada" @?= hasObligations "ada"
+  , testCase "hasObliged aliases isObliged" $
+      hasObliged "ada" "pay.tax" @?= isObliged "ada" "pay.tax"
+
   ]

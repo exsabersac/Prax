@@ -31,6 +31,7 @@ module Prax.Project
   , abandon
   , part
   , isCrewOf
+  , hasCrewOf
   , lacksCrewOf
   , hasCompletedPart
   , lacksCompletedPart
@@ -225,6 +226,10 @@ unenlist pid label
 isCrewOf :: String -> String -> String -> Condition
 isCrewOf owner partner pid =
   Match ("practice." ++ pid ++ "." ++ owner ++ ".crew." ++ partner)
+
+-- | 条件：@partner@ 在 @owner@ 的 @pid@ 事业 crew 中（@isCrewOf@ 同体；对齐 has* 命名）。
+hasCrewOf :: String -> String -> String -> Condition
+hasCrewOf = isCrewOf
 
 -- | 条件：@partner@ 不在 @owner@ 的 @pid@ crew 中。
 lacksCrewOf :: String -> String -> String -> Condition

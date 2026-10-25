@@ -392,4 +392,7 @@ tests = testGroup "Prax.Project"
       everCompletedPart "mia" "oven2" @?= Exists [ Match "practice.oven2.mia.did.Part" ]
       neverCompletedPart "mia" "oven2" @?= Absent [ Match "practice.oven2.mia.did.Part" ]
 
+  , testCase "hasCrewOf aliases isCrewOf" $
+      hasCrewOf "ada" "ben" "bake" @?= isCrewOf "ada" "ben" "bake"
+
   ]

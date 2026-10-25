@@ -16,15 +16,18 @@ module Prax.Debt
   , owe
   , settle
   , owes
+  , hasOwes
   , lacksOwes
   , forgive
   , callIn
   , isOwed
+  , hasOwed
   , hasCreditorClaim
   , lacksCreditorClaim
   , neverOwed
   , everOwed
   , isDemanded
+  , hasDemanded
   , lacksDemanded
   , everDemanded
   , neverDemanded
@@ -59,6 +62,10 @@ settle creditor debtor content =
 owes :: String -> String -> String -> Condition
 owes creditor debtor content = Match (debtPath creditor debtor content)
 
+-- | 条件：@debtor@ 当前欠 @creditor@ @content@（@owes@ 同体；对齐 has* 命名）。
+hasOwes :: String -> String -> String -> Condition
+hasOwes = owes
+
 -- | 条件：@debtor@ 当前不欠 @creditor@ @content@（@owes@ 的 Not 对偶）。
 lacksOwes :: String -> String -> String -> Condition
 lacksOwes creditor debtor content = Not (debtPath creditor debtor content)
@@ -91,6 +98,10 @@ callIn content breachLabel label
 isOwed :: String -> Condition
 isOwed debtor = Exists [ Match ("debt.Creditor." ++ debtor ++ ".Content") ]
 
+-- | 条件：@debtor@ 欠至少一笔债（@isOwed@ 同体；对齐 has* 命名）。
+hasOwed :: String -> Condition
+hasOwed = isOwed
+
 -- | 条件：@creditor@ 对任何人持有债权。
 hasCreditorClaim :: String -> Condition
 hasCreditorClaim creditor = Exists [ Match ("debt." ++ creditor ++ ".Debtor.Content") ]
@@ -112,6 +123,10 @@ everOwed = isOwed
 isDemanded :: String -> String -> String -> Condition
 isDemanded creditor debtor content =
   Match ("demanded." ++ creditor ++ "." ++ debtor ++ "." ++ content)
+
+-- | 条件：催收叶已存在（@isDemanded@ 同体；对齐 has* 命名）。
+hasDemanded :: String -> String -> String -> Condition
+hasDemanded = isDemanded
 
 -- | 条件：无该催收叶（@isDemanded@ 的 Not 对偶）。
 lacksDemanded :: String -> String -> String -> Condition

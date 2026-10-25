@@ -553,6 +553,54 @@ tests = testGroup "Prax.ScheduleRule"
         let stSent = doAct "pass sentence" stAfter
         assertBool "sentenced" (exists "sentenced.ada" (db stSent))
         assertBool "sentence once" (not (hasAct "pass sentence" stSent))
+
+    , testCase "harvest mourning arc: vigil outside → eulogize during → bury after" $ do
+        let mourn = practice
+              { practiceId = "harvestMourn"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: keep vigil"
+                      [ outsideFestival "harvest"
+                      , Not "vigil.Actor" ]
+                      [ Insert "vigil.Actor" ]
+                  , action "[Actor]: deliver the eulogy"
+                      [ duringFestival "harvest"
+                      , Match "vigil.Actor"
+                      , Not "eulogized.Actor" ]
+                      [ Insert "eulogized.Actor" ]
+                  , action "[Actor]: bury the dead"
+                      [ outsideFestival "harvest"
+                      , Match "eulogized.Actor"
+                      , Not "buried.Actor" ]
+                      [ Insert "buried.Actor" ]
+                  ]
+              }
+            base = definePractices [mourn]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestMourn" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: vigil yes" (hasAct "vigil" st0)
+        assertBool "before: eulogy no" (not (hasAct "eulogy" st0))
+        let stV = doAct "vigil" st0
+        assertBool "vigil" (exists "vigil.ada" (db stV))
+        let stOpen = iterate roundBoundary stV !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: eulogy yes" (hasAct "eulogy" stOpen)
+        assertBool "open: bury no" (not (hasAct "bury" stOpen))
+        let stE = doAct "eulogy" stOpen
+        assertBool "eulogized" (exists "eulogized.ada" (db stE))
+        let stAfter = roundBoundary stE
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: bury yes" (hasAct "bury" stAfter)
+        let stB = doAct "bury" stAfter
+        assertBool "buried" (exists "buried.ada" (db stB))
+        assertBool "bury once" (not (hasAct "bury" stB))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

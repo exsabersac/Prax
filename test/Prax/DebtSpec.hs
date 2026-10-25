@@ -202,4 +202,9 @@ tests = testGroup "Prax.Debt"
   , testCase "everDemanded / neverDemanded are Exists/Absent over demanded.*.<debtor>.*" $ do
       everDemanded "ben" @?= Exists [ Match "demanded.Creditor.ben.Content" ]
       neverDemanded "ben" @?= Absent [ Match "demanded.Creditor.ben.Content" ]
+  , testCase "hasOwes / hasOwed / hasDemanded aliases" $ do
+      hasOwes "ana" "ben" "favor" @?= owes "ana" "ben" "favor"
+      hasOwed "ben" @?= isOwed "ben"
+      hasDemanded "ana" "ben" "favor" @?= isDemanded "ana" "ben" "favor"
+
   ]

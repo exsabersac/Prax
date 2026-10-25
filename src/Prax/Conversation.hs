@@ -17,9 +17,12 @@ module Prax.Conversation
   , onTopic
   , offTopic
   , isSpeaker
+  , hasSpeaker
   , isListener
+  , hasListener
   , lacksSpeaker
   , lacksListener
+  , hasTopic
   , hasChattedWith
   , everChattedWith
   , neverChattedWith
@@ -99,13 +102,25 @@ endConversation label =
 onTopic :: String -> Condition
 onTopic topic = Match (convP ++ ".topic!" ++ topic)
 
+-- | 条件：当前对话话题为 @topic@（@onTopic@ 同体；对齐 has* 命名）。
+hasTopic :: String -> Condition
+hasTopic = onTopic
+
 -- | 条件：Actor 现为说话者。
 isSpeaker :: Condition
 isSpeaker = Match (convP ++ ".speaker!Actor")
 
+-- | 条件：Actor 现为说话者（@isSpeaker@ 同体；对齐 has* 命名）。
+hasSpeaker :: Condition
+hasSpeaker = isSpeaker
+
 -- | 条件：Actor 现为听者（说话者对偶）。
 isListener :: Condition
 isListener = Match (convP ++ ".listener!Actor")
+
+-- | 条件：Actor 现为听者（@isListener@ 同体；对齐 has* 命名）。
+hasListener :: Condition
+hasListener = isListener
 
 -- | 条件：Actor 现非说话者（@isSpeaker@ 的 Not 对偶）。
 lacksSpeaker :: Condition

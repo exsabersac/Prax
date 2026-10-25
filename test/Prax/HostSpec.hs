@@ -347,4 +347,22 @@ tests = testGroup "Prax.Host"
       shunnedOf st "cai" @?= ["shunned.cai.T"]
       shunnedOf st "void" @?= []
 
+  , testCase "threatenedOf / extortedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "threatened.sid1.ana.ben"
+                , Insert "threatened.sid2.cai.ana"
+                , Insert "ana.extorted.ben.sid1"
+                , Insert "dai.extorted.ana.sid3"
+                , Insert "flag.x" ]
+      threatenedOf st "ana" @?=
+        [ "threatened.sid1.ana.ben"
+        , "threatened.sid2.cai.ana"
+        ]
+      threatenedOf st "void" @?= []
+      extortedOf st "ana" @?=
+        [ "ana.extorted.ben.sid1"
+        , "dai.extorted.ana.sid3"
+        ]
+      extortedOf st "void" @?= []
+
   ]

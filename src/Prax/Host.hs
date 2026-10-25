@@ -14,6 +14,7 @@
 -- v225：'arcsOf'/'agesOf'/'projectsOf' 枚举弧阶段/年龄/事业叶。
 -- v231：'demandedOf'/'festivalsOf' 催收叶与节庆叶。
 -- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
+-- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 module Prax.Host
   ( step
   , stepExact
@@ -65,6 +66,8 @@ module Prax.Host
   , holdingOf
   , carryingOf
   , shunnedOf
+  , threatenedOf
+  , extortedOf
   , checkpoint
   , restore
   ) where
@@ -451,6 +454,39 @@ carryingOf st who =
 shunnedOf :: PraxState -> String -> [String]
 shunnedOf st who =
   sort [ s | s <- queryView st, ("shunned." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中与 @who@ 相关的威胁叶（@threatened.<sid>.<extorter>.<victim>@，任一侧）。
+threatenedOf :: PraxState -> String -> [String]
+threatenedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "threatened." `isPrefixOf` s
+  , let rest = drop (length ("threatened." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , (parts !! 1) == who || (parts !! 2) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的勒索痕（@<extorter>.extorted.<victim>.<sid>@，任一侧）。
+extortedOf :: PraxState -> String -> [String]
+extortedOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 4
+  , parts !! 1 == "extorted"
+  , head parts == who || (parts !! 2) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

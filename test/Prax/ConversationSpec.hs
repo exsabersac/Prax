@@ -106,6 +106,11 @@ tests = testGroup "Prax.Conversation"
   , testCase "everChattedWith aliases hasChattedWith" $
       everChattedWith "ada" "bex" @?= hasChattedWith "ada" "bex"
 
+  , testCase "hasSpeaker / hasListener / hasTopic aliases" $ do
+      hasSpeaker @?= isSpeaker
+      hasListener @?= isListener
+      hasTopic "greetings" @?= onTopic "greetings"
+
   ]
 
 -- helper: does any needle appear in the list of strings?
