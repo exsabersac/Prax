@@ -267,4 +267,145 @@ tests = testGroup "Prax.Faction"
       hasAffiliate "ada" "church" @?= affiliates "ada" "church"
       hasRegardAs "ada" "bex" "thief" @?= regardsAs "ada" "bex" "thief"
 
+  -- Village-shaped mill justice arc (Spec-only; Village golden untouched):
+  -- learn → factionStanding regard → confront gated on regard → defection
+  -- dissolves the gate while the belief base fact persists.
+  , testCase "village-shaped mill justice arc: belief→regard→gate→defection" $ do
+      let justice = practice
+            { practiceId = "millJustice"
+            , roles = []
+            , actions =
+                [ action "[Actor]: learn of the theft"
+                    [ isMember "Actor" "mill"
+                    , Not "Actor.believes.stole.bob.carol" ]
+                    [ Insert "Actor.believes.stole.bob.carol" ]
+                , action "[Actor]: confront the thief"
+                    [ Match "regards.Actor.bob.thief"
+                    , Not "confronted.Actor.bob" ]
+                    [ Insert "confronted.Actor.bob" ]
+                ]
+            }
+          world0 = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
+                     (definePractices [justice]
+                       (foldl (flip performOutcome) emptyState
+                          [ joins "bob" "guild", joins "carol" "mill"
+                          , joins "dave" "mill", joins "fran" "mill"
+                          , joins "eve" "outsiders"
+                          , Insert "practice.millJustice"
+                          , Insert "eve.believes.stole.bob.carol"
+                          ]))
+          hasAct who needle st =
+            any ((needle `isInfixOf`) . gaLabel) (possibleActions st who)
+          doAct who needle st =
+            case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st who) of
+              (ga : _) -> performAction st ga
+              []       -> error ("no action " ++ show needle ++ " for " ++ who)
+      assertBool "before: dave cannot confront" (not (hasAct "dave" "confront" world0))
+      assertBool "before: eve cannot confront despite belief"
+        (not (hasAct "eve" "confront" world0))
+      assertBool "eve (outsider) derives no regard"
+        (not (exists "regards.eve.bob.thief" (readView world0)))
+      let stLearn = doAct "dave" "learn" world0
+      assertBool "dave believes" (exists "dave.believes.stole.bob.carol" (db stLearn))
+      assertBool "dave regards bob as thief"
+        (exists "regards.dave.bob.thief" (readView stLearn))
+      assertBool "dave can confront" (hasAct "dave" "confront" stLearn)
+      assertBool "fran (mill, no belief) cannot confront"
+        (not (hasAct "fran" "confront" stLearn))
+      assertBool "eve still cannot" (not (hasAct "eve" "confront" stLearn))
+      let stFran = doAct "fran" "learn" stLearn
+      assertBool "fran regards" (exists "regards.fran.bob.thief" (readView stFran))
+      assertBool "fran can confront" (hasAct "fran" "confront" stFran)
+      let stCon = doAct "dave" "confront" stFran
+      assertBool "confronted" (exists "confronted.dave.bob" (db stCon))
+      assertBool "confront once" (not (hasAct "dave" "confront" stCon))
+      let stDef = performOutcome (joins "fran" "outsiders") stCon
+      assertBool "fran regard dissolved after defection"
+        (not (exists "regards.fran.bob.thief" (readView stDef)))
+      assertBool "fran belief persists" (exists "fran.believes.stole.bob.carol" (db stDef))
+      assertBool "fran cannot confront after defection"
+        (not (hasAct "fran" "confront" stDef))
+      assertBool "dave (still mill) still regards"
+        (exists "regards.dave.bob.thief" (readView stDef))
+
+  -- Village-shaped church censure arc: belief→heretic regard→censure gate;
+  -- guild outsider with the same belief stays gated out.
+  , testCase "village-shaped church censure arc: belief→regard→censure gate" $ do
+      let censure = practice
+            { practiceId = "churchCensure"
+            , roles = []
+            , actions =
+                [ action "[Actor]: hear the blasphemy"
+                    [ isMember "Actor" "church"
+                    , Not "Actor.believes.blasphemed.eve.gale" ]
+                    [ Insert "Actor.believes.blasphemed.eve.gale" ]
+                , action "[Actor]: censure the heretic"
+                    [ Match "regards.Actor.eve.heretic"
+                    , Not "censured.Actor.eve" ]
+                    [ Insert "censured.Actor.eve" ]
+                ]
+            }
+          world0 = setAxioms [factionStanding "blasphemed.Culprit.Victim" "heretic"]
+                     (definePractices [censure]
+                       (foldl (flip performOutcome) emptyState
+                          [ joins "priest" "church", joins "gale" "church"
+                          , joins "bob" "guild"
+                          , Insert "practice.churchCensure"
+                          , Insert "bob.believes.blasphemed.eve.gale"
+                          ]))
+          hasAct who needle st =
+            any ((needle `isInfixOf`) . gaLabel) (possibleActions st who)
+          doAct who needle st =
+            case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st who) of
+              (ga : _) -> performAction st ga
+              []       -> error ("no action " ++ show needle ++ " for " ++ who)
+      assertBool "bob (guild) derives no regard despite belief"
+        (not (exists "regards.bob.eve.heretic" (readView world0)))
+      assertBool "bob cannot censure" (not (hasAct "bob" "censure" world0))
+      let stHear = doAct "priest" "hear" world0
+      assertBool "priest regards" (exists "regards.priest.eve.heretic" (readView stHear))
+      assertBool "priest can censure" (hasAct "priest" "censure" stHear)
+      assertBool "gale (no belief yet) cannot" (not (hasAct "gale" "censure" stHear))
+      let stCen = doAct "priest" "censure" stHear
+      assertBool "censured" (exists "censured.priest.eve" (db stCen))
+      let stGale = doAct "gale" "hear" stCen
+      assertBool "gale (victim) regards" (exists "regards.gale.eve.heretic" (readView stGale))
+      assertBool "gale can censure" (hasAct "gale" "censure" stGale)
+
+  -- Affiliate is secondary belonging: factionStanding joins only primary
+  -- member.! spines, so an affiliate who believes still derives nothing.
+  , testCase "village-shaped affiliate negative: affiliate belief derives no factionStanding" $ do
+      let world = setAxioms [factionStanding "stole.Culprit.Victim" "thief", affiliateComrades]
+                    (foldl (flip performOutcome) emptyState
+                       [ joins "carol" "mill", joins "dave" "mill"
+                       , joins "fran" "guild"
+                       , affiliate "fran" "mill"   -- secondary mill tie only
+                       , affiliate "dave" "mill"   -- dave also affiliates (comrades need both)
+                       , Insert "fran.believes.stole.bob.carol"
+                       , Insert "dave.believes.stole.bob.carol"
+                       ])
+          v = readView world
+      assertBool "dave (primary mill) regards" (exists "regards.dave.bob.thief" v)
+      assertBool "fran (affiliate mill only — no primary mill) derives nothing"
+        (not (exists "regards.fran.bob.thief" v))
+      assertBool "affiliate comrades still allied" (exists "allied.fran.dave" v)
+      assertBool "fran primary remains guild" (exists "member.fran!guild" (db world))
+      assertBool "fran affiliate mill" (exists "affiliate.fran.mill" (db world))
+
+  -- Victim defection dissolves co-member regards: factionStanding joins the
+  -- victim's *current* primary membership, so when carol leaves the mill the
+  -- dave↔carol co-member join fails and the regard un-derives — belief stays.
+  , testCase "village-shaped victim defection dissolves co-member regards" $ do
+      let held = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
+                   (foldl (flip performOutcome) emptyState
+                      [ joins "bob" "guild", joins "carol" "mill", joins "dave" "mill"
+                      , Insert "dave.believes.stole.bob.carol" ])
+          left = performOutcome (joins "carol" "guild") held
+      assertBool "held: dave regards" (exists "regards.dave.bob.thief" (readView held))
+      assertBool "after victim left mill: regard gone"
+        (not (exists "regards.dave.bob.thief" (readView left)))
+      assertBool "dave belief persists" (exists "dave.believes.stole.bob.carol" (db left))
+      assertBool "carol now guild" (exists "member.carol!guild" (db left))
+      assertBool "dave still mill" (exists "member.dave!mill" (db left))
+
   ]

@@ -11,11 +11,12 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (exists)
 import           Prax.Query (Condition (..))
 import           Prax.Types
-import           Prax.Engine (performOutcome, performAction, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions)
+import           Prax.Engine (performOutcome, performAction, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions, setAxioms)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
 import           Prax.Schedule (gathering, festival, duringFestival, hasFestival, outsideFestival, lacksFestival, pulse)
 import           Prax.Deontic (oblige, discharge, isObliged, breach)
 import           Prax.Emotion (setMood, inMood, clearMood)
+import           Prax.Faction (joins, isMember, factionStanding, appointLeader, isLeader)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -649,6 +650,143 @@ tests = testGroup "Prax.ScheduleRule"
         let stSet = doAct "settle the accounts" stAfter
         assertBool "settled" (exists "settled.ada" (db stSet))
         assertBool "settle once" (not (hasAct "settle the accounts" stSet))
+
+    , testCase "harvest mill tribunal arc: learn outside → denounce during → exile after (factionStanding gate)" $ do
+        -- Composite demo: festival windows + factionStanding-derived regard gate
+        -- + multi-actor Village-shaped cast. Spec-only; Village golden untouched.
+        let tribunal = practice
+              { practiceId = "harvestTribunal"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: learn of the theft"
+                      [ outsideFestival "harvest"
+                      , isMember "Actor" "mill"
+                      , Not "Actor.believes.stole.bob.carol" ]
+                      [ Insert "Actor.believes.stole.bob.carol" ]
+                  , action "[Actor]: denounce the thief"
+                      [ duringFestival "harvest"
+                      , Match "regards.Actor.bob.thief"
+                      , Not "denounced.Actor.bob" ]
+                      [ Insert "denounced.Actor.bob" ]
+                  , action "[Actor]: exile the thief"
+                      [ outsideFestival "harvest"
+                      , Match "denounced.Actor.bob"
+                      , Not "exiled.bob" ]
+                      [ Insert "exiled.bob" ]
+                  ]
+              }
+            base = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
+                     (definePractices [tribunal]
+                       (scheduled [ festival "harvest" 3 1 [] ]
+                          [ joins "bob" "guild", joins "carol" "mill"
+                          , joins "dave" "mill", joins "fran" "mill"
+                          , joins "eve" "outsiders"
+                          , Insert "practice.harvestTribunal"
+                          , Insert "eve.believes.stole.bob.carol"
+                          ]))
+            hasAct who needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st who)
+            doAct who needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st who) of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action " ++ show needle ++ " for " ++ who)
+            st0 = base
+        assertBool "before: dave learn yes" (hasAct "dave" "learn" st0)
+        assertBool "before: denounce no" (not (hasAct "dave" "denounce" st0))
+        assertBool "eve cannot learn (not mill)" (not (hasAct "eve" "learn" st0))
+        assertBool "eve derives no regard despite belief"
+          (not (exists "regards.eve.bob.thief" (readView st0)))
+        let stLearn = doAct "dave" "learn" st0
+        assertBool "dave regards" (exists "regards.dave.bob.thief" (readView stLearn))
+        assertBool "still closed: denounce no" (not (hasAct "dave" "denounce" stLearn))
+        let stOpen = iterate roundBoundary stLearn !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: dave denounce yes" (hasAct "dave" "denounce" stOpen)
+        assertBool "open: eve denounce no" (not (hasAct "eve" "denounce" stOpen))
+        assertBool "open: fran (no belief) denounce no"
+          (not (hasAct "fran" "denounce" stOpen))
+        assertBool "open: exile no" (not (hasAct "dave" "exile" stOpen))
+        let stDen = doAct "dave" "denounce" stOpen
+        assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+        let stAfter = roundBoundary stDen
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: exile yes" (hasAct "dave" "exile" stAfter)
+        let stEx = doAct "dave" "exile" stAfter
+        assertBool "exiled" (exists "exiled.bob" (db stEx))
+        assertBool "exile once" (not (hasAct "dave" "exile" stEx))
+        -- fran can still learn outside after the window and gain regard,
+        -- but cannot denounce until the next festival open.
+        assertBool "fran can learn after" (hasAct "fran" "learn" stEx)
+        let stFran = doAct "fran" "learn" stEx
+        assertBool "fran regards" (exists "regards.fran.bob.thief" (readView stFran))
+        assertBool "fran cannot denounce outside window"
+          (not (hasAct "fran" "denounce" stFran))
+
+    , testCase "harvest church heresy arc: hear outside → censure during → leader exile after" $ do
+        -- Festival + church factionStanding + appointLeader gate on exile.
+        let heresy = practice
+              { practiceId = "harvestHeresy"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: hear the blasphemy"
+                      [ outsideFestival "harvest"
+                      , isMember "Actor" "church"
+                      , Not "Actor.believes.blasphemed.eve.gale" ]
+                      [ Insert "Actor.believes.blasphemed.eve.gale" ]
+                  , action "[Actor]: censure the heretic"
+                      [ duringFestival "harvest"
+                      , Match "regards.Actor.eve.heretic"
+                      , Not "censured.Actor.eve" ]
+                      [ Insert "censured.Actor.eve" ]
+                  , action "[Actor]: exile the heretic"
+                      [ outsideFestival "harvest"
+                      , isLeader "Actor" "church"
+                      , Match "censured.Actor.eve"
+                      , Not "exiled.eve" ]
+                      [ Insert "exiled.eve" ]
+                  ]
+              }
+            base = setAxioms [factionStanding "blasphemed.Culprit.Victim" "heretic"]
+                     (definePractices [heresy]
+                       (scheduled [ festival "harvest" 3 1 [] ]
+                          [ joins "priest" "church", joins "gale" "church"
+                          , joins "bob" "guild"
+                          , appointLeader "priest" "church"
+                          , Insert "practice.harvestHeresy"
+                          , Insert "bob.believes.blasphemed.eve.gale"
+                          ]))
+            hasAct who needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st who)
+            doAct who needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st who) of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action " ++ show needle ++ " for " ++ who)
+            st0 = base
+        assertBool "bob cannot hear (not church)" (not (hasAct "bob" "hear" st0))
+        assertBool "bob derives no regard" (not (exists "regards.bob.eve.heretic" (readView st0)))
+        let stHear = doAct "priest" "hear" st0
+        assertBool "priest regards" (exists "regards.priest.eve.heretic" (readView stHear))
+        assertBool "closed: censure no" (not (hasAct "priest" "censure" stHear))
+        let stOpen = iterate roundBoundary stHear !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: priest censure yes" (hasAct "priest" "censure" stOpen)
+        assertBool "open: gale (no belief) censure no" (not (hasAct "gale" "censure" stOpen))
+        let stCen = doAct "priest" "censure" stOpen
+        assertBool "censured" (exists "censured.priest.eve" (db stCen))
+        let stAfter = roundBoundary stCen
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "leader exile yes" (hasAct "priest" "exile" stAfter)
+        -- gale can hear and censure later, but cannot exile (not leader)
+        assertBool "gale can hear after" (hasAct "gale" "hear" stAfter)
+        let stGale = doAct "gale" "hear" stAfter
+        assertBool "gale regards" (exists "regards.gale.eve.heretic" (readView stGale))
+        -- gale needs a denounce/censure leaf of her own to try exile — exile
+        -- requires censured.Actor.eve, so gale must censure first (next festival).
+        assertBool "gale cannot exile (not leader, and no own censure yet)"
+          (not (hasAct "gale" "exile" stGale))
+        let stEx = doAct "priest" "exile" stGale
+        assertBool "exiled" (exists "exiled.eve" (db stEx))
+        assertBool "exile once" (not (hasAct "priest" "exile" stEx))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

@@ -458,7 +458,7 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果；v161 lacksNotorious/hasScorned/lacksScorned）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114 村庄形夹具（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267** 加深为多步正义/审查弧、affiliate 负例与受害方叛逃溶解（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。关系条件于 v87/v98/v119（`isChildOf`/`isParentOf`/`isInLawOf` 等）。
 
@@ -474,7 +474,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧）*。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧；**v265** 磨坊审判复合弧（节庆+factionStanding）；**v266** 教会异端弧（节庆+领袖门禁））*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
@@ -1426,4 +1426,34 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：ScheduleRuleSpec 沙盒：窗外备货 → 窗内议价 → 窗外结账。
 - **测**：ScheduleRuleSpec harvest market arc。
+
+## v262 — 村庄形磨坊正义弧（factionStanding 实践门禁）
+
+- **做了什么**：FactionSpec 多步夹具：mill 成员获知偷窃 → 派生 thief 站队 → `confront` 门禁于 regard → 叛逃溶解门禁而信念基事实仍在。Village 角色名作夹具；**未改** Village 金标准。
+- **测**：FactionSpec village-shaped mill justice arc。
+
+## v263 — 村庄形教会审查弧
+
+- **做了什么**：FactionSpec：church 成员听闻亵渎 → heretic 站队 → `censure` 门禁；guild 旁观者同信念无站队、无审查。
+- **测**：FactionSpec village-shaped church censure arc。
+
+## v264 — 村庄形 affiliate 负例
+
+- **做了什么**：证明 `factionStanding` 只接合主成员 `member.!` 脊骨；仅次级 `affiliate` 的信念不派生站队，而 `affiliateComrades` 同盟仍成立。
+- **测**：FactionSpec village-shaped affiliate negative。
+
+## v265 — 节庆磨坊审判复合弧
+
+- **做了什么**：ScheduleRuleSpec：窗外获知 → 窗内控告（门禁于 factionStanding 派生 regard）→ 窗外放逐；多角色（dave/fran/eve）对照。
+- **测**：ScheduleRuleSpec harvest mill tribunal arc。
+
+## v266 — 节庆教会异端弧（领袖门禁）
+
+- **做了什么**：ScheduleRuleSpec：窗外听闻 → 窗内审查 → 窗外仅 `isLeader` 可放逐；复合节庆 + factionStanding + appointLeader。
+- **测**：ScheduleRuleSpec harvest church heresy arc。
+
+## v267 — 村庄形受害方叛逃溶解站队
+
+- **做了什么**：FactionSpec：受害方 carol 离开 mill 后，同派 dave 的 thief 站队溶解（`factionStanding` 接合受害方*当前*主成员）；信念基事实仍在。
+- **测**：FactionSpec village-shaped victim defection dissolves co-member regards。
 
