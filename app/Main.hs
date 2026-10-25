@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -122,6 +122,23 @@ runLeaders (faction : ws) =
   in mapM_ putStrLn (leadersOf st faction)
 runLeaders _ = putStrLn "usage: prax leaders <faction> <world>"
 
+-- | List faction names present in a world's closed view.
+runFactions :: [String] -> IO ()
+runFactions ws =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (factionsNamed st)
+
+-- | List regards: @prax regards <who> <world>@ (outgoing);
+-- @prax regards toward <target> <world>@ (incoming leaves).
+runRegards :: [String] -> IO ()
+runRegards ("toward" : target : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (regardsToward st target)
+runRegards (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (regardsOf st who)
+runRegards _ = putStrLn "usage: prax regards <who> <world> | prax regards toward <target> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -190,6 +207,8 @@ usageText = unlines
   , "  prax members <faction> <world>     list faction members"
   , "  prax affiliates <who> <world>      list character affiliates"
   , "  prax leaders <faction> <world>     list faction leaders"
+  , "  prax factions <world>              list faction names in view"
+  , "  prax regards <who>|<toward t> <world>  list regards leaves"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -216,6 +235,8 @@ main = do
     ("members" : ws)   -> runMembers ws
     ("affiliates" : ws) -> runAffiliates ws
     ("leaders" : ws)   -> runLeaders ws
+    ("factions" : ws)  -> runFactions ws
+    ("regards" : ws)   -> runRegards ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

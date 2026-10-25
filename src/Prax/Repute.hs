@@ -25,6 +25,8 @@ module Prax.Repute
   , lacksNotorious
   , hasScorned
   , lacksScorned
+  , everNotorious
+  , neverNotorious
   , hasEsteemed
   , lacksEsteemed
   ) where
@@ -174,3 +176,11 @@ hasScorned observer subject label =
 lacksScorned :: String -> String -> String -> Condition
 lacksScorned observer subject label =
   Not ("scorned." ++ observer ++ "." ++ subject ++ "." ++ label)
+
+-- | 条件：@subject@ 在任一标签下恶名昭著。
+everNotorious :: String -> Condition
+everNotorious subject = Exists [ Match ("notorious." ++ subject ++ ".Label") ]
+
+-- | 条件：@subject@ 在任何标签下皆非恶名。
+neverNotorious :: String -> Condition
+neverNotorious subject = Absent [ Match ("notorious." ++ subject ++ ".Label") ]

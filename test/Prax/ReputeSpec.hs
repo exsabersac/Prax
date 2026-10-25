@@ -170,4 +170,8 @@ tests = testGroup "Prax.Repute"
       hasScorned "ana" "kai" "brute" @?= Match "scorned.ana.kai.brute"
       lacksScorned "ana" "kai" "brute" @?= Not "scorned.ana.kai.brute"
 
+
+  , testCase "everNotorious / neverNotorious are Exists/Absent over labels" $ do
+      everNotorious "kai" @?= Exists [ Match "notorious.kai.Label" ]
+      neverNotorious "kai" @?= Absent [ Match "notorious.kai.Label" ]
   ]

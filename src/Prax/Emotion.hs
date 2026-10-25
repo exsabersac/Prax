@@ -17,6 +17,8 @@ module Prax.Emotion
   , feelFor, feelTowardFor
     -- * Reading feelings (Conditions)
   , feeling, feelingToward, lacksFeeling, lacksFeelingToward
+  , everFeeling
+  , neverFeeling
     -- * Making feelings visible to co-present others (ordinary .seen beliefs)
   , express, expressToward
     -- * Intensity (exclusive leaf under the feeling)
@@ -86,6 +88,14 @@ feelingToward who emotion target =
 
 -- | 条件：@who@ 对 @target@ 未感到 @emotion@。
 lacksFeelingToward :: String -> String -> String -> Condition
+
+-- | 条件：@who@ 持有任一情感叶（@who.feels.*@）。
+everFeeling :: String -> Condition
+everFeeling who = Exists [ Match (who ++ ".feels.Emotion") ]
+
+-- | 条件：@who@ 无任何情感叶（@everFeeling@ 的 Absent 对偶）。
+neverFeeling :: String -> Condition
+neverFeeling who = Absent [ Match (who ++ ".feels.Emotion") ]
 lacksFeelingToward who emotion target =
   Not (feelsPath who emotion ++ ".toward." ++ target)
 

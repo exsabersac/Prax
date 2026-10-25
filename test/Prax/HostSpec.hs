@@ -179,4 +179,16 @@ tests = testGroup "Prax.Host"
       leadersOf st "hall" @?= ["ana"]
       leadersOf st "yard" @?= ["ben"]
       leadersOf st "void" @?= []
+
+  , testCase "regardsToward / factionsNamed from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "regards.dave.bob.thief"
+                , Insert "regards.fran.bob.thief"
+                , Insert "regards.dave.eve.hero"
+                , Insert "member.dave.mill"
+                , Insert "affiliate.fran.choir"
+                , Insert "leads.guild!ana" ]
+      regardsToward st "bob" @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      regardsToward st "eve" @?= ["regards.dave.eve.hero"]
+      factionsNamed st @?= ["choir", "guild", "mill"]
   ]

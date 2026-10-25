@@ -161,4 +161,7 @@ tests = testGroup "Prax.Rumor"
   , testCase "everHeard is Match on heard.Src leaf" $
       everHeard "ada" "stole.bread" @?= Match "ada.believes.stole.bread.heard.Src"
 
+
+  , testCase "lacksHeardFrom is Not of heardFrom path" $
+      lacksHeardFrom "ada" "bex" "waved.ann" @?= Not "ada.believes.waved.ann.heard.bex"
   ]

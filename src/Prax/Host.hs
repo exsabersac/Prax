@@ -32,11 +32,13 @@ module Prax.Host
   , membersOf
   , affiliatesOf
   , leadersOf
+  , regardsToward
+  , factionsNamed
   , checkpoint
   , restore
   ) where
 
-import           Data.List (isInfixOf, isPrefixOf, sort, (\\))
+import           Data.List (isInfixOf, isPrefixOf, nub, sort, (\\))
 import qualified Data.Map.Strict as Map
 
 import           Prax.Db (dbToSentences, exists)
@@ -201,6 +203,60 @@ leadersOf st faction =
        , '.' `notElem` drop (length pref) s ]
 
 -- | 把状态写入 @path@（JSON 格式，见 'Prax.Persist'）。
+-- | 闭合视图中指向 @target@ 的站队叶（@regards.<who>.<target>.<label>@）。
+regardsToward :: PraxState -> String -> [String]
+regardsToward st target = sort
+  [ s
+  | s <- queryView st
+  , let pref = "regards."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, afterWho) = break (== '.') rest
+  , not (null who)
+  , let after = drop 1 afterWho
+  , let (tgt, afterTgt) = break (== '.') after
+  , tgt == target
+  , not (null (drop 1 afterTgt))  -- label nonempty
+  ]
+
+-- | 闭合视图中出现的派系名（来自 @member.*.<f>@、@affiliate.*.<f>@、@leads.<f>.*@）。
+factionsNamed :: PraxState -> [String]
+factionsNamed st = sort (nub (fromMember ++ fromAffiliate ++ fromLeads))
+  where
+    vs = queryView st
+    fromMember =
+      [ fac
+      | s <- vs
+      , "member." `isPrefixOf` s
+      , let rest = drop (length ("member." :: String)) s
+      , let (who, fac) = splitLastDot rest
+      , not (null who), not (null fac)
+      , '.' `notElem` who, '.' `notElem` fac
+      ]
+    fromAffiliate =
+      [ fac
+      | s <- vs
+      , "affiliate." `isPrefixOf` s
+      , let rest = drop (length ("affiliate." :: String)) s
+      , let (who, fac) = splitLastDot rest
+      , not (null who), not (null fac)
+      , '.' `notElem` who, '.' `notElem` fac
+      ]
+    fromLeads =
+      [ fac
+      | s <- vs
+      , "leads." `isPrefixOf` s
+      , let rest = drop (length ("leads." :: String)) s
+      , let (fac, who) = break (== '.') rest
+      , not (null fac)
+      , let w = drop 1 who
+      , not (null w), '.' `notElem` w
+      ]
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
+
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState
 

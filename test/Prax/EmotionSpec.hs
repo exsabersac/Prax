@@ -316,4 +316,8 @@ tests = testGroup "Prax.Emotion"
   , testCase "lacksFeelingToward is Not of toward path" $
       lacksFeelingToward "ada" "angry" "bex" @?= Not "ada.feels.angry.toward.bex"
 
+
+  , testCase "everFeeling / neverFeeling are Exists/Absent over feels.*" $ do
+      everFeeling "ana" @?= Exists [ Match "ana.feels.Emotion" ]
+      neverFeeling "ana" @?= Absent [ Match "ana.feels.Emotion" ]
   ]
