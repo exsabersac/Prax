@@ -103,6 +103,9 @@ tests = testGroup "Prax.Conversation"
       hasChattedWith "ada" "bex" @?= Match "ada.chattedWith.bex"
       neverChattedWith "ada" "bex" @?= Not "ada.chattedWith.bex"
 
+  , testCase "everChattedWith aliases hasChattedWith" $
+      everChattedWith "ada" "bex" @?= hasChattedWith "ada" "bex"
+
   ]
 
 -- helper: does any needle appear in the list of strings?

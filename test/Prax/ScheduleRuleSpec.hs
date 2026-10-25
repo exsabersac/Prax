@@ -13,7 +13,7 @@ import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Engine (performOutcome, performAction, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
-import           Prax.Schedule (gathering, festival, duringFestival, outsideFestival, pulse)
+import           Prax.Schedule (gathering, festival, duringFestival, hasFestival, outsideFestival, lacksFestival, pulse)
 import           Prax.Deontic (oblige, discharge, isObliged, breach)
 import           Prax.Emotion (setMood, inMood, clearMood)
 import           Prax.Worlds.Play (playWorld)
@@ -217,6 +217,10 @@ tests = testGroup "Prax.ScheduleRule"
     [ testCase "duringFestival / outsideFestival are Match/Not duals" $ do
         duringFestival "harvest" @?= Match "festival.harvest"
         outsideFestival "harvest" @?= Not "festival.harvest"
+
+    , testCase "hasFestival / lacksFestival alias during/outside" $ do
+        hasFestival "harvest" @?= duringFestival "harvest"
+        lacksFestival "harvest" @?= outsideFestival "harvest"
 
     , testCase "rite action available only inside the festival window" $ do
         let rite = practice

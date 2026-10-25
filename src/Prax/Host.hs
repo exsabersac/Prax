@@ -60,6 +60,7 @@ module Prax.Host
   , projectsOf
   , demandedOf
   , festivalsOf
+  , locationsOf
   , checkpoint
   , restore
   ) where
@@ -426,6 +427,11 @@ demandedOf st who = sort
 festivalsOf :: PraxState -> [String]
 festivalsOf st =
   sort [ s | s <- queryView st, "festival." `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的位置叶（@at.<who>.*@）。
+locationsOf :: PraxState -> String -> [String]
+locationsOf st who =
+  sort [ s | s <- queryView st, ("at." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

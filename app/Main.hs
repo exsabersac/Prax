@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -263,6 +263,12 @@ runFestivals ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (festivalsOf st)
 
+runLocations :: [String] -> IO ()
+runLocations (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (locationsOf st who)
+runLocations _ = putStrLn "usage: prax locations <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -397,6 +403,7 @@ main = do
     ("projects" : ws) -> runProjects ws
     ("demanded" : ws) -> runDemanded ws
     ("festivals" : ws) -> runFestivals ws
+    ("locations" : ws) -> runLocations ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

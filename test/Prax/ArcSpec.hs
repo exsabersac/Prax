@@ -53,4 +53,7 @@ tests = testGroup "Prax.Arc"
       everArc "ada" @?= Exists [ Match "ada.arc!Stage" ]
       neverArc "ada" @?= Absent [ Match "ada.arc!Stage" ]
 
+  , testCase "hasArcIs aliases arcIs" $
+      hasArcIs "bex" "hopeful" @?= arcIs "bex" "hopeful"
+
   ]

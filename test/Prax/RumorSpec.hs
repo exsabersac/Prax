@@ -166,4 +166,8 @@ tests = testGroup "Prax.Rumor"
 
   , testCase "lacksHeardFrom is Not of heardFrom path" $
       lacksHeardFrom "ada" "bex" "waved.ann" @?= Not "ada.believes.waved.ann.heard.bex"
+  , testCase "hasHeard / hasHeardFrom alias heard*" $ do
+      hasHeard "ada" "stole.bread" @?= heard "ada" "stole.bread"
+      hasHeardFrom "ada" "bex" "waved.ann" @?= heardFrom "ada" "bex" "waved.ann"
+
   ]

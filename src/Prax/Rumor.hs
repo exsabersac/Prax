@@ -12,7 +12,9 @@ module Prax.Rumor
   ( gossip
   , gossipPublic
   , heard
+  , hasHeard
   , heardFrom
+  , hasHeardFrom
   , neverHeard
   , lacksHeard
   , lacksHeardFrom
@@ -73,10 +75,18 @@ gossipPublic copresence gate pat label
 heard :: String -> String -> Condition
 heard who event = Exists [ Match (beliefAbout who event ++ ".heard.Src") ]
 
+-- | 条件：@who@ 对 @event@ 有传闻证据（@heard@ 同体；对齐 has* 命名）。
+hasHeard :: String -> String -> Condition
+hasHeard = heard
+
 -- | 条件：@who@ 从特定 @source@ 听说 @event@。
 heardFrom :: String -> String -> String -> Condition
 heardFrom who source event =
   Match (beliefAbout who event ++ ".heard." ++ source)
+
+-- | 条件：@who@ 从 @source@ 听说 @event@（@heardFrom@ 同体；对齐 has* 命名）。
+hasHeardFrom :: String -> String -> String -> Condition
+hasHeardFrom = heardFrom
 
 -- | 条件：@who@ 从未经传闻得知 @event@（无任一 @.heard.*@ 叶）。
 neverHeard :: String -> String -> Condition

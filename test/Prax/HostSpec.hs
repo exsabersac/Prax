@@ -325,4 +325,13 @@ tests = testGroup "Prax.Host"
       demandedOf st "void" @?= []
       festivalsOf st @?= ["festival.harvest", "festival.midwinter"]
       festivalsOf emptyState @?= []
+
+  , testCase "locationsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "at.ana!yard"
+                , Insert "at.ben!market"
+                , Insert "flag.x" ]
+      locationsOf st "ana" @?= ["at.ana.yard"]
+      locationsOf st "ben" @?= ["at.ben.market"]
+      locationsOf st "void" @?= []
   ]

@@ -478,7 +478,7 @@ Tier 2 — 长时间跨度的代理内在性：
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`；v178 `regardsToward`；v179 `factionsNamed`；v189 `debtsOf`；v197 `obligationsOf`；v203 `breachesOf`；v208 `feelingsOf`/`liesOf`/`chattedWithOf`；v211 `traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`；v217 `esteemedOf`/`scornedOf`/`beliefsOf`；v225 `arcsOf`/`agesOf`/`projectsOf`；v234–v235 `demandedOf`/`festivalsOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`/`debtsOf`/`obligationsOf`/`breachesOf`/`feelingsOf`/`liesOf`/`chattedWithOf`/`traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`/`esteemedOf`/`scornedOf`/`beliefsOf`/`arcsOf`/`agesOf`/`projectsOf`/`demandedOf`/`festivalsOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）、`prax factions`（v180）、`prax regards`（v181）、`prax debts`（v190）、`prax obligations`（v198）、`prax breaches`（v204）、`prax feelings`/`lies`/`chatted`（v209）、`prax traits`/`moods`/`bonds`/`kin`/`notorious`（v212）、`prax esteemed`/`scorned`/`beliefs`（v218）、`prax arcs`/`ages`/`projects`（v226）、`prax demanded`/`festivals`（v234–v235）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`；v178 `regardsToward`；v179 `factionsNamed`；v189 `debtsOf`；v197 `obligationsOf`；v203 `breachesOf`；v208 `feelingsOf`/`liesOf`/`chattedWithOf`；v211 `traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`；v217 `esteemedOf`/`scornedOf`/`beliefsOf`；v225 `arcsOf`/`agesOf`/`projectsOf`；v234–v235 `demandedOf`/`festivalsOf`；v243 `locationsOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`/`debtsOf`/`obligationsOf`/`breachesOf`/`feelingsOf`/`liesOf`/`chattedWithOf`/`traitsOf`/`moodsOf`/`bondsOf`/`kinOf`/`notoriousOf`/`esteemedOf`/`scornedOf`/`beliefsOf`/`arcsOf`/`agesOf`/`projectsOf`/`demandedOf`/`festivalsOf`/`locationsOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）、`prax factions`（v180）、`prax regards`（v181）、`prax debts`（v190）、`prax obligations`（v198）、`prax breaches`（v204）、`prax feelings`/`lies`/`chatted`（v209）、`prax traits`/`moods`/`bonds`/`kin`/`notorious`（v212）、`prax esteemed`/`scorned`/`beliefs`（v218）、`prax arcs`/`ages`/`projects`（v226）、`prax demanded`/`festivals`（v234–v235）、`prax locations`（v243）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -1301,4 +1301,39 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：ScheduleRuleSpec 可玩弧——窗外起草 → 节中呈递 → 节后获批；仍不改 Village。
 - **测**：ScheduleRuleSpec harvest petition arc。
+
+## v237 — Conversation everChattedWith
+
+- **做了什么**：`everChattedWith` = `hasChattedWith` 同体（对齐 ever* 命名）。
+- **测**：ConversationSpec everChattedWith。
+
+## v238 — Emotion hasFeeling / hasFeelingToward
+
+- **做了什么**：`hasFeeling`/`hasFeelingToward` = `feeling`/`feelingToward` 同体。
+- **测**：EmotionSpec hasFeeling / hasFeelingToward。
+
+## v239 — Rumor hasHeard / hasHeardFrom
+
+- **做了什么**：`hasHeard`/`hasHeardFrom` = `heard`/`heardFrom` 同体。
+- **测**：RumorSpec hasHeard / hasHeardFrom。
+
+## v240 — Arc hasArcIs
+
+- **做了什么**：`hasArcIs` = `arcIs` 同体。
+- **测**：ArcSpec hasArcIs。
+
+## v241 — Sight hasKnownWhere
+
+- **做了什么**：`hasKnownWhere` = `knownWhere` 同体。
+- **测**：SightSpec hasKnownWhere。
+
+## v242 — Schedule hasFestival / lacksFestival
+
+- **做了什么**：`hasFestival`/`lacksFestival` = `duringFestival`/`outsideFestival` 同体。
+- **测**：ScheduleRuleSpec hasFestival / lacksFestival。
+
+## v243 — Host locationsOf + CLI prax locations
+
+- **做了什么**：闭合视图枚举 `at.<who>.*`；CLI 打印。
+- **测**：HostSpec locationsOf。
 

@@ -14,7 +14,7 @@ import           Prax.Engine (definePractices, performOutcome, setCharacters,
                                setSchedule, roundBoundary)
 import           Prax.TypeCheck (typeCheck)
 import           Prax.Schedule (sightRule)
-import           Prax.Sight (sightedWithin, lastKnownAt, unknownWhere, lacksKnownWhere, knownWhere)
+import           Prax.Sight (sightedWithin, lastKnownAt, unknownWhere, lacksKnownWhere, knownWhere, hasKnownWhere)
 
 -- Two rooms; ute and vic share one, wes is alone in the other.
 sighting :: [Condition]
@@ -108,5 +108,8 @@ tests = testGroup "Prax.Sight"
 
   , testCase "knownWhere is Match on believes.at subtree" $
       knownWhere "ada" "bex" @?= Match "ada.believes.at.bex"
+
+  , testCase "hasKnownWhere aliases knownWhere" $
+      hasKnownWhere "ada" "bex" @?= knownWhere "ada" "bex"
 
   ]

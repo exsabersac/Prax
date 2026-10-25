@@ -9,6 +9,7 @@ module Prax.Arc
   ( arcSentence
   , arcOf
   , arcIs
+  , hasArcIs
   , lacksArcIs
   , hasArc
   , lacksArc
@@ -33,6 +34,10 @@ arcOf who = who ++ ".arc"
 -- | 条件：@who@ 当前处于弧阶段 @stage@。
 arcIs :: String -> String -> Condition
 arcIs who stage = Match (arcSentence who stage)
+
+-- | 条件：@who@ 处于弧阶段 @stage@（@arcIs@ 同体；对齐 ever* 命名）。
+hasArcIs :: String -> String -> Condition
+hasArcIs = arcIs
 
 -- | 条件：@who@ 当前弧不是 @stage@（@arcIs@ 的 Not 对偶）。
 lacksArcIs :: String -> String -> Condition

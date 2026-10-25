@@ -21,6 +21,7 @@ module Prax.Conversation
   , lacksSpeaker
   , lacksListener
   , hasChattedWith
+  , everChattedWith
   , neverChattedWith
   , lacksChattedWith
   , everChatted
@@ -121,6 +122,10 @@ offTopic topic = Not (convP ++ ".topic!" ++ topic)
 -- | 条件：@who@ 曾与 @other@ 聊过（@chattedWith@ 叶）。
 hasChattedWith :: String -> String -> Condition
 hasChattedWith who other = Match (who ++ ".chattedWith." ++ other)
+
+-- | 条件：@who@ 曾与 @other@ 聊过（@hasChattedWith@ 同体；对齐 ever* 命名）。
+everChattedWith :: String -> String -> Condition
+everChattedWith = hasChattedWith
 
 -- | 条件：@who@ 未与 @other@ 聊过（历史名；点级 Not，与 'lacksChattedWith' 同体）。
 neverChattedWith :: String -> String -> Condition

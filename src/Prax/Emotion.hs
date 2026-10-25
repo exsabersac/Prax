@@ -16,7 +16,7 @@ module Prax.Emotion
     -- * Feeling with a lifetime (fades on its own onset's clock)
   , feelFor, feelTowardFor
     -- * Reading feelings (Conditions)
-  , feeling, feelingToward, lacksFeeling, lacksFeelingToward
+  , feeling, hasFeeling, feelingToward, hasFeelingToward, lacksFeeling, lacksFeelingToward
   , everFeeling
   , neverFeeling
   , everFeelingToward
@@ -81,6 +81,10 @@ unfeelToward who emotion target =
 feeling :: String -> String -> Condition
 feeling who emotion = Match (feelsPath who emotion)
 
+-- | 条件：@who@ 正感受 @emotion@（@feeling@ 同体；对齐 has* 命名）。
+hasFeeling :: String -> String -> Condition
+hasFeeling = feeling
+
 -- | 条件：@who@ 当前未感到 @emotion@（含无目标与有目标子树）。
 lacksFeeling :: String -> String -> Condition
 lacksFeeling who emotion = Not (feelsPath who emotion)
@@ -90,8 +94,14 @@ feelingToward :: String -> String -> String -> Condition
 feelingToward who emotion target =
   Match (feelsPath who emotion ++ ".toward." ++ target)
 
+-- | 条件：@who@ 对 @target@ 正感受 @emotion@（@feelingToward@ 同体；对齐 has* 命名）。
+hasFeelingToward :: String -> String -> String -> Condition
+hasFeelingToward = feelingToward
+
 -- | 条件：@who@ 对 @target@ 未感到 @emotion@。
 lacksFeelingToward :: String -> String -> String -> Condition
+lacksFeelingToward who emotion target =
+  Not (feelsPath who emotion ++ ".toward." ++ target)
 
 -- | 条件：@who@ 持有任一情感叶（@who.feels.*@）。
 everFeeling :: String -> Condition
@@ -100,8 +110,6 @@ everFeeling who = Exists [ Match (who ++ ".feels.Emotion") ]
 -- | 条件：@who@ 无任何情感叶（@everFeeling@ 的 Absent 对偶）。
 neverFeeling :: String -> Condition
 neverFeeling who = Absent [ Match (who ++ ".feels.Emotion") ]
-lacksFeelingToward who emotion target =
-  Not (feelsPath who emotion ++ ".toward." ++ target)
 
 -- | 条件：@who@ 对某人持有任一指向性情感叶（@who.feels.Emotion.toward.Target@）。
 everFeelingToward :: String -> Condition

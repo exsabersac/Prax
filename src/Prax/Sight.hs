@@ -15,6 +15,7 @@ module Prax.Sight
   , unknownWhere
   , lacksKnownWhere
   , knownWhere
+  , hasKnownWhere
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..), CalcOp (..))
@@ -46,3 +47,8 @@ lacksKnownWhere = unknownWhere
 knownWhere :: String -> String -> Condition
 knownWhere seer seen =
   Match (seer ++ ".believes.at." ++ seen)
+
+-- | 条件：@seer@ 对 @seen@ 持有最后已知位置（@knownWhere@ 同体；对齐 has* 命名）。
+hasKnownWhere :: String -> String -> Condition
+hasKnownWhere = knownWhere
+

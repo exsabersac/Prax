@@ -14,7 +14,9 @@ module Prax.Schedule
   , gathering
   , festival
   , duringFestival
+  , hasFestival
   , outsideFestival
+  , lacksFestival
   , sightRule
   , pulse
   ) where
@@ -52,6 +54,10 @@ duringFestival name
              ++ " must be a single path segment")
   | otherwise = Match ("festival." ++ name)
 
+-- | 条件：节庆 @name@ 开放窗内（@duringFestival@ 同体；对齐 has* 命名）。
+hasFestival :: String -> Condition
+hasFestival = duringFestival
+
 -- | 条件：节庆 @name@ 窗外（@duringFestival@ 的 Not 对偶）。
 outsideFestival :: String -> Condition
 outsideFestival name
@@ -59,6 +65,10 @@ outsideFestival name
       error ("Prax.Schedule.outsideFestival: name " ++ show name
              ++ " must be a single path segment")
   | otherwise = Not ("festival." ++ name)
+
+-- | 条件：节庆 @name@ 窗外（@outsideFestival@ 同体；对齐 lacks* 命名）。
+lacksFestival :: String -> Condition
+lacksFestival = outsideFestival
 
 -- | 感知作为周期-1 循环规则：创作的目击模板，用读作事实的时钟打戳（'Prax.Types.turnPath'——
 -- tick 机制现属引擎）。@Now@\/@Seer@\/@Seen@\/@Spot@ 是其契约变量——模板绑定它们，结果直接读回——
