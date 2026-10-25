@@ -119,7 +119,7 @@ affordance 的 **社会实践（social practices）**，以及按效用选择动
   信念与派生 `regards`/`notorious`，产出事件摘要、显著性阈值、任务钩与涌现问答（`askChronicle`）。
   CLI：`prax chronicle [world] [query…]`（含 `feelings of <who>`，v60）。从不写入。**v59** 起 `prax help` 列出世界与工具子命令。
 - `Prax.Host`（v66）— 宿主嵌入：`step`/`inject`/`queryFacts`/`available`。
-- `Prax.Kin` v61–v62：`divorce`、`birth`/`birthInto`；`Prax.Faction` v65：`affiliate` 多重次级归属；`Prax.Confession` v64：`penance`/`atone`；`Prax.Emotion` v63：`feelAtFor`。
+- `Prax.Kin` v61–v62／v67：`divorce`、`birth`/`birthInto`、`bequeath`；`Prax.Faction` v65／v69：`affiliate`、`appointLeader`；`Prax.Confession` v64：`penance`/`atone`；`Prax.Emotion` v63／v68：`feelAtFor`、`feelDefault`；`Prax.Deontic` v70：`obligeWhenAt`；`Prax.Project` v72：`endeavorCrew`/`enlist`；`Prax.Host` v66／v71。
 - `Prax.Deceit`（v22）— **秘密与欺骗**：隐瞒是创作，非机制——`conceal` 是 want 无人相信某事迹
   （`Absent [Anyone believes <event>]`）；planner 前瞻已模拟 v19 目击存入，因此珍视秘密的 agent
   *经规划*避免被看见——等房间空落在效用之外，无需也未建潜行系统。谎言（`lie`）是无证据断言：

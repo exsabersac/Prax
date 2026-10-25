@@ -1220,7 +1220,12 @@ recanted.eve: False
 | 离婚 / 出生 | `Prax.Kin` `divorce`/`birth` | 成员不变 / 可 joins |
 | 补赎 | `Prax.Confession` `penance`/`atone` | 道义义务 |
 | 次级归属 | `Prax.Faction` `affiliate` | 多值，主效忠仍排他 |
-| 宿主嵌入 | `Prax.Host` `step`/`inject`/`queryFacts` | 外部循环薄表面 |
+| 宿主嵌入 | `Prax.Host` `step`/`stepExact`/`queryView` | 外部循环薄表面 |
+| 持有继承 | `Prax.Kin` `bequeath` | 死亡+亲子，`holds.!` |
+| 默认寿命感受 | `Prax.Emotion` `feelDefault` | 按情绪词消退 |
+| 派系领导 | `Prax.Faction` `appointLeader` | `leads.faction!who` |
+| 地点义务 | `Prax.Deontic` `obligeWhenAt` | 在场才门禁 |
+| 合作事业 | `Prax.Project` `endeavorCrew`/`enlist` | 共享 Owner 账本 |
 | 编年史家 / 显著性查询（只读） | `Prax.Chronicle` `askChronicle` | `prax chronicle [world]` |
 | 站队分数效果（一次 scorn/esteem） | `Prax.Repute` `scornStanding`/`esteemStanding` | regard → 关系分 |
 | 事业放弃 | `Prax.Project` `abandon` | 子树拆除重开承接 |

@@ -349,6 +349,18 @@
 
 - **v66** — **宿主嵌入 API**（`Prax.Host` `step`/`inject`/`queryFacts`/`available`）。薄封装既有引擎入口；清偿 Tier-3「嵌入 API」最小表面。
 
+- **v67** — **持有物继承**（`Prax.Kin` `bequeath`）。镜像 `succession`：死亡 + 亲子门禁，作用于 `holds.<thing>!<holder>`。
+
+- **v68** — **情绪默认寿命**（`Prax.Emotion` `defaultLifetime`/`feelDefault`/`feelTowardDefault`）。按情绪词创作默认消退戳。
+
+- **v69** — **派系领导**（`Prax.Faction` `appointLeader`/`deposeLeader`/`isLeader`）。排他 `leads.<faction>!<who>`；职衔以外领导。
+
+- **v70** — **地点作用域义务**（`Prax.Deontic` `obligeWhenAt`/`isObligedWhenAt`/`dischargeWhenAt`）。`obliged.<who>.whenAt.<place>.<content>`。
+
+- **v71** — **宿主嵌入增强**（`Prax.Host` `stepExact`/`availableActions`/`queryView`）。精确标签、完整落地动作、闭合视图只读。
+
+- **v72** — **合作事业**（`Prax.Project` `endeavorCrew`/`enlist`）。crew 门禁使合伙人推进同一 Owner 账本；清偿「合作项目」。
+
 ## 核心逻辑引擎
 
 | # | 特性 | 状态 | 来源 | 备注 |
@@ -421,7 +433,9 @@
 | 41 | 丰富分支多角色剧集（内容） | v9 | P§XII | `Prax.Worlds.Intrigue`：谋杀、角色死亡（阵容移除）、背叛/忠诚/共谋结局、恋情。`Prax.Worlds.Play`（v12）重铸为 2 场景剧本 |
 | 43 | 阵容移除（死亡 / 驱逐） | v9 | P§VIII-D | `dead.<name>` 事实；`Prax.Types.livingCharacters`；循环/planner 跳过死者 |
 | 44 | 编年史家 / 显著性查询（宿主只读） | v55 | 沙箱 Tier-3 | `Prax.Chronicle`：从信念出处与派生站队生成事件摘要、显著性阈值、任务钩与 `askChronicle` 问答；CLI `prax chronicle`。只读——永不写入 DB |
-| 45 | 宿主嵌入 API（step/inject/query） | v66 | 沙箱 Tier-3 | `Prax.Host`：薄封装 `possibleActions`/`performAction`/`performOutcome`/`dbToSentences` |
+| 45 | 宿主嵌入 API（step/inject/query） | v66–v71 | 沙箱 Tier-3 | `Prax.Host`：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`available`/`availableActions` |
+| 46 | 持有物继承（bequeath） | v67 | 沙箱 | `Prax.Kin.bequeath`：死亡+亲子门禁，`holds.<thing>!<holder>` |
+| 47 | 合作事业（endeavorCrew） | v72 | 沙箱 | `endeavorCrew`/`enlist`：共享 Owner 账本 |
 | 42 | 基于嵌入的 PWIM 自由文本玩家输入 | 需研究 | arXiv 2406.00942 | 外部模型依赖 |
 
 ## 待关闭的开放研究
@@ -444,12 +458,12 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：职衔以外领导、地点作用域道义规范集、`factionStanding` 村庄接线。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）、`factionStanding` 村庄接线。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
-- **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。所存：持有继承、年龄/长子继承。
+- **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。所存：年龄/长子继承。持有继承于 v67 `bequeath` 清偿。
 
 Tier 2 — 长时间跨度的代理内在性：
-- **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：合作项目、类型综合。
+- **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
 - **性格 → 意志**（`Prax.Persona`）*（完成 — v25）*：特质即行为估值；gale/eve 对照。
 - **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22）*：`conceal`/`lie`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
@@ -459,11 +473,11 @@ Tier 2 — 长时间跨度的代理内在性：
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
-- **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。残余：每情绪默认寿命、情绪周期/心境一致启动。
+- **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。残余：情绪周期/心境一致启动。每情绪默认寿命于 v68 清偿。
 - **日历与集会** *（完成 — v37）*。节庆内容与多同时集会仍出范围。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66 最小表面）*：`step`/`inject`/`queryFacts`/`available`。更富宿主会话 API 仍可叠。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`available`/`availableActions`。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
