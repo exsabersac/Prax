@@ -143,4 +143,22 @@ tests = testGroup "Prax.Debt"
         assertBool "ren still remembers the default"
           (exists "ren.believes.violated.dell.defaulted.seen" (db st2))
     ]
+
+  , testCase "forgive clears debt and obligation as creditor action" $ do
+      let forgiveP = practice
+            { practiceId = "mercy"
+            , roles = []
+            , actions = [ forgive "favor" "[Actor]: forgive [Debtor] the favor" ]
+            }
+          st0 = definePractices [forgiveP]
+                  (foldl (flip performOutcome) emptyState
+                    (Insert "practice.mercy" : owe "cora" "dell" "favor"))
+      assertBool "owed" (exists "debt.cora.dell.favor" (db st0))
+      assertBool "obliged" (exists "obliged.dell.favor" (db st0))
+      let st1 = case filter (("forgive" `isInfixOf`) . gaLabel) (possibleActions st0 "cora") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no forgive"
+      assertBool "debt gone" (not (exists "debt.cora.dell.favor" (db st1)))
+      assertBool "obligation gone" (not (exists "obliged.dell.favor" (db st1)))
+
   ]

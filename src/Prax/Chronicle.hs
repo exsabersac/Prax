@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@、@"feelings of "++who@（基库情节情感，含强度叶）。
+-- @"salient "++show k@、@"feelings of "++who@、@"leads of "++faction@、@"affiliates of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -149,6 +149,20 @@ askChronicle st q
   , [(k, "")] <- reads ks =
       [ ev ++ " (" ++ show (length (nub (map erKnower rs))) ++ " knowers)"
       | (ev, rs) <- sort (salientEvents k (db st)) ]
+  | Just faction <- stripPrefix "leads of " q =
+      -- dbToSentences 把 ! 展成 .；排他叶 leads.<faction>!<who> 显示为 leads.<faction>.<who>
+      let prefix = "leads." ++ faction ++ "."
+          ls = sort [ drop (length prefix) s
+                    | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                    , '.' `notElem` drop (length prefix) s ]
+      in if null ls then ["nobody leads " ++ faction]
+         else map (++ (" leads " ++ faction)) ls
+  | Just who <- stripPrefix "affiliates of " q =
+      let prefix = "affiliate." ++ who ++ "."
+          fs = sort [ drop (length prefix) s
+                    | s <- dbToSentences (db st), prefix `isPrefixOf` s ]
+      in if null fs then [who ++ " has no affiliates"]
+         else map ((who ++ " affiliates ") ++) fs
   | Just who <- stripPrefix "feelings of " q =
       let prefix = who ++ ".feels."
           fs = sort [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s ]

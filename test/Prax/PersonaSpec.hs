@@ -134,4 +134,15 @@ tests = testGroup "Prax.Persona"
       fmap gaLabel (Planner.predictMove seer (member "kit") (member "bea"))
         @?= Just "bea: whisper to oz that kit took the gem"
       Planner.predictMove seer (member "kit") (member "ada") @?= Nothing
+
+  , testCase "bearFromRegard derives trait from standing label" $ do
+      let st = setAxioms [bearFromRegard "thief" "hardened"]
+                 (foldl (flip performOutcome) emptyState
+                   [ Insert "regards.bob.ada.thief" ])
+      assertBool "trait" (exists "trait.ada.hardened" (readView st))
+
+  , testCase "bearFromRegard rejects dotted names" $ do
+      r <- try (evaluate (length (show (bearFromRegard "a.b" "t"))))
+      assertBool "dotted" (isLeft (r :: Either ErrorCall Int))
+
   ]

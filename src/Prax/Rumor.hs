@@ -7,8 +7,10 @@
 -- 像可观察性一样，__什么可告知是创作的__：'gossip' 按事件模式声明一个告知动作（通用
 -- 「分享任何信念」本不可能——查询变量绑定单路径段）。传播是 want 驱动：创作想要他人知道的角色，
 -- 普通 planner 携带消息。
+-- v75：'gossipPublic' 一对多告知。
 module Prax.Rumor
   ( gossip
+  , gossipPublic
   , heard
   ) where
 
@@ -39,6 +41,28 @@ gossip copresence gate pat label
          , Absent [ Match (beliefAbout "Hearer" pat ++ ".seen") ]
          , Not (beliefAbout "Hearer" pat ++ ".heard.Actor") ]
       ++ gate
+
+-- | 公开八卦：同场所有听者各得一条 @.heard.Actor@（镜像 confessPublic 的 ForEach）。
+-- @gate@ 仍按每名听者检查；无单一 Hearer 绑定。
+gossipPublic :: CoPresence -> [Condition] -> String -> String -> Action
+gossipPublic copresence gate pat label
+  | (v : _) <- offenders =
+      error ("Prax.Rumor.gossipPublic: " ++ show v ++ " in an authored gate or event"
+             ++ " pattern -- the Prax namespace is reserved for machinery")
+  | otherwise = action label
+      ([ Match (beliefAbout "Actor" pat) ] ++ gate)
+      [ ForEach (asRole "Hearer" copresence
+                 ++ [ Neq "Hearer" "Actor"
+                    , Neq "Hearer" subject
+                    , Absent [ Match (beliefAbout "Hearer" pat ++ ".seen") ]
+                    , Not (beliefAbout "Hearer" pat ++ ".heard.Actor") ])
+          [ Insert (beliefAbout "Hearer" pat ++ ".heard.Actor") ] ]
+  where
+    offenders = authoredVarClash [] gate [] ++ authoredPatClash [] (pathNames pat)
+    subject = case filter isVariable (pathNames pat) of
+      (v : _) -> v
+      []      -> error ("gossipPublic: event pattern " ++ show pat
+                        ++ " names no one (a rumor is about someone)")
 
 -- | 条件：@who@ 对 @event@ 有传闻证据（来自任何人）。该子树上的布尔 `Exists`。
 heard :: String -> String -> Condition

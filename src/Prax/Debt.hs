@@ -16,10 +16,11 @@ module Prax.Debt
   , owe
   , settle
   , owes
+  , forgive
   ) where
 
 import           Prax.Query (Condition (..))
-import           Prax.Types (Outcome (..))
+import           Prax.Types (Action, Outcome (..), action)
 import           Prax.Deontic (oblige, discharge)
 
 -- | 债务的 DB 路径：@debt.\<creditor\>.\<debtor\>.\<content\>@。多段名响亮拒绝。
@@ -46,3 +47,13 @@ settle creditor debtor content =
 -- | 条件：@debtor@ 当前欠 @creditor@ @content@。
 owes :: String -> String -> String -> Condition
 owes creditor debtor content = Match (debtPath creditor debtor content)
+
+-- | 债权人赦免：门禁于 @debt.Actor.Debtor.<content>@，删除债务并 discharge 债务人义务。
+forgive :: String -> String -> Action
+forgive content label
+  | null content =
+      error ("forgive: content must be nonempty")
+  | otherwise = action label
+      [ Match ("debt.Actor.Debtor." ++ content) ]
+      [ Delete ("debt.Actor.Debtor." ++ content)
+      , discharge "Debtor" content ]

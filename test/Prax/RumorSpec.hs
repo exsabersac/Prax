@@ -132,4 +132,23 @@ tests = testGroup "Prax.Rumor"
         r <- try (evaluate (length (show tell)))
         assertBool "the legal shape is not rejected" (not (isLeft (r :: Either ErrorCall Int)))
     ]
+
+  , testCase "gossipPublic deposits heard for every co-present hearer" $ do
+      let shout = gossipPublic together [] "tripped.Klutz"
+                    "[Actor]: announce that [Klutz] tripped"
+          p = practice { practiceId = "yard", roles = ["R"], actions = [shout] }
+          st0 = foldl (flip performOutcome)
+                  (setCharacters (map character ["sam", "hana", "pip", "tess"])
+                    (definePractices [p] emptyState))
+                  [ Insert "practice.yard.here"
+                  , Insert "at.sam!yard", Insert "at.hana!yard", Insert "at.pip!yard"
+                  , Insert "at.tess!yard"
+                  , Insert "sam.believes.tripped.tess.seen" ]
+          st1 = case filter (("announce" `isInfixOf`) . gaLabel) (possibleActions st0 "sam") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no announce"
+      assertBool "hana heard" (exists "hana.believes.tripped.tess.heard.sam" (db st1))
+      assertBool "pip heard" (exists "pip.believes.tripped.tess.heard.sam" (db st1))
+      assertBool "tess skipped as subject" (not (exists "tess.believes.tripped.tess.heard.sam" (db st1)))
+
   ]

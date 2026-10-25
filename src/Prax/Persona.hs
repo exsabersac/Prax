@@ -7,12 +7,14 @@
 -- 改变你对他们的期望，不只是他们做什么。
 --
 -- 目标包有意不是特质：目标是不需包的普通欲望。特质说你愿意如何行动，而非你追求什么。
+-- v74：'bearFromRegard' —— 累犯站队派生特质事实（再犯入性格）。
 module Prax.Persona
   ( Trait (..)
   , personaVocabulary
   , bearing
   , transparent
   , cast
+  , bearFromRegard
   ) where
 
 import           Data.List (nub, (\\))
@@ -68,3 +70,15 @@ cast traits roster
         ++ [ Insert ("trait." ++ charName c ++ "." ++ traitName t)
            | (c, ts) <- roster, t <- ts ] )
   where tnames = map traitName traits
+
+-- | 累犯入性格：任何人将 @O@ 视为 @label@ 时，派生 @trait.O.<traitName>@。
+-- 创作方可再经 'transparent' / 欲望词汇读该特质；本公理只种事实。
+bearFromRegard :: String -> String -> Axiom
+bearFromRegard label traitName
+  | bad label || bad traitName =
+      error ("bearFromRegard: label and trait must be single path segments: "
+             ++ show (label, traitName))
+  | otherwise = axiom
+      [ Match ("regards.W.O." ++ label) ]
+      [ "trait.O." ++ traitName ]
+  where bad n = null n || any (`elem` (".!" :: String)) n

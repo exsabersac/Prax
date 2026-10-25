@@ -481,3 +481,29 @@ Tier 3 — 宿主游戏边界：
 - **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`available`/`availableActions`。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
+
+## v73 — Kin 年龄叶（setAge / ageAtLeast）
+
+- **做了什么**：排他 `@age.<who>!<n>@`；条件 `ageAtLeast who n`（Match+Cmp Gte）供成年门禁。
+- **测**：KinSpec setAge exclusive / rejects。
+
+## v74 — Persona bearFromRegard
+
+- **做了什么**：公理：任何人将 O 视为 `label` → 派生 `trait.O.<traitName>`（累犯入性格）。
+- **测**：PersonaSpec derives / rejects dotted。
+
+## v75 — Rumor gossipPublic
+
+- **做了什么**：一对多告知（ForEach 听者），镜像 confessPublic；跳过主体与 Actor。
+- **测**：RumorSpec deposits heard for every co-present hearer。
+
+## v76 — Debt forgive
+
+- **做了什么**：债权人动作：门禁 `debt.Actor.Debtor.<content>`，Delete 债务 + discharge 债务人。
+- **测**：DebtSpec forgive clears debt and obligation。
+
+## v77 — Chronicle leads-of / affiliates-of
+
+- **做了什么**：`askChronicle` 查询首领与次级归属（`dbToSentences` 展平 `!`→`.`）。
+- **测**：ChronicleSpec leads-of and affiliates-of。
+

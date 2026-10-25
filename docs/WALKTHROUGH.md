@@ -1292,3 +1292,5 @@ recanted.eve: False
 
 更大的弧，按 LEDGER，是把这从忠实复现长成可嵌入其他游戏（沙盒、roguelike）的涌现社交模拟基底——
 `feud` 沙盒（§19）是该方向的第一步。
+
+> v73–v77：Kin `setAge`/`ageAtLeast`；Persona `bearFromRegard`；Rumor `gossipPublic`；Debt `forgive`；Chronicle `leads of` / `affiliates of`。

@@ -8,7 +8,8 @@ import           Test.Tasty.HUnit (testCase, assertBool, assertFailure)
 
 import           Prax.Db (exists, dbToSentences)
 import           Prax.Types
-import           Prax.Engine (performOutcome, setAxioms, definePractice, possibleActions, performAction)
+import           Prax.Engine
+import           Prax.Engine (performOutcome, setAxioms, definePractice, definePractices, possibleActions, performAction)
 import           Prax.Faction (joins, comrades)
 import           Prax.Kin
 
@@ -239,4 +240,31 @@ tests = testGroup "Prax.Kin"
       assertBool "a dotted office name errors" (isLeft (r2 :: Either ErrorCall Int))
       r3 <- try (evaluate (length (actionName (succession "a!b"))))
       assertBool "a bang'd office name errors" (isLeft (r3 :: Either ErrorCall Int))
+
+  , testCase "setAge exclusive leaf; ageAtLeast gates" $ do
+      let st0 = performOutcome (setAge "ana" 17) emptyState
+      assertBool "age" (exists "age.ana!17" (db st0))
+      let st1 = performOutcome (setAge "ana" 18) st0
+      assertBool "overwrite" (exists "age.ana!18" (db st1))
+      assertBool "old gone" (not (exists "age.ana!17" (db st1)))
+      let adultP = practice
+            { practiceId = "adult"
+            , roles = []
+            , actions = [ action "[Actor]: vote"
+                            (ageAtLeast "Actor" 18)
+                            [ Insert "voted.Actor" ] ]
+            }
+          world = definePractices [adultP]
+                    (foldl (flip performOutcome) emptyState
+                      [ Insert "practice.adult", setAge "ana" 18, setAge "ben" 16 ])
+          labels who = map gaLabel (possibleActions world who)
+      assertBool "ana adult" (any ("vote" `isInfixOf`) (labels "ana"))
+      assertBool "ben minor" (not (any ("vote" `isInfixOf`) (labels "ben")))
+
+  , testCase "setAge rejects bad args" $ do
+      r1 <- try (evaluate (length (show (setAge "" 1))))
+      assertBool "empty" (isLeft (r1 :: Either ErrorCall Int))
+      r2 <- try (evaluate (length (show (setAge "ana" (-1)))))
+      assertBool "neg" (isLeft (r2 :: Either ErrorCall Int))
+
   ]

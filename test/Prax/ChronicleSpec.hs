@@ -89,4 +89,12 @@ tests = testGroup "Prax.Chronicle"
       assertBool "has intensity" ("ana.feels.angry.intensity.2" `elem` lines)
       askChronicle st "feelings of nobody"
         @?= ["nobody has no recorded feelings"]
+
+  , testCase "askChronicle leads-of and affiliates-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "leads.hall!ana"
+                , Insert "affiliate.ana.guild" ]
+      askChronicle st "leads of hall" @?= ["ana leads hall"]
+      askChronicle st "affiliates of ana" @?= ["ana affiliates guild"]
+
   ]

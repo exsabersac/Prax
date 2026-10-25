@@ -2,6 +2,7 @@
 -- v61：'divorce' 把既有「撤回婚姻」契约暴露为可创作动作（成员不变）。
 -- v62：'birth'/'birthInto' 写入亲子事实；后者一并加入家庭派系。
 -- v67：'bequeath' 持有物继承（镜像 succession 的死亡+亲子门禁，作用于 holds.<thing>!<holder>）。
+-- v73：'setAge'/'ageAtLeast' —— 排他年龄叶，供成年门禁与未来长子继承。
 module Prax.Kin
   ( kinAxioms
   , wed
@@ -10,9 +11,11 @@ module Prax.Kin
   , birthInto
   , succession
   , bequeath
+  , setAge
+  , ageAtLeast
   ) where
 
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), CmpOp (..))
 import           Prax.Types (Action, Outcome (..), action)
 import           Prax.Derive (Axiom, axiom)
 import           Prax.Faction (joins)
@@ -85,3 +88,17 @@ bequeath thing
       , Match "parent.H.Actor"
       , Neq "Actor" "H" ]
       [ Insert ("holds." ++ thing ++ "!Actor") ]
+
+-- | 排他年龄：@age.<who>!<n>@。
+setAge :: String -> Int -> Outcome
+setAge who n
+  | null who || any (`elem` (".!" :: String)) who =
+      error ("setAge: who " ++ show who ++ " must be a single path segment")
+  | n < 0 = error ("setAge: age " ++ show n ++ " must be >= 0")
+  | otherwise = Insert ("age." ++ who ++ "!" ++ show n)
+
+-- | 条件：@who@ 年龄 >= @n@（读排他叶）。
+ageAtLeast :: String -> Int -> [Condition]
+ageAtLeast who n =
+  [ Match ("age." ++ who ++ "!AgeN")
+  , Cmp Gte "AgeN" (show n) ]
