@@ -1041,3 +1041,8 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：FactionSpec 再补 church 共成员站队夹具（priest/gale 视 eve 为 heretic）。
 - **测**：FactionSpec village-shaped church fixture。
+
+## v185 — AnalysisTable feudPin 对齐 v93 factionStanding
+
+- **做了什么**：全量回归发现 feud 分析表金标准仍停在 factionStanding 接入前；按当前 `feudWorld` 刷新 footprint/axiomHead（Village 金标准未动）。
+- **测**：`stack test -p AnalysisTable`；全量 `stack test`。

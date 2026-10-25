@@ -43,8 +43,10 @@ analysisTable st =
 
 -- Captured from the live pre-v41 analyses (string-side walkers). These lines
 -- ARE the analyses' contract across the v41 representation switch: the cooked
--- computation must reproduce every classification AND its order. Never edit
--- them to match new output — a failure means the rewrite is wrong.
+-- computation must reproduce every classification AND its order. Do not edit
+-- them to paper over a rewrite bug. Intentional world growth (new axioms /
+-- vocabulary) does require updating the affected pin — Village golden stays
+-- untouched unless Village itself changes.
 tests :: TestTree
 tests = testGroup "Prax.AnalysisTable"
   [ testCase "village"      $ analysisTable villageWorld     @?= villagePin
@@ -170,6 +172,11 @@ feudPin =
   , "footprint: member.X.F"
   , "footprint: member.Y.F"
   , "footprint: allied.X.Y"
+  -- v93 factionStanding "wronged.Offender.Victim" "feudbreaker" (pin refreshed v185)
+  , "footprint: PraxW.believes.wronged.Offender.Victim"
+  , "footprint: member.Victim.PraxF"
+  , "footprint: member.PraxW.PraxF"
+  , "footprint: regards.PraxW.Offender.feudbreaker"
   , "footprint: married.A.B"
   , "footprint: married.B.A"
   , "footprint: parent.P.X"
@@ -193,6 +200,7 @@ feudPin =
   , "axiomHead: resents.Y.X"
   , "axiomHead: resents.C.B"
   , "axiomHead: allied.X.Y"
+  , "axiomHead: regards.PraxW.Offender.feudbreaker"
   , "axiomHead: married.B.A"
   , "axiomHead: sibling.X.Y"
   , "axiomHead: grandparent.G.C"
