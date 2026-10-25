@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -234,6 +234,24 @@ runBeliefs (who : ws) =
   in mapM_ putStrLn (beliefsOf st who)
 runBeliefs _ = putStrLn "usage: prax beliefs <who> <world>"
 
+runArcs :: [String] -> IO ()
+runArcs (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (arcsOf st who)
+runArcs _ = putStrLn "usage: prax arcs <who> <world>"
+
+runAges :: [String] -> IO ()
+runAges (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (agesOf st who)
+runAges _ = putStrLn "usage: prax ages <who> <world>"
+
+runProjects :: [String] -> IO ()
+runProjects (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (projectsOf st who)
+runProjects _ = putStrLn "usage: prax projects <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -318,6 +336,9 @@ usageText = unlines
   , "  prax esteemed <who> <world>            list esteemed leaves for who"
   , "  prax scorned <who> <world>             list scorned leaves for who"
   , "  prax beliefs <who> <world>             list belief leaves for who"
+  , "  prax arcs <who> <world>                list arc stage leaves for who"
+  , "  prax ages <who> <world>                list age leaves for who"
+  , "  prax projects <who> <world>            list practice instance leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -360,6 +381,9 @@ main = do
     ("esteemed" : ws) -> runEsteemed ws
     ("scorned" : ws)  -> runScorned ws
     ("beliefs" : ws)  -> runBeliefs ws
+    ("arcs" : ws)     -> runArcs ws
+    ("ages" : ws)     -> runAges ws
+    ("projects" : ws) -> runProjects ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

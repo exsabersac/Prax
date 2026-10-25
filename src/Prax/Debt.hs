@@ -24,6 +24,10 @@ module Prax.Debt
   , lacksCreditorClaim
   , neverOwed
   , everOwed
+  , isDemanded
+  , lacksDemanded
+  , everDemanded
+  , neverDemanded
   ) where
 
 import           Prax.Query (Condition (..))
@@ -103,3 +107,22 @@ neverOwed debtor = Absent [ Match ("debt.Creditor." ++ debtor ++ ".Content") ]
 -- | 条件：@debtor@ 欠任何人任何内容（@isOwed@ 同体；对齐 ever* 命名）。
 everOwed :: String -> Condition
 everOwed = isOwed
+
+-- | 条件：债权人已对债务人催收 @content@（@demanded.<creditor>.<debtor>.<content>@）。
+isDemanded :: String -> String -> String -> Condition
+isDemanded creditor debtor content =
+  Match ("demanded." ++ creditor ++ "." ++ debtor ++ "." ++ content)
+
+-- | 条件：无该催收叶（@isDemanded@ 的 Not 对偶）。
+lacksDemanded :: String -> String -> String -> Condition
+lacksDemanded creditor debtor content =
+  Not ("demanded." ++ creditor ++ "." ++ debtor ++ "." ++ content)
+
+-- | 条件：@debtor@ 被任一债权人催收过任一内容。
+everDemanded :: String -> Condition
+everDemanded debtor = Exists [ Match ("demanded.Creditor." ++ debtor ++ ".Content") ]
+
+-- | 条件：@debtor@ 从未被催收（@everDemanded@ 的 Absent 对偶）。
+neverDemanded :: String -> Condition
+neverDemanded debtor = Absent [ Match ("demanded.Creditor." ++ debtor ++ ".Content") ]
+

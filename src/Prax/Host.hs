@@ -11,6 +11,7 @@
 -- v208：'feelingsOf'/'liesOf'/'chattedWithOf' 枚举情感/谎言/聊天叶。
 -- v211：'traitsOf'/'moodsOf'/'bondsOf'/'kinOf'/'notoriousOf' 枚举性格/心境/纽带/亲属/恶名叶。
 -- v217：'esteemedOf'/'scornedOf'/'beliefsOf' 枚举赞誉/蔑视/信念叶。
+-- v225：'arcsOf'/'agesOf'/'projectsOf' 枚举弧阶段/年龄/事业叶。
 module Prax.Host
   ( step
   , stepExact
@@ -53,6 +54,9 @@ module Prax.Host
   , esteemedOf
   , scornedOf
   , beliefsOf
+  , arcsOf
+  , agesOf
+  , projectsOf
   , checkpoint
   , restore
   ) where
@@ -370,6 +374,33 @@ scornedOf st who =
 beliefsOf :: PraxState -> String -> [String]
 beliefsOf st who =
   sort [ s | s <- queryView st, (who ++ ".believes.") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的弧阶段叶（@<who>.arc.*@；排他 @!@ 展成 @.@）。
+arcsOf :: PraxState -> String -> [String]
+arcsOf st who =
+  sort [ s | s <- queryView st, (who ++ ".arc.") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的年龄叶（@age.<who>.*@）。
+agesOf :: PraxState -> String -> [String]
+agesOf st who =
+  sort [ s | s <- queryView st, ("age." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中与 @who@ 相关的事业实例叶（@practice.<pid>.<who>.*@，含 crew/did）。
+projectsOf :: PraxState -> String -> [String]
+projectsOf st who = sort
+  [ s
+  | s <- queryView st
+  , "practice." `isPrefixOf` s
+  , let rest = drop (length ("practice." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

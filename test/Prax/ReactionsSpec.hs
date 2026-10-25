@@ -153,4 +153,6 @@ tests = testGroup "Prax.Reactions"
       everViolated "bex" @?= Exists [ Match "violated.bex.Norm" ]
       neverViolated "bex" @?= Absent [ Match "violated.bex.Norm" ]
 
+  , testCase "everBreach aliases everViolated" $
+      everBreach "bex" @?= everViolated "bex"
   ]

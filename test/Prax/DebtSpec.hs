@@ -194,4 +194,12 @@ tests = testGroup "Prax.Debt"
 
   , testCase "lacksOwes is Not of owes path" $
       lacksOwes "cora" "dell" "favor" @?= Not "debt.cora.dell.favor"
+  
+  , testCase "isDemanded / lacksDemanded pin demanded path" $ do
+      isDemanded "ana" "ben" "favor" @?= Match "demanded.ana.ben.favor"
+      lacksDemanded "ana" "ben" "favor" @?= Not "demanded.ana.ben.favor"
+
+  , testCase "everDemanded / neverDemanded are Exists/Absent over demanded.*.<debtor>.*" $ do
+      everDemanded "ben" @?= Exists [ Match "demanded.Creditor.ben.Content" ]
+      neverDemanded "ben" @?= Absent [ Match "demanded.Creditor.ben.Content" ]
   ]

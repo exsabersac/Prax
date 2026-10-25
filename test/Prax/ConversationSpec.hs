@@ -88,6 +88,9 @@ tests = testGroup "Prax.Conversation"
 
   , testCase "isListener is the listener exclusive leaf" $
       isListener @?= Match "practice.converse.A.B.listener!Actor"
+  , testCase "lacksSpeaker / lacksListener are Not duals" $ do
+      lacksSpeaker @?= Not "practice.converse.A.B.speaker!Actor"
+      lacksListener @?= Not "practice.converse.A.B.listener!Actor"
 
   , testCase "lacksChattedWith / everChatted / neverChatted" $ do
       lacksChattedWith "ada" "bex" @?= Not "ada.chattedWith.bex"

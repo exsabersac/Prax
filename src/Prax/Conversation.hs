@@ -18,6 +18,8 @@ module Prax.Conversation
   , offTopic
   , isSpeaker
   , isListener
+  , lacksSpeaker
+  , lacksListener
   , hasChattedWith
   , neverChattedWith
   , lacksChattedWith
@@ -103,6 +105,14 @@ isSpeaker = Match (convP ++ ".speaker!Actor")
 -- | 条件：Actor 现为听者（说话者对偶）。
 isListener :: Condition
 isListener = Match (convP ++ ".listener!Actor")
+
+-- | 条件：Actor 现非说话者（@isSpeaker@ 的 Not 对偶）。
+lacksSpeaker :: Condition
+lacksSpeaker = Not (convP ++ ".speaker!Actor")
+
+-- | 条件：Actor 现非听者（@isListener@ 的 Not 对偶）。
+lacksListener :: Condition
+lacksListener = Not (convP ++ ".listener!Actor")
 
 -- | 条件：当前对话话题不是 @topic@（@onTopic@ 的 Not 对偶）。
 offTopic :: String -> Condition

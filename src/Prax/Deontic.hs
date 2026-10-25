@@ -50,6 +50,7 @@ module Prax.Deontic
   , neverObliged
   , lacksObliged
   , hasObligations
+  , everObliged
   , lacksObligations
   , fulfilled
   , inBreach
@@ -142,6 +143,10 @@ lacksObliged = neverObliged
 -- | 条件：@who@ 持有至少一条义务。
 hasObligations :: String -> Condition
 hasObligations who = Exists [ Match (obligedHead ++ "." ++ who ++ ".Content") ]
+
+-- | 条件：@who@ 持有任一义务叶（@hasObligations@ 同体；对齐 ever* 命名）。
+everObliged :: String -> Condition
+everObliged = hasObligations
 
 -- | 条件：@who@ 当前无任何义务叶（@hasObligations@ 的 Absent 对偶）。
 lacksObligations :: String -> Condition

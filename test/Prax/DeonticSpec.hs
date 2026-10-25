@@ -198,4 +198,6 @@ tests = testGroup "Prax.Deontic"
       hasObligations "ada" @?= Exists [ Match "obliged.ada.Content" ]
       lacksObligations "ada" @?= Absent [ Match "obliged.ada.Content" ]
 
+  , testCase "everObliged aliases hasObligations" $
+      everObliged "ada" @?= hasObligations "ada"
   ]
