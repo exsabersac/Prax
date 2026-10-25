@@ -254,4 +254,11 @@ tests = testGroup "Prax.Faction"
       assertBool "priest (church co-member) regards eve" (exists "regards.priest.eve.heretic" v)
       assertBool "bob (guild outsider) derives nothing"
         (not (exists "regards.bob.eve.heretic" v))
+
+  , testCase "everAffiliate / neverAffiliate / everLeader / neverLeader" $ do
+      everAffiliate "ada" @?= Exists [ Match "affiliate.ada.Faction" ]
+      neverAffiliate "ada" @?= Absent [ Match "affiliate.ada.Faction" ]
+      everLeader "ana" @?= Exists [ Match "leads.Faction!ana" ]
+      neverLeader "ana" @?= Absent [ Match "leads.Faction!ana" ]
+
   ]

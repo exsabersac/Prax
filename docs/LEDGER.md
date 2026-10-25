@@ -1072,3 +1072,22 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：对内置世界打印 `debtsOf`。
 - **测**：手工 `prax debts ana village` smoke（空列表亦可）。
 
+## v191 — Faction everAffiliate / neverAffiliate / everLeader / neverLeader
+
+- **做了什么**：次级归属与领导的 Exists/Absent 量词对偶。
+- **测**：FactionSpec everAffiliate / everLeader。
+
+## v192 — Conversation lacksChattedWith / everChatted / neverChatted
+
+- **做了什么**：点级 `lacksChattedWith`（与历史 `neverChattedWith` 同体）；任意聊天叶 Exists/Absent。
+- **测**：ConversationSpec lacksChattedWith / everChatted / neverChatted。
+
+## v193 — Repute everEsteemed / neverEsteemed / everScorned / neverScorned
+
+- **做了什么**：观察者侧 esteem/scorn 一次守卫叶的 Exists/Absent 对偶。
+- **测**：ReputeSpec everEsteemed / everScorned。
+
+## v194 — Kin everMarried / everParent
+
+- **做了什么**：补齐 `neverMarried` / `neverParent` 的 Exists 对偶。
+- **测**：KinSpec everMarried / everParent。

@@ -29,6 +29,10 @@ module Prax.Repute
   , neverNotorious
   , hasEsteemed
   , lacksEsteemed
+  , everEsteemed
+  , neverEsteemed
+  , everScorned
+  , neverScorned
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -184,3 +188,19 @@ everNotorious subject = Exists [ Match ("notorious." ++ subject ++ ".Label") ]
 -- | 条件：@subject@ 在任何标签下皆非恶名。
 neverNotorious :: String -> Condition
 neverNotorious subject = Absent [ Match ("notorious." ++ subject ++ ".Label") ]
+
+-- | 条件：@observer@ 曾对任何人表达过 esteem。
+everEsteemed :: String -> Condition
+everEsteemed observer = Exists [ Match ("esteemed." ++ observer ++ ".Subject.Label") ]
+
+-- | 条件：@observer@ 从未表达过 esteem（@everEsteemed@ 的 Absent 对偶）。
+neverEsteemed :: String -> Condition
+neverEsteemed observer = Absent [ Match ("esteemed." ++ observer ++ ".Subject.Label") ]
+
+-- | 条件：@observer@ 曾对任何人表达过 scorn。
+everScorned :: String -> Condition
+everScorned observer = Exists [ Match ("scorned." ++ observer ++ ".Subject.Label") ]
+
+-- | 条件：@observer@ 从未表达过 scorn（@everScorned@ 的 Absent 对偶）。
+neverScorned :: String -> Condition
+neverScorned observer = Absent [ Match ("scorned." ++ observer ++ ".Subject.Label") ]

@@ -26,6 +26,10 @@ module Prax.Faction
   , neverRegards
   , everMember
   , neverMember
+  , everAffiliate
+  , neverAffiliate
+  , everLeader
+  , neverLeader
   ) where
 
 import           Prax.Query (Condition (..))
@@ -189,3 +193,19 @@ everMember who = Exists [ Match ("member." ++ who ++ "!Faction") ]
 -- | 条件：@who@ 不属于任何派系。
 neverMember :: String -> Condition
 neverMember who = Absent [ Match ("member." ++ who ++ "!Faction") ]
+
+-- | 条件：@who@ 有至少一次级归属。
+everAffiliate :: String -> Condition
+everAffiliate who = Exists [ Match ("affiliate." ++ who ++ ".Faction") ]
+
+-- | 条件：@who@ 无任何次级归属（@everAffiliate@ 的 Absent 对偶）。
+neverAffiliate :: String -> Condition
+neverAffiliate who = Absent [ Match ("affiliate." ++ who ++ ".Faction") ]
+
+-- | 条件：@who@ 领导至少一派系。
+everLeader :: String -> Condition
+everLeader who = Exists [ Match ("leads.Faction!" ++ who) ]
+
+-- | 条件：@who@ 不领导任何派系（@everLeader@ 的 Absent 对偶）。
+neverLeader :: String -> Condition
+neverLeader who = Absent [ Match ("leads.Faction!" ++ who) ]

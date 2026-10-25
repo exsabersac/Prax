@@ -305,6 +305,10 @@ tests = testGroup "Prax.Kin"
   , testCase "neverMarried is Absent over married.<who>" $
       neverMarried "ada" @?= Absent [ Match "married.ada" ]
 
+  , testCase "everMarried / everParent are Exists duals" $ do
+      everMarried "ada" @?= Exists [ Match "married.ada" ]
+      everParent "ada" @?= Exists [ Match "parent.ada" ]
+
   , testCase "neverParent is Absent over parent.<who>" $
       neverParent "ada" @?= Absent [ Match "parent.ada" ]
 

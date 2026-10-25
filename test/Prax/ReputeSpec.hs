@@ -174,4 +174,10 @@ tests = testGroup "Prax.Repute"
   , testCase "everNotorious / neverNotorious are Exists/Absent over labels" $ do
       everNotorious "kai" @?= Exists [ Match "notorious.kai.Label" ]
       neverNotorious "kai" @?= Absent [ Match "notorious.kai.Label" ]
+
+  , testCase "everEsteemed / neverEsteemed / everScorned / neverScorned" $ do
+      everEsteemed "kai" @?= Exists [ Match "esteemed.kai.Subject.Label" ]
+      neverEsteemed "kai" @?= Absent [ Match "esteemed.kai.Subject.Label" ]
+      everScorned "kai" @?= Exists [ Match "scorned.kai.Subject.Label" ]
+      neverScorned "kai" @?= Absent [ Match "scorned.kai.Subject.Label" ]
   ]

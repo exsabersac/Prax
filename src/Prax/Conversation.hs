@@ -20,6 +20,9 @@ module Prax.Conversation
   , isListener
   , hasChattedWith
   , neverChattedWith
+  , lacksChattedWith
+  , everChatted
+  , neverChatted
   ) where
 
 import           Prax.Query (Condition (..))
@@ -109,6 +112,18 @@ offTopic topic = Not (convP ++ ".topic!" ++ topic)
 hasChattedWith :: String -> String -> Condition
 hasChattedWith who other = Match (who ++ ".chattedWith." ++ other)
 
--- | 条件：@who@ 从未与 @other@ 聊过。
+-- | 条件：@who@ 未与 @other@ 聊过（历史名；点级 Not，与 'lacksChattedWith' 同体）。
 neverChattedWith :: String -> String -> Condition
 neverChattedWith who other = Not (who ++ ".chattedWith." ++ other)
+
+-- | 条件：@who@ 未与 @other@ 聊过（@hasChattedWith@ 的 Not 对偶）。
+lacksChattedWith :: String -> String -> Condition
+lacksChattedWith = neverChattedWith
+
+-- | 条件：@who@ 曾与至少一人聊过。
+everChatted :: String -> Condition
+everChatted who = Exists [ Match (who ++ ".chattedWith.Other") ]
+
+-- | 条件：@who@ 从未与任何人聊过（@everChatted@ 的 Absent 对偶）。
+neverChatted :: String -> Condition
+neverChatted who = Absent [ Match (who ++ ".chattedWith.Other") ]
