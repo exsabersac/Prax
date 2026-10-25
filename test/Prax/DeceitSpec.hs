@@ -248,5 +248,7 @@ tests = testGroup "Prax.Deceit"
   , testCase "lacksLied / neverLied duals" $ do
       lacksLied "ada" "bex" "stole.cai.loaf" @?= Not "ada.lied.bex.stole.cai.loaf"
       neverLied "ada" @?= Absent [ Match "ada.lied.Hearer.Event" ]
+  , testCase "everLied aliases hasLied" $
+      everLied "ada" @?= hasLied "ada"
 
   ]

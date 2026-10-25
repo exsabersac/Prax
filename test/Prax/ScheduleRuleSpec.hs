@@ -14,7 +14,7 @@ import           Prax.Types
 import           Prax.Engine (performOutcome, performAction, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
 import           Prax.Schedule (gathering, festival, duringFestival, outsideFestival, pulse)
-import           Prax.Deontic (oblige, discharge, isObliged)
+import           Prax.Deontic (oblige, discharge, isObliged, breach)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -304,6 +304,50 @@ tests = testGroup "Prax.ScheduleRule"
         assertBool "obligation discharged"
           (not (exists "obliged.ada.offered.harvest" (db stDone)))
         assertBool "offer gone once done" (not (hasAct "make the offering" stDone))
+
+    , testCase "harvest vow arc shirk path: vow then breach outside window" $ do
+        let vow = practice
+              { practiceId = "harvestVow2"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: prepare the offering"
+                      [ outsideFestival "harvest"
+                      , Not "prepared.Actor" ]
+                      [ Insert "prepared.Actor" ]
+                  , action "[Actor]: vow at the altar"
+                      [ duringFestival "harvest"
+                      , Match "prepared.Actor"
+                      , Not "vowed.Actor" ]
+                      [ Insert "vowed.Actor"
+                      , oblige "Actor" "offered.harvest" ]
+                  , action "[Actor]: shirk the vow"
+                      [ outsideFestival "harvest"
+                      , isObliged "Actor" "offered.harvest"
+                      , Not "offered.harvest"
+                      , Not "shirked.Actor" ]
+                      [ Insert "shirked.Actor"
+                      , breach "Actor" "offered.harvest" ]
+                  ]
+              }
+            base = definePractices [vow]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestVow2" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            stPrep = doAct "prepare the offering" base
+            stOpen = iterate roundBoundary stPrep !! 3
+            stVow  = doAct "vow at the altar" stOpen
+            stAfter = roundBoundary stVow
+        assertBool "obligation still holds" (exists "obliged.ada.offered.harvest" (db stAfter))
+        assertBool "shirk offered" (hasAct "shirk the vow" stAfter)
+        let stShirk = doAct "shirk the vow" stAfter
+        assertBool "shirked" (exists "shirked.ada" (db stShirk))
+        assertBool "breach recorded" (exists "violated.ada.offered.harvest" (db stShirk))
+        assertBool "shirk once" (not (hasAct "shirk the vow" stShirk))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

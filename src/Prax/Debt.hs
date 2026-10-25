@@ -23,6 +23,7 @@ module Prax.Debt
   , hasCreditorClaim
   , lacksCreditorClaim
   , neverOwed
+  , everOwed
   ) where
 
 import           Prax.Query (Condition (..))
@@ -98,3 +99,7 @@ lacksCreditorClaim creditor =
 -- | 条件：@debtor@ 当前不欠任何人任何内容（@isOwed@ 对偶）。
 neverOwed :: String -> Condition
 neverOwed debtor = Absent [ Match ("debt.Creditor." ++ debtor ++ ".Content") ]
+
+-- | 条件：@debtor@ 欠任何人任何内容（@isOwed@ 同体；对齐 ever* 命名）。
+everOwed :: String -> Condition
+everOwed = isOwed

@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark, isAbsolved, neverMarked, lacksAbsolved)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark, isAbsolved, neverMarked, lacksMark, lacksAbsolved)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -678,6 +678,8 @@ tests = testGroup "Prax.Confession"
 
   , testCase "neverMarked is Not of mark path" $
       neverMarked "bob" "lied" "eve" "stole.bread" @?= Not "bob.lied.eve.stole.bread"
+  , testCase "lacksMark aliases neverMarked" $
+      lacksMark "bob" "lied" "eve" "stole.bread" @?= neverMarked "bob" "lied" "eve" "stole.bread"
 
 
   , testCase "lacksAbsolved is Not of isAbsolved path" $

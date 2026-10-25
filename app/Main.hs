@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -160,6 +160,27 @@ runBreaches (who : ws) =
   in mapM_ putStrLn (breachesOf st who)
 runBreaches _ = putStrLn "usage: prax breaches <who> <world>"
 
+-- | List feeling leaves: @prax feelings <who> <world>@.
+runFeelings :: [String] -> IO ()
+runFeelings (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (feelingsOf st who)
+runFeelings _ = putStrLn "usage: prax feelings <who> <world>"
+
+-- | List lie-mark leaves: @prax lies <who> <world>@.
+runLies :: [String] -> IO ()
+runLies (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (liesOf st who)
+runLies _ = putStrLn "usage: prax lies <who> <world>"
+
+-- | List chattedWith leaves: @prax chatted <who> <world>@.
+runChatted :: [String] -> IO ()
+runChatted (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (chattedWithOf st who)
+runChatted _ = putStrLn "usage: prax chatted <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -233,6 +254,9 @@ usageText = unlines
   , "  prax debts <who> <world>               list debt leaves involving who"
   , "  prax obligations <who> <world>         list obligation leaves for who"
   , "  prax breaches <who> <world>            list violation leaves for who"
+  , "  prax feelings <who> <world>            list feeling leaves for who"
+  , "  prax lies <who> <world>                list lie-mark leaves for who"
+  , "  prax chatted <who> <world>             list chattedWith leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -264,6 +288,9 @@ main = do
     ("debts" : ws)     -> runDebts ws
     ("obligations" : ws) -> runObligations ws
     ("breaches" : ws)  -> runBreaches ws
+    ("feelings" : ws) -> runFeelings ws
+    ("lies" : ws)     -> runLies ws
+    ("chatted" : ws)  -> runChatted ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

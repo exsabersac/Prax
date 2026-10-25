@@ -8,6 +8,7 @@
 -- v158：'regardsOf' 枚举闭合视图中某人发出的站队叶。
 -- v197：'obligationsOf' 枚举闭合视图中某人的义务叶。
 -- v203：'breachesOf' 枚举闭合视图中某人的违规叶。
+-- v208：'feelingsOf'/'liesOf'/'chattedWithOf' 枚举情感/谎言/聊天叶。
 module Prax.Host
   ( step
   , stepExact
@@ -39,6 +40,9 @@ module Prax.Host
   , debtsOf
   , obligationsOf
   , breachesOf
+  , feelingsOf
+  , liesOf
+  , chattedWithOf
   , checkpoint
   , restore
   ) where
@@ -289,6 +293,21 @@ obligationsOf st who =
 breachesOf :: PraxState -> String -> [String]
 breachesOf st who =
   sort [ s | s <- queryView st, ("violated." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的情感叶（@<who>.feels.*@）。
+feelingsOf :: PraxState -> String -> [String]
+feelingsOf st who =
+  sort [ s | s <- queryView st, (who ++ ".feels.") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的谎言标记叶（@<who>.lied.*@）。
+liesOf :: PraxState -> String -> [String]
+liesOf st who =
+  sort [ s | s <- queryView st, (who ++ ".lied.") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的聊天叶（@<who>.chattedWith.*@）。
+chattedWithOf :: PraxState -> String -> [String]
+chattedWithOf st who =
+  sort [ s | s <- queryView st, (who ++ ".chattedWith.") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

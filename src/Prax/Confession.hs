@@ -15,6 +15,7 @@ module Prax.Confession
   , absolveAsLeader
   , hasMark
   , neverMarked
+  , lacksMark
   , isAbsolved
   , lacksAbsolved
   ) where
@@ -209,6 +210,10 @@ hasMark who kind hearer markTail =
 neverMarked :: String -> String -> String -> String -> Condition
 neverMarked who kind hearer markTail =
   Not (who ++ "." ++ kind ++ "." ++ hearer ++ "." ++ markTail)
+
+-- | 条件：@who@ 对 @hearer@ 无该标记叶（@neverMarked@ 同体；对齐 lacks* 命名）。
+lacksMark :: String -> String -> String -> String -> Condition
+lacksMark = neverMarked
 
 -- | 条件：@who@ 已获 @defeater@ 赦免叶（如 @recanted.<who>@）。
 isAbsolved :: String -> String -> Condition

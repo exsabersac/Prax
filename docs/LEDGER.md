@@ -474,11 +474,11 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧）*。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧）*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`；v178 `regardsToward`；v179 `factionsNamed`；v189 `debtsOf`；v197 `obligationsOf`；v203 `breachesOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`/`debtsOf`/`obligationsOf`/`breachesOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）、`prax factions`（v180）、`prax regards`（v181）、`prax debts`（v190）、`prax obligations`（v198）、`prax breaches`（v204）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`；v178 `regardsToward`；v179 `factionsNamed`；v189 `debtsOf`；v197 `obligationsOf`；v203 `breachesOf`；v208 `feelingsOf`/`liesOf`/`chattedWithOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`/`debtsOf`/`obligationsOf`/`breachesOf`/`feelingsOf`/`liesOf`/`chattedWithOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）、`prax factions`（v180）、`prax regards`（v181）、`prax debts`（v190）、`prax obligations`（v198）、`prax breaches`（v204）、`prax feelings`/`lies`/`chatted`（v209）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -1141,3 +1141,33 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：对内置世界打印 `breachesOf`。
 - **测**：手工 `prax breaches bex bar` smoke（开局空列表亦可）。
+
+## v205 — Deceit everLied
+
+- **做了什么**：`everLied` = `hasLied` 同体（对齐 ever* 命名）。
+- **测**：DeceitSpec everLied aliases hasLied。
+
+## v206 — Debt everOwed
+
+- **做了什么**：`everOwed` = `isOwed` 同体（对齐 ever* 命名）。
+- **测**：DebtSpec everOwed aliases isOwed。
+
+## v207 — Confession lacksMark
+
+- **做了什么**：`lacksMark` = `neverMarked` 同体（对齐 lacks* 命名）。
+- **测**：ConfessionSpec lacksMark aliases neverMarked。
+
+## v208 — Host feelingsOf / liesOf / chattedWithOf
+
+- **做了什么**：从闭合视图枚举 `@who@.feels.*` / `@who@.lied.*` / `@who@.chattedWith.*`。
+- **测**：HostSpec feelingsOf / liesOf / chattedWithOf。
+
+## v209 — CLI prax feelings / lies / chatted
+
+- **做了什么**：对内置世界打印上述三视图。
+- **测**：手工 smoke（开局空列表亦可）。
+
+## v210 — 节庆起誓违约弧
+
+- **做了什么**：ScheduleRuleSpec 在窗外 `shirk` → `breach` 记录违规；与兑现弧对偶。
+- **测**：ScheduleRuleSpec harvest vow arc shirk path。

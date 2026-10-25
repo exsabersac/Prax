@@ -210,6 +210,22 @@ tests = testGroup "Prax.Host"
       breachesOf st "ben" @?= ["violated.ben.courtesy"]
       breachesOf st "void" @?= []
 
+  , testCase "feelingsOf / liesOf / chattedWithOf list who-prefixed leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "ana.feels.angry.toward.ben"
+                , Insert "ana.feels.afraid"
+                , Insert "ben.feels.happy"
+                , Insert "ana.lied.ben.stole.loaf"
+                , Insert "ana.chattedWith.ben"
+                , Insert "cass.chattedWith.ana"
+                , Insert "flag.x" ]
+      sort (feelingsOf st "ana") @?= ["ana.feels.afraid", "ana.feels.angry.toward.ben"]
+      feelingsOf st "ben" @?= ["ben.feels.happy"]
+      liesOf st "ana" @?= ["ana.lied.ben.stole.loaf"]
+      liesOf st "void" @?= []
+      chattedWithOf st "ana" @?= ["ana.chattedWith.ben"]
+      chattedWithOf st "cass" @?= ["cass.chattedWith.ana"]
+
   , testCase "regardsToward / factionsNamed from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "regards.dave.bob.thief"
