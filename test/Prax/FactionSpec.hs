@@ -127,4 +127,23 @@ tests = testGroup "Prax.Faction"
           v = readView world
       assertBool "ben (the victim, a co-member of himself trivially) regards ana as brutal"
         (exists "regards.ben.ana.brutal" v)
+  , testCase "affiliate allows multi-belonging alongside exclusive primary membership" $ do
+      let st = setAxioms [comrades, affiliateComrades]
+                 (foldl (flip performOutcome) emptyState
+                    [ joins "ana" "hall"
+                    , affiliate "ana" "guild"
+                    , affiliate "ben" "guild"
+                    , joins "ben" "yard" ])
+          v = readView st
+      assertBool "primary hall" (exists "member.ana!hall" (db st))
+      assertBool "secondary guild" (exists "affiliate.ana.guild" (db st))
+      assertBool "affiliate comrades allied" (exists "allied.ana.ben" v)
+      let st2 = performOutcome (unaffiliate "ana" "guild") st
+      assertBool "unaffiliate clears" (not (exists "affiliate.ana.guild" (db st2)))
+      assertBool "primary intact" (exists "member.ana!hall" (db st2))
+
+  , testCase "affiliate rejects dotted names" $ do
+      r <- try (evaluate (length (show (affiliate "a.b" "guild"))))
+      assertBool "dotted who" (isLeft (r :: Either ErrorCall Int))
+
   ]
