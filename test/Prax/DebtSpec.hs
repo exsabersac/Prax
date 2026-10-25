@@ -189,4 +189,7 @@ tests = testGroup "Prax.Debt"
   , testCase "lacksCreditorClaim is Absent of creditor subtree" $
       lacksCreditorClaim "ada" @?= Absent [ Match "debt.ada.Debtor.Content" ]
 
+
+  , testCase "lacksOwes is Not of owes path" $
+      lacksOwes "cora" "dell" "favor" @?= Not "debt.cora.dell.favor"
   ]

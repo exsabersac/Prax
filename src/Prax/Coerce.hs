@@ -40,6 +40,7 @@ module Prax.Coerce
   , everThreatened, neverThreatened
   , everDefied, neverDefied
   , everComplied, neverComplied
+  , everExtorted, neverExtorted
   ) where
 
 import           Data.List (nub)
@@ -332,3 +333,13 @@ neverComplied :: String -> Condition
 neverComplied sid =
   Absent [ Match ("complied." ++ guardSeg "neverComplied" sid
                   ++ ".Extorter.Victim") ]
+
+-- | 条件：@sid@ 下存在任意勒索痕（@Extorter.extorted.Victim.<sid>@）。
+everExtorted :: String -> Condition
+everExtorted sid =
+  Exists [ Match ("Extorter.extorted.Victim." ++ guardSeg "everExtorted" sid) ]
+
+-- | 条件：@sid@ 下从未有过勒索痕。
+neverExtorted :: String -> Condition
+neverExtorted sid =
+  Absent [ Match ("Extorter.extorted.Victim." ++ guardSeg "neverExtorted" sid) ]

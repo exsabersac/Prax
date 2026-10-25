@@ -171,4 +171,12 @@ tests = testGroup "Prax.Host"
       membersOf st "yard" @?= ["cass"]
       sort (affiliatesOf st "ana") @?= ["choir", "guild"]
 
+
+  , testCase "leadersOf lists leads.<faction>.<who> from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "leads.hall!ana"
+                , Insert "leads.yard!ben" ]
+      leadersOf st "hall" @?= ["ana"]
+      leadersOf st "yard" @?= ["ben"]
+      leadersOf st "void" @?= []
   ]

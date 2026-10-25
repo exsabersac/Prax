@@ -308,4 +308,10 @@ tests = testGroup "Prax.Kin"
   , testCase "neverParent is Absent over parent.<who>" $
       neverParent "ada" @?= Absent [ Match "parent.ada" ]
 
+
+  , testCase "lacksChildOf / lacksSiblingOf / lacksMarriedTo / lacksInLawOf duals" $ do
+      lacksChildOf "ana" "pat" @?= Not "parent.pat.ana"
+      lacksSiblingOf "ana" "ben" @?= Not "sibling.ana.ben"
+      lacksMarriedTo "ana" "chris" @?= Not "married.ana.chris"
+      lacksInLawOf "pat" "sam" @?= Not "inLaw.pat.sam"
   ]

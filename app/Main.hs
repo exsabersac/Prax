@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -94,6 +94,33 @@ runCast ("living" : ws) =
 runCast ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (castNames st)
+
+-- | List dead cast names for a named built-in world.
+runDead :: [String] -> IO ()
+runDead ws =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (deadCast st)
+
+-- | List members of a faction: @prax members <faction> <world>@.
+runMembers :: [String] -> IO ()
+runMembers (faction : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (membersOf st faction)
+runMembers _ = putStrLn "usage: prax members <faction> <world>"
+
+-- | List affiliates of a character: @prax affiliates <who> <world>@.
+runAffiliates :: [String] -> IO ()
+runAffiliates (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (affiliatesOf st who)
+runAffiliates _ = putStrLn "usage: prax affiliates <who> <world>"
+
+-- | List leaders of a faction: @prax leaders <faction> <world>@.
+runLeaders :: [String] -> IO ()
+runLeaders (faction : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (leadersOf st faction)
+runLeaders _ = putStrLn "usage: prax leaders <faction> <world>"
 
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
@@ -159,6 +186,10 @@ usageText = unlines
   , "  prax version                       persist format / build label"
   , "  prax practices <world>             list top-level practice ids"
   , "  prax cast [living] <world>         list cast (or living only)"
+  , "  prax dead <world>                  list dead cast names"
+  , "  prax members <faction> <world>     list faction members"
+  , "  prax affiliates <who> <world>      list character affiliates"
+  , "  prax leaders <faction> <world>     list faction leaders"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -181,6 +212,10 @@ main = do
     ("version" : _)   -> putStrLn formatVersion
     ("practices" : ws) -> runPractices ws
     ("cast" : ws)      -> runCast ws
+    ("dead" : ws)      -> runDead ws
+    ("members" : ws)   -> runMembers ws
+    ("affiliates" : ws) -> runAffiliates ws
+    ("leaders" : ws)   -> runLeaders ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

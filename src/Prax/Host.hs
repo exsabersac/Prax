@@ -31,6 +31,7 @@ module Prax.Host
   , regardsOf
   , membersOf
   , affiliatesOf
+  , leadersOf
   , checkpoint
   , restore
   ) where
@@ -184,6 +185,16 @@ membersOf st faction = sort
 affiliatesOf :: PraxState -> String -> [String]
 affiliatesOf st who =
   let pref = "affiliate." ++ who ++ "."
+  in sort
+       [ drop (length pref) s
+       | s <- queryView st, pref `isPrefixOf` s
+       , '.' `notElem` drop (length pref) s ]
+
+-- | 闭合视图中领导 @faction@ 的角色名（@leads.<faction>.<who>@；
+-- 排他 @!@ 在视图句子中展成 @.@）。
+leadersOf :: PraxState -> String -> [String]
+leadersOf st faction =
+  let pref = "leads." ++ faction ++ "."
   in sort
        [ drop (length pref) s
        | s <- queryView st, pref `isPrefixOf` s

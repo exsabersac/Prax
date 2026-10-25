@@ -16,6 +16,7 @@ module Prax.Confession
   , hasMark
   , neverMarked
   , isAbsolved
+  , lacksAbsolved
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -212,3 +213,7 @@ neverMarked who kind hearer markTail =
 -- | 条件：@who@ 已获 @defeater@ 赦免叶（如 @recanted.<who>@）。
 isAbsolved :: String -> String -> Condition
 isAbsolved defeater who = Match (defeater ++ "." ++ who)
+
+-- | 条件：@who@ 无 @defeater@ 赦免叶（@isAbsolved@ 的 Not 对偶）。
+lacksAbsolved :: String -> String -> Condition
+lacksAbsolved defeater who = Not (defeater ++ "." ++ who)

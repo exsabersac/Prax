@@ -468,7 +468,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22；v88 liePublic；v123 liedTo/hasLied；v160 lacksLied/neverLied）*：`conceal`/`lie`/`liePublic`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
 - **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司/族长薄门禁于 v86 `absolveAsLeader` 清偿。
-- **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环；v154–v155 Condition 对偶）*。虚张/威胁到期/反敲诈于 v54 清偿。
+- **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环）*。事实路径 Condition 对偶在 `Prax.Coerce`（v154–v155；v170 ever/neverExtorted）。虚张/威胁到期/反敲诈于 v54 清偿。
 - **重复 / 连环敲诈** *（v30 存；v54 完成）*：`coComplianceLasts`。
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
@@ -478,7 +478,7 @@ Tier 2 — 长时间跨度的代理内在性：
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`；v171 `leadersOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`/`leadersOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）、`prax dead`（v172）、`prax members`/`affiliates`（v173）、`prax leaders`（v174）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -951,3 +951,43 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle "members of <faction>"` 列出 `member.<who>.<faction>`。
 - **测**：ChronicleSpec members-of。
+
+## v167 — Kin lacksChildOf / lacksSiblingOf / lacksMarriedTo / lacksInLawOf
+
+- **做了什么**：亲属精确叶的 Not 对偶（与 neverMarried/neverParent 的 Absent 量词互补）。
+- **测**：KinSpec lacks* duals。
+
+## v168 — Confession lacksAbsolved
+
+- **做了什么**：赦免叶的 Not 对偶。
+- **测**：ConfessionSpec lacksAbsolved。
+
+## v169 — Debt lacksOwes
+
+- **做了什么**：精确债务叶的 Not 对偶。
+- **测**：DebtSpec lacksOwes。
+
+## v170 — Coerce everExtorted / neverExtorted
+
+- **做了什么**：按 coercion id 的勒索痕 Exists/Absent 对偶（补齐 threaten/defy/comply 的 ever/never 族）。
+- **测**：CoerceSpec everExtorted / neverExtorted。
+
+## v171 — Host leadersOf
+
+- **做了什么**：从闭合视图枚举 `@leads.<faction>.<who>@`（稳定排序）。
+- **测**：HostSpec leadersOf。
+
+## v172 — CLI prax dead \<world\>
+
+- **做了什么**：对内置世界打印 `deadCast`。
+- **测**：手工 `prax dead village`。
+
+## v173 — CLI prax members / affiliates
+
+- **做了什么**：`prax members <faction> <world>`、`prax affiliates <who> <world>`。
+- **测**：手工 smoke。
+
+## v174 — CLI prax leaders \<faction\> \<world\>
+
+- **做了什么**：对内置世界打印 `leadersOf`。
+- **测**：手工 smoke。

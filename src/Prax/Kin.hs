@@ -23,6 +23,10 @@ module Prax.Kin
   , isParentOf
   , neverParent
   , isInLawOf
+  , lacksChildOf
+  , lacksSiblingOf
+  , lacksMarriedTo
+  , lacksInLawOf
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -159,3 +163,19 @@ neverParent who = Absent [ Match ("parent." ++ who) ]
 -- | 条件：@a@ 是 @b@ 的姻亲（读派生 @inLaw@）。
 isInLawOf :: String -> String -> Condition
 isInLawOf a b = Match ("inLaw." ++ a ++ "." ++ b)
+
+-- | 条件：@child@ 的父母不是 @parent@（@isChildOf@ 的 Not 对偶）。
+lacksChildOf :: String -> String -> Condition
+lacksChildOf child parent = Not ("parent." ++ parent ++ "." ++ child)
+
+-- | 条件：@a@ 与 @b@ 非兄弟姐妹（@isSiblingOf@ 的 Not 对偶）。
+lacksSiblingOf :: String -> String -> Condition
+lacksSiblingOf a b = Not ("sibling." ++ a ++ "." ++ b)
+
+-- | 条件：@a@ 与 @b@ 未婚（精确叶；与 @neverMarried@ 的任意婚姻 Absent 不同）。
+lacksMarriedTo :: String -> String -> Condition
+lacksMarriedTo a b = Not ("married." ++ a ++ "." ++ b)
+
+-- | 条件：@a@ 不是 @b@ 的姻亲（@isInLawOf@ 的 Not 对偶）。
+lacksInLawOf :: String -> String -> Condition
+lacksInLawOf a b = Not ("inLaw." ++ a ++ "." ++ b)

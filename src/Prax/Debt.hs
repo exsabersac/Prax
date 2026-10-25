@@ -16,6 +16,7 @@ module Prax.Debt
   , owe
   , settle
   , owes
+  , lacksOwes
   , forgive
   , callIn
   , isOwed
@@ -52,6 +53,10 @@ settle creditor debtor content =
 -- | 条件：@debtor@ 当前欠 @creditor@ @content@。
 owes :: String -> String -> String -> Condition
 owes creditor debtor content = Match (debtPath creditor debtor content)
+
+-- | 条件：@debtor@ 当前不欠 @creditor@ @content@（@owes@ 的 Not 对偶）。
+lacksOwes :: String -> String -> String -> Condition
+lacksOwes creditor debtor content = Not (debtPath creditor debtor content)
 
 -- | 债权人赦免：门禁于 @debt.Actor.Debtor.<content>@，删除债务并 discharge 债务人义务。
 forgive :: String -> String -> Action

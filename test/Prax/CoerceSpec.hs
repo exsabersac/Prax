@@ -23,7 +23,8 @@ import           Prax.Coerce (Coercion (..), coerce,
                              hasExtorted, lacksExtorted,
                              everThreatened, neverThreatened,
                              everDefied, neverDefied,
-                             everComplied, neverComplied)
+                             everComplied, neverComplied,
+                             everExtorted, neverExtorted)
 
 -- A protection racket, the SECOND instance of the leverage skeleton (blackmail
 -- is the first): mob threatens to burn a barn-owner's barn unless they do a
@@ -535,6 +536,8 @@ tests = testGroup "Prax.Coerce"
         neverDefied "racket" @?= Absent [ Match "defied.racket.Victim.Extorter" ]
         everComplied "racket" @?= Exists [ Match "complied.racket.Extorter.Victim" ]
         neverComplied "racket" @?= Absent [ Match "complied.racket.Extorter.Victim" ]
+        everExtorted "racket" @?= Exists [ Match "Extorter.extorted.Victim.racket" ]
+        neverExtorted "racket" @?= Absent [ Match "Extorter.extorted.Victim.racket" ]
     , testCase "after threaten, isThreatened and hasExtorted hold on the world" $ do
         let st = doAct "mob" "threaten" racketWorld
         assertBool "threatened leaf" (exists "threatened.racket.mob.vic" (db st))
