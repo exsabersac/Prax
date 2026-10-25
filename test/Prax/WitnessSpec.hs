@@ -53,6 +53,9 @@ tests = testGroup "Prax.Witness"
   , testCase "saw is the seen-provenance belief condition" $
       saw "W" "waved.ann" @?= Match "W.believes.waved.ann.seen"
 
+  , testCase "neverSaw is Absent over the seen leaf" $
+      neverSaw "W" "waved.ann" @?= Absent [ Match "W.believes.waved.ann.seen" ]
+
   , testCase "the seen deposit is multi-valued: other evidence survives beside it" $ do
       -- Pre-plant hearsay under the same belief node, then let the witness
       -- deposit fire: with multi-valued (.) storage both edges coexist; an

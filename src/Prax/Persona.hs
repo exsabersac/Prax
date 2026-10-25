@@ -15,6 +15,8 @@ module Prax.Persona
   , transparent
   , cast
   , bearFromRegard
+  , hasTrait
+  , lacksTrait
   ) where
 
 import           Data.List (nub, (\\))
@@ -82,3 +84,11 @@ bearFromRegard label traitName
       [ Match ("regards.W.O." ++ label) ]
       [ "trait.O." ++ traitName ]
   where bad n = null n || any (`elem` (".!" :: String)) n
+
+-- | 条件：@who@ 持有特质 @trait@。
+hasTrait :: String -> String -> Condition
+hasTrait who trait = Match ("trait." ++ who ++ "." ++ trait)
+
+-- | 条件：@who@ 不持有特质 @trait@。
+lacksTrait :: String -> String -> Condition
+lacksTrait who trait = Not ("trait." ++ who ++ "." ++ trait)

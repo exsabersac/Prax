@@ -16,6 +16,7 @@ module Prax.Witness
   , observable
   , saw
   , asRole
+  , neverSaw
   ) where
 
 import qualified Data.Map.Strict as Map
@@ -50,3 +51,7 @@ saw who event = Match (beliefAbout who event ++ ".seen")
 -- | 重定向同场模板：把 @Witness@ 换成不同变量名。
 asRole :: String -> CoPresence -> [Condition]
 asRole v = map (groundCondition (Map.singleton (intern "Witness") (VSym (intern v))))
+
+-- | 条件：@who@ 从未直接目击 @event@（无 `.seen` 叶）。
+neverSaw :: String -> String -> Condition
+neverSaw who event = Absent [ Match (beliefAbout who event ++ ".seen") ]

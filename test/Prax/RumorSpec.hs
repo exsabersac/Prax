@@ -105,6 +105,10 @@ tests = testGroup "Prax.Rumor"
       assertBool "sam won't gossip with hana" (not (offers "sam" "hana" st))
       assertBool "but rita still will" (offers "rita" "hana" st)
 
+  , testCase "heardFrom pins a named source edge" $
+      heardFrom "W" "sam" "tripped.tess"
+        @?= Match "W.believes.tripped.tess.heard.sam"
+
   , testCase "heard is a boolean exists (no per-source bindings leak)" $
       heard "W" "tripped.tess"
         @?= Exists [ Match "W.believes.tripped.tess.heard.Src" ]

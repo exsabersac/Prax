@@ -611,3 +611,28 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`isChildOf` 对偶条件。
 - **测**：KinSpec parent dual。
+
+## v99 — Witness neverSaw
+
+- **做了什么**：`Absent` 于 `.seen` 叶。
+- **测**：WitnessSpec neverSaw。
+
+## v100 — Rumor heardFrom
+
+- **做了什么**：具名来源传闻边条件。
+- **测**：RumorSpec heardFrom。
+
+## v101 — Persona hasTrait / lacksTrait
+
+- **做了什么**：特质事实门条件。
+- **测**：PersonaSpec hasTrait / lacksTrait。
+
+## v102 — Emotion hasMood
+
+- **做了什么**：任一基线心境子树条件。
+- **测**：EmotionSpec hasMood。
+
+## v103 — Chronicle mood-of
+
+- **做了什么**：`askChronicle "mood of <who>"`。
+- **测**：ChronicleSpec mood-of。

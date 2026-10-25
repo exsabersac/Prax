@@ -28,6 +28,7 @@ module Prax.Emotion
     -- * Baseline mood (exclusive; display / gating, not episodic)
   , setMood, clearMood, inMood
   , moodFromFeeling
+  , hasMood
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -212,3 +213,7 @@ moodFromFeeling emotion
   | otherwise = axiom
       [ Match ("W.feels." ++ emotion) ]
       [ "mood.W!" ++ emotion ]
+
+-- | 条件：@who@ 当前有任一基线心境（@mood.<who>@ 子树非空）。
+hasMood :: String -> Condition
+hasMood who = Match ("mood." ++ who)

@@ -12,6 +12,7 @@ module Prax.Rumor
   ( gossip
   , gossipPublic
   , heard
+  , heardFrom
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -67,3 +68,8 @@ gossipPublic copresence gate pat label
 -- | 条件：@who@ 对 @event@ 有传闻证据（来自任何人）。该子树上的布尔 `Exists`。
 heard :: String -> String -> Condition
 heard who event = Exists [ Match (beliefAbout who event ++ ".heard.Src") ]
+
+-- | 条件：@who@ 从特定 @source@ 听说 @event@。
+heardFrom :: String -> String -> String -> Condition
+heardFrom who source event =
+  Match (beliefAbout who event ++ ".heard." ++ source)

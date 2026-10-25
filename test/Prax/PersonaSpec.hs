@@ -135,6 +135,10 @@ tests = testGroup "Prax.Persona"
         @?= Just "bea: whisper to oz that kit took the gem"
       Planner.predictMove seer (member "kit") (member "ada") @?= Nothing
 
+  , testCase "hasTrait / lacksTrait gate on trait facts" $ do
+      hasTrait "gale" "honest" @?= Match "trait.gale.honest"
+      lacksTrait "gale" "honest" @?= Not "trait.gale.honest"
+
   , testCase "bearFromRegard derives trait from standing label" $ do
       let st = setAxioms [bearFromRegard "thief" "hardened"]
                  (foldl (flip performOutcome) emptyState

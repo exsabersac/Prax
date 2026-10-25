@@ -75,6 +75,11 @@ tests = testGroup "Prax.Chronicle"
       assertBool "events still chronicled"
         (knowerCount "kicked.kai.dog" (db f) == 2)
 
+  , testCase "askChronicle mood-of lists baseline mood" $ do
+      let st = foldl (flip performOutcome) emptyState [ Insert "mood.ana!cheerful" ]
+      askChronicle st "mood of ana" @?= ["ana mood cheerful"]
+      askChronicle st "mood of bob" @?= ["bob has no baseline mood"]
+
   , testCase "askChronicle feelings-of lists base feeling facts" $ do
       let st = foldl (flip performOutcome) world
                 [ Insert "ana.feels.angry"

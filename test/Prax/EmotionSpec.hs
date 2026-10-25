@@ -277,6 +277,9 @@ tests = testGroup "Prax.Emotion"
         baseline @?= afterFeelings
     ]
 
+  , testCase "hasMood matches mood subtree" $
+      hasMood "ana" @?= Match "mood.ana"
+
   , testCase "moodFromFeeling derives baseline mood from episodic feel" $ do
       let axs = [ moodFromFeeling "happy" ]
           db0 = insertAll ["ana.feels.happy"] emptyDb
