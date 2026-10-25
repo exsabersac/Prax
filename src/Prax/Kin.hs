@@ -1,7 +1,12 @@
 -- | 亲属：基事实 + 派生闭包（规格 §2）。婚姻移动成员——折叠的回报浓缩为一行。
+-- v61：'divorce' 把既有「撤回婚姻」契约暴露为可创作动作（成员不变）。
+-- v62：'birth'/'birthInto' 写入亲子事实；后者一并加入家庭派系。
 module Prax.Kin
   ( kinAxioms
   , wed
+  , divorce
+  , birth
+  , birthInto
   , succession
   ) where
 
@@ -31,6 +36,28 @@ wed joiner faction spouse
       [ Insert ("married." ++ joiner ++ "." ++ spouse)
       , joins joiner faction ]
   where bad n = null n || any (`elem` (".!" :: String)) n
+
+-- | 离婚：撤回婚姻双边（基事实任一方向皆可），成员不变——与 KinSpec 溶解契约相同，
+-- 现为可创作动作。门禁于 @married.Actor.Spouse@（视图双侧均可匹配）。
+divorce :: String -> Action
+divorce label = action label
+  [ Match "married.Actor.Spouse" ]
+  [ Delete "married.Actor.Spouse"
+  , Delete "married.Spouse.Actor" ]
+
+-- | 出生：写入 @parent.<parent>.<child>@。名须单路径段。
+birth :: String -> String -> [Outcome]
+birth parent child
+  | bad parent || bad child =
+      error ("birth: parent and child must be single path segments (no '.' or '!'): "
+             ++ show (parent, child))
+  | otherwise = [ Insert ("parent." ++ parent ++ "." ++ child) ]
+  where bad n = null n || any (`elem` (".!" :: String)) n
+
+-- | 出生并加入家庭派系：亲子事实 + 'Prax.Faction.joins'。
+birthInto :: String -> String -> String -> [Outcome]
+birthInto parent child faction =
+  birth parent child ++ [ joins child faction ]
 
 -- | 继承为排他：死者持有者的任何子女可主张；`!` 覆盖保证单一继承。
 succession :: String -> Action

@@ -152,6 +152,42 @@ tests = testGroup "Prax.Kin"
       assertBool "the designed asymmetry: membership-derived alliance survives (it was never a kin derivation)"
         (exists "allied.ana.cass" v)
 
+  , testCase "divorce as authored action: clears marriage both ways; membership unchanged" $ do
+      let divorceP = practice
+            { practiceId = "divorce"
+            , roles = []
+            , actions = [ divorce "[Actor]: divorce [Spouse]" ]
+            }
+          world = definePractice divorceP
+                    (foldl (flip performOutcome) emptyState
+                      [ Insert "practice.divorce"
+                      , Insert "married.ana.cass"
+                      , joins "ana" "yard" ])
+          world' = setAxioms (kinAxioms ++ [comrades]) world
+      assertBool "pre: married" (exists "married.ana.cass" (db world'))
+      assertBool "pre: offered" (any ("divorce" `isInfixOf`) (opts world' "ana"))
+      after <- perform world' "ana" "divorce"
+      let v = readView after
+      assertBool "marriage gone" (not (exists "married.ana.cass" (db after)))
+      assertBool "symmetric gone" (not (exists "married.cass.ana" v))
+      assertBool "membership unchanged" (exists "member.ana!yard" (db after))
+
+  , testCase "birth / birthInto: parent fact + optional household join" $ do
+      let st0 = foldl (flip performOutcome) emptyState (birth "pat" "neo")
+      assertBool "parent.pat.neo" (exists "parent.pat.neo" (db st0))
+      let st1 = setAxioms [comrades]
+                  (foldl (flip performOutcome) emptyState
+                    (joins "pat" "hall" : birthInto "pat" "rio" "hall"))
+      assertBool "parent via birthInto" (exists "parent.pat.rio" (db st1))
+      assertBool "child joined hall" (exists "member.rio!hall" (db st1))
+      assertBool "allied with parent" (exists "allied.pat.rio" (readView st1))
+
+  , testCase "birth guards forced" $ do
+      r1 <- try (evaluate (length (birth "" "x")))
+      assertBool "empty parent" (isLeft (r1 :: Either ErrorCall Int))
+      r2 <- try (evaluate (length (birth "a.b" "x")))
+      assertBool "dotted parent" (isLeft (r2 :: Either ErrorCall Int))
+
   , testCase "succession: not offered while the holder lives" $
       assertBool "ana cannot claim the throne while rex lives"
         (not (any ("claim the office of throne" `isInfixOf`) (opts successionWorld "ana")))
