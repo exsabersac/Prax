@@ -25,6 +25,8 @@
 module Prax.Project
   ( Part (..)
   , endeavor
+  , endeavorCrew
+  , enlist
   , abandon
   ) where
 
@@ -110,6 +112,7 @@ endeavor pid w ulabel gate parts
 -- | 放弃进行中的事业实例：子树删除 @practice.<pid>.Actor@（账本一并清除），
 -- 重新打开承接。与 ProjectSpec 已钉死的拆卸／进食周期契约相同——本组合子只是把
 -- 该拆卸暴露为可创作动作。
+-- v72：'endeavorCrew'/'enlist' —— 合作项目：部件门禁于 crew 事实，合伙人可推进同一 Owner 账本。
 abandon :: String  -- ^ project id (single path segment)
         -> String  -- ^ action label
         -> Action
@@ -119,3 +122,70 @@ abandon pid label
   | otherwise = action label
       [ Match ("practice." ++ pid ++ ".Actor") ]
       [ Delete ("practice." ++ pid ++ ".Actor") ]
+
+-- | 合作事业：承接者写入 @practice.<pid>.Actor@ 与 @.crew.Actor@（自己入队）；
+-- 部件门禁 @practice.<pid>.Owner.crew.Actor@，因此 'enlist' 的合伙人可推进同一 Owner 账本。
+-- 追求欲望仍计数 Owner 账本——合作是共享进展，非第二实例。
+endeavorCrew :: String -> Int -> String -> [Condition] -> [Part]
+             -> (Action, Practice, Desire)
+endeavorCrew pid w ulabel gate parts
+  | null parts =
+      error ("endeavorCrew: " ++ show pid ++ " has no parts (an endeavor is work)")
+  | any (`elem` (".!" :: String)) pid =
+      error ("endeavorCrew: id " ++ show pid ++ " must be a single path segment")
+  | (n : _) <- [ n | n <- names, any (`elem` (".!" :: String)) n ] =
+      error ("endeavorCrew " ++ show pid ++ ": part name " ++ show n
+             ++ " must be a single path segment (it keys the ledger)")
+  | (n : _) <- names \\ nub names =
+      error ("endeavorCrew " ++ show pid ++ ": duplicate part name " ++ show n)
+  | ((p, e) : _) <- [ (partName p, e) | p <- parts
+                    , e <- partAfter p, e `notElem` names ] =
+      error ("endeavorCrew " ++ show pid ++ ": part " ++ show p
+             ++ " depends on " ++ show e ++ ", which is not a part")
+  | (v : _) <- concat [ authoredVarClash [] (partNeeds p) (partYields p)
+                      | p <- parts ] =
+      error ("endeavorCrew " ++ show pid ++ ": part authors " ++ show v
+             ++ " -- the Prax namespace is reserved")
+  | (n : _) <- filter (`notElem` reachable) names =
+      error ("endeavorCrew " ++ show pid ++ ": part " ++ show n
+             ++ " is unreachable (its dependency edges form or feed a cycle)")
+  | otherwise = (undertake, proj, pursuit)
+  where
+    names = map partName parts
+    reachable = go [ partName p | p <- parts, null (partAfter p) ]
+      where
+        go acc =
+          let acc' = nub (acc ++ [ partName p | p <- parts
+                                 , all (`elem` acc) (partAfter p) ])
+          in if length acc' == length acc then acc else go acc'
+    inst suffix = "practice." ++ pid ++ suffix
+    ledger n = inst (".Owner.did." ++ n)
+    undertake = action ulabel (gate ++ [ Not (inst ".Actor") ])
+                  [ Insert (inst ".Actor")
+                  , Insert (inst ".Actor.crew.Actor") ]
+    partAction p = action (partLabel p)
+      ([ Match (inst ".Owner.crew.Actor"), Not (ledger (partName p)) ]
+       ++ [ Match (ledger d) | d <- partAfter p ]
+       ++ partNeeds p)
+      (Insert (ledger (partName p)) : partYields p)
+    proj = practice
+      { practiceId   = pid
+      , practiceName = "[Owner] pursues " ++ pid
+      , roles        = ["Owner"]
+      , initOutcomes = []
+      , actions      = map partAction parts }
+    pursuit = Desire ("pursues-" ++ pid)
+                (Want [ Match (inst ".Owner.did.P") ] w)
+
+-- | Owner 邀请同场 Partner 入队：写入 @practice.<pid>.Actor.crew.Partner@。
+enlist :: String -> String -> Action
+enlist pid label
+  | null pid || any (`elem` (".!" :: String)) pid =
+      error ("enlist: id " ++ show pid ++ " must be a single path segment")
+  | otherwise = action label
+      [ Match ("practice." ++ pid ++ ".Actor")
+      , Match "at.Actor!P"
+      , Match "at.Partner!P"
+      , Neq "Actor" "Partner"
+      , Not ("practice." ++ pid ++ ".Actor.crew.Partner") ]
+      [ Insert ("practice." ++ pid ++ ".Actor.crew.Partner") ]

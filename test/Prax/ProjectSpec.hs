@@ -310,4 +310,45 @@ tests = testGroup "Prax.Project"
   , testCase "abandon rejects a dotted project id" $ do
       r <- try (Exc.evaluate (abandon "my.oven" "[Actor]: quit"))
       assertBool "id must be a single path segment" (isLeft (r :: Either ErrorCall Action))
+
+  , testCase "endeavorCrew + enlist: partner advances owner ledger" $ do
+      let parts = [ Part "sweep" "[Actor]: sweep the hearth" [] [] []
+                  , Part "fire"  "[Actor]: fire it" ["sweep"] [] [ Insert "oven.standing" ]
+                  ]
+          (take_, prac, pursuit) = endeavorCrew "oven2" 3 "[Actor]: resolve crew oven" [] parts
+          yardP = practice { practiceId = "yard", roles = ["R"]
+                           , actions = [ take_
+                                       , enlist "oven2" "[Actor]: enlist [Partner]"
+                                       , action "[Actor]: Idle about" [] [] ] }
+          mia = (character "mia") { charDesires = ["pursues-oven2"] }
+          pat = character "pat"
+          st0 = foldl (flip performOutcome)
+                  (setDesires [pursuit]
+                    (setCharacters [mia, pat]
+                      (definePractices [prac, yardP] emptyState)))
+                  [ Insert "practice.yard.here"
+                  , Insert "at.mia!yard"
+                  , Insert "at.pat!yard" ]
+      -- mia undertakes
+      let st1 = case filter (("resolve crew oven" `isInfixOf`) . gaLabel) (possibleActions st0 "mia") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no undertake"
+      assertBool "instance" (exists "practice.oven2.mia" (db st1))
+      assertBool "self crew" (exists "practice.oven2.mia.crew.mia" (db st1))
+      -- enlist pat
+      let st2 = case filter (("enlist" `isInfixOf`) . gaLabel) (possibleActions st1 "mia") of
+                  (ga:_) -> performAction st1 ga
+                  [] -> error "no enlist"
+      assertBool "pat crewed" (exists "practice.oven2.mia.crew.pat" (db st2))
+      -- pat can sweep
+      assertBool "pat offered sweep" (any ("sweep" `isInfixOf`) (map gaLabel (possibleActions st2 "pat")))
+      let st3 = case filter (("sweep" `isInfixOf`) . gaLabel) (possibleActions st2 "pat") of
+                  (ga:_) -> performAction st2 ga
+                  [] -> error "no sweep"
+      assertBool "ledger under mia" (exists "practice.oven2.mia.did.sweep" (db st3))
+
+  , testCase "enlist rejects dotted pid" $ do
+      r <- try (Exc.evaluate (length (show (enlist "o.ven" "x"))))
+      assertBool "dotted" (isLeft (r :: Either ErrorCall Int))
+
   ]
