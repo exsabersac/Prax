@@ -11,10 +11,12 @@ module Prax.Faction
   , affiliate
   , unaffiliate
   , affiliates
+  , lacksAffiliate
   , affiliateComrades
   , appointLeader
   , deposeLeader
   , isLeader
+  , lacksLeader
   , transferLeadership
   , isMember
   , lacksMember
@@ -83,6 +85,10 @@ unaffiliate who faction = Delete (affiliatePath who faction)
 affiliates :: String -> String -> Condition
 affiliates who faction = Match (affiliatePath who faction)
 
+-- | 条件：@who@ 无次级归属 @faction@。
+lacksAffiliate :: String -> String -> Condition
+lacksAffiliate who faction = Not (affiliatePath who faction)
+
 -- | 共享次级归属亦派生同盟（与主成员 'comrades' 并列）。
 affiliateComrades :: Axiom
 affiliateComrades = axiom
@@ -112,6 +118,11 @@ deposeLeader faction
 -- | 条件：@who@ 现为 @faction@ 首领。
 isLeader :: String -> String -> Condition
 isLeader who faction = Match ("leads." ++ faction ++ "!" ++ who)
+
+
+-- | 条件：@who@ 不是 @faction@ 的领袖。
+lacksLeader :: String -> String -> Condition
+lacksLeader who faction = Not (leaderPath faction who)
 
 -- | 禅让：现任首领（Actor）将 @faction@ 领导权交给同派 @Heir@（须已有主成员）。
 transferLeadership :: String -> String -> Action

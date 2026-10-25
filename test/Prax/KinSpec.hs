@@ -4,7 +4,7 @@ import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf, isPrefixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool, assertFailure)
+import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import qualified Data.Map.Strict as Map
 import           Prax.Query (query, Condition (..))
@@ -301,5 +301,11 @@ tests = testGroup "Prax.Kin"
 
   , testCase "isInLawOf matches derived inLaw path" $
       assertBool "shape" (isInLawOf "pat" "sam" == Match "inLaw.pat.sam")
+
+  , testCase "neverMarried is Absent over married.<who>" $
+      neverMarried "ada" @?= Absent [ Match "married.ada" ]
+
+  , testCase "neverParent is Absent over parent.<who>" $
+      neverParent "ada" @?= Absent [ Match "parent.ada" ]
 
   ]

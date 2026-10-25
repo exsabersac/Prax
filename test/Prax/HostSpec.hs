@@ -119,4 +119,20 @@ tests = testGroup "Prax.Host"
       assertBool "removed ada" ("flag.ada" `elem` removed)
       assertBool "keep.x not in filtered delta" ("keep.x" `notElem` (added ++ removed))
 
+  , testCase "queryChronicleMatching filters chronicle rows by needle" $ do
+      let st = foldl (flip performOutcome) emptyState [ Insert "leads.hall!ana" ]
+          stC = setCharacters (map character ["ana"]) st
+          allRows = queryChronicle stC "leads of hall"
+          filtered = queryChronicleMatching stC "leads of hall" "___nomatch___"
+          kept = queryChronicleMatching stC "leads of hall" "ana"
+      assertBool "impossible needle empty" (null filtered)
+      kept @?= allRows
+
+  , testCase "explainActorMatching filters explain lines" $
+      explainActorMatching world "ada" "wave" "___nomatch___" @?= []
+
+  , testCase "practiceNames lists top-level practice ids" $ do
+      let names = practiceNames world
+      assertBool "wave practice" ("wave" `elem` names)
+
   ]

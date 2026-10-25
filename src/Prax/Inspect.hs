@@ -6,6 +6,7 @@
 module Prax.Inspect
   ( firstFailing
   , explain
+  , explainMatching
   ) where
 
 import           Data.List (intercalate, isInfixOf)
@@ -39,3 +40,8 @@ explain st actor needle =
   , let verdict = case firstFailing (db st) (actionConditions a) inst of
                     Nothing -> " — AVAILABLE"
                     Just c  -> " — blocked by: " ++ show c ]
+
+-- | 过滤 'explain'：只保留含 @needle@ 的解释行。
+explainMatching :: PraxState -> String -> String -> String -> [String]
+explainMatching st actor label needle =
+  filter (needle `isInfixOf`) (explain st actor label)

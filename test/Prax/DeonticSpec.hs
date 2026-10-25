@@ -189,4 +189,7 @@ tests = testGroup "Prax.Deontic"
         assertBool "discharged" (not (exists "obliged.bob.whenAt.chapel.said.prayer" (db st2)))
     ]
 
+  , testCase "neverObliged is Not of obligation path" $
+      neverObliged "ada" "pay.tab" @?= Not "obliged.ada.pay.tab"
+
   ]

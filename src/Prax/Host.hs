@@ -19,20 +19,23 @@ module Prax.Host
   , availableMatching
   , availableActions
   , queryChronicle
+  , queryChronicleMatching
   , explainActor
+  , explainActorMatching
   , livingCast
   , livingMatching
+  , practiceNames
   , checkpoint
   , restore
   ) where
 
-import           Data.List (isInfixOf, (\\))
+import           Data.List (isInfixOf, isPrefixOf, (\\))
 
 import           Prax.Db (dbToSentences)
 import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), Character (..), gaLabel, readView, livingCharacters)
 import           Prax.Engine (performAction, performOutcome, possibleActions)
 import           Prax.Chronicle (askChronicle)
-import           Prax.Inspect (explain)
+import           Prax.Inspect (explain, explainMatching)
 import           Prax.Persist (saveState, loadState)
 
 -- | 当前角色可选动作标签（宿主菜单）。
@@ -74,6 +77,16 @@ inject st outs = foldl (flip performOutcome) st outs
 queryFacts :: PraxState -> [String]
 queryFacts = dbToSentences . db
 
+-- | 当前已定义实践名（基事实 @practice.<id>@ 去前缀；不含实例后缀）。
+practiceNames :: PraxState -> [String]
+practiceNames st =
+  [ drop (length "practice.") s
+  | s <- queryFacts st
+  , "practice." `isPrefixOf` s
+  , '.' `notElem` drop (length "practice.") s
+  ]
+
+
 -- | 只读：闭合视图句子（含派生）。
 queryView :: PraxState -> [String]
 queryView = dbToSentences . readView
@@ -105,9 +118,18 @@ factDeltaMatching needle before after =
 queryChronicle :: PraxState -> String -> [String]
 queryChronicle = askChronicle
 
+-- | 过滤编年史答：只保留含 @needle@ 的行。
+queryChronicleMatching :: PraxState -> String -> String -> [String]
+queryChronicleMatching st q needle =
+  filter (needle `isInfixOf`) (queryChronicle st q)
+
 -- | 动作检查器：对 @actor@ 解释标签含 @needle@ 的动作为何可用/阻塞。
 explainActor :: PraxState -> String -> String -> [String]
 explainActor = explain
+
+-- | 过滤 'explainActor'：只保留含 @needle@ 的解释行。
+explainActorMatching :: PraxState -> String -> String -> String -> [String]
+explainActorMatching = explainMatching
 
 -- | 当前存活阵容名（跳过 dead.*）。
 livingCast :: PraxState -> [String]

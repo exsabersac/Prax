@@ -19,7 +19,9 @@ module Prax.Kin
   , isChildOf
   , isSiblingOf
   , isMarriedTo
+  , neverMarried
   , isParentOf
+  , neverParent
   , isInLawOf
   ) where
 
@@ -142,9 +144,17 @@ isSiblingOf a b = Match ("sibling." ++ a ++ "." ++ b)
 isMarriedTo :: String -> String -> Condition
 isMarriedTo a b = Match ("married." ++ a ++ "." ++ b)
 
+-- | 条件：@who@ 无任何婚姻叶（未婚 / 已离后无现任）。
+neverMarried :: String -> Condition
+neverMarried who = Absent [ Match ("married." ++ who) ]
+
 -- | 条件：@parent@ 是 @child@ 的父母（'isChildOf' 的对偶）。
 isParentOf :: String -> String -> Condition
 isParentOf parent child = isChildOf child parent
+
+-- | 条件：@who@ 无任何子女叶（非父母）。
+neverParent :: String -> Condition
+neverParent who = Absent [ Match ("parent." ++ who) ]
 
 -- | 条件：@a@ 是 @b@ 的姻亲（读派生 @inLaw@）。
 isInLawOf :: String -> String -> Condition

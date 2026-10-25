@@ -209,4 +209,8 @@ tests = testGroup "Prax.Faction"
   , testCase "lacksMember is Not of member path" $
       lacksMember "eve" "guild" @?= Not "member.eve!guild"
 
+  , testCase "lacksAffiliate / lacksLeader duals" $ do
+      lacksAffiliate "ada" "guild" @?= Not "affiliate.ada.guild"
+      lacksLeader "ada" "guild" @?= Not "leads.guild!ada"
+
   ]

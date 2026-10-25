@@ -47,6 +47,7 @@ module Prax.Deontic
   , obligeReparative
     -- * Querying obligations (Conditions)
   , isObliged
+  , neverObliged
   , fulfilled
   , inBreach
     -- * Norm-conflict detection (pure)
@@ -126,6 +127,10 @@ obligeReparative who content = oblige who (obligationPath who content)
 -- | 条件：@who@ 当前有义务促成 @content@。
 isObliged :: String -> String -> Condition
 isObliged who content = Match (obligationPath who content)
+
+-- | 条件：@who@ 无任何 @content@ 义务叶。
+neverObliged :: String -> String -> Condition
+neverObliged who content = Not (obligationPath who content)
 
 -- | 已履行义务的条件：@who@ 有义务且内容已成立。
 fulfilled :: String -> String -> [Condition]

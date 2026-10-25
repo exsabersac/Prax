@@ -14,6 +14,7 @@ module Prax.Confession
   , liftDeceit
   , absolveAsLeader
   , hasMark
+  , neverMarked
   , isAbsolved
   ) where
 
@@ -202,6 +203,11 @@ absolveAsLeader faction defeater pat incLabel label
 hasMark :: String -> String -> String -> String -> Condition
 hasMark who kind hearer markTail =
   Match (who ++ "." ++ kind ++ "." ++ hearer ++ "." ++ markTail)
+
+-- | 条件：@who@ 对 @hearer@ 无该 @kind@/@markTail@ 标记叶。
+neverMarked :: String -> String -> String -> String -> Condition
+neverMarked who kind hearer markTail =
+  Not (who ++ "." ++ kind ++ "." ++ hearer ++ "." ++ markTail)
 
 -- | 条件：@who@ 已获 @defeater@ 赦免叶（如 @recanted.<who>@）。
 isAbsolved :: String -> String -> Condition

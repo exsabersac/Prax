@@ -478,7 +478,7 @@ Tier 2 — 长时间跨度的代理内在性：
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`factDeltaMatching`/`available`/`availableMatching`/`availableActions`/`livingMatching`。CLI `prax worlds`（v110）、`prax version`（v136）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144 `practiceNames`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`。CLI `prax worlds`（v110）、`prax version`（v136）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -801,3 +801,43 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：打印 `formatVersion`（持久化格式标签）。
 - **测**：手工 `prax version` → `prax-state v4`。
+
+## v137 — Faction lacksAffiliate / lacksLeader
+
+- **做了什么**：次级归属与领导叶的 Not 对偶。
+- **测**：FactionSpec lacksAffiliate / lacksLeader。
+
+## v138 — Kin neverMarried
+
+- **做了什么**：无 `married.<who>` 子树的 Absent 条件。
+- **测**：KinSpec neverMarried。
+
+## v139 — Deontic neverObliged
+
+- **做了什么**：义务路径的 Not 对偶。
+- **测**：DeonticSpec neverObliged。
+
+## v140 — Host queryChronicleMatching / explainActorMatching
+
+- **做了什么**：编年史答与检查器解释行的针过滤；`Prax.Inspect.explainMatching`。
+- **测**：HostSpec queryChronicleMatching / explainActorMatching。
+
+## v141 — Kin neverParent
+
+- **做了什么**：无 `parent.<who>` 子树的 Absent 条件。
+- **测**：KinSpec neverParent。
+
+## v142 — Sight knownWhere
+
+- **做了什么**：最后已知位置子树存在的 Match 对偶。
+- **测**：SightSpec knownWhere。
+
+## v143 — Confession neverMarked
+
+- **做了什么**：标记路径的 Not 对偶。
+- **测**：ConfessionSpec neverMarked。
+
+## v144 — Host practiceNames
+
+- **做了什么**：枚举顶层 `practice.<id>` 名（无实例后缀）。
+- **测**：HostSpec practiceNames。
