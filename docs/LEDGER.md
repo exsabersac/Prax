@@ -458,7 +458,7 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果；v161 lacksNotorious/hasScorned/lacksScorned）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267–v268** 加深为多步正义/审查弧、affiliate 负例、受害方叛逃溶解与婚入获站队；**v269** 收成独立可玩 `Sandbox`（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267–v268** 加深为多步正义/审查弧、affiliate 负例、受害方叛逃溶解与婚入获站队；**v269** 收成独立可玩 `Sandbox`；**v270** 轻量 wants 驱动自选控告/审查/放逐（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。关系条件于 v87/v98/v119（`isChildOf`/`isParentOf`/`isInLawOf` 等）。
 
@@ -474,7 +474,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧；**v265** 磨坊审判复合弧（节庆+factionStanding）；**v266** 教会异端弧（节庆+领袖门禁）；**v269** `Prax.Worlds.Sandbox` 可玩闭环）*。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧；**v265** 磨坊审判复合弧（节庆+factionStanding）；**v266** 教会异端弧（节庆+领袖门禁）；**v269** `Prax.Worlds.Sandbox` 可玩闭环；**v270** wants 驱动自选节拍 + 短轨迹）*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
@@ -1467,4 +1467,11 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：新模块 `Prax.Worlds.Sandbox`（非 Village）：磨坊审判（窗外获知 → 窗内控告 → 窗外放逐）、教会异端（听闻 → 审查 → 仅领袖放逐）、婚入磨坊获站队；复用既有 `factionStanding` / `festival` / `Kin` / `Host`，少造原语。CLI `prax sandbox`；`prax practices`/`cast`/`worlds` 等已挂名。
 - **测**：SandboxSpec 五案逐步断言（typeCheck、种子、三条叙事弧）；Village / GoldenDrive / 既有金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置。
+
+## v270 — Sandbox 轻量 wants 驱动可玩节拍
+
+- **做了什么**：`Prax.Worlds.Sandbox` 挂命名欲望词汇（磨坊获知/控告/放逐、教会听闻/审查/放逐、婚入磨坊）与 `presence` 等待实践；NPC 在门禁满足时由 planner 自选叙事节拍（非仅 Spec 手推 Outcome）。Sandbox 自有短轨迹期望（`SandboxSpec.sandboxGolden`，独立于 GoldenDrive / Village）。
+- **测**：SandboxSpec pickAction 种子/节庆窗内/窗外断言；35 步 NPC 自由跑金轨迹至双放逐；原有三条逐步弧与 typeCheck 仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置。
+
 

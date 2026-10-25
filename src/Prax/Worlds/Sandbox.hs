@@ -1,16 +1,17 @@
 -- | 轻量可玩沙盒世界：把节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
 -- 婚入磨坊弧收成独立世界（非 Village）。Village / GoldenDrive 金标准不动；
--- 本模块仅演示已有 API 的可跑闭环。
+-- 本模块演示已有 API 的可跑闭环，并以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
   ( sandboxWorld
   , playerName
   , sandboxAxioms
+  , sandboxDesires
   ) where
 
 import           Prax.Query (Condition (..))
 import           Prax.Types
-import           Prax.Engine (definePractices, performOutcome, setAxioms, setCharacters, setSchedule)
+import           Prax.Engine (definePractices, performOutcome, setAxioms, setCharacters, setDesires, setSchedule)
 import           Prax.Derive (Axiom)
 import           Prax.Deontic (obligedClose)
 import           Prax.Faction
@@ -18,7 +19,7 @@ import           Prax.Faction
 import           Prax.Kin (kinAxioms)
 import           Prax.Schedule (festival, duringFestival, outsideFestival)
 
--- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧。
+-- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧。玩家槽无 want。
 playerName :: String
 playerName = "you"
 
@@ -29,9 +30,44 @@ sandboxAxioms =
   , factionStanding "blasphemed.Culprit.Victim" "heretic"
   ] ++ kinAxioms
 
+-- | 命名欲望词汇：磨坊正义 / 教会审查 / 婚入磨坊。
+sandboxDesires :: [Desire]
+sandboxDesires =
+  [ Desire "seeks-theft-truth"
+      (Want [ Match "Owner.believes.stole.bob.carol" ] 6)
+  , Desire "punishes-thief"
+      (Want [ Match "denounced.Owner.bob" ] 8)
+  , Desire "wants-exile-bob"
+      (Want [ Match "exiled.bob" ] 12)
+  , Desire "seeks-heresy-truth"
+      (Want [ Match "Owner.believes.blasphemed.eve.gale" ] 6)
+  , Desire "punishes-heretic"
+      (Want [ Match "censured.Owner.eve" ] 8)
+  , Desire "wants-exile-eve"
+      (Want [ Match "exiled.eve" ] 12)
+  , Desire "joins-mill"
+      (Want [ Match "member.Owner!mill" ] 10)
+  ]
+
+millJustice :: [String]
+millJustice = ["seeks-theft-truth", "punishes-thief", "wants-exile-bob"]
+
+churchJustice :: [String]
+churchJustice = ["seeks-heresy-truth", "punishes-heretic", "wants-exile-eve"]
+
 -- 丰收节窗内控告 / 审查；窗外获知与放逐。
 harvestFestival :: ScheduleRule
 harvestFestival = festival "harvest" 3 1 []
+
+-- 无动机者与玩家空档可等待，避免自由跑空白。
+presenceP :: Practice
+presenceP = practice
+  { practiceId   = "presence"
+  , practiceName = "waiting out the harvest"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: Wait a moment" [] [] ]
+  }
 
 -- | 磨坊审判：窗外获知 → 窗内控告（门禁于 regard）→ 窗外放逐。
 millTribunalP :: Practice
@@ -102,17 +138,17 @@ millWedP = practice
   }
 
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
--- not the shipped Village world.
+-- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
 cast :: [Character]
 cast =
   [ character playerName
   , character "bob"
-  , character "carol"
-  , character "dave"
-  , character "fran"
+  , (character "carol") { charDesires = millJustice }
+  , (character "dave")  { charDesires = millJustice }
+  , (character "fran")  { charDesires = "joins-mill" : millJustice }
   , character "eve"
-  , character "gale"
-  , character "priest"
+  , (character "gale")  { charDesires = churchJustice }
+  , (character "priest") { charDesires = churchJustice }
   ]
 
 setup :: [Outcome]
@@ -126,6 +162,7 @@ setup =
   , joins "gale" "church"
   , joins "priest" "church"
   , appointLeader "priest" "church"
+  , Insert "practice.presence"
   , Insert "practice.millTribunal"
   , Insert "practice.churchHeresy"
   , Insert "practice.millWed"
@@ -134,13 +171,14 @@ setup =
   , Insert "bob.believes.blasphemed.eve.gale"
   ]
 
--- | 已调度、可跑的沙盒世界。
+-- | 已调度、带 wants、可跑的沙盒世界。
 sandboxWorld :: PraxState
 sandboxWorld =
   setAxioms (obligedClose sandboxAxioms)
     (foldl (flip performOutcome) withPractices setup)
   where
     withPractices =
-      setCharacters cast
-        (definePractices [millTribunalP, churchHeresyP, millWedP]
-           (setSchedule [harvestFestival] emptyState))
+      setDesires sandboxDesires
+        (setCharacters cast
+          (definePractices [presenceP, millTribunalP, churchHeresyP, millWedP]
+             (setSchedule [harvestFestival] emptyState)))
