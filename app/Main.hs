@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -181,6 +181,41 @@ runChatted (who : ws) =
   in mapM_ putStrLn (chattedWithOf st who)
 runChatted _ = putStrLn "usage: prax chatted <who> <world>"
 
+-- | List trait leaves: @prax traits <who> <world>@.
+runTraits :: [String] -> IO ()
+runTraits (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (traitsOf st who)
+runTraits _ = putStrLn "usage: prax traits <who> <world>"
+
+-- | List mood leaves: @prax moods <who> <world>@.
+runMoods :: [String] -> IO ()
+runMoods (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (moodsOf st who)
+runMoods _ = putStrLn "usage: prax moods <who> <world>"
+
+-- | List bond leaves: @prax bonds <who> <world>@.
+runBonds :: [String] -> IO ()
+runBonds (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (bondsOf st who)
+runBonds _ = putStrLn "usage: prax bonds <who> <world>"
+
+-- | List kin leaves: @prax kin <who> <world>@.
+runKin :: [String] -> IO ()
+runKin (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (kinOf st who)
+runKin _ = putStrLn "usage: prax kin <who> <world>"
+
+-- | List notoriety leaves: @prax notorious <who> <world>@.
+runNotorious :: [String] -> IO ()
+runNotorious (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (notoriousOf st who)
+runNotorious _ = putStrLn "usage: prax notorious <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -257,6 +292,11 @@ usageText = unlines
   , "  prax feelings <who> <world>            list feeling leaves for who"
   , "  prax lies <who> <world>                list lie-mark leaves for who"
   , "  prax chatted <who> <world>             list chattedWith leaves for who"
+  , "  prax traits <who> <world>              list trait leaves for who"
+  , "  prax moods <who> <world>               list mood leaves for who"
+  , "  prax bonds <who> <world>               list bond leaves for who"
+  , "  prax kin <who> <world>                 list kin leaves involving who"
+  , "  prax notorious <who> <world>           list notoriety leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -291,6 +331,11 @@ main = do
     ("feelings" : ws) -> runFeelings ws
     ("lies" : ws)     -> runLies ws
     ("chatted" : ws)  -> runChatted ws
+    ("traits" : ws)   -> runTraits ws
+    ("moods" : ws)    -> runMoods ws
+    ("bonds" : ws)    -> runBonds ws
+    ("kin" : ws)      -> runKin ws
+    ("notorious" : ws) -> runNotorious ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

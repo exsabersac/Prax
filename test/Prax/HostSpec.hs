@@ -237,4 +237,33 @@ tests = testGroup "Prax.Host"
       regardsToward st "bob" @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
       regardsToward st "eve" @?= ["regards.dave.eve.hero"]
       factionsNamed st @?= ["choir", "guild", "mill"]
+
+  , testCase "traitsOf / moodsOf / bondsOf / kinOf / notoriousOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "trait.ana.brave"
+                , Insert "trait.ana.stubborn"
+                , Insert "trait.ben.shy"
+                , Insert "mood.ana!calm"
+                , Insert "mood.ben!angry"
+                , Insert "bond.ana.ben.friends"
+                , Insert "bond.cass.dave.rivals"
+                , Insert "married.ana.ben"
+                , Insert "parent.ana.cara"
+                , Insert "sibling.ben.dave"
+                , Insert "notorious.ana.thief"
+                , Insert "notorious.ben.liar"
+                , Insert "flag.x" ]
+      sort (traitsOf st "ana") @?= ["trait.ana.brave", "trait.ana.stubborn"]
+      traitsOf st "ben" @?= ["trait.ben.shy"]
+      traitsOf st "void" @?= []
+      moodsOf st "ana" @?= ["mood.ana.calm"]
+      moodsOf st "ben" @?= ["mood.ben.angry"]
+      bondsOf st "ana" @?= ["bond.ana.ben.friends"]
+      bondsOf st "cass" @?= ["bond.cass.dave.rivals"]
+      sort (kinOf st "ana") @?= ["married.ana.ben", "parent.ana.cara"]
+      sort (kinOf st "ben") @?= ["married.ana.ben", "sibling.ben.dave"]
+      kinOf st "cara" @?= ["parent.ana.cara"]
+      notoriousOf st "ana" @?= ["notorious.ana.thief"]
+      notoriousOf st "ben" @?= ["notorious.ben.liar"]
+      notoriousOf st "void" @?= []
   ]

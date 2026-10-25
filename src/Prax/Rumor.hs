@@ -14,6 +14,7 @@ module Prax.Rumor
   , heard
   , heardFrom
   , neverHeard
+  , lacksHeard
   , lacksHeardFrom
   , everHeard
   ) where
@@ -80,6 +81,10 @@ heardFrom who source event =
 -- | 条件：@who@ 从未经传闻得知 @event@（无任一 @.heard.*@ 叶）。
 neverHeard :: String -> String -> Condition
 neverHeard who event = Absent [ Match (beliefAbout who event ++ ".heard.Src") ]
+
+-- | 条件：@who@ 从未经传闻得知 @event@（@neverHeard@ 同体；对齐 lacks* 命名）。
+lacksHeard :: String -> String -> Condition
+lacksHeard = neverHeard
 
 -- | 条件：@who@ 曾从任一来源听过 @event@（存在 `.heard.Src` 叶）。
 everHeard :: String -> String -> Condition

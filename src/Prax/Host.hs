@@ -9,6 +9,7 @@
 -- v197：'obligationsOf' 枚举闭合视图中某人的义务叶。
 -- v203：'breachesOf' 枚举闭合视图中某人的违规叶。
 -- v208：'feelingsOf'/'liesOf'/'chattedWithOf' 枚举情感/谎言/聊天叶。
+-- v211：'traitsOf'/'moodsOf'/'bondsOf'/'kinOf'/'notoriousOf' 枚举性格/心境/纽带/亲属/恶名叶。
 module Prax.Host
   ( step
   , stepExact
@@ -43,6 +44,11 @@ module Prax.Host
   , feelingsOf
   , liesOf
   , chattedWithOf
+  , traitsOf
+  , moodsOf
+  , bondsOf
+  , kinOf
+  , notoriousOf
   , checkpoint
   , restore
   ) where
@@ -308,6 +314,43 @@ liesOf st who =
 chattedWithOf :: PraxState -> String -> [String]
 chattedWithOf st who =
   sort [ s | s <- queryView st, (who ++ ".chattedWith.") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的性格叶（@trait.<who>.*@）。
+traitsOf :: PraxState -> String -> [String]
+traitsOf st who =
+  sort [ s | s <- queryView st, ("trait." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的基线心境叶（@mood.<who>.*@；排他 @!@ 展成 @.@）。
+moodsOf :: PraxState -> String -> [String]
+moodsOf st who =
+  sort [ s | s <- queryView st, ("mood." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中与 @who@ 相关的公开纽带叶（@bond.<who>.*@ 一侧）。
+bondsOf :: PraxState -> String -> [String]
+bondsOf st who =
+  sort [ s | s <- queryView st, ("bond." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中与 @who@ 相关的亲属叶（married/parent/sibling/inLaw/grandparent 任一侧）。
+kinOf :: PraxState -> String -> [String]
+kinOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , head parts `elem` kinHeads
+  , who `elem` drop 1 parts
+  ]
+  where
+    kinHeads = ["married", "parent", "sibling", "inLaw", "grandparent"]
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的恶名叶（@notorious.<who>.*@）。
+notoriousOf :: PraxState -> String -> [String]
+notoriousOf st who =
+  sort [ s | s <- queryView st, ("notorious." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

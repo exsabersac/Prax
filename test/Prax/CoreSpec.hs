@@ -53,5 +53,8 @@ tests = testGroup "Prax.Core"
   , testCase "hasBond / lacksBond pin public bond leaves" $ do
       hasBond "ada" "bex" "friends" @?= Match "bond.ada.bex!friends"
       lacksBond "ada" "bex" @?= Absent [ Match "bond.ada.bex!State" ]
+  , testCase "everBond / neverBond are Exists/Absent of bond leaves" $ do
+      everBond "ada" @?= Exists [ Match "bond.ada.Other!State" ]
+      neverBond "ada" @?= Absent [ Match "bond.ada.Other!State" ]
 
   ]

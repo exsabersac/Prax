@@ -25,6 +25,8 @@ module Prax.Core
   , scoreAtLeast
   , hasBond
   , lacksBond
+  , everBond
+  , neverBond
   ) where
 
 import           Data.Char (toUpper)
@@ -69,6 +71,14 @@ hasBond a b state = Match ("bond." ++ a ++ "." ++ b ++ "!" ++ state)
 -- | 条件：@a@ 对 @b@ 无任何公开纽带叶。
 lacksBond :: String -> String -> Condition
 lacksBond a b = Absent [ Match ("bond." ++ a ++ "." ++ b ++ "!State") ]
+
+-- | 条件：@a@ 与任何人有公开纽带（Exists of @bond.a.Other!State@）。
+everBond :: String -> Condition
+everBond a = Exists [ Match ("bond." ++ a ++ ".Other!State") ]
+
+-- | 条件：@a@ 无任何公开纽带（@everBond@ 的 Absent 对偶）。
+neverBond :: String -> Condition
+neverBond a = Absent [ Match ("bond." ++ a ++ ".Other!State") ]
 
 -- | 角色名首字母大写，用于生成按角色区分的绑定变量（如 ScoreWarmth）。
 capitalize :: String -> String

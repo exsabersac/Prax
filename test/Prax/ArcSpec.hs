@@ -49,5 +49,8 @@ tests = testGroup "Prax.Arc"
       assertBool "old gone" (not (exists "bex.arc!hopeful" (db st1)))
   , testCase "lacksArcIs is Not of arc stage path" $
       lacksArcIs "ada" "hopeful" @?= Not "ada.arc!hopeful"
+  , testCase "everArc / neverArc are Exists/Absent of arc stage" $ do
+      everArc "ada" @?= Exists [ Match "ada.arc!Stage" ]
+      neverArc "ada" @?= Absent [ Match "ada.arc!Stage" ]
 
   ]

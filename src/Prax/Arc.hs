@@ -12,6 +12,8 @@ module Prax.Arc
   , lacksArcIs
   , hasArc
   , lacksArc
+  , everArc
+  , neverArc
   , enterArc
   , leaveArc
   , adoptArc
@@ -60,3 +62,11 @@ hasArc who = Match (arcOf who)
 -- | 条件：@who@ 当前无弧阶段（'hasArc' 的对偶）。
 lacksArc :: String -> Condition
 lacksArc who = Not (arcOf who)
+
+-- | 条件：@who@ 处于任一弧阶段（Exists of @who.arc!Stage@）。
+everArc :: String -> Condition
+everArc who = Exists [ Match (arcOf who ++ "!Stage") ]
+
+-- | 条件：@who@ 无任何弧阶段（@everArc@ 的 Absent 对偶）。
+neverArc :: String -> Condition
+neverArc who = Absent [ Match (arcOf who ++ "!Stage") ]

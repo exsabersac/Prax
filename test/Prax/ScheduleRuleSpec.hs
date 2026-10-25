@@ -348,6 +348,62 @@ tests = testGroup "Prax.ScheduleRule"
         assertBool "shirked" (exists "shirked.ada" (db stShirk))
         assertBool "breach recorded" (exists "violated.ada.offered.harvest" (db stShirk))
         assertBool "shirk once" (not (hasAct "shirk the vow" stShirk))
+
+    , testCase "harvest wedding arc: court outside → wed during → feast after" $ do
+        -- 更丰节庆门禁叙事：节前求亲 → 节中成婚写 married 叶 → 节后宴贺；仍不改 Village。
+        let rite = practice
+              { practiceId = "harvestWedding"
+              , roles = ["Beloved"]
+              , actions =
+                  [ action "[Actor]: court [Beloved]"
+                      [ outsideFestival "harvest"
+                      , Not "courting.Actor.Beloved"
+                      , Not "married.Actor.Beloved" ]
+                      [ Insert "courting.Actor.Beloved" ]
+                  , action "[Actor]: wed [Beloved] at harvest"
+                      [ duringFestival "harvest"
+                      , Match "courting.Actor.Beloved"
+                      , Not "married.Actor.Beloved" ]
+                      [ Insert "married.Actor.Beloved"
+                      , Insert "married.Beloved.Actor"
+                      , Delete "courting.Actor.Beloved" ]
+                  , action "[Actor]: feast the marriage"
+                      [ outsideFestival "harvest"
+                      , Match "married.Actor.Beloved"
+                      , Not "feasted.Actor" ]
+                      [ Insert "feasted.Actor" ]
+                  ]
+              }
+            base = definePractices [rite]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestWedding.ben" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: court yes" (hasAct "court" st0)
+        assertBool "before: wed no" (not (hasAct "wed" st0))
+        assertBool "before: feast no" (not (hasAct "feast" st0))
+        let stCourt = doAct "court" st0
+        assertBool "courting leaf" (exists "courting.ada.ben" (db stCourt))
+        let stOpen = iterate roundBoundary stCourt !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: wed yes" (hasAct "wed" stOpen)
+        assertBool "open: feast no" (not (hasAct "feast" stOpen))
+        let stWed = doAct "wed" stOpen
+        assertBool "married a->b" (exists "married.ada.ben" (db stWed))
+        assertBool "married b->a" (exists "married.ben.ada" (db stWed))
+        assertBool "courting cleared" (not (exists "courting.ada.ben" (db stWed)))
+        let stAfter = roundBoundary stWed
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: feast yes" (hasAct "feast" stAfter)
+        assertBool "after: wed no" (not (hasAct "wed" stAfter))
+        let stFeast = doAct "feast" stAfter
+        assertBool "feasted" (exists "feasted.ada" (db stFeast))
+        assertBool "feast once" (not (hasAct "feast" stFeast))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"
