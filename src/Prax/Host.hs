@@ -34,6 +34,7 @@ module Prax.Host
   , leadersOf
   , regardsToward
   , factionsNamed
+  , debtsOf
   , checkpoint
   , restore
   ) where
@@ -256,6 +257,23 @@ factionsNamed st = sort (nub (fromMember ++ fromAffiliate ++ fromLeads))
       case break (== '.') (reverse s) of
         (rf, '.' : rw) -> (reverse rw, reverse rf)
         (rf, _)        -> ("", reverse rf)
+
+-- | 闭合视图中与 @who@ 相关的债务叶（债权人或债务人一侧；@debt.<creditor>.<debtor>.<content>@）。
+debtsOf :: PraxState -> String -> [String]
+debtsOf st who = sort
+  [ s
+  | s <- queryView st
+  , "debt." `isPrefixOf` s
+  , let rest = drop (length ("debt." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

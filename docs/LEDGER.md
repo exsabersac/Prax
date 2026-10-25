@@ -1046,3 +1046,29 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：全量回归发现 feud 分析表金标准仍停在 factionStanding 接入前；按当前 `feudWorld` 刷新 footprint/axiomHead（Village 金标准未动）。
 - **测**：`stack test -p AnalysisTable`；全量 `stack test`。
+
+## v186 — Deontic lacksObliged / hasObligations / lacksObligations
+
+- **做了什么**：补齐义务条件对偶——点级 `lacksObliged`（与历史 `neverObliged` 同体），以及任意义务的 Exists/Absent（`hasObligations` / `lacksObligations`）。
+- **测**：DeonticSpec lacksObliged / hasObligations / lacksObligations。
+
+## v187 — Project everCrew / neverCrew / everCompletedPart / neverCompletedPart
+
+- **做了什么**：事业 crew 与完成账本的 Exists/Absent 量词对偶。
+- **测**：ProjectSpec everCrew / neverCrew / everCompletedPart / neverCompletedPart。
+
+## v188 — Beliefs everBelieves / neverBelieves
+
+- **做了什么**：角色级任意信念叶的 Exists/Absent 对偶（议题级仍用 holdsBelief/doubts）。
+- **测**：BeliefsSpec everBelieves / neverBelieves。
+
+## v189 — Host debtsOf
+
+- **做了什么**：从闭合视图枚举与 @who@ 相关的 `debt.*` 叶（债权人或债务人一侧）。
+- **测**：HostSpec debtsOf。
+
+## v190 — CLI prax debts \<who\> \<world\>
+
+- **做了什么**：对内置世界打印 `debtsOf`。
+- **测**：手工 `prax debts ana village` smoke（空列表亦可）。
+

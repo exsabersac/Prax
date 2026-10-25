@@ -20,6 +20,8 @@ module Prax.Beliefs
   , doubts
   , holdsBelief
   , disbelievesThat
+  , everBelieves
+  , neverBelieves
   ) where
 
 import           Prax.Query (Condition (..))
@@ -56,3 +58,11 @@ holdsBelief who issue = Match (beliefAbout who issue)
 -- | 条件：@who@ 不相信 @issue@ 为 @value@（@believesThat@ 的 Not 对偶）。
 disbelievesThat :: String -> String -> String -> Condition
 disbelievesThat who issue value = Not (beliefSentence who issue value)
+
+-- | 条件：@who@ 持有至少一条信念叶。
+everBelieves :: String -> Condition
+everBelieves who = Exists [ Match (who ++ ".believes.Issue") ]
+
+-- | 条件：@who@ 无任何信念叶（@everBelieves@ 的 Absent 对偶）。
+neverBelieves :: String -> Condition
+neverBelieves who = Absent [ Match (who ++ ".believes.Issue") ]

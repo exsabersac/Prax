@@ -180,6 +180,15 @@ tests = testGroup "Prax.Host"
       leadersOf st "yard" @?= ["ben"]
       leadersOf st "void" @?= []
 
+  , testCase "debtsOf lists debt leaves involving who" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "debt.ana.ben.favor"
+                , Insert "debt.cass.ana.coin"
+                , Insert "debt.dave.eve.secret" ]
+      sort (debtsOf st "ana") @?= ["debt.ana.ben.favor", "debt.cass.ana.coin"]
+      debtsOf st "dave" @?= ["debt.dave.eve.secret"]
+      debtsOf st "void" @?= []
+
   , testCase "regardsToward / factionsNamed from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "regards.dave.bob.thief"

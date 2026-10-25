@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -139,6 +139,13 @@ runRegards (who : ws) =
   in mapM_ putStrLn (regardsOf st who)
 runRegards _ = putStrLn "usage: prax regards <who> <world> | prax regards toward <target> <world>"
 
+-- | List debt leaves involving a character: @prax debts <who> <world>@.
+runDebts :: [String] -> IO ()
+runDebts (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (debtsOf st who)
+runDebts _ = putStrLn "usage: prax debts <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -209,6 +216,7 @@ usageText = unlines
   , "  prax leaders <faction> <world>     list faction leaders"
   , "  prax factions <world>              list faction names in view"
   , "  prax regards <who>|<toward t> <world>  list regards leaves"
+  , "  prax debts <who> <world>               list debt leaves involving who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -237,6 +245,7 @@ main = do
     ("leaders" : ws)   -> runLeaders ws
     ("factions" : ws)  -> runFactions ws
     ("regards" : ws)   -> runRegards ws
+    ("debts" : ws)     -> runDebts ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

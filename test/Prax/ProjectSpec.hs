@@ -386,4 +386,10 @@ tests = testGroup "Prax.Project"
       lacksCrewOf "own" "pal" "quest" @?= Not "practice.quest.own.crew.pal"
       lacksCompletedPart "own" "quest" "scout" @?= Not "practice.quest.own.did.scout"
 
+  , testCase "everCrew / neverCrew / everCompletedPart / neverCompletedPart" $ do
+      everCrew "mia" "oven2" @?= Exists [ Match "practice.oven2.mia.crew.Partner" ]
+      neverCrew "mia" "oven2" @?= Absent [ Match "practice.oven2.mia.crew.Partner" ]
+      everCompletedPart "mia" "oven2" @?= Exists [ Match "practice.oven2.mia.did.Part" ]
+      neverCompletedPart "mia" "oven2" @?= Absent [ Match "practice.oven2.mia.did.Part" ]
+
   ]

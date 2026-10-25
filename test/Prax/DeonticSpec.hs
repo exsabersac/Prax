@@ -192,4 +192,10 @@ tests = testGroup "Prax.Deontic"
   , testCase "neverObliged is Not of obligation path" $
       neverObliged "ada" "pay.tab" @?= Not "obliged.ada.pay.tab"
 
+  , testCase "lacksObliged / hasObligations / lacksObligations duals" $ do
+      lacksObliged "ada" "pay.tab" @?= Not "obliged.ada.pay.tab"
+      lacksObliged "ada" "pay.tab" @?= neverObliged "ada" "pay.tab"
+      hasObligations "ada" @?= Exists [ Match "obliged.ada.Content" ]
+      lacksObligations "ada" @?= Absent [ Match "obliged.ada.Content" ]
+
   ]

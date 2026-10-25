@@ -34,6 +34,10 @@ module Prax.Project
   , lacksCrewOf
   , hasCompletedPart
   , lacksCompletedPart
+  , everCrew
+  , neverCrew
+  , everCompletedPart
+  , neverCompletedPart
   ) where
 
 import           Data.List (nub, (\\))
@@ -236,4 +240,24 @@ hasCompletedPart owner pid partName_ =
 lacksCompletedPart :: String -> String -> String -> Condition
 lacksCompletedPart owner pid partName_ =
   Not ("practice." ++ pid ++ "." ++ owner ++ ".did." ++ partName_)
+
+-- | 条件：@owner@ 的 @pid@ 事业 crew 中有至少一名伙伴。
+everCrew :: String -> String -> Condition
+everCrew owner pid =
+  Exists [ Match ("practice." ++ pid ++ "." ++ owner ++ ".crew.Partner") ]
+
+-- | 条件：@owner@ 的 @pid@ 事业 crew 为空（@everCrew@ 的 Absent 对偶）。
+neverCrew :: String -> String -> Condition
+neverCrew owner pid =
+  Absent [ Match ("practice." ++ pid ++ "." ++ owner ++ ".crew.Partner") ]
+
+-- | 条件：@owner@ 在 @pid@ 事业上已完成至少一个部件。
+everCompletedPart :: String -> String -> Condition
+everCompletedPart owner pid =
+  Exists [ Match ("practice." ++ pid ++ "." ++ owner ++ ".did.Part") ]
+
+-- | 条件：@owner@ 在 @pid@ 事业上尚未完成任何部件（@everCompletedPart@ 的 Absent 对偶）。
+neverCompletedPart :: String -> String -> Condition
+neverCompletedPart owner pid =
+  Absent [ Match ("practice." ++ pid ++ "." ++ owner ++ ".did.Part") ]
 

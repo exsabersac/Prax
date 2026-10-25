@@ -59,4 +59,8 @@ tests = testGroup "Prax.Beliefs"
   , testCase "disbelievesThat is Not of believesThat path" $
       disbelievesThat "bex" "sky" "green" @?= Not "bex.believes.sky!green"
 
+  , testCase "everBelieves / neverBelieves are agent-scoped Exists/Absent" $ do
+      everBelieves "bex" @?= Exists [ Match "bex.believes.Issue" ]
+      neverBelieves "bex" @?= Absent [ Match "bex.believes.Issue" ]
+
   ]
