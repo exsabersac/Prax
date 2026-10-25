@@ -1,22 +1,30 @@
--- | 宿主嵌入表面（v66）：薄封装既有引擎入口，供外部循环调用——
--- @step@ 推进一名行动者的选定动作；@inject@ 写入结果；@queryFacts@ 只读扫描基库。
+-- | 宿主嵌入表面（v66；v71 增强）：薄封装既有引擎入口，供外部循环调用——
+-- @step@/@stepExact@ 推进一名行动者的选定动作；@inject@ 写入结果；
+-- @queryFacts@/@queryView@ 只读扫描；@available@/@availableActions@ 列菜单。
 -- 无新语义；有意保持符号、无外部模型。
 module Prax.Host
   ( step
+  , stepExact
   , inject
   , queryFacts
+  , queryView
   , available
+  , availableActions
   ) where
 
 import           Data.List (isInfixOf)
 
 import           Prax.Db (dbToSentences)
-import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), gaLabel)
+import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), gaLabel, readView)
 import           Prax.Engine (performAction, performOutcome, possibleActions)
 
 -- | 当前角色可选动作标签（宿主菜单）。
 available :: PraxState -> String -> [String]
 available st actor = map gaLabel (possibleActions st actor)
+
+-- | 完整落地动作列表（宿主需要绑定\/实例 id 时用）。
+availableActions :: PraxState -> String -> [GroundedAction]
+availableActions = possibleActions
 
 -- | 执行 @actor@ 的第一个标签含 @needle@ 的动作；找不到则原样返回 @Left@。
 step :: PraxState -> String -> String -> Either String PraxState
@@ -27,6 +35,15 @@ step st actor needle =
                       ++ " for " ++ actor
                       ++ "; had: " ++ show (available st actor))
 
+-- | 精确标签匹配（整串相等），避免 infix 误伤。
+stepExact :: PraxState -> String -> String -> Either String PraxState
+stepExact st actor label =
+  case filter ((== label) . gaLabel) (possibleActions st actor) of
+    (ga : _) -> Right (performAction st ga)
+    []       -> Left ("Host.stepExact: no action with exact label " ++ show label
+                      ++ " for " ++ actor
+                      ++ "; had: " ++ show (available st actor))
+
 -- | 注入一串结果（叙事事件、导演指令等）。
 inject :: PraxState -> [Outcome] -> PraxState
 inject st outs = foldl (flip performOutcome) st outs
@@ -34,3 +51,7 @@ inject st outs = foldl (flip performOutcome) st outs
 -- | 只读：基库句子（不含派生视图）。
 queryFacts :: PraxState -> [String]
 queryFacts = dbToSentences . db
+
+-- | 只读：闭合视图句子（含派生）。
+queryView :: PraxState -> [String]
+queryView = dbToSentences . readView

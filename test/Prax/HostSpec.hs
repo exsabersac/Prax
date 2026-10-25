@@ -8,7 +8,7 @@ import           Prax.Db (exists)
 import           Prax.Types
 import           Prax.Query (Condition (..))
 import           Prax.Engine (definePractice, performOutcome)
-import           Prax.Host (step, inject, queryFacts, available)
+import           Prax.Host (step, stepExact, inject, queryFacts, queryView, available, availableActions)
 
 waveP :: Practice
 waveP = practice
@@ -47,4 +47,18 @@ tests = testGroup "Prax.Host"
       let st = inject world [ Insert "flag.ada", Insert "note.hall" ]
       assertBool "flag" ("flag.ada" `elem` queryFacts st)
       assertBool "note" ("note.hall" `elem` queryFacts st)
+
+  , testCase "stepExact requires full label" $ do
+      case stepExact world "ada" "wave" of
+        Left _ -> pure ()
+        Right _ -> assertBool "infix should fail exact" False
+      case stepExact world "ada" "ada: wave" of
+        Right st -> assertBool "waved" (exists "waved.ada" (db st))
+        Left e -> assertBool e False
+
+  , testCase "availableActions non-empty; queryView includes derived-capable read" $ do
+      assertBool "actions" (not (null (availableActions world "ada")))
+      assertBool "facts" ("practice.wave" `elem` queryFacts world)
+      assertBool "view" ("practice.wave" `elem` queryView world)
+
   ]
