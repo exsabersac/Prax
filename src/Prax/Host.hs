@@ -29,11 +29,13 @@ module Prax.Host
   , livingMatching
   , practiceNames
   , regardsOf
+  , membersOf
+  , affiliatesOf
   , checkpoint
   , restore
   ) where
 
-import           Data.List (isInfixOf, isPrefixOf, (\\))
+import           Data.List (isInfixOf, isPrefixOf, sort, (\\))
 import qualified Data.Map.Strict as Map
 
 import           Prax.Db (dbToSentences, exists)
@@ -157,6 +159,35 @@ livingMatching st needle = filter (needle `isInfixOf`) (livingCast st)
 regardsOf :: PraxState -> String -> [String]
 regardsOf st who =
   filter (("regards." ++ who ++ ".") `isPrefixOf`) (queryView st)
+
+-- | 闭合视图中主成员属于 @faction@ 的角色名（@member.<who>.<faction>@；
+-- 排他 @!@ 在视图句子中展成 @.@）。
+membersOf :: PraxState -> String -> [String]
+membersOf st faction = sort
+  [ who
+  | s <- queryView st
+  , let pref = "member."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, fac) = splitLastDot rest
+  , fac == faction
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
+
+-- | 闭合视图中 @who@ 的次级归属派系名（@affiliate.<who>.<faction>@）。
+affiliatesOf :: PraxState -> String -> [String]
+affiliatesOf st who =
+  let pref = "affiliate." ++ who ++ "."
+  in sort
+       [ drop (length pref) s
+       | s <- queryView st, pref `isPrefixOf` s
+       , '.' `notElem` drop (length pref) s ]
 
 -- | 把状态写入 @path@（JSON 格式，见 'Prax.Persist'）。
 checkpoint :: FilePath -> PraxState -> IO ()

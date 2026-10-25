@@ -19,6 +19,7 @@ module Prax.Beliefs
   , forget
   , doubts
   , holdsBelief
+  , disbelievesThat
   ) where
 
 import           Prax.Query (Condition (..))
@@ -51,3 +52,7 @@ doubts who issue = Absent [ Match (beliefAbout who issue) ]
 -- | 条件：@who@ 对 @issue@ 持有某一值（匹配议题子树）。
 holdsBelief :: String -> String -> Condition
 holdsBelief who issue = Match (beliefAbout who issue)
+
+-- | 条件：@who@ 不相信 @issue@ 为 @value@（@believesThat@ 的 Not 对偶）。
+disbelievesThat :: String -> String -> String -> Condition
+disbelievesThat who issue value = Not (beliefSentence who issue value)

@@ -15,8 +15,11 @@ module Prax.Conversation
   , changeSubject
   , endConversation
   , onTopic
+  , offTopic
   , isSpeaker
   , isListener
+  , hasChattedWith
+  , neverChattedWith
   ) where
 
 import           Prax.Query (Condition (..))
@@ -97,3 +100,15 @@ isSpeaker = Match (convP ++ ".speaker!Actor")
 -- | 条件：Actor 现为听者（说话者对偶）。
 isListener :: Condition
 isListener = Match (convP ++ ".listener!Actor")
+
+-- | 条件：当前对话话题不是 @topic@（@onTopic@ 的 Not 对偶）。
+offTopic :: String -> Condition
+offTopic topic = Not (convP ++ ".topic!" ++ topic)
+
+-- | 条件：@who@ 曾与 @other@ 聊过（@chattedWith@ 叶）。
+hasChattedWith :: String -> String -> Condition
+hasChattedWith who other = Match (who ++ ".chattedWith." ++ other)
+
+-- | 条件：@who@ 从未与 @other@ 聊过。
+neverChattedWith :: String -> String -> Condition
+neverChattedWith who other = Not (who ++ ".chattedWith." ++ other)

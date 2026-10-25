@@ -125,4 +125,14 @@ tests = testGroup "Prax.Chronicle"
       askChronicle stV "age of mia" @?= ["mia age 17"]
       askChronicle stV "siblings of mia" @?= ["mia sibling pat"]
 
+  , testCase "askChronicle members-of lists faction members" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "member.ana!hall"
+                , Insert "member.ben!hall"
+                , Insert "member.cass!yard" ]
+      askChronicle st "members of hall"
+        @?= ["ana is a member of hall", "ben is a member of hall"]
+      askChronicle st "members of nobody"
+        @?= ["nobody is a member of nobody"]
+
   ]

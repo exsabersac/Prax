@@ -55,4 +55,8 @@ tests = testGroup "Prax.Beliefs"
       -- Querying bex's belief yields 'cross', not the world's 'pleased'.
       let bel = query (db st) [ Match (beliefAbout "bex" "adaMood" ++ "!V") ] Map.empty
       map (fmap valToString . Map.lookup (intern "V")) bel @?= [Just "cross"]
+
+  , testCase "disbelievesThat is Not of believesThat path" $
+      disbelievesThat "bex" "sky" "green" @?= Not "bex.believes.sky!green"
+
   ]

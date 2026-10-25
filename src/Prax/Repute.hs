@@ -22,6 +22,9 @@ module Prax.Repute
   , scornDesire
   , esteemDesire
   , isNotorious
+  , lacksNotorious
+  , hasScorned
+  , lacksScorned
   , hasEsteemed
   , lacksEsteemed
   ) where
@@ -157,3 +160,17 @@ hasEsteemed observer subject label =
 lacksEsteemed :: String -> String -> String -> Condition
 lacksEsteemed observer subject label =
   Not ("esteemed." ++ observer ++ "." ++ subject ++ "." ++ label)
+
+-- | 条件：@subject@ 在 @label@ 下非恶名昭著（@isNotorious@ 的 Not 对偶）。
+lacksNotorious :: String -> String -> Condition
+lacksNotorious subject label = Not ("notorious." ++ subject ++ "." ++ label)
+
+-- | 条件：@observer@ 已对 @subject@ 以 @label@ 表达过 scorn。
+hasScorned :: String -> String -> String -> Condition
+hasScorned observer subject label =
+  Match ("scorned." ++ observer ++ "." ++ subject ++ "." ++ label)
+
+-- | 条件：@observer@ 尚未对 @subject@ 以 @label@ 表达 scorn。
+lacksScorned :: String -> String -> String -> Condition
+lacksScorned observer subject label =
+  Not ("scorned." ++ observer ++ "." ++ subject ++ "." ++ label)

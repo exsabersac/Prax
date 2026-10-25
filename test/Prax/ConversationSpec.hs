@@ -88,6 +88,12 @@ tests = testGroup "Prax.Conversation"
 
   , testCase "isListener is the listener exclusive leaf" $
       isListener @?= Match "practice.converse.A.B.listener!Actor"
+
+  , testCase "offTopic / hasChattedWith / neverChattedWith duals" $ do
+      offTopic "greetings" @?= Not "practice.converse.A.B.topic!greetings"
+      hasChattedWith "ada" "bex" @?= Match "ada.chattedWith.bex"
+      neverChattedWith "ada" "bex" @?= Not "ada.chattedWith.bex"
+
   ]
 
 -- helper: does any needle appear in the list of strings?

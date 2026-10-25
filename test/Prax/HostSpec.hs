@@ -1,6 +1,6 @@
 module Prax.HostSpec (tests) where
 
-import           Data.List (isInfixOf)
+import           Data.List (isInfixOf, sort)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
@@ -158,5 +158,17 @@ tests = testGroup "Prax.Host"
       assertBool "dave->eve" ("regards.dave.eve.liar" `elem` hits)
       assertBool "fran excluded" ("regards.fran.bob.thief" `notElem` hits)
       assertBool "flag excluded" ("flag.x" `notElem` hits)
+
+
+  , testCase "membersOf / affiliatesOf list faction membership from the view" $ do
+      let st = inject world
+                 [ Insert "member.ana!hall"
+                 , Insert "member.ben!hall"
+                 , Insert "member.cass!yard"
+                 , Insert "affiliate.ana.guild"
+                 , Insert "affiliate.ana.choir" ]
+      sort (membersOf st "hall") @?= ["ana", "ben"]
+      membersOf st "yard" @?= ["cass"]
+      sort (affiliatesOf st "ana") @?= ["choir", "guild"]
 
   ]

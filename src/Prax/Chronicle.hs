@@ -17,7 +17,7 @@ module Prax.Chronicle
   , askChronicle
   ) where
 
-import           Data.List (foldl', intercalate, isPrefixOf, nub, sort)
+import           Data.List (foldl', intercalate, isPrefixOf, isSuffixOf, nub, sort)
 import           Data.Maybe (mapMaybe)
 import qualified Data.Map.Strict as Map
 
@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"debts of "++who@、
+-- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
 -- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
@@ -174,6 +174,21 @@ askChronicle st q
                     | s <- dbToSentences (db st), prefix `isPrefixOf` s ]
       in if null fs then [who ++ " has no affiliates"]
          else map ((who ++ " affiliates ") ++) fs
+  | Just faction <- stripPrefix "members of " q =
+      -- member.<who>!<faction> 展成 member.<who>.<faction>
+      let suffix = "." ++ faction
+          ms = sort
+            [ take (length rest - length suffix) rest
+            | s <- dbToSentences (db st)
+            , let pref = "member."
+            , pref `isPrefixOf` s
+            , let rest = drop (length pref) s
+            , suffix `isSuffixOf` rest
+            , let who = take (length rest - length suffix) rest
+            , not (null who)
+            , '.' `notElem` who ]
+      in if null ms then ["nobody is a member of " ++ faction]
+         else map (++ (" is a member of " ++ faction)) ms
   | Just who <- stripPrefix "feelings of " q =
       let prefix = who ++ ".feels."
           fs = sort [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s ]

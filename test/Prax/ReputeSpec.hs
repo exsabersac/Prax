@@ -164,4 +164,10 @@ tests = testGroup "Prax.Repute"
   , testCase "lacksEsteemed is Not of esteemed path" $
       lacksEsteemed "ana" "bob" "hero" @?= Not "esteemed.ana.bob.hero"
 
+
+  , testCase "lacksNotorious / hasScorned / lacksScorned duals" $ do
+      lacksNotorious "kai" "brute" @?= Not "notorious.kai.brute"
+      hasScorned "ana" "kai" "brute" @?= Match "scorned.ana.kai.brute"
+      lacksScorned "ana" "kai" "brute" @?= Not "scorned.ana.kai.brute"
+
   ]

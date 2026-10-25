@@ -69,4 +69,8 @@ tests = testGroup "Prax.Witness"
         (exists "bea.believes.waved.ann.seen" (db st))
       assertBool "the pre-existing hearsay edge survived the deposit"
         (exists "bea.believes.waved.ann.heard.cal" (db st))
+
+  , testCase "everSaw is Exists over the seen leaf" $
+      everSaw "W" "waved.ann" @?= Exists [ Match "W.believes.waved.ann.seen" ]
+
   ]

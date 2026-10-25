@@ -17,6 +17,7 @@ module Prax.Witness
   , saw
   , asRole
   , neverSaw
+  , everSaw
   ) where
 
 import qualified Data.Map.Strict as Map
@@ -55,3 +56,7 @@ asRole v = map (groundCondition (Map.singleton (intern "Witness") (VSym (intern 
 -- | 条件：@who@ 从未直接目击 @event@（无 `.seen` 叶）。
 neverSaw :: String -> String -> Condition
 neverSaw who event = Absent [ Match (beliefAbout who event ++ ".seen") ]
+
+-- | 条件：@who@ 曾直接目击 @event@（Exists of Match `.seen`）。
+everSaw :: String -> String -> Condition
+everSaw who event = Exists [ Match (beliefAbout who event ++ ".seen") ]

@@ -245,4 +245,8 @@ tests = testGroup "Prax.Deceit"
       liedTo "nia" "oz" "took.kit.gem" @?= Match "nia.lied.oz.took.kit.gem"
       hasLied "nia" @?= Exists [ Match "nia.lied.Hearer.Event" ]
 
+  , testCase "lacksLied / neverLied duals" $ do
+      lacksLied "ada" "bex" "stole.cai.loaf" @?= Not "ada.lied.bex.stole.cai.loaf"
+      neverLied "ada" @?= Absent [ Match "ada.lied.Hearer.Event" ]
+
   ]

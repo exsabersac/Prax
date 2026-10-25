@@ -457,7 +457,7 @@
 
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
-- **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
+- **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果；v161 lacksNotorious/hasScorned/lacksScorned）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
 - **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114 村庄形夹具（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。关系条件于 v87/v98/v119（`isChildOf`/`isParentOf`/`isInLawOf` 等）。
@@ -465,7 +465,7 @@ Tier 1 — 社会事实，叠在 K 上：
 Tier 2 — 长时间跨度的代理内在性：
 - **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合（v104/v113 `part` 防呆增强）。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
 - **性格 → 意志**（`Prax.Persona`）*（完成 — v25）*：特质即行为估值；gale/eve 对照。
-- **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22；v88 liePublic）*：`conceal`/`lie`/`liePublic`；构陷级联；被构陷者无救济。
+- **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22；v88 liePublic；v123 liedTo/hasLied；v160 lacksLied/neverLied）*：`conceal`/`lie`/`liePublic`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
 - **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司/族长薄门禁于 v86 `absolveAsLeader` 清偿。
 - **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环；v154–v155 Condition 对偶）*。虚张/威胁到期/反敲诈于 v54 清偿。
@@ -477,8 +477,8 @@ Tier 2 — 长时间跨度的代理内在性：
 - **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒）*。
 
 Tier 3 — 宿主游戏边界：
-- **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）。
+- **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`；v152 `castNames`；v158 `regardsOf`；v165 `membersOf`/`affiliatesOf`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`/`regardsOf`/`membersOf`/`affiliatesOf`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）、`prax cast`（v159）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -916,3 +916,38 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：对内置世界打印 `castNames` 或 `livingCast`。
 - **测**：手工 `prax cast village` / `prax cast living village`。
+
+## v160 — Deceit lacksLied / neverLied
+
+- **做了什么**：撒谎标记的 Not / Absent 对偶（精确听者事件 / 任意撒谎痕迹）。
+- **测**：DeceitSpec lacksLied / neverLied。
+
+## v161 — Repute lacksNotorious / hasScorned / lacksScorned
+
+- **做了什么**：恶名与 scorned 站队叶的 Match/Not 条件对偶。
+- **测**：ReputeSpec lacksNotorious / hasScorned / lacksScorned。
+
+## v162 — Witness everSaw
+
+- **做了什么**：`.seen` 叶的 Exists 对偶（与 neverSaw 对称）。
+- **测**：WitnessSpec everSaw。
+
+## v163 — Conversation offTopic / hasChattedWith / neverChattedWith
+
+- **做了什么**：话题与闲聊史的 Not/Match 条件对偶。
+- **测**：ConversationSpec offTopic / chattedWith duals。
+
+## v164 — Beliefs disbelievesThat
+
+- **做了什么**：`believesThat` 路径的 Not 对偶。
+- **测**：BeliefsSpec disbelievesThat。
+
+## v165 — Host membersOf / affiliatesOf
+
+- **做了什么**：从闭合视图枚举派系成员与个人附属（稳定排序）。
+- **测**：HostSpec membersOf / affiliatesOf。
+
+## v166 — Chronicle members of
+
+- **做了什么**：`askChronicle "members of <faction>"` 列出 `member.<who>.<faction>`。
+- **测**：ChronicleSpec members-of。

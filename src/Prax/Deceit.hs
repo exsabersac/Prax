@@ -19,6 +19,8 @@ module Prax.Deceit
   , liePublic
   , liedTo
   , hasLied
+  , lacksLied
+  , neverLied
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -104,3 +106,11 @@ liedTo liar hearer event = Match (liar ++ ".lied." ++ hearer ++ "." ++ event)
 -- | 条件：@liar@ 曾对任何人留下任一谎言标记。
 hasLied :: String -> Condition
 hasLied liar = Exists [ Match (liar ++ ".lied.Hearer.Event") ]
+
+-- | 条件：@liar@ 未对 @hearer@ 就 @event@ 留下谎言标记（@liedTo@ 的 Not 对偶）。
+lacksLied :: String -> String -> String -> Condition
+lacksLied liar hearer event = Not (liar ++ ".lied." ++ hearer ++ "." ++ event)
+
+-- | 条件：@liar@ 从未对任何人留下任一谎言标记（@hasLied@ 的 Absent 对偶）。
+neverLied :: String -> Condition
+neverLied liar = Absent [ Match (liar ++ ".lied.Hearer.Event") ]
