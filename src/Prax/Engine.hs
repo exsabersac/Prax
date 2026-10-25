@@ -28,7 +28,7 @@ module Prax.Engine
   , roundBoundary
   ) where
 
-import           Data.List (intercalate, isPrefixOf, nub, (\\))
+import           Data.List (foldl', intercalate, isPrefixOf, nub, (\\))
 import           Data.Maybe (listToMaybe)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set

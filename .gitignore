@@ -2,6 +2,7 @@
 references/
 
 # Haskell / Cabal build artifacts
+.stack-work/
 dist-newstyle/
 dist/
 *.hi
@@ -25,3 +26,6 @@ rust/target/
 
 # runtime session saves
 *.save
+
+# Stack lock is machine-local enough to keep; yaml is committed for reproducible GHC.
+# (lock optional — regenerate with stack)

@@ -7,6 +7,7 @@ module Prax.Worlds.Bar
   , directorName
   ) where
 
+import           Data.List (foldl')
 import           Prax.Query
 import           Prax.Types
 import           Prax.Engine (definePractices, defineFunctions, performOutcome, setCharacters, setSchedule)

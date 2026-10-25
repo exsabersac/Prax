@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- | "Prax.Script" 的 JSON 编解码（外部创作表面）。
 --
 -- @FromJSON@/@ToJSON@ 实例让剧本可从 JSON 进出；'Junction' 的解码是文档化的外部创作路径，
