@@ -4,8 +4,9 @@ import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool)
+import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
+import           Prax.Query (Condition (..))
 import           Prax.Db (exists)
 import           Prax.Types
 import           Prax.Engine (performOutcome, setAxioms, definePractices,
@@ -93,6 +94,9 @@ tests = testGroup "Prax.Faction"
         (not (exists "regards.dave.ana.brutal" (readView defected)))
       assertBool "his belief persists — only the solidarity is gone"
         (exists "dave.believes.struck.ana.ben" (db defected))
+
+  , testCase "isMember matches memberPath exclusive leaf" $
+      isMember "ana" "hall" @?= Match "member.ana!hall"
 
   , testCase "memberPath: an empty or separator-bearing name errors loudly" $ do
       r1 <- try (evaluate (length (memberPath "" "hall")))

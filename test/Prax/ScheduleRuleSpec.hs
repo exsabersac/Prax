@@ -12,7 +12,7 @@ import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Engine (performOutcome, setSchedule, registerEngineRules, roundBoundary, definePractices)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
-import           Prax.Schedule (gathering)
+import           Prax.Schedule (gathering, pulse)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -183,6 +183,17 @@ tests = testGroup "Prax.ScheduleRule"
                 (setSchedule [ScheduleRule "story" 2 []] engineFirst)))))
         assertBool "authoring door rejected: 'story' already registered by the engine"
           (isLeft (r2 :: Either ErrorCall Int))
+    ]
+
+  , testGroup "pulse (period heartbeat, no auto-expiry)"
+    [ testCase "pulse builds a ScheduleRule with the given period" $ do
+        let ScheduleRule n p body = pulse "tax" 4 [Insert "taxed.now"]
+        n @?= "tax"
+        p @?= 4
+        assertBool "one clause" (length body == 1)
+    , testCase "pulse rejects period < 1" $ do
+        r <- try (evaluate (length (show (pulse "tax" 0 [Insert "x"]))))
+        assertBool "bad period" (isLeft (r :: Either ErrorCall Int))
     ]
 
   , testGroup "engine-rule provenance exempts the reserved-family scan (v53)"

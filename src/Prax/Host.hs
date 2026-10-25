@@ -2,6 +2,7 @@
 -- @step@/@stepExact@ 推进一名行动者的选定动作；@inject@ 写入结果；
 -- @queryFacts@/@queryView@ 只读扫描；@available@/@availableActions@ 列菜单。
 -- 无新语义；有意保持符号、无外部模型。
+-- v97：'checkpoint'/'restore' 薄封 Persist 存档。
 -- v85：'queryChronicle'/'explainActor' 薄封编年史与检查器。
 module Prax.Host
   ( step
@@ -14,6 +15,8 @@ module Prax.Host
   , queryChronicle
   , explainActor
   , livingCast
+  , checkpoint
+  , restore
   ) where
 
 import           Data.List (isInfixOf)
@@ -23,6 +26,7 @@ import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), Chara
 import           Prax.Engine (performAction, performOutcome, possibleActions)
 import           Prax.Chronicle (askChronicle)
 import           Prax.Inspect (explain)
+import           Prax.Persist (saveState, loadState)
 
 -- | 当前角色可选动作标签（宿主菜单）。
 available :: PraxState -> String -> [String]
@@ -73,3 +77,11 @@ explainActor = explain
 -- | 当前存活阵容名（跳过 dead.*）。
 livingCast :: PraxState -> [String]
 livingCast = map charName . livingCharacters
+
+-- | 把状态写入 @path@（JSON 格式，见 'Prax.Persist'）。
+checkpoint :: FilePath -> PraxState -> IO ()
+checkpoint = saveState
+
+-- | 从 @path@ 恢复状态到新鲜 @world@ 模板上（与 'Prax.Persist.loadState' 同形）。
+restore :: FilePath -> PraxState -> IO PraxState
+restore = loadState

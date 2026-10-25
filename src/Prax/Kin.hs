@@ -19,6 +19,7 @@ module Prax.Kin
   , isChildOf
   , isSiblingOf
   , isMarriedTo
+  , isParentOf
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -139,3 +140,7 @@ isSiblingOf a b = Match ("sibling." ++ a ++ "." ++ b)
 -- | 条件：@a@ 与 @b@ 已婚（任一侧基事实经公理对称）。
 isMarriedTo :: String -> String -> Condition
 isMarriedTo a b = Match ("married." ++ a ++ "." ++ b)
+
+-- | 条件：@parent@ 是 @child@ 的父母（'isChildOf' 的对偶）。
+isParentOf :: String -> String -> Condition
+isParentOf parent child = isChildOf child parent

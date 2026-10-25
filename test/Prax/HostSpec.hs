@@ -9,6 +9,7 @@ import           Prax.Types
 import           Prax.Query (Condition (..))
 import           Prax.Engine (definePractice, setCharacters, performOutcome)
 import           Prax.Host
+import           System.Directory (removeFile)
 
 waveP :: Practice
 waveP = practice
@@ -61,6 +62,14 @@ tests = testGroup "Prax.Host"
       assertBool "facts" ("practice.wave" `elem` queryFacts world)
       assertBool "view" ("practice.wave" `elem` queryView world)
 
+
+  , testCase "checkpoint / restore round-trips facts via Persist" $ do
+      let path = "/tmp/prax-host-checkpoint-test.prax"
+          st0 = inject world [ Insert "flag.ada" ]
+      checkpoint path st0
+      st1 <- restore path world
+      removeFile path
+      assertBool "flag survived" ("flag.ada" `elem` queryFacts st1)
 
   , testCase "queryChronicle and livingCast and explainActor" $ do
       let st = foldl (flip performOutcome) emptyState

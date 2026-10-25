@@ -16,6 +16,7 @@ module Prax.Faction
   , deposeLeader
   , isLeader
   , transferLeadership
+  , isMember
   ) where
 
 import           Prax.Query (Condition (..))
@@ -121,3 +122,7 @@ transferLeadership faction label
       , Match ("member.Heir!" ++ faction)
       , Neq "Heir" "Actor" ]
       [ Insert ("leads." ++ faction ++ "!Heir") ]
+
+-- | 条件：@who@ 主成员属于 @faction@。
+isMember :: String -> String -> Condition
+isMember who faction = Match (memberPath who faction)

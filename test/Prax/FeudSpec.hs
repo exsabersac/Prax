@@ -45,7 +45,14 @@ weddedWorld = foldl (flip performOutcome) feudWorld (wed "esme" "kestrel" "dave"
 
 tests :: TestTree
 tests = testGroup "Prax.Worlds.Feud (emergent sandbox)"
-  [ testCase "enmity is DERIVED, not authored: Alice's wrong spreads through the network" $ do
+  [ testCase "v93 factionStanding: co-members who believe the wrong regard alice as feudbreaker" $ do
+      let vs = viewFacts feudWorld
+      assertBool "carol regards alice" ("regards.carol.alice.feudbreaker" `elem` vs)
+      assertBool "dave regards alice"  ("regards.dave.alice.feudbreaker" `elem` vs)
+      assertBool "esme does not regard (different house / no belief)"
+        ("regards.esme.alice.feudbreaker" `notElem` vs)
+
+  , testCase "enmity is DERIVED, not authored: Alice's wrong spreads through the network" $ do
       let vs = viewFacts feudWorld
       -- authored: only that Alice wronged Bob
       assertBool "the one authored grievance" ("wronged.alice.bob" `elem` dbToSentences (db feudWorld))

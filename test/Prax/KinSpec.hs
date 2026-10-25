@@ -295,6 +295,7 @@ tests = testGroup "Prax.Kin"
 
   , testCase "isChildOf / isSiblingOf / isMarriedTo conditions" $ do
       assertBool "child" (not (null (query (readView kinWorld) [isChildOf "ana" "pat"] Map.empty)))
+      assertBool "parent dual" (not (null (query (readView kinWorld) [isParentOf "pat" "ana"] Map.empty)))
       assertBool "sib" (not (null (query (readView kinWorld) [isSiblingOf "ana" "ben"] Map.empty)))
       assertBool "married" (not (null (query (readView kinWorld) [isMarriedTo "ana" "chris"] Map.empty)))
 

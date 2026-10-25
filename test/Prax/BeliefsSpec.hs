@@ -36,6 +36,10 @@ tests = testGroup "Prax.Beliefs"
       let fs = run [ believe "bex" "sky" "blue", forget "bex" "sky" ]
       assertBool "no sky belief remains" (not (any ("believes.sky." `isInfixOf`) fs))
 
+  , testCase "doubts / holdsBelief are issue-level gates" $ do
+      doubts "bex" "sky" @?= Absent [ Match "bex.believes.sky" ]
+      holdsBelief "bex" "sky" @?= Match "bex.believes.sky"
+
   , testCase "beliefs are per-agent: two agents can disagree" $ do
       let fs = run [ believe "bex" "murderer" "ada", believe "cid" "murderer" "you" ]
       assertBool "bex's view" ("bex.believes.murderer.ada" `elem` fs)

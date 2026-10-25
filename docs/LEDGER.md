@@ -458,7 +458,7 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）、`factionStanding` 村庄接线。职衔以外领导于 v69 清偿。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。
 
@@ -581,3 +581,33 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：条件：`seer.believes.at.seen!place`。
 - **测**：SightSpec lastKnownAt。
+
+## v93 — Feud 接线 factionStanding
+
+- **做了什么**：`feudAxioms` 加入 `factionStanding "wronged.Offender.Victim" "feudbreaker"`；种子 kestrel 同志对 wronged 的信念。
+- **测**：FeudSpec v93 regards carol/dave；esme 不触发。
+
+## v94 — Faction isMember
+
+- **做了什么**：条件 `isMember who faction`。
+- **测**：FactionSpec isMember。
+
+## v95 — Beliefs doubts / holdsBelief
+
+- **做了什么**：议题级无信念 / 有信念条件。
+- **测**：BeliefsSpec doubts / holdsBelief。
+
+## v96 — Schedule pulse
+
+- **做了什么**：无自动到期的周期心跳规则（对照 gathering）。
+- **测**：ScheduleRuleSpec pulse。
+
+## v97 — Host checkpoint / restore
+
+- **做了什么**：薄封 `Persist.saveState`/`loadState`。
+- **测**：HostSpec checkpoint / restore round-trip。
+
+## v98 — Kin isParentOf
+
+- **做了什么**：`isChildOf` 对偶条件。
+- **测**：KinSpec parent dual。

@@ -13,6 +13,7 @@ module Prax.Schedule
   ( lasts
   , gathering
   , sightRule
+  , pulse
   ) where
 
 import           Prax.Query (Condition (..))
@@ -44,3 +45,13 @@ sightRule sighting = ScheduleRule "sight" 1
   [ ( sighting ++ [ Neq "Seer" "Seen", Match (turnPath ++ "!Now") ]
     , [ Insert "Seer.believes.at.Seen!Spot"
       , Insert "Seer.believes.atSince.Seen!Now" ] ) ]
+
+-- | 无寿命包装的周期规则：每 @period@ 边界触发一次 @outs@（永久效果或自行含 InsertFor）。
+-- 与 'gathering' 对照——集会要临时开放窗；'pulse' 是普通心跳（税、代谢、时钟）。
+pulse :: String -> Int -> [Outcome] -> ScheduleRule
+pulse name period outs
+  | period < 1 =
+      error ("Prax.Schedule.pulse: period must be >= 1, got " ++ show period)
+  | null name || any (`elem` (".!" :: String)) name =
+      error ("Prax.Schedule.pulse: name " ++ show name ++ " must be a single path segment")
+  | otherwise = ScheduleRule name period [ ([], outs) ]

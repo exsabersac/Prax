@@ -11,7 +11,7 @@ import           Prax.Query
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, setAxioms, setCharacters)
 import           Prax.Derive (Axiom, axiom)
-import           Prax.Faction (joins, comrades)
+import           Prax.Faction (joins, comrades, factionStanding)
 import           Prax.Kin (kinAxioms)
 
 -- | 你是 Alice——冒犯者。
@@ -25,6 +25,7 @@ feudAxioms =
   , axiom [ Match "wronged.X.Y" ]                    [ "resents.Y.X" ]   -- the wronged resent the wrongdoer
   , axiom [ Match "resents.A.B", Match "allied.A.C" ][ "resents.C.B" ]   -- the enemy of my ally is my enemy
   , comrades                                                             -- shared membership derives allied (Prax.Faction)
+  , factionStanding "wronged.Offender.Victim" "feudbreaker"               -- v93: 派系内对同志之怨的信念门禁站队
   ]
 
 -- The one place everyone shares. Affordances key off /derived/ enmity.
@@ -74,6 +75,9 @@ feudWorld =
     setup =
       [ Insert "practice.society.here"
       , Insert "wronged.alice.bob"      -- the single authored grievance
+      , Insert "bob.believes.wronged.alice.bob"  -- lived grievance → factionStanding feed
+      , Insert "carol.believes.wronged.alice.bob"
+      , Insert "dave.believes.wronged.alice.bob"
       , joins "bob" "kestrel"
       , joins "carol" "kestrel"
       , joins "dave" "kestrel"
