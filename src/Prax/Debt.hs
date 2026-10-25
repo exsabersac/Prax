@@ -20,6 +20,7 @@ module Prax.Debt
   , callIn
   , isOwed
   , hasCreditorClaim
+  , neverOwed
   ) where
 
 import           Prax.Query (Condition (..))
@@ -82,3 +83,7 @@ isOwed debtor = Exists [ Match ("debt.Creditor." ++ debtor ++ ".Content") ]
 -- | 条件：@creditor@ 对任何人持有债权。
 hasCreditorClaim :: String -> Condition
 hasCreditorClaim creditor = Exists [ Match ("debt." ++ creditor ++ ".Debtor.Content") ]
+
+-- | 条件：@debtor@ 当前不欠任何人任何内容（@isOwed@ 对偶）。
+neverOwed :: String -> Condition
+neverOwed debtor = Absent [ Match ("debt.Creditor." ++ debtor ++ ".Content") ]

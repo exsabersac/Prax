@@ -85,6 +85,9 @@ tests = testGroup "Prax.Conversation"
   , testCase "onTopic / isSpeaker are the converse instance gates" $ do
       onTopic "greetings" @?= Match "practice.converse.A.B.topic!greetings"
       isSpeaker @?= Match "practice.converse.A.B.speaker!Actor"
+
+  , testCase "isListener is the listener exclusive leaf" $
+      isListener @?= Match "practice.converse.A.B.listener!Actor"
   ]
 
 -- helper: does any needle appear in the list of strings?

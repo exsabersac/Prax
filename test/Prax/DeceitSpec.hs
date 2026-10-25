@@ -241,4 +241,8 @@ tests = testGroup "Prax.Deceit"
         (exists "mia.believes.took.sid.gem.heard.oz" (db st2))
       assertBool "an honest telling marks nothing"
         (not (exists "oz.lied" (db st2)))
+  , testCase "liedTo / hasLied pin the lie-mark path" $ do
+      liedTo "nia" "oz" "took.kit.gem" @?= Match "nia.lied.oz.took.kit.gem"
+      hasLied "nia" @?= Exists [ Match "nia.lied.Hearer.Event" ]
+
   ]

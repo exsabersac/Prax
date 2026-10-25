@@ -107,4 +107,8 @@ tests = testGroup "Prax.Host"
       assertBool "wave" (any ("wave" `isInfixOf`) hits)
       availableMatching world "ada" "nonexistent" @?= []
 
+  , testCase "livingMatching filters living cast by needle" $ do
+      let st = setCharacters (map character ["ana", "cara", "bob"]) emptyState
+      livingMatching st "a" @?= ["ana", "cara"]
+
   ]

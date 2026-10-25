@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark, isAbsolved)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -672,5 +672,8 @@ tests = testGroup "Prax.Confession"
                     , Insert "priest.believes.stole.bob.loaf.heard.bob" ]
       assertBool "leader can" (any ("absolve" `isInfixOf`) (map gaLabel (possibleActions stLead "priest")))
       assertBool "lay cannot" (not (any ("absolve" `isInfixOf`) (map gaLabel (possibleActions stNo "priest"))))
+
+  , testCase "isAbsolved matches defeater leaf" $
+      isAbsolved "recanted" "cody" @?= Match "recanted.cody"
 
   ]

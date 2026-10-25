@@ -17,6 +17,8 @@ module Prax.Deceit
   ( conceal
   , lie
   , liePublic
+  , liedTo
+  , hasLied
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -94,3 +96,11 @@ liePublic copresence gate fabrication pat label
       (v : _) -> v
       []      -> error ("liePublic: event pattern " ++ show pat
                         ++ " names no one (a lie is about someone)")
+
+-- | 条件：@liar@ 曾对 @hearer@ 就 @event@ 留下谎言标记。
+liedTo :: String -> String -> String -> Condition
+liedTo liar hearer event = Match (liar ++ ".lied." ++ hearer ++ "." ++ event)
+
+-- | 条件：@liar@ 曾对任何人留下任一谎言标记。
+hasLied :: String -> Condition
+hasLied liar = Exists [ Match (liar ++ ".lied.Hearer.Event") ]

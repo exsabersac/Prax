@@ -206,4 +206,7 @@ tests = testGroup "Prax.Faction"
       assertBool "bob derives no self-regard"
         (not (exists "regards.bob.bob.thief" v))
 
+  , testCase "lacksMember is Not of member path" $
+      lacksMember "eve" "guild" @?= Not "member.eve!guild"
+
   ]

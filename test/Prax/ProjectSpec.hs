@@ -378,4 +378,8 @@ tests = testGroup "Prax.Project"
                   [] -> error "no unenlist"
       assertBool "gone" (not (exists "practice.raid.ada.crew.ben" (db st1)))
 
+  , testCase "isCrewOf / hasCompletedPart match crew and ledger paths" $ do
+      isCrewOf "mia" "pat" "oven2" @?= Match "practice.oven2.mia.crew.pat"
+      hasCompletedPart "mia" "oven2" "sweep" @?= Match "practice.oven2.mia.did.sweep"
+
   ]

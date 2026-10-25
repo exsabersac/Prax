@@ -12,6 +12,7 @@
 module Prax.Sight
   ( sightedWithin
   , lastKnownAt
+  , unknownWhere
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..), CalcOp (..))
@@ -29,3 +30,8 @@ sightedWithin h =
 lastKnownAt :: String -> String -> String -> Condition
 lastKnownAt seer seen place =
   Match (seer ++ ".believes.at." ++ seen ++ "!" ++ place)
+
+-- | 条件：@seer@ 对 @seen@ 无任何最后已知位置（无 @believes.at.<seen>!<Place>@ 叶）。
+unknownWhere :: String -> String -> Condition
+unknownWhere seer seen =
+  Absent [ Match (seer ++ ".believes.at." ++ seen ++ "!Place") ]

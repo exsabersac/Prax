@@ -17,6 +17,7 @@ module Prax.Faction
   , isLeader
   , transferLeadership
   , isMember
+  , lacksMember
   ) where
 
 import           Prax.Query (Condition (..))
@@ -126,3 +127,7 @@ transferLeadership faction label
 -- | 条件：@who@ 主成员属于 @faction@。
 isMember :: String -> String -> Condition
 isMember who faction = Match (memberPath who faction)
+
+-- | 条件：@who@ 非 @faction@ 主成员（@isMember@ 对偶）。
+lacksMember :: String -> String -> Condition
+lacksMember who faction = Not (memberPath who faction)

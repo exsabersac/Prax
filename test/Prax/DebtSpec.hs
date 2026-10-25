@@ -183,4 +183,7 @@ tests = testGroup "Prax.Debt"
                               || exists "breached.dell.defaulted" (db st1)
                               || any ("defaulted" `isInfixOf`) (dbToSentences (db st1)))
 
+  , testCase "neverOwed is Absent of any creditor/content debt leaf" $
+      neverOwed "dell" @?= Absent [ Match "debt.Creditor.dell.Content" ]
+
   ]

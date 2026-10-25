@@ -14,7 +14,7 @@ import           Prax.Engine (definePractices, performOutcome, setCharacters,
                                setSchedule, roundBoundary)
 import           Prax.TypeCheck (typeCheck)
 import           Prax.Schedule (sightRule)
-import           Prax.Sight (sightedWithin, lastKnownAt)
+import           Prax.Sight (sightedWithin, lastKnownAt, unknownWhere)
 
 -- Two rooms; ute and vic share one, wes is alone in the other.
 sighting :: [Condition]
@@ -101,4 +101,7 @@ tests = testGroup "Prax.Sight"
         r <- try (evaluate (setSchedule [ sightRule [Match "at.Actor!Spot", Match "at.Seen!Spot"] ] emptyState))
         assertBool "Actor in the sighting template is rejected" (isLeft (r :: Either ErrorCall PraxState))
     ]
+  , testCase "unknownWhere is Absent of any last-known place leaf" $
+      unknownWhere "ute" "vic" @?= Absent [ Match "ute.believes.at.vic!Place" ]
+
   ]

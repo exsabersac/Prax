@@ -161,4 +161,7 @@ tests = testGroup "Prax.Repute"
       assertBool "esteem not re-offered"
         (not (any (("esteem kai as hero" `isInfixOf`) . gaLabel)
                   (possibleActions st1 "ana")))
+  , testCase "lacksEsteemed is Not of esteemed path" $
+      lacksEsteemed "ana" "bob" "hero" @?= Not "esteemed.ana.bob.hero"
+
   ]

@@ -14,6 +14,7 @@ module Prax.Confession
   , liftDeceit
   , absolveAsLeader
   , hasMark
+  , isAbsolved
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -201,3 +202,7 @@ absolveAsLeader faction defeater pat incLabel label
 hasMark :: String -> String -> String -> String -> Condition
 hasMark who kind hearer markTail =
   Match (who ++ "." ++ kind ++ "." ++ hearer ++ "." ++ markTail)
+
+-- | 条件：@who@ 已获 @defeater@ 赦免叶（如 @recanted.<who>@）。
+isAbsolved :: String -> String -> Condition
+isAbsolved defeater who = Match (defeater ++ "." ++ who)

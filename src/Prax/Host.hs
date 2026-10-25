@@ -20,6 +20,7 @@ module Prax.Host
   , queryChronicle
   , explainActor
   , livingCast
+  , livingMatching
   , checkpoint
   , restore
   ) where
@@ -103,6 +104,10 @@ explainActor = explain
 -- | 当前存活阵容名（跳过 dead.*）。
 livingCast :: PraxState -> [String]
 livingCast = map charName . livingCharacters
+
+-- | 过滤存活阵容：名含 @needle@ 的角色。
+livingMatching :: PraxState -> String -> [String]
+livingMatching st needle = filter (needle `isInfixOf`) (livingCast st)
 
 -- | 把状态写入 @path@（JSON 格式，见 'Prax.Persist'）。
 checkpoint :: FilePath -> PraxState -> IO ()

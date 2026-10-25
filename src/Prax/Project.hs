@@ -30,6 +30,8 @@ module Prax.Project
   , unenlist
   , abandon
   , part
+  , isCrewOf
+  , hasCompletedPart
   ) where
 
 import           Data.List (nub, (\\))
@@ -212,3 +214,14 @@ unenlist pid label
       , Match ("practice." ++ pid ++ ".Actor.crew.Partner")
       , Neq "Partner" "Actor" ]
       [ Delete ("practice." ++ pid ++ ".Actor.crew.Partner") ]
+
+-- | 条件：@partner@ 在 @owner@ 的 @pid@ 事业 crew 中。
+isCrewOf :: String -> String -> String -> Condition
+isCrewOf owner partner pid =
+  Match ("practice." ++ pid ++ "." ++ owner ++ ".crew." ++ partner)
+
+-- | 条件：@owner@ 在 @pid@ 事业上已完成部件 @partName_@。
+hasCompletedPart :: String -> String -> String -> Condition
+hasCompletedPart owner pid partName_ =
+  Match ("practice." ++ pid ++ "." ++ owner ++ ".did." ++ partName_)
+

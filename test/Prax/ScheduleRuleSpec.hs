@@ -12,7 +12,7 @@ import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Engine (performOutcome, setSchedule, registerEngineRules, roundBoundary, definePractices)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
-import           Prax.Schedule (gathering, pulse)
+import           Prax.Schedule (gathering, festival, pulse)
 import           Prax.Worlds.Play (playWorld)
 
 -- A one-rule schedule: "mark" flags every flagged thing every 2 boundaries
@@ -171,6 +171,14 @@ tests = testGroup "Prax.ScheduleRule"
         assertBool "fair closed at 6 (opened 4, duration 1)" (not (exists "marketDay.now" (db st6)))
         dueOf "fair" st4 @?= Just 8
         dueOf "chapel" st6 @?= Just 12
+
+    , testCase "festival seeds festival.<name> leaf for the open window" $ do
+        let base = scheduled [ festival "harvest" 3 1 [Insert "marketDay.now"] ] []
+            st3 = iterate roundBoundary base !! 3
+        assertBool "festival leaf" (exists "festival.harvest" (db st3))
+        assertBool "open outs too" (exists "marketDay.now" (db st3))
+        let st4 = roundBoundary st3
+        assertBool "festival expired with window" (not (exists "festival.harvest" (db st4)))
     ]
 
   , testGroup "the compiler-level door shares the global rule-name table (v46)"

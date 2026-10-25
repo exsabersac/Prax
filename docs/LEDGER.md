@@ -474,11 +474,11 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测）*。节庆内容仍可扩展。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`）*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`available`/`availableMatching`/`availableActions`。CLI `prax worlds`（v110）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`available`/`availableMatching`/`availableActions`/`livingMatching`。CLI `prax worlds`（v110）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -726,3 +726,53 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：按针过滤可用菜单标签（`available` 的过滤对偶）。
 - **测**：HostSpec availableMatching。
+
+## v122 — Conversation isListener
+
+- **做了什么**：`isListener` = 听者排他叶（`isSpeaker` 对偶）。
+- **测**：ConversationSpec isListener。
+
+## v123 — Deceit liedTo / hasLied
+
+- **做了什么**：谎言标记路径条件与存在量词。
+- **测**：DeceitSpec liedTo / hasLied。
+
+## v124 — Faction lacksMember
+
+- **做了什么**：`isMember` 对偶 Not 条件。
+- **测**：FactionSpec lacksMember。
+
+## v125 — Project isCrewOf / hasCompletedPart
+
+- **做了什么**：crew 与部件账本 Match 条件。
+- **测**：ProjectSpec isCrewOf / hasCompletedPart。
+
+## v126 — Debt neverOwed
+
+- **做了什么**：`isOwed` 对偶 Absent。
+- **测**：DebtSpec neverOwed。
+
+## v127 — Sight unknownWhere
+
+- **做了什么**：无任何最后已知位置叶。
+- **测**：SightSpec unknownWhere。
+
+## v128 — Host livingMatching
+
+- **做了什么**：按针过滤存活阵容。
+- **测**：HostSpec livingMatching。
+
+## v129 — Repute lacksEsteemed
+
+- **做了什么**：`hasEsteemed` 对偶。
+- **测**：ReputeSpec lacksEsteemed。
+
+## v130 — Confession isAbsolved
+
+- **做了什么**：赦免击败者叶 Match（如 `recanted.<who>`）。
+- **测**：ConfessionSpec isAbsolved。
+
+## v131 — Schedule festival
+
+- **做了什么**：`festival` = `gathering` + 同寿命 `festival.<name>` 叶，供节庆门禁。
+- **测**：ScheduleRuleSpec festival seeds leaf。

@@ -16,6 +16,7 @@ module Prax.Conversation
   , endConversation
   , onTopic
   , isSpeaker
+  , isListener
   ) where
 
 import           Prax.Query (Condition (..))
@@ -92,3 +93,7 @@ onTopic topic = Match (convP ++ ".topic!" ++ topic)
 -- | 条件：Actor 现为说话者。
 isSpeaker :: Condition
 isSpeaker = Match (convP ++ ".speaker!Actor")
+
+-- | 条件：Actor 现为听者（说话者对偶）。
+isListener :: Condition
+isListener = Match (convP ++ ".listener!Actor")

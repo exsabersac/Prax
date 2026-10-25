@@ -12,6 +12,7 @@
 module Prax.Schedule
   ( lasts
   , gathering
+  , festival
   , sightRule
   , pulse
   ) where
@@ -35,6 +36,11 @@ gathering name period duration openOuts
   | duration < 1 || duration >= period =
       error ("Prax.Schedule: gathering " ++ name ++ " needs 0 < duration < period")
   | otherwise = ScheduleRule name period [ ([], map (lasts duration) openOuts) ]
+
+-- | 节庆集会：同 'gathering'，并自动种 @festival.<name>@ 叶（与开放窗同寿命），便于创作门禁「节庆中」。
+festival :: String -> Int -> Int -> [Outcome] -> ScheduleRule
+festival name period duration openOuts =
+  gathering name period duration (Insert ("festival." ++ name) : openOuts)
 
 -- | 感知作为周期-1 循环规则：创作的目击模板，用读作事实的时钟打戳（'Prax.Types.turnPath'——
 -- tick 机制现属引擎）。@Now@\/@Seer@\/@Seen@\/@Spot@ 是其契约变量——模板绑定它们，结果直接读回——
