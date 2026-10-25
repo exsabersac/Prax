@@ -2,11 +2,12 @@ module Prax.CoreSpec (tests) where
 
 import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool)
+import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (dbToSentences)
 import           Prax.Types
 import           Prax.Engine (defineFunctions, performOutcome)
+import           Prax.Query (Condition (..))
 import           Prax.Core
 
 -- A state with the core library registered.
@@ -49,4 +50,8 @@ tests = testGroup "Prax.Core"
         assertBool "a->b" ("bond.ada.bex.friends" `elem` fs)
         assertBool "b->a" ("bond.bex.ada.friends" `elem` fs)
     ]
+  , testCase "hasBond / lacksBond pin public bond leaves" $ do
+      hasBond "ada" "bex" "friends" @?= Match "bond.ada.bex!friends"
+      lacksBond "ada" "bex" @?= Absent [ Match "bond.ada.bex!State" ]
+
   ]

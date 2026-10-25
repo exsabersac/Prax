@@ -16,6 +16,7 @@ module Prax.Reactions
     -- * Norm violations
   , markViolation
   , violationOf
+  , noViolation
   ) where
 
 import           Data.List (intercalate)
@@ -54,3 +55,7 @@ markViolation who norm = Insert (violationPath who norm)
 -- | 匹配所记录的 @norm@ 违反的条件。
 violationOf :: String -> String -> Condition
 violationOf who norm = Match (violationPath who norm)
+
+-- | 条件：@who@ 无 @norm@ 违规记录（@violationOf@ 对偶）。
+noViolation :: String -> String -> Condition
+noViolation who norm = Not (violationPath who norm)

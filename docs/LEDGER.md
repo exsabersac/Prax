@@ -478,7 +478,7 @@ Tier 2 — 长时间跨度的代理内在性：
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`available`/`availableMatching`/`availableActions`/`livingMatching`。CLI `prax worlds`（v110）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`factDeltaMatching`/`available`/`availableMatching`/`availableActions`/`livingMatching`。CLI `prax worlds`（v110）、`prax version`（v136）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -776,3 +776,28 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`festival` = `gathering` + 同寿命 `festival.<name>` 叶，供节庆门禁。
 - **测**：ScheduleRuleSpec festival seeds leaf。
+
+## v132 — Core hasBond / lacksBond
+
+- **做了什么**：公开对称纽带叶子的 Match / Absent 条件。
+- **测**：CoreSpec hasBond / lacksBond。
+
+## v133 — Emotion lacksFeeling
+
+- **做了什么**：`feels` 路径的 Not 对偶。
+- **测**：EmotionSpec lacksFeeling。
+
+## v134 — Reactions noViolation
+
+- **做了什么**：规范违反叶的 Not 对偶。
+- **测**：ReactionsSpec noViolation。
+
+## v135 — Host factDeltaMatching
+
+- **做了什么**：按针过滤 `factDelta` 增/删两侧（事件订阅钩底物）。
+- **测**：HostSpec factDeltaMatching。
+
+## v136 — CLI prax version
+
+- **做了什么**：打印 `formatVersion`（持久化格式标签）。
+- **测**：手工 `prax version` → `prax-state v4`。

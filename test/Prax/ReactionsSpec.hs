@@ -143,4 +143,7 @@ tests = testGroup "Prax.Reactions"
         assertBool "follow-up disapproval spawned"
           ("practice.disapproval.bex.ada" `elem` fs)
     ]
+  , testCase "noViolation is Not of violation path" $
+      noViolation "bex" "tipping" @?= Not "violated.bex.tipping"
+
   ]

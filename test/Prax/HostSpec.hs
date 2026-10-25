@@ -94,7 +94,7 @@ tests = testGroup "Prax.Host"
       let hits = queryViewMatching world "practice.wave"
       assertBool "wave practice in view" ("practice.wave" `elem` hits)
 
-  , testCase "factDelta reports added and removed" $ do
+  , testCase "factDelta, factDeltaMatching reports added and removed" $ do
       let before = inject world [ Insert "flag.ada", Insert "keep.x" ]
           after  = inject world [ Insert "keep.x", Insert "note.hall" ]
           (added, removed) = factDelta before after
@@ -110,5 +110,13 @@ tests = testGroup "Prax.Host"
   , testCase "livingMatching filters living cast by needle" $ do
       let st = setCharacters (map character ["ana", "cara", "bob"]) emptyState
       livingMatching st "a" @?= ["ana", "cara"]
+
+  , testCase "factDeltaMatching filters delta by needle" $ do
+      let before = inject world [ Insert "flag.ada", Insert "keep.x" ]
+          after  = inject world [ Insert "flag.bob", Insert "keep.x" ]
+          (added, removed) = factDeltaMatching "flag." before after
+      assertBool "added bob" ("flag.bob" `elem` added)
+      assertBool "removed ada" ("flag.ada" `elem` removed)
+      assertBool "keep.x not in filtered delta" ("keep.x" `notElem` (added ++ removed))
 
   ]

@@ -14,6 +14,7 @@ module Prax.Host
   , queryMatching
   , queryViewMatching
   , factDelta
+  , factDeltaMatching
   , available
   , availableMatching
   , availableActions
@@ -92,6 +93,13 @@ factDelta before after =
   let a = queryFacts after
       b = queryFacts before
   in (a \\ b, b \\ a)
+
+-- | 过滤 'factDelta'：只保留增/删两侧含 @needle@ 的事实。
+factDeltaMatching :: String -> PraxState -> PraxState -> ([String], [String])
+factDeltaMatching needle before after =
+  let (added, removed) = factDelta before after
+      keep = filter (needle `isInfixOf`)
+  in (keep added, keep removed)
 
 -- | 编年史查询（只读）：转发 'Prax.Chronicle.askChronicle'。
 queryChronicle :: PraxState -> String -> [String]

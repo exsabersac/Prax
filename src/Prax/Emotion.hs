@@ -16,7 +16,7 @@ module Prax.Emotion
     -- * Feeling with a lifetime (fades on its own onset's clock)
   , feelFor, feelTowardFor
     -- * Reading feelings (Conditions)
-  , feeling, feelingToward
+  , feeling, feelingToward, lacksFeeling
     -- * Making feelings visible to co-present others (ordinary .seen beliefs)
   , express, expressToward
     -- * Intensity (exclusive leaf under the feeling)
@@ -74,6 +74,10 @@ unfeelToward who emotion target =
 -- | @who@ 当前感到 @emotion@——一旦感到即为真（无目标或有目标皆可）。
 feeling :: String -> String -> Condition
 feeling who emotion = Match (feelsPath who emotion)
+
+-- | 条件：@who@ 当前未感到 @emotion@（含无目标与有目标子树）。
+lacksFeeling :: String -> String -> Condition
+lacksFeeling who emotion = Not (feelsPath who emotion)
 
 -- | @who@ 对 @target@ 感到 @emotion@。
 feelingToward :: String -> String -> String -> Condition

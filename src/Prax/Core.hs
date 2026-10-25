@@ -23,6 +23,8 @@ module Prax.Core
   , setBond
     -- * 条件
   , scoreAtLeast
+  , hasBond
+  , lacksBond
   ) where
 
 import           Data.Char (toUpper)
@@ -59,6 +61,14 @@ scoreAtLeast a b role n =
   , Cmp Gte v (show n)
   ]
   where v = "Score" ++ capitalize role
+
+-- | 条件：@a@ 与 @b@ 之间公开纽带为 @state@（单向叶；@setBond@ 写双向）。
+hasBond :: String -> String -> String -> Condition
+hasBond a b state = Match ("bond." ++ a ++ "." ++ b ++ "!" ++ state)
+
+-- | 条件：@a@ 对 @b@ 无任何公开纽带叶。
+lacksBond :: String -> String -> Condition
+lacksBond a b = Absent [ Match ("bond." ++ a ++ "." ++ b ++ "!State") ]
 
 -- | 角色名首字母大写，用于生成按角色区分的绑定变量（如 ScoreWarmth）。
 capitalize :: String -> String

@@ -21,7 +21,7 @@ import           Prax.Engine (performAction)
 import           Prax.Planner (candidateActions)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Stress
-import           Prax.Persist (saveState, loadState)
+import           Prax.Persist (saveState, loadState, formatVersion)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
 import           Prax.Script (Script, compile, flowChart, scriptPlayer, currentScenePath)
 import           Prax.Script.Json (encodeScript, loadScript)
@@ -140,6 +140,7 @@ usageText = unlines
   , "  prax stress [world]                stress-test trajectories"
   , "  prax chronicle [world] [query…]    read-only salience / events"
   , "  prax worlds                        list built-in storyworlds"
+  , "  prax version                       persist format / build label"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -159,6 +160,7 @@ main = do
     ("check" : rest)  -> runCheck rest
     ("chronicle" : rest) -> runChronicle rest
     ("worlds" : _)    -> runWorlds
+    ("version" : _)   -> putStrLn formatVersion
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

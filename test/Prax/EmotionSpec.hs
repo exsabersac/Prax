@@ -310,4 +310,7 @@ tests = testGroup "Prax.Emotion"
       let st2 = performOutcome (clearMood "ana") st1
       assertBool "cleared" (not (exists "mood.ana!gloomy" (db st2)))
 
+  , testCase "lacksFeeling is Not of feels path" $
+      lacksFeeling "ada" "angry" @?= Not "ada.feels.angry"
+
   ]
