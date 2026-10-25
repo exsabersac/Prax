@@ -17,6 +17,8 @@ module Prax.Persona
   , bearFromRegard
   , hasTrait
   , lacksTrait
+  , everTrait
+  , neverTrait
   ) where
 
 import           Data.List (nub, (\\))
@@ -92,3 +94,11 @@ hasTrait who trait = Match ("trait." ++ who ++ "." ++ trait)
 -- | 条件：@who@ 不持有特质 @trait@。
 lacksTrait :: String -> String -> Condition
 lacksTrait who trait = Not ("trait." ++ who ++ "." ++ trait)
+
+-- | 条件：@who@ 持有任一性格叶。
+everTrait :: String -> Condition
+everTrait who = Exists [ Match ("trait." ++ who ++ ".Trait") ]
+
+-- | 条件：@who@ 无任何性格叶。
+neverTrait :: String -> Condition
+neverTrait who = Absent [ Match ("trait." ++ who ++ ".Trait") ]

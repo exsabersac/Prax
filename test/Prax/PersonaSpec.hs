@@ -149,4 +149,8 @@ tests = testGroup "Prax.Persona"
       r <- try (evaluate (length (show (bearFromRegard "a.b" "t"))))
       assertBool "dotted" (isLeft (r :: Either ErrorCall Int))
 
+
+  , testCase "everTrait / neverTrait are Exists/Absent over trait.*" $ do
+      everTrait "gale" @?= Exists [ Match "trait.gale.Trait" ]
+      neverTrait "gale" @?= Absent [ Match "trait.gale.Trait" ]
   ]

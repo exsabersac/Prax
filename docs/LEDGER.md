@@ -1026,3 +1026,18 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`prax regards <who> <world>`（发出）与 `prax regards toward <target> <world>`（指向）。
 - **测**：手工 smoke。
+
+## v182 — Persona everTrait / neverTrait
+
+- **做了什么**：任意性格叶的 Exists/Absent 对偶。
+- **测**：PersonaSpec everTrait / neverTrait。
+
+## v183 — Faction everMember / neverMember
+
+- **做了什么**：任意派系主成员叶的 Exists/Absent 对偶。
+- **测**：FactionSpec everMember / neverMember。
+
+## v184 — Village 形 church 夹具（仍不改金标准）
+
+- **做了什么**：FactionSpec 再补 church 共成员站队夹具（priest/gale 视 eve 为 heretic）。
+- **测**：FactionSpec village-shaped church fixture。

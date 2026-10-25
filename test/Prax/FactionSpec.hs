@@ -235,4 +235,23 @@ tests = testGroup "Prax.Faction"
       assertBool "fran (mill co-member) regards bob" (exists "regards.fran.bob.thief" v)
       assertBool "bob no self-regard" (not (exists "regards.bob.bob.thief" v))
 
+
+  , testCase "everMember / neverMember are Exists/Absent over member.<who>!*" $ do
+      everMember "dave" @?= Exists [ Match "member.dave!Faction" ]
+      neverMember "eve" @?= Absent [ Match "member.eve!Faction" ]
+
+  , testCase "village-shaped church fixture: church co-members regard heretic" $ do
+      let world = setAxioms [factionStanding "blasphemed.Culprit.Victim" "heretic"]
+                    (foldl (flip performOutcome) emptyState
+                       [ joins "priest" "church", joins "gale" "church"
+                       , joins "bob" "guild"
+                       , Insert "gale.believes.blasphemed.eve.gale"
+                       , Insert "priest.believes.blasphemed.eve.gale"
+                       , Insert "bob.believes.blasphemed.eve.gale"
+                       ])
+          v = readView world
+      assertBool "gale (victim, church) regards eve" (exists "regards.gale.eve.heretic" v)
+      assertBool "priest (church co-member) regards eve" (exists "regards.priest.eve.heretic" v)
+      assertBool "bob (guild outsider) derives nothing"
+        (not (exists "regards.bob.eve.heretic" v))
   ]

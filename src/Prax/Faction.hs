@@ -24,6 +24,8 @@ module Prax.Faction
   , lacksRegard
   , everRegards
   , neverRegards
+  , everMember
+  , neverMember
   ) where
 
 import           Prax.Query (Condition (..))
@@ -179,3 +181,11 @@ neverRegards who
   | null who || any (`elem` (".!" :: String)) who =
       error ("neverRegards: who " ++ show who ++ " must be a single path segment")
   | otherwise = Absent [ Match ("regards." ++ who ++ ".Target.Label") ]
+
+-- | 条件：@who@ 属于任一派系（存在 @member.<who>!<Faction>@）。
+everMember :: String -> Condition
+everMember who = Exists [ Match ("member." ++ who ++ "!Faction") ]
+
+-- | 条件：@who@ 不属于任何派系。
+neverMember :: String -> Condition
+neverMember who = Absent [ Match ("member." ++ who ++ "!Faction") ]
