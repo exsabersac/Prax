@@ -1,5 +1,9 @@
 module Prax.EmotionSpec (tests) where
 
+import           Control.Exception (ErrorCall, evaluate, try)
+import           Data.Either (isLeft)
+import           Data.List (isInfixOf)
+
 import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
@@ -7,9 +11,10 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (dbToSentences, exists)
 import           Prax.Query (Condition (..), query)
 import           Prax.Types
-import           Prax.Engine (definePractices, performOutcome, setCharacters, roundBoundary)
+import           Prax.Engine (definePractices, performOutcome, performAction, possibleActions, setCharacters, roundBoundary)
 import           Prax.Planner (candidateActions)
 import           Prax.Emotion
+import           Prax.Witness (CoPresence)
 
 facts :: PraxState -> [String]
 facts = dbToSentences . db
@@ -102,6 +107,78 @@ tests = testGroup "Prax.Emotion"
   -- decisions can be made. Nothing in this module (and nothing pricing yet)
   -- may gate action availability — a fixture character's full candidateActions
   -- list must be identical with and without every vocabulary feeling present.
+  , testGroup "express: feelings visible to co-present others"
+    [ testCase "express deposits .seen beliefs of Actor.feels.<emotion>" $ do
+        -- CoPresence must bind Witness (and Actor) in the world's own place vocab.
+        let room :: CoPresence
+            room = [ Match "at.Actor!P", Match "at.Witness!P" ]
+            p = practice
+              { practiceId = "room", roles = ["R"]
+              , actions = [ express room angry "[Actor]: show anger" ] }
+            st0 = foldl (flip performOutcome)
+                    (setCharacters (map character ["ada", "bob", "cal"])
+                      (definePractices [p] emptyState))
+                    [ Insert "practice.room.here"
+                    , Insert "at.ada!square", Insert "at.bob!square"
+                    , Insert "at.cal!mill"   -- elsewhere: must not witness
+                    , feel "ada" angry ]
+        assertBool "express offered while angry"
+          (any (("show anger" `isInfixOf`) . gaLabel) (possibleActions st0 "ada"))
+        let st1 = case [ ga | ga <- possibleActions st0 "ada"
+                            , "show anger" `isInfixOf` gaLabel ga ] of
+                    (ga:_) -> performAction st0 ga
+                    []     -> error "no express"
+        assertBool "bob (co-present) saw ada feels angry"
+          (exists "bob.believes.ada.feels.angry.seen" (db st1))
+        assertBool "cal (elsewhere) holds no such belief"
+          (not (exists "cal.believes.ada.feels.angry.seen" (db st1)))
+        assertBool "ada does not witness herself"
+          (not (exists "ada.believes.ada.feels.angry.seen" (db st1)))
+
+    , testCase "expressToward deposits the targeted feeling belief" $ do
+        let room :: CoPresence
+            room = [ Match "at.Actor!P", Match "at.Witness!P" ]
+            p = practice
+              { practiceId = "room", roles = ["R"]
+              , actions = [ expressToward room angry "[Actor]: bare anger at [Target]" ] }
+            st0 = foldl (flip performOutcome)
+                    (setCharacters (map character ["ada", "bob", "carol"])
+                      (definePractices [p] emptyState))
+                    [ Insert "practice.room.here"
+                    , Insert "at.ada!square", Insert "at.bob!square"
+                    , Insert "at.carol!square"
+                    , feelToward "ada" angry "carol" ]
+        let st1 = case [ ga | ga <- possibleActions st0 "ada"
+                            , "bare anger at carol" `isInfixOf` gaLabel ga ] of
+                    (ga:_) -> performAction st0 ga
+                    []     -> error "no expressToward"
+        assertBool "bob saw ada angry toward carol"
+          (exists "bob.believes.ada.feels.angry.toward.carol.seen" (db st1))
+        -- carol is co-present and is the Target; she still witnesses (Neq only
+        -- excludes Actor). Seeing that ada is angry at her is intended.
+        assertBool "carol (target, co-present) also witnesses"
+          (exists "carol.believes.ada.feels.angry.toward.carol.seen" (db st1))
+
+    , testCase "express is not offered without the feeling" $ do
+        let room :: CoPresence
+            room = [ Match "at.Actor!P", Match "at.Witness!P" ]
+            p = practice
+              { practiceId = "room", roles = ["R"]
+              , actions = [ express room angry "[Actor]: show anger" ] }
+            st0 = foldl (flip performOutcome)
+                    (setCharacters (map character ["ada", "bob"])
+                      (definePractices [p] emptyState))
+                    [ Insert "practice.room.here"
+                    , Insert "at.ada!square", Insert "at.bob!square" ]
+        assertBool "no express without feeling"
+          (not (any (("show anger" `isInfixOf`) . gaLabel) (possibleActions st0 "ada")))
+
+    , testCase "express rejects dotted emotion tokens" $ do
+        r <- try (evaluate (length (show (express [] "an.gry" "x"))))
+        assertBool "dotted emotion rejected"
+          (isLeft (r :: Either ErrorCall Int))
+    ]
+
   , testGroup "the invariant: feelings never gate action availability"
     [ testCase "candidateActions is identical with and without every feeling" $ do
         let vocabulary = [happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased]

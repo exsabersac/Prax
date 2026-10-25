@@ -22,8 +22,9 @@ affordance 的 **社会实践（social practices）**，以及按效用选择动
   以及守卫函数调用。
 - `Prax.Planner` — 基于效用的反应式选择：按角色 wants、apply-and-evaluate、折扣前瞻。
 - `Prax.Loop` / `Prax.Worlds.Bar` / CLI — 轮转回合与菜单驱动的酒吧演示。
-- `Prax.Core`（v2）— Versu 核心模型：关系（数值、不对称角色评价）。情感（`Prax.Emotion`，v38）
-  作为多值情节事实共存，并按时钟消退，替换原先的单槽情绪。接入酒吧，使互动改变情感、情感经
+- `Prax.Core`（v2）— Versu 核心模型：关系（数值、不对称角色评价）。情感（`Prax.Emotion`，v38；
+  **v59** `express`/`expressToward` 经普通目击通道向同场者出示感受）作为多值情节事实共存，并按时钟消退，
+  替换原先的单槽情绪。接入酒吧，使互动改变情感、情感经
   定价而非门禁改变行为（温暖门禁的「买酒」affordance；冷落给烦躁定价，使被得罪的酒保不愿倒酒，
   而非不能倒）。
 - `Prax.Reactions`（v3）— 反应即实践与规范：动作孵化提供响应（回礼 / 回绝 / 见怪）的反应实践，
@@ -116,7 +117,7 @@ affordance 的 **社会实践（social practices）**，以及按效用选择动
   `scornStanding`/`esteemStanding` 门禁于 `regards`，一次性调整关系分。
 - `Prax.Chronicle`（v55）— **编年史家 / 显著性查询**：Tier-3 宿主只读表面。扫描 `.seen`/`.heard.<src>`
   信念与派生 `regards`/`notorious`，产出事件摘要、显著性阈值、任务钩与涌现问答（`askChronicle`）。
-  CLI：`prax chronicle [world] [query…]`。从不写入。
+  CLI：`prax chronicle [world] [query…]`。从不写入。**v59** 起 `prax help` 列出世界与工具子命令。
 - `Prax.Deceit`（v22）— **秘密与欺骗**：隐瞒是创作，非机制——`conceal` 是 want 无人相信某事迹
   （`Absent [Anyone believes <event>]`）；planner 前瞻已模拟 v19 目击存入，因此珍视秘密的 agent
   *经规划*避免被看见——等房间空落在效用之外，无需也未建潜行系统。谎言（`lie`）是无证据断言：

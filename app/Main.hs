@@ -113,11 +113,35 @@ runCheck args = do
         ++ " inert -- register it with Prax.Engine.setDesires (hold it or not is"
         ++ " the genuine/bluff choice)"
 
+-- CLI usage (also shown by @prax help@ / @-h@ / @--help@).
+usageText :: String
+usageText = unlines
+  [ "prax — interactive storyworlds"
+  , ""
+  , "Play a world:"
+  , "  prax                      bar (default)"
+  , "  prax village|feud|intrigue|play|dm|audience"
+  , "  prax <world> resume       continue from prax.save"
+  , ""
+  , "Tools:"
+  , "  prax check [world]                 static well-formedness"
+  , "  prax stress [world]                stress-test trajectories"
+  , "  prax chronicle [world] [query…]    read-only salience / events"
+  , "  prax flow [file.json]              scene flowchart"
+  , "  prax dump-play                     emit built-in play JSON"
+  , "  prax play <file.json>              play a script file"
+  , "  prax help | -h | --help            this message"
+  ]
+
+
 main :: IO ()
 main = do
   hSetBuffering stdout NoBuffering
   args <- getArgs
   case args of
+    ("help":_)        -> putStr usageText
+    ("-h":_)          -> putStr usageText
+    ("--help":_)      -> putStr usageText
     ("stress" : rest) -> runStress rest
     ("check" : rest)  -> runCheck rest
     ("chronicle" : rest) -> runChronicle rest

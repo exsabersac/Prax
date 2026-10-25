@@ -7,7 +7,7 @@
 -- 起始在触发动机处创作（'Prax.Rng.draw' 片段）；消退是起始上的创作寿命——'feelFor'\/'feelTowardFor'
 -- 经引擎到期队列断言（规格 @docs/specs/2026-07-16-v44-the-schedule.md@），因此每个情感从自身起始
 -- 存活自己的 @n@ 回合（v36 情节原则，无同步清扫）。情感是情节性的：它们消退；气质（特质、标记）
--- 从不——特质使情感更可能，而非更久。
+-- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。
 module Prax.Emotion
   ( -- * An Ekman-based vocabulary (moved from Prax.Core; plain names)
     happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased
@@ -17,10 +17,13 @@ module Prax.Emotion
   , feelFor, feelTowardFor
     -- * Reading feelings (Conditions)
   , feeling, feelingToward
+    -- * Making feelings visible to co-present others (ordinary .seen beliefs)
+  , express, expressToward
   ) where
 
 import           Prax.Query (Condition (..))
 import           Prax.Types
+import           Prax.Witness (CoPresence, witnessed)
 
 happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased :: String
 happy = "happy"; sad = "sad"; angry = "angry"; afraid = "afraid"
@@ -64,3 +67,31 @@ feeling who emotion = Match (feelsPath who emotion)
 feelingToward :: String -> String -> String -> Condition
 feelingToward who emotion target =
   Match (feelsPath who emotion ++ ".toward." ++ target)
+
+-- | Single path-segment guard (emotion tokens must not contain @.@ / @!@).
+segOk :: String -> Bool
+segOk n = not (null n) && all (`notElem` (".!" :: String)) n
+
+-- | Actor makes a current untargeted feeling visible: every co-present other
+-- comes to believe @Actor.feels.<emotion>@ via the ordinary @.seen@ channel
+-- ('Prax.Witness.witnessed'). The affordance is offered only while the feeling
+-- holds — that ADDS a communicative option; it does not remove unrelated
+-- affordances (the module invariant: feelings never shrink the decision space
+-- of other practices).
+express :: CoPresence -> String -> String -> Action
+express copresence emotion label
+  | not (segOk emotion) =
+      error ("express: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise = action label
+      [ Match ("Actor.feels." ++ emotion) ]
+      [ witnessed copresence ("Actor.feels." ++ emotion) ]
+
+-- | Same for a targeted feeling; binds @Target@ from the feeling fact itself.
+expressToward :: CoPresence -> String -> String -> Action
+expressToward copresence emotion label
+  | not (segOk emotion) =
+      error ("expressToward: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise = action label
+      [ Match ("Actor.feels." ++ emotion ++ ".toward.Target") ]
+      [ witnessed copresence ("Actor.feels." ++ emotion ++ ".toward.Target") ]
+

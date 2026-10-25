@@ -126,4 +126,29 @@ tests = testGroup "Prax.Repute"
   , testCase "scornDesire names the scorns-<label> desire" $
       let Desire n _ = scornDesire "ana" "brute" 4
       in n @?= "scorns-brute"
+
+  , testCase "esteemStanding: regard gates a one-shot score rise" $ do
+      let base = defineFunctions coreFns
+                   (setAxioms [ standing "saved.Hero.child" "hero" ]
+                     (setCharacters (map character ["ana", "kai"])
+                       (definePractices [p] emptyState)))
+          p = practice
+            { practiceId = "yard", roles = ["R"]
+            , actions = [ esteemStanding "hero" "warmth" 5 "regardedHero" ] }
+          st0 = foldl (flip performOutcome) base
+                  [ Insert "practice.yard.here"
+                  , Insert "ana.believes.saved.kai.child.seen" ]
+      assertBool "esteem offered while regard holds"
+        (any (("esteem kai as hero" `isInfixOf`) . gaLabel) (possibleActions st0 "ana"))
+      let st1 = case [ ga | ga <- possibleActions st0 "ana"
+                          , "esteem kai as hero" `isInfixOf` gaLabel ga ] of
+                  (ga:_) -> performAction st0 ga
+                  []     -> error "no esteem"
+      assertBool "score seeded positive"
+        (exists "ana.relationship.kai.warmth.score!5" (db st1))
+      assertBool "one-shot guard planted"
+        (exists "esteemed.ana.kai.hero" (db st1))
+      assertBool "esteem not re-offered"
+        (not (any (("esteem kai as hero" `isInfixOf`) . gaLabel)
+                  (possibleActions st1 "ana")))
   ]
