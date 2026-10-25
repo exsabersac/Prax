@@ -31,7 +31,9 @@ module Prax.Project
   , abandon
   , part
   , isCrewOf
+  , lacksCrewOf
   , hasCompletedPart
+  , lacksCompletedPart
   ) where
 
 import           Data.List (nub, (\\))
@@ -220,8 +222,18 @@ isCrewOf :: String -> String -> String -> Condition
 isCrewOf owner partner pid =
   Match ("practice." ++ pid ++ "." ++ owner ++ ".crew." ++ partner)
 
+-- | 条件：@partner@ 不在 @owner@ 的 @pid@ crew 中。
+lacksCrewOf :: String -> String -> String -> Condition
+lacksCrewOf owner partner pid =
+  Not ("practice." ++ pid ++ "." ++ owner ++ ".crew." ++ partner)
+
 -- | 条件：@owner@ 在 @pid@ 事业上已完成部件 @partName_@。
 hasCompletedPart :: String -> String -> String -> Condition
 hasCompletedPart owner pid partName_ =
   Match ("practice." ++ pid ++ "." ++ owner ++ ".did." ++ partName_)
+
+-- | 条件：@owner@ 尚未完成 @pid@ 事业的部件 @partName_@。
+lacksCompletedPart :: String -> String -> String -> Condition
+lacksCompletedPart owner pid partName_ =
+  Not ("practice." ++ pid ++ "." ++ owner ++ ".did." ++ partName_)
 

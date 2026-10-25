@@ -478,7 +478,7 @@ Tier 2 — 长时间跨度的代理内在性：
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144 `practiceNames`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`。CLI `prax worlds`（v110）、`prax version`（v136）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`；v128 `livingMatching`；v135 `factDeltaMatching`；v140 编年史/解释过滤；v144/v148 `practiceNames`；v147 `deadCast`）*：`step`/`stepExact`/`inject`/`query*`/`factDelta*`/`available*`/`living*`/`explainActor*`/`practiceNames`。CLI `prax worlds`（v110）、`prax version`（v136）、`prax practices`（v149）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -841,3 +841,28 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：枚举顶层 `practice.<id>` 名（无实例后缀）。
 - **测**：HostSpec practiceNames。
+
+## v145 — Rumor everHeard
+
+- **做了什么**：`.heard.Src` 叶存在的 Match 对偶。
+- **测**：RumorSpec everHeard。
+
+## v146 — Project lacksCrewOf / lacksCompletedPart
+
+- **做了什么**：crew / 部件账本的 Not 对偶。
+- **测**：ProjectSpec lacksCrewOf / lacksCompletedPart。
+
+## v147 — Host deadCast
+
+- **做了什么**：阵容中已标 `dead.<name>` 的角色名列表。
+- **测**：HostSpec deadCast。
+
+## v148 — Host practiceNames（读 practiceDefs）
+
+- **做了什么**：枚举已定义实践 id（`Map.keys practiceDefs`）。
+- **测**：HostSpec practiceNames。
+
+## v149 — CLI prax practices \<world\>
+
+- **做了什么**：对内置世界打印 `practiceNames`。
+- **测**：手工 `prax practices village|bar`。

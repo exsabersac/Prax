@@ -135,4 +135,10 @@ tests = testGroup "Prax.Host"
       let names = practiceNames world
       assertBool "wave practice" ("wave" `elem` names)
 
+  , testCase "deadCast lists dead. marked cast members" $ do
+      let st = foldl (flip performOutcome) emptyState [ Insert "dead.bob" ]
+          stC = setCharacters (map character ["ana", "bob"]) st
+      deadCast stC @?= ["bob"]
+      assertBool "ana living" ("ana" `elem` livingCast stC)
+
   ]

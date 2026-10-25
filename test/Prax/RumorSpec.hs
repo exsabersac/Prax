@@ -158,4 +158,7 @@ tests = testGroup "Prax.Rumor"
   , testCase "neverHeard is Absent of any .heard.Src leaf" $
       neverHeard "mia" "stole.bread" @?= Absent [Match "mia.believes.stole.bread.heard.Src"]
 
+  , testCase "everHeard is Match on heard.Src leaf" $
+      everHeard "ada" "stole.bread" @?= Match "ada.believes.stole.bread.heard.Src"
+
   ]

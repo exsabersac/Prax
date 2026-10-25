@@ -23,15 +23,17 @@ module Prax.Host
   , explainActor
   , explainActorMatching
   , livingCast
+  , deadCast
   , livingMatching
   , practiceNames
   , checkpoint
   , restore
   ) where
 
-import           Data.List (isInfixOf, isPrefixOf, (\\))
+import           Data.List (isInfixOf, (\\))
+import qualified Data.Map.Strict as Map
 
-import           Prax.Db (dbToSentences)
+import           Prax.Db (dbToSentences, exists)
 import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), Character (..), gaLabel, readView, livingCharacters)
 import           Prax.Engine (performAction, performOutcome, possibleActions)
 import           Prax.Chronicle (askChronicle)
@@ -77,14 +79,11 @@ inject st outs = foldl (flip performOutcome) st outs
 queryFacts :: PraxState -> [String]
 queryFacts = dbToSentences . db
 
--- | 当前已定义实践名（基事实 @practice.<id>@ 去前缀；不含实例后缀）。
+-- | 当前已定义实践 id（读 'practiceDefs'，非实例事实）。
 practiceNames :: PraxState -> [String]
-practiceNames st =
-  [ drop (length "practice.") s
-  | s <- queryFacts st
-  , "practice." `isPrefixOf` s
-  , '.' `notElem` drop (length "practice.") s
-  ]
+practiceNames st = Map.keys (practiceDefs st)
+
+
 
 
 -- | 只读：闭合视图句子（含派生）。
@@ -134,6 +133,14 @@ explainActorMatching = explainMatching
 -- | 当前存活阵容名（跳过 dead.*）。
 livingCast :: PraxState -> [String]
 livingCast = map charName . livingCharacters
+
+-- | 当前阵容中已标记 @dead.<name>@ 的角色名。
+deadCast :: PraxState -> [String]
+deadCast st =
+  [ charName c
+  | c <- characters st
+  , exists ("dead." ++ charName c) (db st)
+  ]
 
 -- | 过滤存活阵容：名含 @needle@ 的角色。
 livingMatching :: PraxState -> String -> [String]

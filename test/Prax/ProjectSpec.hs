@@ -382,4 +382,8 @@ tests = testGroup "Prax.Project"
       isCrewOf "mia" "pat" "oven2" @?= Match "practice.oven2.mia.crew.pat"
       hasCompletedPart "mia" "oven2" "sweep" @?= Match "practice.oven2.mia.did.sweep"
 
+  , testCase "lacksCrewOf / lacksCompletedPart duals" $ do
+      lacksCrewOf "own" "pal" "quest" @?= Not "practice.quest.own.crew.pal"
+      lacksCompletedPart "own" "quest" "scout" @?= Not "practice.quest.own.did.scout"
+
   ]
