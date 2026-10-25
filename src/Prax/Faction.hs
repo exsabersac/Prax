@@ -2,7 +2,7 @@
 -- 成员是基、单槽事实——@member.\<who\>!\<faction\>@——且 @!@ 即是语义：加入、叛逃、婚入
 -- 都是同一排他覆盖。基 @allied.*@ 事实仍是合法词汇（并非每个联盟都是成员）；'comrades'
 -- 派生额外的。v65：'affiliate' 是 *多值* 次级归属（@affiliate.who.faction@），与主效忠并列——
--- 清偿「多重归属」而不拆掉 @member.!@ 脊骨。
+-- 清偿「多重归属」而不拆掉 @member.!@ 脊骨。v69：'appointLeader' 排他派系领导（@leads.<faction>!<who>@），职衔以外领导。
 module Prax.Faction
   ( memberPath
   , joins
@@ -12,6 +12,9 @@ module Prax.Faction
   , unaffiliate
   , affiliates
   , affiliateComrades
+  , appointLeader
+  , deposeLeader
+  , isLeader
   ) where
 
 import           Prax.Query (Condition (..))
@@ -82,3 +85,27 @@ affiliateComrades :: Axiom
 affiliateComrades = axiom
   [ Match "affiliate.X.F", Match "affiliate.Y.F", Neq "X" "Y" ]
   [ "allied.X.Y" ]
+
+-- | 派系领导路径（排他）：@leads.<faction>!<who>@ —— 一派一首领，`!` 覆盖。
+leaderPath :: String -> String -> String
+leaderPath faction who
+  | bad faction || bad who =
+      error ("appointLeader: names must be nonempty single path segments: "
+             ++ show (faction, who))
+  | otherwise = "leads." ++ faction ++ "!" ++ who
+  where bad n = null n || any (`elem` (".!" :: String)) n
+
+-- | 任命 @who@ 为 @faction@ 首领（覆盖前任）。
+appointLeader :: String -> String -> Outcome
+appointLeader who faction = Insert (leaderPath faction who)
+
+-- | 罢免：删除 @leads.<faction>@ 子树。
+deposeLeader :: String -> Outcome
+deposeLeader faction
+  | null faction || any (`elem` (".!" :: String)) faction =
+      error ("deposeLeader: faction " ++ show faction ++ " must be a single path segment")
+  | otherwise = Delete ("leads." ++ faction)
+
+-- | 条件：@who@ 现为 @faction@ 首领。
+isLeader :: String -> String -> Condition
+isLeader who faction = Match ("leads." ++ faction ++ "!" ++ who)

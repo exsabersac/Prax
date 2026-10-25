@@ -146,4 +146,20 @@ tests = testGroup "Prax.Faction"
       r <- try (evaluate (length (show (affiliate "a.b" "guild"))))
       assertBool "dotted who" (isLeft (r :: Either ErrorCall Int))
 
+
+  , testCase "appointLeader exclusive; depose clears; isLeader matches" $ do
+      let st0 = foldl (flip performOutcome) emptyState
+                  [ appointLeader "ana" "hall"
+                  , joins "ana" "hall" ]
+      assertBool "leads" (exists "leads.hall!ana" (db st0))
+      let st1 = performOutcome (appointLeader "ben" "hall") st0
+      assertBool "overwrite" (exists "leads.hall!ben" (db st1))
+      assertBool "ana gone" (not (exists "leads.hall!ana" (db st1)))
+      let st2 = performOutcome (deposeLeader "hall") st1
+      assertBool "deposed" (not (exists "leads.hall!ben" (db st2)))
+
+  , testCase "appointLeader rejects dotted names" $ do
+      r <- try (evaluate (length (show (appointLeader "a.b" "hall"))))
+      assertBool "dotted" (isLeft (r :: Either ErrorCall Int))
+
   ]
