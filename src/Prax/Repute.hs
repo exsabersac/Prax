@@ -22,6 +22,7 @@ module Prax.Repute
   , scornDesire
   , esteemDesire
   , isNotorious
+  , hasEsteemed
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -145,3 +146,8 @@ esteemDesire who label w
 -- | 条件：@subject@ 在 @label@ 下恶名昭著。
 isNotorious :: String -> String -> Condition
 isNotorious subject label = Match ("notorious." ++ subject ++ "." ++ label)
+
+-- | 条件：@observer@ 已对 @subject@ 以 @label@ 表达过 esteem（@esteemed@ 一次守卫叶）。
+hasEsteemed :: String -> String -> String -> Condition
+hasEsteemed observer subject label =
+  Match ("esteemed." ++ observer ++ "." ++ subject ++ "." ++ label)

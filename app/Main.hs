@@ -78,6 +78,18 @@ runChronicle args = do
     then mapM_ putStrLn (summarize world)
     else mapM_ putStrLn (askChronicle world (unwords queryArgs))
 
+-- @prax worlds@ — enumerate built-in storyworld names (documented CLI surface).
+runWorlds :: IO ()
+runWorlds = mapM_ putStrLn
+  [ "bar        — a night at the bar (default)"
+  , "dm         — the bar, and you direct it"
+  , "village    — the village"
+  , "feud       — the feud (emergent sandbox)"
+  , "intrigue   — Intrigue (Rome)"
+  , "play       — the conspiracy (a play)"
+  , "audience   — the royal audience"
+  ]
+
 -- @prax check [world]@ — static well-formedness report for a world.
 runCheck :: [String] -> IO ()
 runCheck args = do
@@ -127,6 +139,7 @@ usageText = unlines
   , "  prax check [world]                 static well-formedness"
   , "  prax stress [world]                stress-test trajectories"
   , "  prax chronicle [world] [query…]    read-only salience / events"
+  , "  prax worlds                        list built-in storyworlds"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -145,6 +158,7 @@ main = do
     ("stress" : rest) -> runStress rest
     ("check" : rest)  -> runCheck rest
     ("chronicle" : rest) -> runChronicle rest
+    ("worlds" : _)    -> runWorlds
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

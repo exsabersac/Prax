@@ -82,4 +82,24 @@ tests = testGroup "Prax.Host"
       -- explainActor on empty practice world returns []
       explainActor stC "ana" "nonexistent" @?= []
 
+  , testCase "queryMatching filters base facts by needle" $ do
+      let st = inject world [ Insert "flag.ada", Insert "note.hall", Insert "flag.bob" ]
+          hits = queryMatching st "flag."
+      assertBool "flag.ada" ("flag.ada" `elem` hits)
+      assertBool "flag.bob" ("flag.bob" `elem` hits)
+      assertBool "note excluded" ("note.hall" `notElem` hits)
+      length hits @?= 2
+
+  , testCase "queryViewMatching filters closed view" $ do
+      let hits = queryViewMatching world "practice.wave"
+      assertBool "wave practice in view" ("practice.wave" `elem` hits)
+
+  , testCase "factDelta reports added and removed" $ do
+      let before = inject world [ Insert "flag.ada", Insert "keep.x" ]
+          after  = inject world [ Insert "keep.x", Insert "note.hall" ]
+          (added, removed) = factDelta before after
+      assertBool "note added" ("note.hall" `elem` added)
+      assertBool "flag removed" ("flag.ada" `elem` removed)
+      assertBool "keep stable" ("keep.x" `notElem` added && "keep.x" `notElem` removed)
+
   ]

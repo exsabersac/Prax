@@ -4,12 +4,16 @@
 -- 无新语义；有意保持符号、无外部模型。
 -- v97：'checkpoint'/'restore' 薄封 Persist 存档。
 -- v85：'queryChronicle'/'explainActor' 薄封编年史与检查器。
+-- v109：'queryMatching'/'queryViewMatching' 批量过滤；'factDelta' 事件订阅钩底物（两态差分）。
 module Prax.Host
   ( step
   , stepExact
   , inject
   , queryFacts
   , queryView
+  , queryMatching
+  , queryViewMatching
+  , factDelta
   , available
   , availableActions
   , queryChronicle
@@ -19,7 +23,7 @@ module Prax.Host
   , restore
   ) where
 
-import           Data.List (isInfixOf)
+import           Data.List (isInfixOf, (\\))
 
 import           Prax.Db (dbToSentences)
 import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), Character (..), gaLabel, readView, livingCharacters)
@@ -65,6 +69,22 @@ queryFacts = dbToSentences . db
 -- | 只读：闭合视图句子（含派生）。
 queryView :: PraxState -> [String]
 queryView = dbToSentences . readView
+
+-- | 批量过滤：基库句子中含 @needle@ 的子集（宿主订阅/调试）。
+queryMatching :: PraxState -> String -> [String]
+queryMatching st needle = filter (needle `isInfixOf`) (queryFacts st)
+
+-- | 批量过滤：闭合视图句子中含 @needle@ 的子集。
+queryViewMatching :: PraxState -> String -> [String]
+queryViewMatching st needle = filter (needle `isInfixOf`) (queryView st)
+
+-- | 两态事实差分：@(added, removed)@ —— 宿主事件订阅钩的薄底物
+-- （对 @inject@/@step@ 前后各拍一次即可）。
+factDelta :: PraxState -> PraxState -> ([String], [String])
+factDelta before after =
+  let a = queryFacts after
+      b = queryFacts before
+  in (a \\ b, b \\ a)
 
 -- | 编年史查询（只读）：转发 'Prax.Chronicle.askChronicle'。
 queryChronicle :: PraxState -> String -> [String]

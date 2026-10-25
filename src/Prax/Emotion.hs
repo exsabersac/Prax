@@ -29,6 +29,7 @@ module Prax.Emotion
   , setMood, clearMood, inMood
   , moodFromFeeling
   , hasMood
+  , lacksMood
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -217,3 +218,7 @@ moodFromFeeling emotion
 -- | 条件：@who@ 当前有任一基线心境（@mood.<who>@ 子树非空）。
 hasMood :: String -> Condition
 hasMood who = Match ("mood." ++ who)
+
+-- | 条件：@who@ 当前无任一基线心境（@hasMood@ 的对偶）。
+lacksMood :: String -> Condition
+lacksMood who = Not ("mood." ++ who)

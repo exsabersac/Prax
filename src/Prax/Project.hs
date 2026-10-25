@@ -46,11 +46,13 @@ data Part = Part
   , partYields :: [Outcome]
   }
 
--- | 部件智能构造器：校验 @name@ 为单路径段（类型综合仍属研究层；此处仅防呆构造）。
+-- | 部件智能构造器：校验 @name@ 与 @after@ 依赖名为单路径段（类型综合仍属研究层；此处仅防呆构造）。
 part :: String -> String -> [String] -> [Condition] -> [Outcome] -> Part
 part name label after needs yields
   | null name || any (`elem` (".!" :: String)) name =
       error ("part: name " ++ show name ++ " must be a single path segment")
+  | (bad : _) <- [ a | a <- after, null a || any (`elem` (".!" :: String)) a ] =
+      error ("part: after-dependency " ++ show bad ++ " must be a single path segment")
   | otherwise = Part name label after needs yields
 
 -- | 创作的事业：承接动作（对行动者）加上各部分，完成记入账本。

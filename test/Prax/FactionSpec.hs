@@ -187,4 +187,23 @@ tests = testGroup "Prax.Faction"
       assertBool "ben leads" (exists "leads.hall!ben" (db st1))
       assertBool "ana gone" (not (exists "leads.hall!ana" (db st1)))
 
+  -- Village golden still deferred for in-world factionStanding wiring; this
+  -- fixture proves the village-shaped pattern without touching Village.
+  , testCase "village-shaped guild fixture: co-members of victim regard thief" $ do
+      let world = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
+                    (foldl (flip performOutcome) emptyState
+                       [ joins "bob" "guild", joins "carol" "mill", joins "dave" "mill"
+                       , joins "eve" "outsiders"
+                       , Insert "dave.believes.stole.bob.carol"
+                       , Insert "eve.believes.stole.bob.carol"
+                       , Insert "bob.believes.stole.bob.carol"
+                       ])
+          v = readView world
+      assertBool "dave (co-member of victim carol) regards bob as thief"
+        (exists "regards.dave.bob.thief" v)
+      assertBool "eve (outsiders) derives nothing"
+        (not (exists "regards.eve.bob.thief" v))
+      assertBool "bob derives no self-regard"
+        (not (exists "regards.bob.bob.thief" v))
+
   ]

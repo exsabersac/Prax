@@ -154,6 +154,23 @@ tests = testGroup "Prax.ScheduleRule"
     , testCase "duration == 0 is a loud construction-time error" $ do
         r <- try (evaluate (length (show (gathering "fair" 3 0 [Insert "x"]))))
         assertBool "duration == 0 rejected" (isLeft (r :: Either ErrorCall Int))
+
+    , testCase "dual gatherings coexist: fair and chapel open on independent periods" $ do
+        -- v37 residual: multiple simultaneous gatherings are in-scope when
+        -- periods align; prove two named gatherings do not collide on dues.
+        let base = scheduled
+              [ gathering "fair" 4 1 [Insert "marketDay.now"]
+              , gathering "chapel" 6 2 [Insert "chapelOpen.now"]
+              ] []
+            drive k st0 = iterate roundBoundary st0 !! k
+            st4 = drive 4 base   -- fair opens (period 4); chapel not yet
+            st6 = drive 6 base   -- chapel opens (period 6); fair closed at 5
+        assertBool "fair open at 4" (exists "marketDay.now" (db st4))
+        assertBool "chapel closed at 4" (not (exists "chapelOpen.now" (db st4)))
+        assertBool "chapel open at 6" (exists "chapelOpen.now" (db st6))
+        assertBool "fair closed at 6 (opened 4, duration 1)" (not (exists "marketDay.now" (db st6)))
+        dueOf "fair" st4 @?= Just 8
+        dueOf "chapel" st6 @?= Just 12
     ]
 
   , testGroup "the compiler-level door shares the global rule-name table (v46)"

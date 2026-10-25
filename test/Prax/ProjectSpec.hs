@@ -141,6 +141,10 @@ tests = testGroup "Prax.Project"
       let p0 = part "sweep" "[Actor]: sweep" [] [] [Insert "swept.Actor"]
       partName p0 @?= "sweep"
 
+  , testCase "part smart constructor rejects dotted after-dependencies" $ do
+      r <- try (Exc.evaluate (partName (part "sweep" "do" ["a.b"] [] [])))
+      assertBool "dotted after" (isLeft (r :: Either ErrorCall String))
+
     -- Property 1: local reward carries the horizon (v24's theorem, on edges).
   , testCase "the horizon regression: a four-part chain pursued to completion at depth 2" $ do
       let mia = miaFor "oven"

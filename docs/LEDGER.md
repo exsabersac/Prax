@@ -458,12 +458,12 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114 村庄形夹具（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。
 
 Tier 2 — 长时间跨度的代理内在性：
-- **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
+- **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合（v104/v113 `part` 防呆增强）。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
 - **性格 → 意志**（`Prax.Persona`）*（完成 — v25）*：特质即行为估值；gale/eve 对照。
 - **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22；v88 liePublic）*：`conceal`/`lie`/`liePublic`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
@@ -474,11 +474,11 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37）*。节庆内容与多同时集会仍出范围。
+- **日历与集会** *（完成 — v37；v111 双集会并存测）*。节庆内容仍可扩展。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`available`/`availableActions`。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`available`/`availableActions`。CLI `prax worlds`（v110）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -662,3 +662,42 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：标记残叶 Match 条件（who.kind.hearer.markTail）。
 - **测**：ConfessionSpec hasMark。
 
+## v109 — Host queryMatching / factDelta
+
+- **做了什么**：`queryMatching`/`queryViewMatching` 按针过滤基库/视图；`factDelta` 两态增删差分（事件订阅钩底物）。
+- **测**：HostSpec queryMatching / queryViewMatching / factDelta。
+
+## v110 — CLI prax worlds
+
+- **做了什么**：文档化世界枚举：`prax worlds` 列出内置故事世界。
+- **测**：构建 + usage 文案（无交互测）。
+
+## v111 — 双集会并存
+
+- **做了什么**：ScheduleRuleSpec 钉死 fair+chapel 独立周期并存（v37 残余）。
+- **测**：ScheduleRuleSpec dual gatherings coexist。
+
+## v112 — PRINCIPLES 吸血鬼时间尺度
+
+- **做了什么**：文档对齐代码：`TimeScale::real`/`test` 已纠正；压缩须标明。
+- **测**：文档一致性（无代码测）。
+
+## v113 — Project part after 防呆
+
+- **做了什么**：`part` 校验 `after` 依赖名为单路径段。
+- **测**：ProjectSpec rejects dotted after-dependencies。
+
+## v114 — Faction 村庄形夹具
+
+- **做了什么**：FactionSpec 村庄形 guild/mill 夹具演示 `factionStanding`（不改 Village 金标准）。
+- **测**：FactionSpec village-shaped guild fixture。
+
+## v115 — Emotion lacksMood
+
+- **做了什么**：`hasMood` 对偶条件。
+- **测**：EmotionSpec lacksMood。
+
+## v116 — Repute hasEsteemed
+
+- **做了什么**：`esteemed.<observer>.<subject>.<label>` Match 条件。
+- **测**：ReputeSpec hasEsteemed。

@@ -134,6 +134,9 @@ tests = testGroup "Prax.Repute"
   , testCase "isNotorious matches notorious.<subject>.<label>" $
       isNotorious "dell" "deadbeat" @?= Match "notorious.dell.deadbeat"
 
+  , testCase "hasEsteemed matches esteemed.<observer>.<subject>.<label>" $
+      hasEsteemed "ann" "ben" "hero" @?= Match "esteemed.ann.ben.hero"
+
   , testCase "esteemStanding: regard gates a one-shot score rise" $ do
       let base = defineFunctions coreFns
                    (setAxioms [ standing "saved.Hero.child" "hero" ]
