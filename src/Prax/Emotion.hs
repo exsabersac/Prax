@@ -7,7 +7,7 @@
 -- 起始在触发动机处创作（'Prax.Rng.draw' 片段）；消退是起始上的创作寿命——'feelFor'\/'feelTowardFor'
 -- 经引擎到期队列断言（规格 @docs/specs/2026-07-16-v44-the-schedule.md@），因此每个情感从自身起始
 -- 存活自己的 @n@ 回合（v36 情节原则，无同步清扫）。情感是情节性的：它们消退；气质（特质、标记）
--- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。 强度（v60）：'feelAt'/'feelTowardAt' 在感受下挂排他 @intensity!N@ 叶；'intensityAtLeast' 供定价门禁——仍不收缩其他实践决策空间。 带寿命强度（v63）：'feelAtFor'/'feelTowardAtFor' 经 'InsertFor' 断言感受，强度叶随感受子树撤回一并清除。 默认寿命（v68）：'defaultLifetime'/'feelDefault' 按情绪词给创作默认消退戳。
+-- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。 强度（v60）：'feelAt'/'feelTowardAt' 在感受下挂排他 @intensity!N@ 叶；'intensityAtLeast' 供定价门禁——仍不收缩其他实践决策空间。 带寿命强度（v63）：'feelAtFor'/'feelTowardAtFor' 经 'InsertFor' 断言感受，强度叶随感受子树撤回一并清除。 默认寿命（v68）：'defaultLifetime'/'feelDefault' 按情绪词给创作默认消退戳。 心境（v79）：排他 @mood.<who>!<emotion>@ —— 基线气质槽，与情节性 feels 并存；不收缩决策空间。
 module Prax.Emotion
   ( -- * An Ekman-based vocabulary (moved from Prax.Core; plain names)
     happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased
@@ -25,6 +25,8 @@ module Prax.Emotion
   , feelAtFor, feelTowardAtFor
     -- * Default lifetimes per emotion token
   , defaultLifetime, feelDefault, feelTowardDefault
+    -- * Baseline mood (exclusive; display / gating, not episodic)
+  , setMood, clearMood, inMood
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -178,3 +180,23 @@ feelDefault who emotion = feelFor (defaultLifetime emotion) who emotion
 feelTowardDefault :: String -> String -> String -> Outcome
 feelTowardDefault who emotion target =
   feelTowardFor (defaultLifetime emotion) who emotion target
+
+-- | 设定基线心境（排他）：@mood.<who>!<emotion>@。覆盖旧心境。
+setMood :: String -> String -> Outcome
+setMood who emotion
+  | not (segOk who) =
+      error ("setMood: who " ++ show who ++ " must be a single path segment")
+  | not (segOk emotion) =
+      error ("setMood: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise = Insert ("mood." ++ who ++ "!" ++ emotion)
+
+-- | 清除基线心境。
+clearMood :: String -> Outcome
+clearMood who
+  | not (segOk who) =
+      error ("clearMood: who " ++ show who ++ " must be a single path segment")
+  | otherwise = Delete ("mood." ++ who)
+
+-- | 条件：@who@ 当前心境为 @emotion@。
+inMood :: String -> String -> Condition
+inMood who emotion = Match ("mood." ++ who ++ "!" ++ emotion)

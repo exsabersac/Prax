@@ -460,20 +460,20 @@ Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
 - **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）、`factionStanding` 村庄接线。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
-- **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。所存：年龄/长子继承。持有继承于 v67 `bequeath` 清偿。
+- **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。
 
 Tier 2 — 长时间跨度的代理内在性：
 - **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
 - **性格 → 意志**（`Prax.Persona`）*（完成 — v25）*：特质即行为估值；gale/eve 对照。
 - **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22）*：`conceal`/`lie`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
-- **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。所存：累犯入性格、解除原听者欺骗、祭司角色。
+- **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司角色仍存。
 - **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环）*。虚张/威胁到期/反敲诈于 v54 清偿。
 - **重复 / 连环敲诈** *（v30 存；v54 完成）*：`coComplianceLasts`。
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
-- **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。残余：情绪周期/心境一致启动。每情绪默认寿命于 v68 清偿。
+- **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；情绪周期/心境一致启动仍存。每情绪默认寿命于 v68 清偿。
 - **日历与集会** *（完成 — v37）*。节庆内容与多同时集会仍出范围。
 
 Tier 3 — 宿主游戏边界：
@@ -506,4 +506,29 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 查询首领与次级归属（`dbToSentences` 展平 `!`→`.`）。
 - **测**：ChronicleSpec leads-of and affiliates-of。
+
+## v78 — Kin primogeniture
+
+- **做了什么**：长子继承 office——死亡持有者的存活子女中，无更年长者时 Actor 取得持有（需 `setAge`）。
+- **测**：KinSpec primogeniture awards office to eldest living child。
+
+## v79 — Emotion mood 基线心境
+
+- **做了什么**：排他 `@mood.<who>!<emotion>@`；`setMood`/`clearMood`/`inMood`。与情节 feels 并存，不收缩决策空间。
+- **测**：EmotionSpec setMood exclusive baseline。
+
+## v80 — Confession liftDeceit
+
+- **做了什么**：门禁于 `Actor.<kind>.H.<mark>`，Delete 听者对虚构事件的信念子树（解除欺骗；标记本身保留，可与 confess 搭配）。
+- **测**：ConfessionSpec liftDeceit retracts hearer's fabricated belief。
+
+## v81 — Chronicle debts-of
+
+- **做了什么**：`askChronicle "debts of <who>"` 列出涉及 who 的债务事实（债权人或债务人）。
+- **测**：ChronicleSpec debts-of。
+
+## v82 — Debt callIn
+
+- **做了什么**：债权人催债——`demanded.Actor.Debtor.<content>` + `breach Debtor breachLabel`。
+- **测**：DebtSpec callIn marks demanded and breaches debtor。
 

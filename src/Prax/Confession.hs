@@ -2,6 +2,7 @@
 -- 标记转换，永不删除；坦白经普通传闻通道自我牵连；赦免是可拒绝的第二方授予；
 -- 赦免者的耐心是他们所知道的（按 regarder、凭记忆永久、由八卦与坦白同样喂养）。
 -- v64：'penance' 课补赎义务；'atone' 履行并 discharge。
+-- v80：'liftDeceit' —— 告白后撤回听者对虚构事件的信念（解除欺骗）。
 module Prax.Confession
   ( confess
   , confessPublic
@@ -9,6 +10,7 @@ module Prax.Confession
   , incorrigible
   , penance
   , atone
+  , liftDeceit
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -151,3 +153,22 @@ atone content donePat label = action label
   [ isObliged "Actor" content ]
   [ Insert donePat
   , discharge "Actor" content ]
+
+-- | 解除欺骗：Actor 已对 H 就 @markPat@ 留下 @kind@ 标记时，撤回 H 对 @depositPat@
+-- 的信念子树（含 .seen / .heard.*）。不转换标记本身——搭配 'confess' 使用，或单独用于
+-- 「我收回那句话」类动作。@depositPat@ 变量须由标记 / Actor / H 可接地。
+liftDeceit :: String -> String -> String -> String -> Action
+liftDeceit kind markPat depositPat label
+  | not (segOk kind) =
+      error ("liftDeceit: kind " ++ show kind ++ " must be a single path segment")
+  | (v : _) <- authoredPatClash ["H", "Actor"] (pathNames markPat) =
+      error ("liftDeceit: mark pattern reserves " ++ show v)
+  | (v : _) <- ungroundable =
+      error ("liftDeceit: deposit variable " ++ show v ++ " not grounded by mark")
+  | otherwise = action label
+      [ Match ("Actor." ++ kind ++ ".H." ++ markPat) ]
+      [ Delete (beliefAbout "H" depositPat) ]
+  where
+    groundedVars = "Actor" : "H" : filter isVariable (pathNames markPat)
+    ungroundable = [ v | v <- filter isVariable (pathNames depositPat)
+                       , v `notElem` groundedVars ]

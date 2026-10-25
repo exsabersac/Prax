@@ -11,7 +11,8 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (dbToSentences, exists)
 import           Prax.Query (Condition (..), query)
 import           Prax.Types
-import           Prax.Engine (definePractices, performOutcome, performAction, possibleActions, setCharacters, roundBoundary)
+import           Prax.Engine (definePractices, performOutcome, performAction,
+                              possibleActions, setCharacters, roundBoundary)
 import           Prax.Planner (candidateActions)
 import           Prax.Emotion
 import           Prax.Witness (CoPresence)
@@ -274,4 +275,25 @@ tests = testGroup "Prax.Emotion"
             afterFeelings = candidateActions withFeelings fix
         baseline @?= afterFeelings
     ]
+
+  , testCase "setMood exclusive baseline; inMood matches; clearMood retracts" $ do
+      let st0 = performOutcome (setMood "ana" "cheerful") emptyState
+      assertBool "mood" (exists "mood.ana!cheerful" (db st0))
+      let st1 = performOutcome (setMood "ana" "gloomy") st0
+      assertBool "overwrite" (exists "mood.ana!gloomy" (db st1))
+      assertBool "old gone" (not (exists "mood.ana!cheerful" (db st1)))
+      -- gate via practice
+      let p = practice
+            { practiceId = "moodgate"
+            , roles = []
+            , actions = [ action "[Actor]: brood" [inMood "Actor" "gloomy"] [Insert "brooded.Actor"] ]
+            }
+          world = definePractices [p]
+                    (foldl (flip performOutcome) emptyState
+                      [ Insert "practice.moodgate", setMood "ana" "gloomy", setMood "ben" "cheerful" ])
+      assertBool "ana" (any ("brood" `isInfixOf`) (map gaLabel (possibleActions world "ana")))
+      assertBool "ben" (not (any ("brood" `isInfixOf`) (map gaLabel (possibleActions world "ben"))))
+      let st2 = performOutcome (clearMood "ana") st1
+      assertBool "cleared" (not (exists "mood.ana!gloomy" (db st2)))
+
   ]

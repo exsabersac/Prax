@@ -267,4 +267,27 @@ tests = testGroup "Prax.Kin"
       r2 <- try (evaluate (length (show (setAge "ana" (-1)))))
       assertBool "neg" (isLeft (r2 :: Either ErrorCall Int))
 
+
+  , testCase "primogeniture awards office to eldest living child" $ do
+      let p = practice
+            { practiceId = "crown"
+            , roles = []
+            , actions = [ primogeniture "throne" ]
+            }
+          st0 = definePractices [p]
+                  (foldl (flip performOutcome) emptyState
+                    [ Insert "practice.crown"
+                    , Insert "holds.throne!pat"
+                    , Insert "dead.pat"
+                    , Insert "parent.pat.ana"
+                    , Insert "parent.pat.ben"
+                    , setAge "ana" 20
+                    , setAge "ben" 16 ])
+      assertBool "ana can claim" (any ("primogeniture" `isInfixOf`) (map gaLabel (possibleActions st0 "ana")))
+      assertBool "ben cannot" (not (any ("primogeniture" `isInfixOf`) (map gaLabel (possibleActions st0 "ben"))))
+      let st1 = case filter (("primogeniture" `isInfixOf`) . gaLabel) (possibleActions st0 "ana") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no claim"
+      assertBool "ana holds" (exists "holds.throne!ana" (db st1))
+
   ]

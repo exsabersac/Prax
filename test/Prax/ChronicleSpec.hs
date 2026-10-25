@@ -97,4 +97,14 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "leads of hall" @?= ["ana leads hall"]
       askChronicle st "affiliates of ana" @?= ["ana affiliates guild"]
 
+
+  , testCase "askChronicle debts-of lists debt facts involving who" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "debt.cora.dell.favor"
+                , Insert "debt.eve.cora.coin" ]
+      askChronicle st "debts of cora"
+        @?= ["debt.cora.dell.favor", "debt.eve.cora.coin"]
+      askChronicle st "debts of nobody"
+        @?= ["nobody has no debts on record"]
+
   ]

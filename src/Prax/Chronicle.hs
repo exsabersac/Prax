@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@、@"feelings of "++who@、@"leads of "++faction@、@"affiliates of "++who@。
+-- @"salient "++show k@、@"feelings of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"debts of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -149,6 +149,16 @@ askChronicle st q
   , [(k, "")] <- reads ks =
       [ ev ++ " (" ++ show (length (nub (map erKnower rs))) ++ " knowers)"
       | (ev, rs) <- sort (salientEvents k (db st)) ]
+  | Just who <- stripPrefix "debts of " q =
+      let prefix = "debt."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no debts on record"]
+         else rows
   | Just faction <- stripPrefix "leads of " q =
       -- dbToSentences 把 ! 展成 .；排他叶 leads.<faction>!<who> 显示为 leads.<faction>.<who>
       let prefix = "leads." ++ faction ++ "."
@@ -171,6 +181,13 @@ askChronicle st q
   | otherwise = ["chronicle: unknown query " ++ show q]
 
 -- helpers ----------------------------------------------------------------------
+
+splitDot :: String -> [String]
+splitDot = filter (not . null) . go
+  where
+    go s = case break (== '.') s of
+      (a, '.' : b) -> a : go b
+      (a, _)       -> [a]
 
 breakOn :: String -> String -> Maybe (String, String)
 breakOn sep str =

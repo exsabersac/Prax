@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -637,4 +637,21 @@ tests = testGroup "Prax.Confession"
   , decoupledDepositTests
   , guardTests
   , penanceTests
+
+  , testCase "liftDeceit retracts hearer's fabricated belief" $ do
+      let liftA = liftDeceit "lied" "took.C.gem" "took.C.gem"
+                    "[Actor]: take back the lie about [C]"
+          p = practice { practiceId = "court", roles = [], actions = [liftA] }
+          st0 = definePractices [p]
+                  (foldl (flip performOutcome) emptyState
+                    [ Insert "practice.court"
+                    , Insert "ada.lied.bea.took.kit.gem"
+                    , Insert "bea.believes.took.kit.gem" ])
+      assertBool "belief" (exists "bea.believes.took.kit.gem" (db st0))
+      let st1 = case filter (("take back" `isInfixOf`) . gaLabel) (possibleActions st0 "ada") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no lift"
+      assertBool "belief gone" (not (exists "bea.believes.took.kit.gem" (db st1)))
+      assertBool "mark remains" (exists "ada.lied.bea.took.kit.gem" (db st1))
+
   ]

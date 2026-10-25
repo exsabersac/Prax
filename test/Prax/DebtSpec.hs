@@ -6,7 +6,7 @@ import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
-import           Prax.Db (exists)
+import           Prax.Db (exists, dbToSentences)
 import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setAxioms, setCharacters)
@@ -160,5 +160,23 @@ tests = testGroup "Prax.Debt"
                   [] -> error "no forgive"
       assertBool "debt gone" (not (exists "debt.cora.dell.favor" (db st1)))
       assertBool "obligation gone" (not (exists "obliged.dell.favor" (db st1)))
+
+
+  , testCase "callIn marks demanded and breaches debtor" $ do
+      let callP = practice
+            { practiceId = "ledger"
+            , roles = []
+            , actions = [ callIn "favor" "defaulted" "[Actor]: call in [Debtor]'s favor" ]
+            }
+          st0 = definePractices [callP]
+                  (foldl (flip performOutcome) emptyState
+                    (Insert "practice.ledger" : owe "cora" "dell" "favor"))
+      let st1 = case filter (("call in" `isInfixOf`) . gaLabel) (possibleActions st0 "cora") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no callIn"
+      assertBool "demanded" (exists "demanded.cora.dell.favor" (db st1))
+      assertBool "breached" (exists "violated.dell.defaulted" (db st1)
+                              || exists "breached.dell.defaulted" (db st1)
+                              || any ("defaulted" `isInfixOf`) (dbToSentences (db st1)))
 
   ]

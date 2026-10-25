@@ -17,11 +17,12 @@ module Prax.Debt
   , settle
   , owes
   , forgive
+  , callIn
   ) where
 
 import           Prax.Query (Condition (..))
 import           Prax.Types (Action, Outcome (..), action)
-import           Prax.Deontic (oblige, discharge)
+import           Prax.Deontic (oblige, discharge, breach)
 
 -- | 债务的 DB 路径：@debt.\<creditor\>.\<debtor\>.\<content\>@。多段名响亮拒绝。
 debtPath :: String -> String -> String -> String
@@ -57,3 +58,17 @@ forgive content label
       [ Match ("debt.Actor.Debtor." ++ content) ]
       [ Delete ("debt.Actor.Debtor." ++ content)
       , discharge "Debtor" content ]
+
+-- | 催债：债权人标记已催，并对债务人记一次 @breachLabel@ 违约（薄骑 'Prax.Deontic.breach'）。
+-- 门禁于未结清债务且尚未催过；站队/目击由创作方另行叠加。
+callIn :: String -> String -> String -> Action
+callIn content breachLabel label
+  | null content =
+      error ("callIn: content must be nonempty")
+  | null breachLabel || any (`elem` (".!" :: String)) breachLabel =
+      error ("callIn: breachLabel must be a single path segment")
+  | otherwise = action label
+      [ Match ("debt.Actor.Debtor." ++ content)
+      , Not ("demanded.Actor.Debtor." ++ content) ]
+      [ Insert ("demanded.Actor.Debtor." ++ content)
+      , breach "Debtor" breachLabel ]

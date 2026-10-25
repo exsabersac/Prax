@@ -1294,3 +1294,5 @@ recanted.eve: False
 `feud` 沙盒（§19）是该方向的第一步。
 
 > v73–v77：Kin `setAge`/`ageAtLeast`；Persona `bearFromRegard`；Rumor `gossipPublic`；Debt `forgive`；Chronicle `leads of` / `affiliates of`。
+
+> v78–v82：Kin `primogeniture`；Emotion `setMood`；Confession `liftDeceit`；Chronicle `debts of`；Debt `callIn`。

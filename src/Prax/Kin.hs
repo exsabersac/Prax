@@ -3,6 +3,7 @@
 -- v62：'birth'/'birthInto' 写入亲子事实；后者一并加入家庭派系。
 -- v67：'bequeath' 持有物继承（镜像 succession 的死亡+亲子门禁，作用于 holds.<thing>!<holder>）。
 -- v73：'setAge'/'ageAtLeast' —— 排他年龄叶，供成年门禁与未来长子继承。
+-- v78：'primogeniture' —— 长子继承 office（无更年长存活兄弟姐妹）。
 module Prax.Kin
   ( kinAxioms
   , wed
@@ -13,6 +14,7 @@ module Prax.Kin
   , bequeath
   , setAge
   , ageAtLeast
+  , primogeniture
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -102,3 +104,22 @@ ageAtLeast :: String -> Int -> [Condition]
 ageAtLeast who n =
   [ Match ("age." ++ who ++ "!AgeN")
   , Cmp Gte "AgeN" (show n) ]
+
+-- | 长子继承：死亡持有者的存活子女中，无人年龄更大时，Actor 取得 @office@。
+-- 需事先 'setAge'；无年龄叶的兄弟姐妹不构成「更年长」障碍（Absent 匹配失败即放行）。
+primogeniture :: String -> Action
+primogeniture office
+  | null office || any (`elem` (".!" :: String)) office =
+      error ("primogeniture: office " ++ show office ++ " must be a single path segment")
+  | otherwise = action ("[Actor]: claim " ++ office ++ " by primogeniture")
+      [ Match ("holds." ++ office ++ "!H")
+      , Match "dead.H"
+      , Match "parent.H.Actor"
+      , Match "age.Actor!AgeA"
+      , Absent [ Match "parent.H.Sib"
+               , Neq "Sib" "Actor"
+               , Not "dead.Sib"
+               , Match "age.Sib!AgeS"
+               , Cmp Gt "AgeS" "AgeA" ]
+      ]
+      [ Insert ("holds." ++ office ++ "!Actor") ]
