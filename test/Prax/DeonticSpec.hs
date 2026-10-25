@@ -5,7 +5,7 @@ import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
-import           Prax.Db (dbToSentences)
+import           Prax.Db (dbToSentences, exists)
 import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setCharacters)
@@ -173,4 +173,20 @@ tests = testGroup "Prax.Deontic"
           (sat st' [isObliged "gil" "helped.bob"]
             && not (sat st' (fulfilled "gil" "helped.bob")))
     ]
+
+  , testGroup "location-scoped obligations (v70)"
+    [ testCase "obligeWhenAt / isObligedWhenAt / dischargeWhenAt" $ do
+        let st0 = foldl (flip performOutcome) emptyState
+                    [ Insert "at.bob!chapel"
+                    , obligeWhenAt "bob" "chapel" "said.prayer" ]
+        assertBool "fact" (exists "obliged.bob.whenAt.chapel.said.prayer" (db st0))
+        assertBool "gated" (satisfies (db st0) (isObligedWhenAt "bob" "chapel" "said.prayer") Map.empty)
+        let st1 = performOutcome (Insert "at.bob!yard") st0  -- move away via exclusive?
+        -- at is exclusive ! so Insert at.bob!yard should overwrite
+        assertBool "still obliged fact" (exists "obliged.bob.whenAt.chapel.said.prayer" (db st1))
+        assertBool "not at chapel" (not (satisfies (db st1) (isObligedWhenAt "bob" "chapel" "said.prayer") Map.empty))
+        let st2 = performOutcome (dischargeWhenAt "bob" "chapel" "said.prayer") st1
+        assertBool "discharged" (not (exists "obliged.bob.whenAt.chapel.said.prayer" (db st2)))
+    ]
+
   ]

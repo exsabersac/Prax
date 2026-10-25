@@ -56,6 +56,10 @@ module Prax.Deontic
     -- * Behavioural coupling (Wants)
   , wantFulfilled
   , avoidBreach
+    -- * Location-scoped obligations
+  , obligeWhenAt
+  , dischargeWhenAt
+  , isObligedWhenAt
   ) where
 
 import           Data.List (isPrefixOf, tails)
@@ -159,3 +163,24 @@ wantFulfilled who content = Want (fulfilled who content)
 -- | 想 /避免违约/ 的 want：作强负效用应用。
 avoidBreach :: String -> String -> Int -> Want
 avoidBreach who content k = Want [ inBreach who content ] (negate (abs k))
+
+-- Location-scoped obligations (v70) -------------------------------------------
+
+-- | 地点作用域义务路径：@obliged.<who>.whenAt.<place>.<content>@。
+whenAtPath :: String -> String -> String -> String
+whenAtPath who place content =
+  obligedHead ++ "." ++ who ++ ".whenAt." ++ place ++ "." ++ content
+
+-- | 断言 @who@ 仅在处于 @place@ 时应当促成 @content@（地点作用域道义规范）。
+obligeWhenAt :: String -> String -> String -> Outcome
+obligeWhenAt who place content = Insert (whenAtPath who place content)
+
+-- | 撤回地点作用域义务。
+dischargeWhenAt :: String -> String -> String -> Outcome
+dischargeWhenAt who place content = Delete (whenAtPath who place content)
+
+-- | 条件：@who@ 有 whenAt 义务且当前在 @place@（履行门禁用）。
+isObligedWhenAt :: String -> String -> String -> [Condition]
+isObligedWhenAt who place content =
+  [ Match ("at." ++ who ++ "!" ++ place)
+  , Match (whenAtPath who place content) ]
