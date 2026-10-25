@@ -33,6 +33,11 @@ module Prax.Kin
   , neverInLaw
   , everSibling
   , neverSibling
+  , hasChildOf
+  , hasSiblingOf
+  , hasMarriedTo
+  , hasParentOf
+  , hasInLawOf
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -209,3 +214,24 @@ everSibling who = Exists [ Match ("sibling." ++ who ++ ".Other") ]
 -- | 条件：@who@ 无任何兄弟姐妹叶（@everSibling@ 的 Absent 对偶）。
 neverSibling :: String -> Condition
 neverSibling who = Absent [ Match ("sibling." ++ who ++ ".Other") ]
+
+-- | 条件：@child@ 是 @parent@ 的子女（@isChildOf@ 同体；对齐 has* 命名）。
+hasChildOf :: String -> String -> Condition
+hasChildOf = isChildOf
+
+-- | 条件：@a@ 与 @b@ 为兄弟姐妹（@isSiblingOf@ 同体；对齐 has* 命名）。
+hasSiblingOf :: String -> String -> Condition
+hasSiblingOf = isSiblingOf
+
+-- | 条件：@a@ 与 @b@ 已婚（@isMarriedTo@ 同体；对齐 has* 命名）。
+hasMarriedTo :: String -> String -> Condition
+hasMarriedTo = isMarriedTo
+
+-- | 条件：@parent@ 是 @child@ 的亲代（@isParentOf@ 同体；对齐 has* 命名）。
+hasParentOf :: String -> String -> Condition
+hasParentOf = isParentOf
+
+-- | 条件：@a@ 与 @b@ 为姻亲（@isInLawOf@ 同体；对齐 has* 命名）。
+hasInLawOf :: String -> String -> Condition
+hasInLawOf = isInLawOf
+

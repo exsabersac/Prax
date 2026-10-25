@@ -32,7 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -269,6 +269,24 @@ runLocations (who : ws) =
   in mapM_ putStrLn (locationsOf st who)
 runLocations _ = putStrLn "usage: prax locations <who> <world>"
 
+runHolding :: [String] -> IO ()
+runHolding (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (holdingOf st who)
+runHolding _ = putStrLn "usage: prax holding <who> <world>"
+
+runCarrying :: [String] -> IO ()
+runCarrying (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (carryingOf st who)
+runCarrying _ = putStrLn "usage: prax carrying <who> <world>"
+
+runShunned :: [String] -> IO ()
+runShunned (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (shunnedOf st who)
+runShunned _ = putStrLn "usage: prax shunned <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -404,6 +422,9 @@ main = do
     ("demanded" : ws) -> runDemanded ws
     ("festivals" : ws) -> runFestivals ws
     ("locations" : ws) -> runLocations ws
+    ("holding" : ws)   -> runHolding ws
+    ("carrying" : ws)  -> runCarrying ws
+    ("shunned" : ws)   -> runShunned ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

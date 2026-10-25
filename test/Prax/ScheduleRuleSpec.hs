@@ -504,6 +504,55 @@ tests = testGroup "Prax.ScheduleRule"
         let stGrant = doAct "receive a grant" stAfter
         assertBool "granted" (exists "granted.ada" (db stGrant))
         assertBool "grant once" (not (hasAct "receive a grant" stGrant))
+
+    , testCase "harvest trial arc: accuse outside → judge during → sentence after" $ do
+        let trial = practice
+              { practiceId = "harvestTrial"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: accuse the culprit"
+                      [ outsideFestival "harvest"
+                      , Not "accused.Actor" ]
+                      [ Insert "accused.Actor" ]
+                  , action "[Actor]: judge the case"
+                      [ duringFestival "harvest"
+                      , Match "accused.Actor"
+                      , Not "judged.Actor" ]
+                      [ Insert "judged.Actor" ]
+                  , action "[Actor]: pass sentence"
+                      [ outsideFestival "harvest"
+                      , Match "judged.Actor"
+                      , Not "sentenced.Actor" ]
+                      [ Insert "sentenced.Actor" ]
+                  ]
+              }
+            base = definePractices [trial]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestTrial" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: accuse yes" (hasAct "accuse" st0)
+        assertBool "before: judge no" (not (hasAct "judge" st0))
+        let stAcc = doAct "accuse" st0
+        assertBool "accused" (exists "accused.ada" (db stAcc))
+        assertBool "accuse once" (not (hasAct "accuse" stAcc))
+        let stOpen = iterate roundBoundary stAcc !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: judge yes" (hasAct "judge" stOpen)
+        assertBool "open: sentence no" (not (hasAct "pass sentence" stOpen))
+        let stJudge = doAct "judge" stOpen
+        assertBool "judged" (exists "judged.ada" (db stJudge))
+        let stAfter = roundBoundary stJudge
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: sentence yes" (hasAct "pass sentence" stAfter)
+        let stSent = doAct "pass sentence" stAfter
+        assertBool "sentenced" (exists "sentenced.ada" (db stSent))
+        assertBool "sentence once" (not (hasAct "pass sentence" stSent))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

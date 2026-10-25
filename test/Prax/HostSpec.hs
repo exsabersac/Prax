@@ -334,4 +334,17 @@ tests = testGroup "Prax.Host"
       locationsOf st "ana" @?= ["at.ana.yard"]
       locationsOf st "ben" @?= ["at.ben.market"]
       locationsOf st "void" @?= []
+  , testCase "holdingOf / carryingOf / shunnedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "holding.ana.loaf"
+                , Insert "carrying.ben.flour"
+                , Insert "shunned.cai.T"
+                , Insert "flag.x" ]
+      holdingOf st "ana" @?= ["holding.ana.loaf"]
+      holdingOf st "void" @?= []
+      carryingOf st "ben" @?= ["carrying.ben.flour"]
+      carryingOf st "void" @?= []
+      shunnedOf st "cai" @?= ["shunned.cai.T"]
+      shunnedOf st "void" @?= []
+
   ]

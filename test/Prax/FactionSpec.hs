@@ -261,4 +261,10 @@ tests = testGroup "Prax.Faction"
       everLeader "ana" @?= Exists [ Match "leads.Faction!ana" ]
       neverLeader "ana" @?= Absent [ Match "leads.Faction!ana" ]
 
+  , testCase "hasMember / hasLeader / hasAffiliate / hasRegardAs aliases" $ do
+      hasMember "ada" "guild" @?= isMember "ada" "guild"
+      hasLeader "ana" "guild" @?= isLeader "ana" "guild"
+      hasAffiliate "ada" "church" @?= affiliates "ada" "church"
+      hasRegardAs "ada" "bex" "thief" @?= regardsAs "ada" "bex" "thief"
+
   ]

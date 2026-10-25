@@ -326,4 +326,11 @@ tests = testGroup "Prax.Kin"
   , testCase "everSibling / neverSibling are Exists/Absent of sibling leaves" $ do
       everSibling "ada" @?= Exists [ Match "sibling.ada.Other" ]
       neverSibling "ada" @?= Absent [ Match "sibling.ada.Other" ]
+  , testCase "hasChildOf / hasSiblingOf / hasMarriedTo / hasParentOf / hasInLawOf aliases" $ do
+      hasChildOf "ana" "pat" @?= isChildOf "ana" "pat"
+      hasSiblingOf "ana" "ben" @?= isSiblingOf "ana" "ben"
+      hasMarriedTo "ana" "chris" @?= isMarriedTo "ana" "chris"
+      hasParentOf "pat" "ana" @?= isParentOf "pat" "ana"
+      hasInLawOf "pat" "sam" @?= isInLawOf "pat" "sam"
+
   ]

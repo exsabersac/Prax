@@ -180,4 +180,7 @@ tests = testGroup "Prax.Repute"
       neverEsteemed "kai" @?= Absent [ Match "esteemed.kai.Subject.Label" ]
       everScorned "kai" @?= Exists [ Match "scorned.kai.Subject.Label" ]
       neverScorned "kai" @?= Absent [ Match "scorned.kai.Subject.Label" ]
+  , testCase "hasNotorious aliases isNotorious" $
+      hasNotorious "eve" "heretic" @?= isNotorious "eve" "heretic"
+
   ]

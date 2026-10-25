@@ -22,6 +22,7 @@ module Prax.Repute
   , scornDesire
   , esteemDesire
   , isNotorious
+  , hasNotorious
   , lacksNotorious
   , hasScorned
   , lacksScorned
@@ -156,6 +157,10 @@ esteemDesire who label w
 -- | 条件：@subject@ 在 @label@ 下恶名昭著。
 isNotorious :: String -> String -> Condition
 isNotorious subject label = Match ("notorious." ++ subject ++ "." ++ label)
+
+-- | 条件：@subject@ 背负恶名 @label@（@isNotorious@ 同体；对齐 has* 命名）。
+hasNotorious :: String -> String -> Condition
+hasNotorious = isNotorious
 
 -- | 条件：@observer@ 已对 @subject@ 以 @label@ 表达过 esteem（@esteemed@ 一次守卫叶）。
 hasEsteemed :: String -> String -> String -> Condition

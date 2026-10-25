@@ -30,6 +30,10 @@ module Prax.Faction
   , neverAffiliate
   , everLeader
   , neverLeader
+  , hasMember
+  , hasLeader
+  , hasAffiliate
+  , hasRegardAs
   ) where
 
 import           Prax.Query (Condition (..))
@@ -209,3 +213,20 @@ everLeader who = Exists [ Match ("leads.Faction!" ++ who) ]
 -- | 条件：@who@ 不领导任何派系（@everLeader@ 的 Absent 对偶）。
 neverLeader :: String -> Condition
 neverLeader who = Absent [ Match ("leads.Faction!" ++ who) ]
+
+-- | 条件：@who@ 主效忠为 @faction@（@isMember@ 同体；对齐 has* 命名）。
+hasMember :: String -> String -> Condition
+hasMember = isMember
+
+-- | 条件：@who@ 领导 @faction@（@isLeader@ 同体；对齐 has* 命名）。
+hasLeader :: String -> String -> Condition
+hasLeader = isLeader
+
+-- | 条件：@who@ 次级归属 @faction@（@affiliates@ 同体；对齐 has* 命名）。
+hasAffiliate :: String -> String -> Condition
+hasAffiliate = affiliates
+
+-- | 条件：@who@ 将 @other@ 视为 @label@（@regardsAs@ 同体；对齐 has* 命名）。
+hasRegardAs :: String -> String -> String -> Condition
+hasRegardAs = regardsAs
+

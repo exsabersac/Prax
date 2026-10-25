@@ -13,6 +13,7 @@
 -- v217：'esteemedOf'/'scornedOf'/'beliefsOf' 枚举赞誉/蔑视/信念叶。
 -- v225：'arcsOf'/'agesOf'/'projectsOf' 枚举弧阶段/年龄/事业叶。
 -- v231：'demandedOf'/'festivalsOf' 催收叶与节庆叶。
+-- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
 module Prax.Host
   ( step
   , stepExact
@@ -61,6 +62,9 @@ module Prax.Host
   , demandedOf
   , festivalsOf
   , locationsOf
+  , holdingOf
+  , carryingOf
+  , shunnedOf
   , checkpoint
   , restore
   ) where
@@ -432,6 +436,21 @@ festivalsOf st =
 locationsOf :: PraxState -> String -> [String]
 locationsOf st who =
   sort [ s | s <- queryView st, ("at." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的持有叶（@holding.<who>.*@）。
+holdingOf :: PraxState -> String -> [String]
+holdingOf st who =
+  sort [ s | s <- queryView st, ("holding." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的携带叶（@carrying.<who>.*@）。
+carryingOf :: PraxState -> String -> [String]
+carryingOf st who =
+  sort [ s | s <- queryView st, ("carrying." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 发出的排斥叶（@shunned.<who>.*@）。
+shunnedOf :: PraxState -> String -> [String]
+shunnedOf st who =
+  sort [ s | s <- queryView st, ("shunned." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState
