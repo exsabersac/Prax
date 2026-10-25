@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, absolve, incorrigible)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -545,9 +545,65 @@ guardTests = testGroup "guards"
         (isLeft (r :: Either ErrorCall Int))
   ]
 
+
+--------------------------------------------------------------------------------
+-- Public confession (one-to-many): convert one mark, deposit to every co-present
+--------------------------------------------------------------------------------
+
+publicConfessAct :: Action
+publicConfessAct = confessPublic "lied" "confessed" together pat pat
+  "[Actor]: confess publicly about wronging [Victim]"
+
+publicWorld :: PraxState
+publicWorld = foldl (flip performOutcome) base setup
+  where
+    base = setCharacters (map character ["bob", "fay", "ned"])
+             (definePractices [p] emptyState)
+    p = practice
+      { practiceId = "confessional", roles = ["R"], actions = [publicConfessAct] }
+    setup =
+      [ Insert "practice.confessional.here"
+      , Insert "at.bob!yard", Insert "at.fay!yard", Insert "at.ned!yard"
+      , Insert "bob.lied.edda.wronged.bob.carol"
+      , Insert "bob.lied.edda.wronged.bob.dana"
+      ]
+
+publicConfessionTests :: TestTree
+publicConfessionTests = testGroup "public confession (one-to-many)"
+  [ testCase "converts exactly one mark and deposits to every co-present hearer" $ do
+      let st = doAct "bob" "confess publicly about wronging carol" publicWorld
+      assertBool "carol mark converted"
+        (exists "bob.confessed.edda.wronged.bob.carol" (db st))
+      assertBool "carol lied-mark gone"
+        (not (exists "bob.lied.edda.wronged.bob.carol" (db st)))
+      assertBool "dana mark untouched"
+        (exists "bob.lied.edda.wronged.bob.dana" (db st))
+      assertBool "fay heard via bob"
+        (exists "fay.believes.wronged.bob.carol.heard.bob" (db st))
+      assertBool "ned heard via bob"
+        (exists "ned.believes.wronged.bob.carol.heard.bob" (db st))
+      assertBool "actor does not hear themself"
+        (not (exists "bob.believes.wronged.bob.carol.heard.bob" (db st)))
+
+  , testCase "absent audience: mark still converts; co-presence gates deposits" $ do
+      let alone = foldl (flip performOutcome) publicWorld
+                    [ Delete "at.fay", Delete "at.ned"
+                    , Insert "at.fay!mill", Insert "at.ned!mill" ]
+          st = doAct "bob" "confess publicly about wronging carol" alone
+      assertBool "mark converted even alone"
+        (exists "bob.confessed.edda.wronged.bob.carol" (db st))
+      assertBool "no fay deposit" (not (exists "fay.believes.wronged.bob.carol.heard.bob" (db st)))
+      assertBool "no ned deposit" (not (exists "ned.believes.wronged.bob.carol.heard.bob" (db st)))
+
+  , testCase "confessPublic rejects a dotted kind" $ do
+      r <- try (evaluate (confessPublic "li.ed" "confessed" together pat pat "[Actor]: x"))
+      assertBool "dotted kind errors" (isLeft (r :: Either ErrorCall Action))
+  ]
+
 tests :: TestTree
 tests = testGroup "Prax.Confession"
   [ conversionTests
+  , publicConfessionTests
   , absolutionTests
   , incorrigibilityTests
   , probedArithmeticTests

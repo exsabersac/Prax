@@ -3,6 +3,7 @@
 -- 赦免者的耐心是他们所知道的（按 regarder、凭记忆永久、由八卦与坦白同样喂养）。
 module Prax.Confession
   ( confess
+  , confessPublic
   , absolve
   , incorrigible
   ) where
@@ -50,6 +51,38 @@ confess kind verb copresence markPat depositPat label
     outs  = [ Delete liedPath
             , Insert confessedPath
             , Insert (beliefAbout "Hearer" depositPat ++ ".heard.Actor") ]
+
+-- | 公开告白（一对多）：转换 *一桩* 标记，并向每位同场听者经普通传闻通道存款。
+-- 与 'confess' 同形守卫；区别仅在结果——'ForEach' 覆盖同场听者，而非绑定单一 Hearer。
+confessPublic :: String -> String -> CoPresence -> String -> String -> String -> Action
+confessPublic kind verb copresence markPat depositPat label
+  | not (segOk kind) =
+      error ("confessPublic: mark kind " ++ show kind ++ " must be a single path segment")
+  | not (segOk verb) =
+      error ("confessPublic: discharge verb " ++ show verb ++ " must be a single path segment")
+  | (v : _) <- authoredPatClash ["H", "Hearer", "Actor"] (pathNames markPat) =
+      error ("confessPublic: mark pattern " ++ show markPat ++ " reserves variable " ++ show v
+             ++ " (the mark's hearer slot / the action's own roles, or the Prax"
+             ++ " namespace)")
+  | (v : _) <- authoredPatClash ["Hearer"] (pathNames depositPat) =
+      error ("confessPublic: deposit pattern " ++ show depositPat ++ " reserves variable "
+             ++ show v ++ " (the confession's own audience role, or the Prax namespace)")
+  | (v : _) <- ungroundable =
+      error ("confessPublic: deposit pattern " ++ show depositPat ++ " variable " ++ show v
+             ++ " is not grounded by the mark (only Actor, H, and " ++ show markPat
+             ++ "'s own variables are available) -- an ungroundable deposit would"
+             ++ " insert a variable-bearing fact")
+  | otherwise = action label [ Match liedPath ]
+      [ ForEach (asRole "Hearer" copresence ++ [ Neq "Hearer" "Actor" ])
+          [ Insert (beliefAbout "Hearer" depositPat ++ ".heard.Actor") ]
+      , Delete liedPath
+      , Insert confessedPath ]
+  where
+    liedPath      = "Actor." ++ kind ++ ".H." ++ markPat
+    confessedPath = "Actor." ++ verb ++ ".H." ++ markPat
+    groundedVars  = "Actor" : "H" : filter isVariable (pathNames markPat)
+    ungroundable  = [ v | v <- filter isVariable (pathNames depositPat)
+                        , v `notElem` groundedVars ]
 
 -- | 给予赦免：为该主体插入世界的击败者（通常清除恶名站队）。
 absolve :: String -> String -> String -> String -> Action
