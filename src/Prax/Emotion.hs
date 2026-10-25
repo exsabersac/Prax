@@ -7,7 +7,7 @@
 -- 起始在触发动机处创作（'Prax.Rng.draw' 片段）；消退是起始上的创作寿命——'feelFor'\/'feelTowardFor'
 -- 经引擎到期队列断言（规格 @docs/specs/2026-07-16-v44-the-schedule.md@），因此每个情感从自身起始
 -- 存活自己的 @n@ 回合（v36 情节原则，无同步清扫）。情感是情节性的：它们消退；气质（特质、标记）
--- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。
+-- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。 强度（v60）：'feelAt'/'feelTowardAt' 在感受下挂排他 @intensity!N@ 叶；'intensityAtLeast' 供定价门禁——仍不收缩其他实践决策空间。
 module Prax.Emotion
   ( -- * An Ekman-based vocabulary (moved from Prax.Core; plain names)
     happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased
@@ -19,9 +19,11 @@ module Prax.Emotion
   , feeling, feelingToward
     -- * Making feelings visible to co-present others (ordinary .seen beliefs)
   , express, expressToward
+    -- * Intensity (exclusive leaf under the feeling)
+  , feelAt, feelTowardAt, intensityAtLeast, intensityTowardAtLeast
   ) where
 
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), CmpOp (..))
 import           Prax.Types
 import           Prax.Witness (CoPresence, witnessed)
 
@@ -94,4 +96,37 @@ expressToward copresence emotion label
   | otherwise = action label
       [ Match ("Actor.feels." ++ emotion ++ ".toward.Target") ]
       [ witnessed copresence ("Actor.feels." ++ emotion ++ ".toward.Target") ]
+
+-- | Begin feeling @emotion@ at intensity @n@ (@n >= 1@). Intensity is an
+-- exclusive leaf under the feeling path; 'unfeel' clears it with the feeling.
+feelAt :: Int -> String -> String -> [Outcome]
+feelAt n who emotion
+  | n < 1 = error ("feelAt: intensity " ++ show n ++ " must be >= 1")
+  | not (segOk emotion) =
+      error ("feelAt: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise =
+      [ feel who emotion
+      , Insert (feelsPath who emotion ++ ".intensity!" ++ show n) ]
+
+-- | Targeted feeling at intensity @n@.
+feelTowardAt :: Int -> String -> String -> String -> [Outcome]
+feelTowardAt n who emotion target
+  | n < 1 = error ("feelTowardAt: intensity " ++ show n ++ " must be >= 1")
+  | not (segOk emotion) =
+      error ("feelTowardAt: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise =
+      [ feelToward who emotion target
+      , Insert (feelsPath who emotion ++ ".toward." ++ target ++ ".intensity!" ++ show n) ]
+
+-- | Gate: @who@ feels @emotion@ at intensity at least @n@.
+intensityAtLeast :: String -> String -> Int -> [Condition]
+intensityAtLeast who emotion n =
+  [ Match (feelsPath who emotion ++ ".intensity!FeelIntensity")
+  , Cmp Gte "FeelIntensity" (show n) ]
+
+-- | Gate: targeted feeling at intensity at least @n@.
+intensityTowardAtLeast :: String -> String -> String -> Int -> [Condition]
+intensityTowardAtLeast who emotion target n =
+  [ Match (feelsPath who emotion ++ ".toward." ++ target ++ ".intensity!FeelIntensity")
+  , Cmp Gte "FeelIntensity" (show n) ]
 

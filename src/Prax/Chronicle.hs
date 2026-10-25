@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@。
+-- @"salient "++show k@、@"feelings of "++who@（基库情节情感，含强度叶）。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -149,6 +149,11 @@ askChronicle st q
   , [(k, "")] <- reads ks =
       [ ev ++ " (" ++ show (length (nub (map erKnower rs))) ++ " knowers)"
       | (ev, rs) <- sort (salientEvents k (db st)) ]
+  | Just who <- stripPrefix "feelings of " q =
+      let prefix = who ++ ".feels."
+          fs = sort [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s ]
+      in if null fs then [who ++ " has no recorded feelings"]
+         else fs
   | otherwise = ["chronicle: unknown query " ++ show q]
 
 -- helpers ----------------------------------------------------------------------

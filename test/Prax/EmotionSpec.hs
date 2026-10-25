@@ -179,6 +179,40 @@ tests = testGroup "Prax.Emotion"
           (isLeft (r :: Either ErrorCall Int))
     ]
 
+  , testGroup "intensity"
+    [ testCase "feelAt plants exclusive intensity; unfeel clears it" $ do
+        let st0 = foldl (flip performOutcome) emptyState (feelAt 3 "ada" angry)
+        assertBool "feeling present" (exists "ada.feels.angry" (db st0))
+        assertBool "intensity 3" (exists "ada.feels.angry.intensity!3" (db st0))
+        let st1 = foldl (flip performOutcome) st0 (feelAt 5 "ada" angry)
+        assertBool "intensity replaced exclusively"
+          (exists "ada.feels.angry.intensity!5" (db st1)
+           && not (exists "ada.feels.angry.intensity!3" (db st1)))
+        let st2 = performOutcome (unfeel "ada" angry) st1
+        assertBool "intensity gone with feeling"
+          (not (exists "ada.feels.angry.intensity!5" (db st2)))
+
+    , testCase "intensityAtLeast gates on the leaf" $ do
+        let st = foldl (flip performOutcome) emptyState (feelAt 2 "ada" afraid)
+        assertBool "gte 2 holds"
+          (not (null (query (db st) (intensityAtLeast "ada" afraid 2) Map.empty)))
+        assertBool "gte 3 fails"
+          (null (query (db st) (intensityAtLeast "ada" afraid 3) Map.empty))
+
+    , testCase "feelTowardAt + intensityTowardAtLeast" $ do
+        let st = foldl (flip performOutcome) emptyState
+                  (feelTowardAt 4 "ada" angry "carol")
+        assertBool "targeted intensity"
+          (exists "ada.feels.angry.toward.carol.intensity!4" (db st))
+        assertBool "toward gate holds"
+          (not (null (query (db st)
+                 (intensityTowardAtLeast "ada" angry "carol" 3) Map.empty)))
+
+    , testCase "feelAt rejects non-positive intensity" $ do
+        r <- try (evaluate (length (show (feelAt 0 "ada" angry))))
+        assertBool "zero rejected" (isLeft (r :: Either ErrorCall Int))
+    ]
+
   , testGroup "the invariant: feelings never gate action availability"
     [ testCase "candidateActions is identical with and without every feeling" $ do
         let vocabulary = [happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased]

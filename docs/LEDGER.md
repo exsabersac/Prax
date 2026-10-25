@@ -330,8 +330,12 @@
   `expressToward` 在感受成立时提供沟通 affordance，经 `Prax.Witness.witnessed` 把 `Actor.feels.<emotion>`
   （或带 `.toward.Target`）存为同场者的普通 `.seen` 信念——自愿出示，非自动广播；别处角色无信念。
   不收缩其他实践的决策空间（模块不变量仍钉死）。附带：`esteemStanding` 缺口测试；CLI `prax help`
-  列出世界与 `chronicle`/`check`/`stress` 等工具。清偿情感所存「对他心可见」；每感受消退戳、每情绪周期、
-  强度等级仍存。
+  列出世界与 `chronicle`/`check`/`stress` 等工具。清偿情感所存「对他心可见」。
+
+- **v60** — **情感强度 + esteem 欲望 + 编年史感受查询**（`Prax.Emotion`；`Prax.Repute`；`Prax.Chronicle`）。
+  `feelAt`/`feelTowardAt` 在感受下挂排他 `intensity!N` 叶；`intensityAtLeast`/`intensityTowardAtLeast`
+  供定价门禁（仍不收缩其他实践决策空间）。`esteemDesire` 对称 `scornDesire`。`askChronicle "feelings of <who>"`
+  列出基库情节情感（只读）。清偿情感所存「强度等级」；每感受消退戳、每情绪周期仍存。
 
 ## 核心逻辑引擎
 
@@ -442,7 +446,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
-- **情感** *（完成 — v38；v59 对他心可见）*。残余：每感受消退戳、每情绪周期、强度等级。
+- **情感** *（完成 — v38；v59 对他心可见；v60 强度）*。残余：每感受消退戳、每情绪周期。
 - **日历与集会** *（完成 — v37）*。节庆内容与多同时集会仍出范围。
 
 Tier 3 — 宿主游戏边界：

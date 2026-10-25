@@ -20,6 +20,7 @@ module Prax.Repute
   , scornStanding
   , esteemStanding
   , scornDesire
+  , esteemDesire
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -129,4 +130,13 @@ scornDesire who label w
       error ("scornDesire: label " ++ show label ++ " must be a single path segment")
   | otherwise = Desire ("scorns-" ++ label)
       (Want [ Match ("scorned." ++ who ++ ".T." ++ label)
+            , Match ("regards." ++ who ++ ".T." ++ label) ] w)
+
+-- | NPC 自动取 esteem 的欲望：在仍 regard 且尚未 esteem 时想完成 esteem。
+esteemDesire :: String -> String -> Int -> Desire
+esteemDesire who label w
+  | not (segOk label) =
+      error ("esteemDesire: label " ++ show label ++ " must be a single path segment")
+  | otherwise = Desire ("esteems-" ++ label)
+      (Want [ Match ("esteemed." ++ who ++ ".T." ++ label)
             , Match ("regards." ++ who ++ ".T." ++ label) ] w)

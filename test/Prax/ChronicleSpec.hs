@@ -1,6 +1,6 @@
 module Prax.ChronicleSpec (tests) where
 
-import           Data.List (isInfixOf)
+import           Data.List (isInfixOf, isPrefixOf)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
@@ -74,4 +74,19 @@ tests = testGroup "Prax.Chronicle"
       assertBool "no notoriety hooks" (null (notorietyHooks f))
       assertBool "events still chronicled"
         (knowerCount "kicked.kai.dog" (db f) == 2)
+
+  , testCase "askChronicle feelings-of lists base feeling facts" $ do
+      let st = foldl (flip performOutcome) world
+                [ Insert "ana.feels.angry"
+                , Insert "ana.feels.angry.toward.kai"
+                , Insert "ana.feels.angry.intensity!2" ]
+      let lines = askChronicle st "feelings of ana"
+      assertBool "lists angry" (any ("ana.feels.angry" ==) lines
+                                 || any ("ana.feels.angry" `isPrefixOf`) lines)
+      -- exact leaf sentences from dbToSentences
+      assertBool "has toward" ("ana.feels.angry.toward.kai" `elem` lines)
+      -- dbToSentences flattens exclusive labels (! → .) for display
+      assertBool "has intensity" ("ana.feels.angry.intensity.2" `elem` lines)
+      askChronicle st "feelings of nobody"
+        @?= ["nobody has no recorded feelings"]
   ]

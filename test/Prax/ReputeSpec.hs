@@ -127,6 +127,10 @@ tests = testGroup "Prax.Repute"
       let Desire n _ = scornDesire "ana" "brute" 4
       in n @?= "scorns-brute"
 
+  , testCase "esteemDesire names the esteems-<label> desire" $
+      let Desire n _ = esteemDesire "ana" "hero" 3
+      in n @?= "esteems-hero"
+
   , testCase "esteemStanding: regard gates a one-shot score rise" $ do
       let base = defineFunctions coreFns
                    (setAxioms [ standing "saved.Hero.child" "hero" ]

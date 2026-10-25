@@ -1215,6 +1215,7 @@ recanted.eve: False
 | 轮转循环 + CLI 菜单 | `Prax.Loop` / `app/Main` | 整场会话 |
 | 情感（共存、有目标、消退） | `Prax.Emotion` `feelToward` | 「对你感到恼火」 |
 | 出示情感（对他心可见，`.seen`） | `Prax.Emotion` `express`/`expressToward` | 同场者相信 `Actor.feels…` |
+| 情感强度（排他 `intensity!N`） | `Prax.Emotion` `feelAt`/`intensityAtLeast` | 定价门禁，非可用性门禁 |
 | 编年史家 / 显著性查询（只读） | `Prax.Chronicle` `askChronicle` | `prax chronicle [world]` |
 | 站队分数效果（一次 scorn/esteem） | `Prax.Repute` `scornStanding`/`esteemStanding` | regard → 关系分 |
 | 事业放弃 | `Prax.Project` `abandon` | 子树拆除重开承接 |
