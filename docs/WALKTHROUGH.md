@@ -1216,6 +1216,11 @@ recanted.eve: False
 | 情感（共存、有目标、消退） | `Prax.Emotion` `feelToward` | 「对你感到恼火」 |
 | 出示情感（对他心可见，`.seen`） | `Prax.Emotion` `express`/`expressToward` | 同场者相信 `Actor.feels…` |
 | 情感强度（排他 `intensity!N`） | `Prax.Emotion` `feelAt`/`intensityAtLeast` | 定价门禁，非可用性门禁 |
+| 带寿命强度 | `Prax.Emotion` `feelAtFor` | 消退带走强度叶 |
+| 离婚 / 出生 | `Prax.Kin` `divorce`/`birth` | 成员不变 / 可 joins |
+| 补赎 | `Prax.Confession` `penance`/`atone` | 道义义务 |
+| 次级归属 | `Prax.Faction` `affiliate` | 多值，主效忠仍排他 |
+| 宿主嵌入 | `Prax.Host` `step`/`inject`/`queryFacts` | 外部循环薄表面 |
 | 编年史家 / 显著性查询（只读） | `Prax.Chronicle` `askChronicle` | `prax chronicle [world]` |
 | 站队分数效果（一次 scorn/esteem） | `Prax.Repute` `scornStanding`/`esteemStanding` | regard → 关系分 |
 | 事业放弃 | `Prax.Project` `abandon` | 子树拆除重开承接 |
