@@ -8,13 +8,14 @@ import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
-import           Prax.Db (dbToSentences, exists)
+import           Prax.Db (dbToSentences, exists, insertAll, emptyDb)
 import           Prax.Query (Condition (..), query)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, performAction,
                               possibleActions, setCharacters, roundBoundary)
 import           Prax.Planner (candidateActions)
 import           Prax.Emotion
+import           Prax.Derive (closure)
 import           Prax.Witness (CoPresence)
 
 facts :: PraxState -> [String]
@@ -275,6 +276,13 @@ tests = testGroup "Prax.Emotion"
             afterFeelings = candidateActions withFeelings fix
         baseline @?= afterFeelings
     ]
+
+  , testCase "moodFromFeeling derives baseline mood from episodic feel" $ do
+      let axs = [ moodFromFeeling "happy" ]
+          db0 = insertAll ["ana.feels.happy"] emptyDb
+      case closure axs db0 of
+        Left _ -> assertBool "closure" False
+        Right db1 -> assertBool "mood" (exists "mood.ana!happy" db1)
 
   , testCase "setMood exclusive baseline; inMood matches; clearMood retracts" $ do
       let st0 = performOutcome (setMood "ana" "cheerful") emptyState

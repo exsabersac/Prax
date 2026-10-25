@@ -14,6 +14,8 @@ module Prax.Conversation
   , quip
   , changeSubject
   , endConversation
+  , onTopic
+  , isSpeaker
   ) where
 
 import           Prax.Query (Condition (..))
@@ -82,3 +84,11 @@ changeSubject label newTopic =
 endConversation :: String -> Action
 endConversation label =
   action label speakerConds [ Delete convP ]
+
+-- | 条件：当前对话话题为 @topic@（在 converse.A.B 实例内）。
+onTopic :: String -> Condition
+onTopic topic = Match (convP ++ ".topic!" ++ topic)
+
+-- | 条件：Actor 现为说话者。
+isSpeaker :: Condition
+isSpeaker = Match (convP ++ ".speaker!Actor")

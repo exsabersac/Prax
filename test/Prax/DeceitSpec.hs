@@ -210,6 +210,27 @@ tests = testGroup "Prax.Deceit"
         assertBool "the legal shape is not rejected" (not (isLeft (r :: Either ErrorCall Int)))
     ]
 
+  , testCase "liePublic plants heard + lied marks for every co-present hearer" $ do
+      let shout = liePublic together []
+                    [ Match "at.Culprit!Anywhere" ]
+                    "took.Culprit.gem"
+                    "[Actor]: announce that [Culprit] took the gem"
+          p = practice { practiceId = "yard", roles = ["R"], actions = [shout] }
+          st0 = foldl (flip performOutcome)
+                  (setCharacters (map character ["nia", "oz", "kit", "mia"])
+                    (definePractices [p] emptyState))
+                  [ Insert "practice.yard.here"
+                  , Insert "at.nia!yard", Insert "at.oz!yard", Insert "at.kit!yard"
+                  , Insert "at.mia!yard" ]
+          st1 = case filter (("announce" `isInfixOf`) . gaLabel) (possibleActions st0 "nia") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no announce"
+      assertBool "oz heard" (exists "oz.believes.took.kit.gem.heard.nia" (db st1))
+      assertBool "mia heard" (exists "mia.believes.took.kit.gem.heard.nia" (db st1))
+      assertBool "kit skipped as subject" (not (exists "kit.believes.took.kit.gem.heard.nia" (db st1)))
+      assertBool "nia marked oz" (exists "nia.lied.oz.took.kit.gem" (db st1))
+      assertBool "nia marked mia" (exists "nia.lied.mia.took.kit.gem" (db st1))
+
   , testCase "truthful gossip leaves no lie-mark" $ do
       -- sid takes the gem before witnesses; oz (an eyewitness) honestly tells
       -- mia, who is walked over from the shed to be a valid hearer.

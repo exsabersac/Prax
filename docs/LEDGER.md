@@ -335,7 +335,7 @@
 - **v60** — **情感强度 + esteem 欲望 + 编年史感受查询**（`Prax.Emotion`；`Prax.Repute`；`Prax.Chronicle`）。
   `feelAt`/`feelTowardAt` 在感受下挂排他 `intensity!N` 叶；`intensityAtLeast`/`intensityTowardAtLeast`
   供定价门禁（仍不收缩其他实践决策空间）。`esteemDesire` 对称 `scornDesire`。`askChronicle "feelings of <who>"`
-  列出基库情节情感（只读）。清偿情感所存「强度等级」；每感受消退戳、每情绪周期仍存。
+  列出基库情节情感（只读）。清偿情感所存「强度等级」；每感受消退戳仍存；v91 moodFromFeeling 薄清偿心境一致启动。
 
 - **v61** — **离婚动作**（`Prax.Kin` `divorce`）。把既有「撤回婚姻」契约暴露为可创作动作；双边删除，成员不变。
 
@@ -465,7 +465,7 @@ Tier 1 — 社会事实，叠在 K 上：
 Tier 2 — 长时间跨度的代理内在性：
 - **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
 - **性格 → 意志**（`Prax.Persona`）*（完成 — v25）*：特质即行为估值；gale/eve 对照。
-- **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22）*：`conceal`/`lie`；构陷级联；被构陷者无救济。
+- **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22；v88 liePublic）*：`conceal`/`lie`/`liePublic`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
 - **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司/族长薄门禁于 v86 `absolveAsLeader` 清偿。
 - **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环）*。虚张/威胁到期/反敲诈于 v54 清偿。
@@ -473,7 +473,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
-- **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；情绪周期/心境一致启动仍存。每情绪默认寿命于 v68 清偿。
+- **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
 - **日历与集会** *（完成 — v37）*。节庆内容与多同时集会仍出范围。
 
 Tier 3 — 宿主游戏边界：
@@ -557,3 +557,27 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`isChildOf` / `isSiblingOf` / `isMarriedTo`。
 - **测**：KinSpec relation conditions。
 
+## v88 — Deceit liePublic
+
+- **做了什么**：一对多捏造（ForEach 听者 + 每人 `lied` 标记），镜像 gossipPublic。
+- **测**：DeceitSpec liePublic plants heard + lied marks。
+
+## v89 — Arc leaveArc / adoptArc
+
+- **做了什么**：`leaveArc` 清除阶段；`adoptArc` Actor 自愿进入新阶段的动作。
+- **测**：ArcSpec leaveArc / adoptArc。
+
+## v90 — Conversation onTopic / isSpeaker
+
+- **做了什么**：对话实例门条件（topic! / speaker!Actor）。
+- **测**：ConversationSpec onTopic / isSpeaker。
+
+## v91 — Emotion moodFromFeeling
+
+- **做了什么**：公理：`W.feels.E` → `mood.W!E`（可选安装的心境一致启动薄版）。
+- **测**：EmotionSpec moodFromFeeling derives baseline mood。
+
+## v92 — Sight lastKnownAt
+
+- **做了什么**：条件：`seer.believes.at.seen!place`。
+- **测**：SightSpec lastKnownAt。

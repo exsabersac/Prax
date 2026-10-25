@@ -10,10 +10,12 @@ module Prax.Arc
   , arcOf
   , arcIs
   , enterArc
+  , leaveArc
+  , adoptArc
   ) where
 
 import           Prax.Query (Condition (..))
-import           Prax.Types (Outcome (..))
+import           Prax.Types (Action, Outcome (..), action)
 
 -- | 句子 @who.arc!stage@。
 arcSentence :: String -> String -> String
@@ -30,3 +32,16 @@ arcIs who stage = Match (arcSentence who stage)
 -- | @who@ 进入弧阶段 @stage@（覆盖任何先前阶段）。
 enterArc :: String -> String -> Outcome
 enterArc who stage = Insert (arcSentence who stage)
+
+-- | 清除 @who@ 的弧阶段。
+leaveArc :: String -> Outcome
+leaveArc who = Delete (arcOf who)
+
+-- | Actor 自愿进入弧阶段 @stage@（创作动作用）。
+adoptArc :: String -> String -> Action
+adoptArc stage label
+  | null stage || any (`elem` (".!" :: String)) stage =
+      error ("adoptArc: stage " ++ show stage ++ " must be a single path segment")
+  | otherwise = action label
+      [ Not ("Actor.arc!" ++ stage) ]
+      [ Insert ("Actor.arc!" ++ stage) ]

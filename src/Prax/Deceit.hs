@@ -8,6 +8,7 @@
 -- （你 /能/ 嫁祸谁）而非从信念。效果与八卦相同——受骗者持有真传闻，与真相不可区分，且整个
 -- 谣言/声誉栈对虚假未修改地级联。
 --
+-- v88：'liePublic' 一对多捏造（镜像 gossipPublic）。
 -- __谎言标记撒谎者。__ 唯一残余是撒谎者自身记忆——@\<liar\>.lied.\<hearer\>.\<event\>@，
 -- 像所有心智状态一样根于其名下：自有、可遗忘（对其根一次 'Delete'）、随承载者消亡。有意无客观记录：
 -- 历史仅经其留下的标记持续，真相可变得不可恢复。洗清若曾创作，经标记承载者流动（坦白、证词），
@@ -15,6 +16,7 @@
 module Prax.Deceit
   ( conceal
   , lie
+  , liePublic
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -65,3 +67,30 @@ lie copresence gate fabrication pat label
          , Absent [ Match (beliefAbout "Hearer" pat ++ ".seen") ]
          , Not (beliefAbout "Hearer" pat ++ ".heard.Actor") ]
       ++ gate
+
+-- | 公开谎言：同场每位听者各得一条 @.heard.Actor@，并为每位听者种 @Actor.lied.Hearer.<pat>@。
+-- 与 'lie' 同形门禁（无证据、跳过主体）；无单一 Hearer 绑定。
+liePublic :: CoPresence -> [Condition] -> [Condition] -> String -> String -> Action
+liePublic copresence gate fabrication pat label
+  | (v : _) <- offenders =
+      error ("Prax.Deceit.liePublic: " ++ show v ++ " in an authored gate, fabrication,"
+             ++ " or event pattern -- the Prax namespace is reserved for machinery")
+  | otherwise = action label
+      (fabrication
+        ++ [ Neq subject "Actor"
+           , Absent [ Match (beliefAbout "Actor" pat) ] ]
+        ++ gate)
+      [ ForEach (asRole "Hearer" copresence
+                 ++ [ Neq "Hearer" "Actor"
+                    , Neq "Hearer" subject
+                    , Absent [ Match (beliefAbout "Hearer" pat ++ ".seen") ]
+                    , Not (beliefAbout "Hearer" pat ++ ".heard.Actor") ])
+          [ Insert (beliefAbout "Hearer" pat ++ ".heard.Actor")
+          , Insert ("Actor.lied.Hearer." ++ pat) ] ]
+  where
+    offenders = authoredVarClash [] (gate ++ fabrication) []
+                  ++ authoredPatClash [] (pathNames pat)
+    subject = case filter isVariable (pathNames pat) of
+      (v : _) -> v
+      []      -> error ("liePublic: event pattern " ++ show pat
+                        ++ " names no one (a lie is about someone)")

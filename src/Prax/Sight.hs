@@ -11,6 +11,7 @@
 -- 带声明含义的创作世界参数，非引擎常量。
 module Prax.Sight
   ( sightedWithin
+  , lastKnownAt
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..), CalcOp (..))
@@ -23,3 +24,8 @@ sightedWithin h =
   , Match (turnPath ++ "!Now")
   , Calc "Expiry" Add "Since" (show h)
   , Cmp Gte "Expiry" "Now" ]
+
+-- | 条件：@seer@ 相信 @seen@ 在 @place@（最后已知位置，排他叶）。
+lastKnownAt :: String -> String -> String -> Condition
+lastKnownAt seer seen place =
+  Match (seer ++ ".believes.at." ++ seen ++ "!" ++ place)

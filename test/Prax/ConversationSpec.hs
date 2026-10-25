@@ -2,9 +2,10 @@ module Prax.ConversationSpec (tests) where
 
 import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool, assertFailure)
+import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences)
+import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Engine (definePractice, performOutcome, possibleActions, performAction)
 import           Prax.Conversation
@@ -80,6 +81,10 @@ tests = testGroup "Prax.Conversation"
       st <- perform start "ada" "wrap up the chat"
       assertBool "conversation gone"
         ("practice.converse.ada.bex" `notElem` dbToSentences (db st))
+
+  , testCase "onTopic / isSpeaker are the converse instance gates" $ do
+      onTopic "greetings" @?= Match "practice.converse.A.B.topic!greetings"
+      isSpeaker @?= Match "practice.converse.A.B.speaker!Actor"
   ]
 
 -- helper: does any needle appear in the list of strings?

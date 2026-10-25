@@ -14,7 +14,7 @@ import           Prax.Engine (definePractices, performOutcome, setCharacters,
                                setSchedule, roundBoundary)
 import           Prax.TypeCheck (typeCheck)
 import           Prax.Schedule (sightRule)
-import           Prax.Sight (sightedWithin)
+import           Prax.Sight (sightedWithin, lastKnownAt)
 
 -- Two rooms; ute and vic share one, wes is alone in the other.
 sighting :: [Condition]
@@ -61,6 +61,9 @@ tests = testGroup "Prax.Sight"
       assertBool "belief updated" (exists "ute.believes.at.vic!attic" (db st3))
       assertBool "old belief gone" (not (exists "ute.believes.at.vic!hall" (db st3)))
       assertBool "stamp refreshed" (exists "ute.believes.atSince.vic!3" (db st3))
+
+  , testCase "lastKnownAt matches believes.at exclusive leaf" $
+      lastKnownAt "ute" "vic" "hall" @?= Match "ute.believes.at.vic!hall"
 
   , testCase "sightedWithin is a window over the stamp" $ do
       -- Direct query of the scope fragment, grounded to a fixed Actor/Witness pair.
