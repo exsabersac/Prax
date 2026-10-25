@@ -23,7 +23,7 @@ import qualified Data.Map.Strict as Map
 
 import           Prax.Db (Bindings, Db, dbToSentences, unify, valToString)
 import           Prax.Sym (intern)
-import           Prax.Types (PraxState (..))
+import           Prax.Types (PraxState (..), readView)
 
 -- | 信念出处：直接目击，或具名来源的传闻。
 data Provenance
@@ -129,7 +129,8 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"debts of "++who@。
+-- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"debts of "++who@、
+-- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -185,6 +186,27 @@ askChronicle st q
                     , '.' `notElem` drop (length prefix) s ]
       in if null ms then [who ++ " has no baseline mood"]
          else map ((who ++ " mood ") ++) ms
+  | Just who <- stripPrefix "arc of " q =
+      let prefix = who ++ ".arc."
+          stages = sort [ drop (length prefix) s
+                        | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                        , '.' `notElem` drop (length prefix) s ]
+      in if null stages then [who ++ " has no arc stage"]
+         else map ((who ++ " arc ") ++) stages
+  | Just who <- stripPrefix "age of " q =
+      let prefix = "age." ++ who ++ "."
+          ages = sort [ drop (length prefix) s
+                      | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                      , '.' `notElem` drop (length prefix) s ]
+      in if null ages then [who ++ " has no recorded age"]
+         else map ((who ++ " age ") ++) ages
+  | Just who <- stripPrefix "siblings of " q =
+      let prefix = "sibling." ++ who ++ "."
+          sibs = sort [ drop (length prefix) s
+                      | s <- dbToSentences (readView st), prefix `isPrefixOf` s
+                      , '.' `notElem` drop (length prefix) s ]
+      in if null sibs then [who ++ " has no known siblings"]
+         else map ((who ++ " sibling ") ++) sibs
   | otherwise = ["chronicle: unknown query " ++ show q]
 
 -- helpers ----------------------------------------------------------------------

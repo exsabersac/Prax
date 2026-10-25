@@ -13,6 +13,7 @@ module Prax.Rumor
   , gossipPublic
   , heard
   , heardFrom
+  , neverHeard
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -73,3 +74,7 @@ heard who event = Exists [ Match (beliefAbout who event ++ ".heard.Src") ]
 heardFrom :: String -> String -> String -> Condition
 heardFrom who source event =
   Match (beliefAbout who event ++ ".heard." ++ source)
+
+-- | 条件：@who@ 从未经传闻得知 @event@（无任一 @.heard.*@ 叶）。
+neverHeard :: String -> String -> Condition
+neverHeard who event = Absent [ Match (beliefAbout who event ++ ".heard.Src") ]

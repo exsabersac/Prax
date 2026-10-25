@@ -460,7 +460,7 @@ Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
 - **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114 村庄形夹具（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
-- **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。
+- **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。关系条件于 v87/v98/v119（`isChildOf`/`isParentOf`/`isInLawOf` 等）。
 
 Tier 2 — 长时间跨度的代理内在性：
 - **项目 / 事业**（`Prax.Project`）*（完成 — v24；v52 部分集重构；v57 放弃）*。所存残余：类型综合（v104/v113 `part` 防呆增强）。合作项目于 v72 `endeavorCrew`/`enlist` 清偿。
@@ -478,7 +478,7 @@ Tier 2 — 长时间跨度的代理内在性：
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
-- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`available`/`availableActions`。CLI `prax worlds`（v110）。
+- **嵌入 API**（`Prax.Host`）*（完成 — v66；v71 增强；v109 批量查询/差分；v121 `availableMatching`）*：`step`/`stepExact`/`inject`/`queryFacts`/`queryView`/`queryMatching`/`factDelta`/`available`/`availableMatching`/`availableActions`。CLI `prax worlds`（v110）。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。
 
@@ -701,3 +701,28 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`esteemed.<observer>.<subject>.<label>` Match 条件。
 - **测**：ReputeSpec hasEsteemed。
+
+## v117 — Arc hasArc / lacksArc
+
+- **做了什么**：`hasArc` / `lacksArc` 条件钉死角色是否处于某弧阶段槽。
+- **测**：ArcSpec hasArc / lacksArc。
+
+## v118 — Rumor neverHeard
+
+- **做了什么**：`neverHeard` = Absent 任意 `.heard.Src` 叶（未听过某传闻）。
+- **测**：RumorSpec neverHeard。
+
+## v119 — Kin isInLawOf
+
+- **做了什么**：`isInLawOf` Match 派生 `inLaw.A.B` 路径。
+- **测**：KinSpec isInLawOf。
+
+## v120 — Chronicle arc-of / age-of / siblings-of
+
+- **做了什么**：`askChronicle` 扩展：弧阶段、年龄、兄弟姐妹列表。
+- **测**：ChronicleSpec arc-of / age-of / siblings-of。
+
+## v121 — Host availableMatching
+
+- **做了什么**：按针过滤可用菜单标签（`available` 的过滤对偶）。
+- **测**：HostSpec availableMatching。

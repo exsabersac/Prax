@@ -15,6 +15,7 @@ module Prax.Host
   , queryViewMatching
   , factDelta
   , available
+  , availableMatching
   , availableActions
   , queryChronicle
   , explainActor
@@ -35,6 +36,11 @@ import           Prax.Persist (saveState, loadState)
 -- | 当前角色可选动作标签（宿主菜单）。
 available :: PraxState -> String -> [String]
 available st actor = map gaLabel (possibleActions st actor)
+
+-- | 过滤菜单：标签含 @needle@ 的可用动作。
+availableMatching :: PraxState -> String -> String -> [String]
+availableMatching st actor needle =
+  filter (needle `isInfixOf`) (available st actor)
 
 -- | 完整落地动作列表（宿主需要绑定\/实例 id 时用）。
 availableActions :: PraxState -> String -> [GroundedAction]

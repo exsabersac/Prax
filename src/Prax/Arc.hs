@@ -9,6 +9,8 @@ module Prax.Arc
   ( arcSentence
   , arcOf
   , arcIs
+  , hasArc
+  , lacksArc
   , enterArc
   , leaveArc
   , adoptArc
@@ -45,3 +47,11 @@ adoptArc stage label
   | otherwise = action label
       [ Not ("Actor.arc!" ++ stage) ]
       [ Insert ("Actor.arc!" ++ stage) ]
+
+-- | 条件：@who@ 当前处于任一弧阶段（@who.arc@ 子树非空）。
+hasArc :: String -> Condition
+hasArc who = Match (arcOf who)
+
+-- | 条件：@who@ 当前无弧阶段（'hasArc' 的对偶）。
+lacksArc :: String -> Condition
+lacksArc who = Not (arcOf who)

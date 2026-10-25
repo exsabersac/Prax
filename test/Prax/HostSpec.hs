@@ -102,4 +102,9 @@ tests = testGroup "Prax.Host"
       assertBool "flag removed" ("flag.ada" `elem` removed)
       assertBool "keep stable" ("keep.x" `notElem` added && "keep.x" `notElem` removed)
 
+  , testCase "availableMatching filters menu by needle" $ do
+      let hits = availableMatching world "ada" "wave"
+      assertBool "wave" (any ("wave" `isInfixOf`) hits)
+      availableMatching world "ada" "nonexistent" @?= []
+
   ]

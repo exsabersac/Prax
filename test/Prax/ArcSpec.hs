@@ -18,6 +18,8 @@ tests = testGroup "Prax.Arc"
   [ testCase "arcSentence / arcIs build the expected fact" $ do
       arcSentence "bex" "hopeful" @?= "bex.arc!hopeful"
       arcIs "bex" "hopeful" @?= Match "bex.arc!hopeful"
+      hasArc "bex" @?= Match "bex.arc"
+      lacksArc "bex" @?= Not "bex.arc"
 
   , testCase "enterArc records the stage" $
       assertBool "stage recorded" ("bex.arc.hopeful" `elem` run [ enterArc "bex" "hopeful" ])

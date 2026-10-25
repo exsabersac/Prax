@@ -112,4 +112,17 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "debts of nobody"
         @?= ["nobody has no debts on record"]
 
+  , testCase "askChronicle arc-of / age-of / siblings-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "mia.arc!hopeful"
+                , Insert "age.mia!17"
+                , Insert "sibling.mia.pat"
+                , Insert "sibling.pat.mia" ]
+          -- sibling facts are typically derived; plant both directions in base for the query surface
+          stV = st
+      askChronicle stV "arc of mia" @?= ["mia arc hopeful"]
+      askChronicle stV "arc of bob" @?= ["bob has no arc stage"]
+      askChronicle stV "age of mia" @?= ["mia age 17"]
+      askChronicle stV "siblings of mia" @?= ["mia sibling pat"]
+
   ]

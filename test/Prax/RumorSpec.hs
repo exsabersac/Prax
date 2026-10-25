@@ -155,4 +155,7 @@ tests = testGroup "Prax.Rumor"
       assertBool "pip heard" (exists "pip.believes.tripped.tess.heard.sam" (db st1))
       assertBool "tess skipped as subject" (not (exists "tess.believes.tripped.tess.heard.sam" (db st1)))
 
+  , testCase "neverHeard is Absent of any .heard.Src leaf" $
+      neverHeard "mia" "stole.bread" @?= Absent [Match "mia.believes.stole.bread.heard.Src"]
+
   ]
