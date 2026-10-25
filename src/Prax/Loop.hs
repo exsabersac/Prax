@@ -6,6 +6,7 @@ module Prax.Loop
   ( advance
   , npcAct
   , runNpcTicks
+  , runPassive
   ) where
 
 import           Data.Maybe (listToMaybe)
@@ -75,4 +76,16 @@ runNpcTicks depth steps = go steps []
     go k acc st =
       let (actor, st1) = advance st
           (mga, st2)   = npcAct depth actor st1
+      in go (k - 1) (maybe acc (\ga -> gaLabel ga : acc) mga) st2
+
+-- | 与 'runNpcTicks' 同，但跳过名为 @idle@ 的角色（玩家旁观 / 被动夹具）。
+runPassive :: String -> Int -> Int -> PraxState -> ([String], PraxState)
+runPassive idle depth steps = go steps []
+  where
+    go 0 acc st = (reverse acc, st)
+    go k acc st =
+      let (actor, st1) = advance st
+          (mga, st2)
+            | charName actor == idle = (Nothing, st1)
+            | otherwise              = npcAct depth actor st1
       in go (k - 1) (maybe acc (\ga -> gaLabel ga : acc) mga) st2

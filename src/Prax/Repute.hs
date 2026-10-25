@@ -21,6 +21,7 @@ module Prax.Repute
   , esteemStanding
   , scornDesire
   , esteemDesire
+  , isNotorious
   ) where
 
 import           Prax.Db (isVariable, pathNames)
@@ -140,3 +141,7 @@ esteemDesire who label w
   | otherwise = Desire ("esteems-" ++ label)
       (Want [ Match ("esteemed." ++ who ++ ".T." ++ label)
             , Match ("regards." ++ who ++ ".T." ++ label) ] w)
+
+-- | 条件：@subject@ 在 @label@ 下恶名昭著。
+isNotorious :: String -> String -> Condition
+isNotorious subject label = Match ("notorious." ++ subject ++ "." ++ label)

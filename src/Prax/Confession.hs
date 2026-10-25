@@ -13,6 +13,7 @@ module Prax.Confession
   , atone
   , liftDeceit
   , absolveAsLeader
+  , hasMark
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -194,3 +195,9 @@ absolveAsLeader faction defeater pat incLabel label
         , Not ("regards.Actor." ++ confessor ++ "." ++ incLabel)
         , Not (defeater ++ "." ++ confessor) ]
         [ Insert (defeater ++ "." ++ confessor) ]
+
+-- | 条件：@who@ 对 @hearer@ 仍持有 @kind@ 标记下的 @mark@ 路径后缀（如 lied 标记残叶）。
+-- @markTail@ 为点分后缀，拼在 @who.<kind>.<hearer>.@ 之后。
+hasMark :: String -> String -> String -> String -> Condition
+hasMark who kind hearer markTail =
+  Match (who ++ "." ++ kind ++ "." ++ hearer ++ "." ++ markTail)

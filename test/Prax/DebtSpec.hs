@@ -144,6 +144,10 @@ tests = testGroup "Prax.Debt"
           (exists "ren.believes.violated.dell.defaulted.seen" (db st2))
     ]
 
+  , testCase "isOwed / hasCreditorClaim existentials" $ do
+      isOwed "bob" @?= Exists [ Match "debt.Creditor.bob.Content" ]
+      hasCreditorClaim "ana" @?= Exists [ Match "debt.ana.Debtor.Content" ]
+
   , testCase "forgive clears debt and obligation as creditor action" $ do
       let forgiveP = practice
             { practiceId = "mercy"

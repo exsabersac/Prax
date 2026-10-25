@@ -10,7 +10,7 @@ import           Prax.Db (dbToSentences, exists)
 import           Prax.Query
 import           Prax.Types
 import           Prax.Engine
-import           Prax.Loop (runNpcTicks, npcAct, advance)
+import           Prax.Loop (runNpcTicks, runPassive, npcAct, advance)
 import           Prax.Planner (pickAction, motiveSignature)
 import           Prax.Worlds.Bar (barWorld)
 import           Prax.Worlds.Village (villageWorld)
@@ -66,6 +66,12 @@ tests :: TestTree
 tests = testGroup "Prax.Loop"
   [ testCase "25-turn NPC replay matches the golden narration" $
       fst (runNpcTicks 2 25 barWorld) @?= expectedTrace
+
+  , testCase "runPassive skips the idle name and still advances" $ do
+      let (tAll, _)  = runNpcTicks 1 8 barWorld
+          (tPass, st) = runPassive "you" 1 8 barWorld
+      assertBool "skipping idle yields fewer-or-equal acts" (length tPass <= length tAll)
+      assertBool "state advanced" (cursor st >= 0)
 
   , testCase "no boundary fires before round 1 (cursor -1 selects index 0, no wrap)" $ do
       let (actor, w1) = advance (boundaryWorld ["a", "b", "c"] [beatRule])

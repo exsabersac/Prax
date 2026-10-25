@@ -29,6 +29,7 @@ module Prax.Project
   , enlist
   , unenlist
   , abandon
+  , part
   ) where
 
 import           Data.List (nub, (\\))
@@ -44,6 +45,13 @@ data Part = Part
   , partNeeds  :: [Condition]  -- ^ world resources; threshold gates
   , partYields :: [Outcome]
   }
+
+-- | 部件智能构造器：校验 @name@ 为单路径段（类型综合仍属研究层；此处仅防呆构造）。
+part :: String -> String -> [String] -> [Condition] -> [Outcome] -> Part
+part name label after needs yields
+  | null name || any (`elem` (".!" :: String)) name =
+      error ("part: name " ++ show name ++ " must be a single path segment")
+  | otherwise = Part name label after needs yields
 
 -- | 创作的事业：承接动作（对行动者）加上各部分，完成记入账本。
 endeavor :: String        -- ^ project id (a single path segment)

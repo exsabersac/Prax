@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -479,7 +479,10 @@ decoupledDepositTests = testGroup "the deposit is decoupled from the mark's own 
 
 guardTests :: TestTree
 guardTests = testGroup "guards"
-  [ testCase "confess rejects a dotted mark kind" $ do
+  [ testCase "hasMark builds who.kind.hearer.markTail Match" $
+      hasMark "mia" "lied" "pat" "stole.bread" @?= Match "mia.lied.pat.stole.bread"
+
+  , testCase "confess rejects a dotted mark kind" $ do
       r <- try (evaluate (length (show (confess "li.ed" "confessed" together pat pat "[Actor]: confess"))))
       assertBool "a dotted kind is an error" (isLeft (r :: Either ErrorCall Int))
 

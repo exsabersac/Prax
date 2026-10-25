@@ -636,3 +636,29 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle "mood of <who>"`。
 - **测**：ChronicleSpec mood-of。
+
+## v104 — Project part 智能构造
+
+- **做了什么**：`part` 校验单路径段名（类型综合仍研究；防呆构造）。
+- **测**：ProjectSpec part smart constructor rejects dotted names。
+
+## v105 — Debt isOwed / hasCreditorClaim
+
+- **做了什么**：债务人/债权人存在量词条件。
+- **测**：DebtSpec isOwed / hasCreditorClaim existentials。
+
+## v106 — Loop runPassive
+
+- **做了什么**：跳过具名 idle 角色的 NPC 回放（玩家旁观夹具）。
+- **测**：LoopSpec runPassive skips the idle name。
+
+## v107 — Repute isNotorious
+
+- **做了什么**：恶名昭著 Match 条件。
+- **测**：ReputeSpec isNotorious。
+
+## v108 — Confession hasMark
+
+- **做了什么**：标记残叶 Match 条件（who.kind.hearer.markTail）。
+- **测**：ConfessionSpec hasMark。
+

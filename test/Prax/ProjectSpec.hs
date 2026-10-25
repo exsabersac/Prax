@@ -135,8 +135,14 @@ erroredWith needle e = do
 
 tests :: TestTree
 tests = testGroup "Prax.Project"
-  [ -- Property 1: local reward carries the horizon (v24's theorem, on edges).
-    testCase "the horizon regression: a four-part chain pursued to completion at depth 2" $ do
+  [ testCase "part smart constructor rejects dotted names" $ do
+      r <- try (Exc.evaluate (partName (part "a.b" "do it" [] [] [])))
+      assertBool "dotted" (isLeft (r :: Either ErrorCall String))
+      let p0 = part "sweep" "[Actor]: sweep" [] [] [Insert "swept.Actor"]
+      partName p0 @?= "sweep"
+
+    -- Property 1: local reward carries the horizon (v24's theorem, on edges).
+  , testCase "the horizon regression: a four-part chain pursued to completion at depth 2" $ do
       let mia = miaFor "oven"
           step st = case pickAction 2 st mia of
                       Just ga -> performAction st ga

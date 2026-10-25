@@ -18,6 +18,8 @@ module Prax.Debt
   , owes
   , forgive
   , callIn
+  , isOwed
+  , hasCreditorClaim
   ) where
 
 import           Prax.Query (Condition (..))
@@ -72,3 +74,11 @@ callIn content breachLabel label
       , Not ("demanded.Actor.Debtor." ++ content) ]
       [ Insert ("demanded.Actor.Debtor." ++ content)
       , breach "Debtor" breachLabel ]
+
+-- | 条件：@debtor@ 欠任何人任何内容（存在量词于债权人与内容）。
+isOwed :: String -> Condition
+isOwed debtor = Exists [ Match ("debt.Creditor." ++ debtor ++ ".Content") ]
+
+-- | 条件：@creditor@ 对任何人持有债权。
+hasCreditorClaim :: String -> Condition
+hasCreditorClaim creditor = Exists [ Match ("debt." ++ creditor ++ ".Debtor.Content") ]
