@@ -31,6 +31,7 @@ import qualified Prax.Worlds.Play as Play
 import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
+import           Prax.Chronicle (askChronicle, summarize)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -63,6 +64,19 @@ runStress args = do
     else putStrLn ("  scenes:    " ++ show (Map.toList (srVisited r)) ++ " (runs visiting each)")
   putStrLn ("  dead ends: " ++ show (srDeadEnds r))
   putStrLn ("  no ending: " ++ show (srNoEnding r) ++ " / " ++ show (srRuns r) ++ " runs")
+
+-- @prax chronicle [world] [query...]@ — Tier-3 salience surface over beliefs/standing.
+-- With no query, prints the full summarize; otherwise joins remaining args as one askChronicle query.
+runChronicle :: [String] -> IO ()
+runChronicle args = do
+  let (worldArgs, queryArgs) = case args of
+        (w : qs) | w `elem` ["village","bar","feud","intrigue","play","dm","audience"]
+                 -> ([w], qs)
+        qs       -> ([], qs)
+      (_, world, _) = worldNamed worldArgs
+  if null queryArgs
+    then mapM_ putStrLn (summarize world)
+    else mapM_ putStrLn (askChronicle world (unwords queryArgs))
 
 -- @prax check [world]@ — static well-formedness report for a world.
 runCheck :: [String] -> IO ()
@@ -106,6 +120,7 @@ main = do
   case args of
     ("stress" : rest) -> runStress rest
     ("check" : rest)  -> runCheck rest
+    ("chronicle" : rest) -> runChronicle rest
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file
