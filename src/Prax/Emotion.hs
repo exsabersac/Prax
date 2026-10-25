@@ -16,7 +16,7 @@ module Prax.Emotion
     -- * Feeling with a lifetime (fades on its own onset's clock)
   , feelFor, feelTowardFor
     -- * Reading feelings (Conditions)
-  , feeling, feelingToward, lacksFeeling
+  , feeling, feelingToward, lacksFeeling, lacksFeelingToward
     -- * Making feelings visible to co-present others (ordinary .seen beliefs)
   , express, expressToward
     -- * Intensity (exclusive leaf under the feeling)
@@ -83,6 +83,11 @@ lacksFeeling who emotion = Not (feelsPath who emotion)
 feelingToward :: String -> String -> String -> Condition
 feelingToward who emotion target =
   Match (feelsPath who emotion ++ ".toward." ++ target)
+
+-- | 条件：@who@ 对 @target@ 未感到 @emotion@。
+lacksFeelingToward :: String -> String -> String -> Condition
+lacksFeelingToward who emotion target =
+  Not (feelsPath who emotion ++ ".toward." ++ target)
 
 -- | Single path-segment guard (emotion tokens must not contain @.@ / @!@).
 segOk :: String -> Bool

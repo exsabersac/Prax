@@ -22,6 +22,7 @@ module Prax.Host
   , queryChronicleMatching
   , explainActor
   , explainActorMatching
+  , castNames
   , livingCast
   , deadCast
   , livingMatching
@@ -131,6 +132,10 @@ explainActorMatching :: PraxState -> String -> String -> String -> [String]
 explainActorMatching = explainMatching
 
 -- | 当前存活阵容名（跳过 dead.*）。
+-- | 全阵容名（含死者）。
+castNames :: PraxState -> [String]
+castNames = map charName . characters
+
 livingCast :: PraxState -> [String]
 livingCast = map charName . livingCharacters
 

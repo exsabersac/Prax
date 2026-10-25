@@ -313,4 +313,7 @@ tests = testGroup "Prax.Emotion"
   , testCase "lacksFeeling is Not of feels path" $
       lacksFeeling "ada" "angry" @?= Not "ada.feels.angry"
 
+  , testCase "lacksFeelingToward is Not of toward path" $
+      lacksFeelingToward "ada" "angry" "bex" @?= Not "ada.feels.angry.toward.bex"
+
   ]

@@ -141,4 +141,10 @@ tests = testGroup "Prax.Host"
       deadCast stC @?= ["bob"]
       assertBool "ana living" ("ana" `elem` livingCast stC)
 
+  , testCase "castNames lists full cast including dead" $ do
+      let st = foldl (flip performOutcome) emptyState [ Insert "dead.bob" ]
+          stC = setCharacters (map character ["ana", "bob"]) st
+      assertBool "ana" ("ana" `elem` castNames stC)
+      assertBool "bob" ("bob" `elem` castNames stC)
+
   ]

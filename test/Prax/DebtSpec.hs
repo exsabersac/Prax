@@ -186,4 +186,7 @@ tests = testGroup "Prax.Debt"
   , testCase "neverOwed is Absent of any creditor/content debt leaf" $
       neverOwed "dell" @?= Absent [ Match "debt.Creditor.dell.Content" ]
 
+  , testCase "lacksCreditorClaim is Absent of creditor subtree" $
+      lacksCreditorClaim "ada" @?= Absent [ Match "debt.ada.Debtor.Content" ]
+
   ]
