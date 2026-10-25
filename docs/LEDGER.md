@@ -308,6 +308,16 @@
   `Nothing` 为永久。重复敲诈周期（购买期到期后勒索再榨取）无新逻辑——清偿 v30 所存连环敲诈项。
   可信度暴露为可检查状态而非仅打分形状。
 
+- **v55** — **编年史家 / 显著性查询：宿主只读表面**（`Prax.Chronicle`；`app/Main.hs`；`Prax.ChronicleSpec`）。
+  从不写入——扫描基库 `.seen`/`.heard.<src>` 信念与闭合视图 `regards`/`notorious`，产出事件记录、显著性阈值、
+  任务钩（`RegardHook`/`NotoriousHook`）与涌现问答（`askChronicle`）。CLI：`prax chronicle [world] [query…]`。
+  清偿 Tier-3 ⤷K 编年史家；嵌入 API（`step/inject/query`）仍等宿主。
+
+- **v56** — **站队的分数效果反应**（`Prax.Repute`；`Prax.ReputeSpec`）。`scornStanding`/`esteemStanding`
+  把派生 `regards` 门禁为一次性关系分调整（`adjustScore`），`scorned`/`esteemed` 一次守卫防反复；`scornDesire`
+  给 NPC 自动取 scorn 的命名欲望。与 `Prax.Reactions` 同风格——普通实践动作，世界须已注册 `coreFns`。
+  清偿 v21 / Tier-1 声誉所存「站队的分数效果反应仍未建」。
+
 ## 核心逻辑引擎
 
 | # | 特性 | 状态 | 来源 | 备注 |
@@ -379,6 +389,7 @@
 | 40 | 可序列化世界状态（存档/加载） | v11 | P§VI | `Prax.Persist`（事实 + cursor）；精确往返；游戏内 `s` 存档 + `resume` |
 | 41 | 丰富分支多角色剧集（内容） | v9 | P§XII | `Prax.Worlds.Intrigue`：谋杀、角色死亡（阵容移除）、背叛/忠诚/共谋结局、恋情。`Prax.Worlds.Play`（v12）重铸为 2 场景剧本 |
 | 43 | 阵容移除（死亡 / 驱逐） | v9 | P§VIII-D | `dead.<name>` 事实；`Prax.Types.livingCharacters`；循环/planner 跳过死者 |
+| 44 | 编年史家 / 显著性查询（宿主只读） | v55 | 沙箱 Tier-3 | `Prax.Chronicle`：从信念出处与派生站队生成事件摘要、显著性阈值、任务钩与 `askChronicle` 问答；CLI `prax chronicle`。只读——永不写入 DB |
 | 42 | 基于嵌入的 PWIM 自由文本玩家输入 | 需研究 | arXiv 2406.00942 | 外部模型依赖 |
 
 ## 待关闭的开放研究
@@ -400,7 +411,7 @@
 
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
-- **⤷K 声誉**（`Prax.Repute`）*（完成 — v21）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。站队的分数效果反应仍未建。
+- **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
 - **派系与成员**（`Prax.Faction`）*（完成 — v31，与亲属折叠到成员脊骨）*。所存：多重归属、职衔以外领导、地点作用域道义规范集、`factionStanding` 村庄接线。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31）*：`kinAxioms`、`wed`、`succession`。所存：持有继承、出生、作为驱动动作的离婚。
@@ -420,7 +431,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **日历与集会** *（完成 — v37）*。节庆内容与多同时集会仍出范围。
 
 Tier 3 — 宿主游戏边界：
-- **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答。
+- **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
 - **嵌入 API**：宿主引擎的 `step / inject / query` 表面；有宿主后再设计。
 
 奠基观察名单（高门槛；当前皆不紧急）：硬优先级层（上方）——等演示的软规范失败；增量视图维护（上方）——Tier 1 放大公理 × 阵容，故先测量再决定；局部性动作发现 / 细节层次——在有大世界可剖析前过早。明显 *非* 奠基：运行时 want 注入（#21）——门禁于事实的 want 可通过插入事实注入。

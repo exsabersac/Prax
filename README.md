@@ -112,7 +112,11 @@ affordance 的 **社会实践（social practices）**，以及按效用选择动
   把佐证变成阈值门禁事实——创作的世界参数（`notoriety "thief" 3` 意即「全村皆知」）——且它*驱动*
   行为：bob 的羞耻键于成为村中*臭名昭著*的贼，而非任一人的轻蔑。`Prax.Worlds.Village` 在此收束弧：
   偷窃 → 目击 → 谣言 → 三个 regards → 臭名把 bob 推向还面包 → 村子让步，记忆全程完好——且因为 planner
-  能看见重复时地位弹回，已赎罪的 bob 被*威慑*，余下跑程中不动补货摊位。
+  能看见重复时地位弹回，已赎罪的 bob 被*威慑*，余下跑程中不动补货摊位。**v56** 补上站队的分数效果反应：
+  `scornStanding`/`esteemStanding` 门禁于 `regards`，一次性调整关系分。
+- `Prax.Chronicle`（v55）— **编年史家 / 显著性查询**：Tier-3 宿主只读表面。扫描 `.seen`/`.heard.<src>`
+  信念与派生 `regards`/`notorious`，产出事件摘要、显著性阈值、任务钩与涌现问答（`askChronicle`）。
+  CLI：`prax chronicle [world] [query…]`。从不写入。
 - `Prax.Deceit`（v22）— **秘密与欺骗**：隐瞒是创作，非机制——`conceal` 是 want 无人相信某事迹
   （`Absent [Anyone believes <event>]`）；planner 前瞻已模拟 v19 目击存入，因此珍视秘密的 agent
   *经规划*避免被看见——等房间空落在效用之外，无需也未建潜行系统。谎言（`lie`）是无证据断言：
