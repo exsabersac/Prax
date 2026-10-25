@@ -155,4 +155,7 @@ tests = testGroup "Prax.Reactions"
 
   , testCase "everBreach aliases everViolated" $
       everBreach "bex" @?= everViolated "bex"
+
+  , testCase "neverBreach aliases neverViolated" $
+      neverBreach "bex" @?= neverViolated "bex"
   ]

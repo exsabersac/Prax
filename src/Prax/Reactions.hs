@@ -20,6 +20,7 @@ module Prax.Reactions
   , lacksViolation
   , everViolated
   , everBreach
+  , neverBreach
   , neverViolated
   ) where
 
@@ -75,6 +76,10 @@ everViolated who = Exists [ Match ("violated." ++ who ++ ".Norm") ]
 -- | 条件：@who@ 有任一违规叶（@everViolated@ 同体；对齐 breach 命名）。
 everBreach :: String -> Condition
 everBreach = everViolated
+
+-- | 条件：@who@ 无任何违规叶（@neverViolated@ 同体；对齐 breach 命名）。
+neverBreach :: String -> Condition
+neverBreach = neverViolated
 
 -- | 条件：@who@ 无任何违规叶（@everViolated@ 的 Absent 对偶）。
 neverViolated :: String -> Condition

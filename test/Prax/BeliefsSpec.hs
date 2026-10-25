@@ -65,4 +65,7 @@ tests = testGroup "Prax.Beliefs"
 
   , testCase "lacksBelief aliases neverBelieves" $
       lacksBelief "bex" @?= neverBelieves "bex"
+  
+  , testCase "hasBelief aliases everBelieves" $
+      hasBelief "bex" @?= everBelieves "bex"
   ]

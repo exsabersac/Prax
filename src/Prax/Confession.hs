@@ -14,9 +14,11 @@ module Prax.Confession
   , liftDeceit
   , absolveAsLeader
   , hasMark
+  , everMarked
   , neverMarked
   , lacksMark
   , isAbsolved
+  , everAbsolved
   , lacksAbsolved
   ) where
 
@@ -215,9 +217,17 @@ neverMarked who kind hearer markTail =
 lacksMark :: String -> String -> String -> String -> Condition
 lacksMark = neverMarked
 
+-- | 条件：@who@ 对 @hearer@ 持有该标记叶（@hasMark@ 同体；对齐 ever* 命名）。
+everMarked :: String -> String -> String -> String -> Condition
+everMarked = hasMark
+
 -- | 条件：@who@ 已获 @defeater@ 赦免叶（如 @recanted.<who>@）。
 isAbsolved :: String -> String -> Condition
 isAbsolved defeater who = Match (defeater ++ "." ++ who)
+
+-- | 条件：@who@ 已获 @defeater@ 赦免叶（@isAbsolved@ 同体；对齐 ever* 命名）。
+everAbsolved :: String -> String -> Condition
+everAbsolved = isAbsolved
 
 -- | 条件：@who@ 无 @defeater@ 赦免叶（@isAbsolved@ 的 Not 对偶）。
 lacksAbsolved :: String -> String -> Condition

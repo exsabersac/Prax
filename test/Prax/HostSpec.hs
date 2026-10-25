@@ -309,4 +309,20 @@ tests = testGroup "Prax.Host"
         ]
       projectsOf st "ben" @?= ["practice.hunt.ben.did.track"]
       projectsOf st "void" @?= []
+  
+  , testCase "demandedOf / festivalsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "demanded.ana.ben.favor"
+                , Insert "demanded.cai.ana.coin"
+                , Insert "festival.harvest"
+                , Insert "festival.midwinter"
+                , Insert "flag.x" ]
+      sort (demandedOf st "ana") @?=
+        [ "demanded.ana.ben.favor"
+        , "demanded.cai.ana.coin"
+        ]
+      demandedOf st "ben" @?= ["demanded.ana.ben.favor"]
+      demandedOf st "void" @?= []
+      festivalsOf st @?= ["festival.harvest", "festival.midwinter"]
+      festivalsOf emptyState @?= []
   ]

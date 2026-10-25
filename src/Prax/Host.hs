@@ -12,6 +12,7 @@
 -- v211：'traitsOf'/'moodsOf'/'bondsOf'/'kinOf'/'notoriousOf' 枚举性格/心境/纽带/亲属/恶名叶。
 -- v217：'esteemedOf'/'scornedOf'/'beliefsOf' 枚举赞誉/蔑视/信念叶。
 -- v225：'arcsOf'/'agesOf'/'projectsOf' 枚举弧阶段/年龄/事业叶。
+-- v231：'demandedOf'/'festivalsOf' 催收叶与节庆叶。
 module Prax.Host
   ( step
   , stepExact
@@ -57,6 +58,8 @@ module Prax.Host
   , arcsOf
   , agesOf
   , projectsOf
+  , demandedOf
+  , festivalsOf
   , checkpoint
   , restore
   ) where
@@ -401,6 +404,28 @@ projectsOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的催收叶（债权人或债务人；@demanded.<creditor>.<debtor>.<content>@）。
+demandedOf :: PraxState -> String -> [String]
+demandedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "demanded." `isPrefixOf` s
+  , let rest = drop (length ("demanded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中开放的节庆叶（@festival.*@）。
+festivalsOf :: PraxState -> [String]
+festivalsOf st =
+  sort [ s | s <- queryView st, "festival." `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

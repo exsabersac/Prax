@@ -449,6 +449,57 @@ tests = testGroup "Prax.ScheduleRule"
         assertBool "mood cleared" (not (exists "mood.ada!festive" (db stSob)))
         assertBool "sobered" (exists "sobered.ada" (db stSob))
         assertBool "sober once" (not (hasAct "sober" stSob))
+
+    , testCase "harvest petition arc: draft outside → present during → grant after" $ do
+        let pet = practice
+              { practiceId = "harvestPetition"
+              , roles = []
+              , actions =
+                  [ action "[Actor]: draft a petition"
+                      [ outsideFestival "harvest"
+                      , Not "petition.Actor!ready" ]
+                      [ Insert "petition.Actor!ready" ]
+                  , action "[Actor]: present the petition"
+                      [ duringFestival "harvest"
+                      , Match "petition.Actor!ready"
+                      , Not "petitioned.Actor" ]
+                      [ Insert "petitioned.Actor"
+                      , Delete "petition.Actor!ready" ]
+                  , action "[Actor]: receive a grant"
+                      [ outsideFestival "harvest"
+                      , Match "petitioned.Actor"
+                      , Not "granted.Actor" ]
+                      [ Insert "granted.Actor" ]
+                  ]
+              }
+            base = definePractices [pet]
+                     (scheduled [ festival "harvest" 3 1 [] ]
+                        [ Insert "practice.harvestPetition" ])
+            hasAct needle st =
+              any ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada")
+            doAct needle st =
+              case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st "ada") of
+                (ga : _) -> performAction st ga
+                []       -> error ("no action matching " ++ show needle)
+            st0 = base
+        assertBool "before: draft yes" (hasAct "draft" st0)
+        assertBool "before: present no" (not (hasAct "present" st0))
+        let stDraft = doAct "draft" st0
+        assertBool "ready" (exists "petition.ada!ready" (db stDraft))
+        assertBool "draft once" (not (hasAct "draft" stDraft))
+        let stOpen = iterate roundBoundary stDraft !! 3
+        assertBool "festival open" (exists "festival.harvest" (db stOpen))
+        assertBool "open: present yes" (hasAct "present" stOpen)
+        assertBool "open: grant no" (not (hasAct "receive a grant" stOpen))
+        let stPres = doAct "present" stOpen
+        assertBool "petitioned" (exists "petitioned.ada" (db stPres))
+        assertBool "ready cleared" (not (exists "petition.ada!ready" (db stPres)))
+        let stAfter = roundBoundary stPres
+        assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+        assertBool "after: grant yes" (hasAct "receive a grant" stAfter)
+        let stGrant = doAct "receive a grant" stAfter
+        assertBool "granted" (exists "granted.ada" (db stGrant))
+        assertBool "grant once" (not (hasAct "receive a grant" stGrant))
     ]
 
   , testGroup "pulse (period heartbeat, no auto-expiry)"

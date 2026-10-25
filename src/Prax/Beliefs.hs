@@ -21,6 +21,7 @@ module Prax.Beliefs
   , holdsBelief
   , disbelievesThat
   , everBelieves
+  , hasBelief
   , neverBelieves
   , lacksBelief
   ) where
@@ -71,3 +72,7 @@ neverBelieves who = Absent [ Match (who ++ ".believes.Issue") ]
 -- | 条件：@who@ 无任何信念叶（@neverBelieves@ 同体；对齐 lacks* 命名）。
 lacksBelief :: String -> Condition
 lacksBelief = neverBelieves
+
+-- | 条件：@who@ 持有任一信念叶（@everBelieves@ 同体；对齐 has* 命名）。
+hasBelief :: String -> Condition
+hasBelief = everBelieves
