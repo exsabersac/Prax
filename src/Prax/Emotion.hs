@@ -7,7 +7,7 @@
 -- 起始在触发动机处创作（'Prax.Rng.draw' 片段）；消退是起始上的创作寿命——'feelFor'\/'feelTowardFor'
 -- 经引擎到期队列断言（规格 @docs/specs/2026-07-16-v44-the-schedule.md@），因此每个情感从自身起始
 -- 存活自己的 @n@ 回合（v36 情节原则，无同步清扫）。情感是情节性的：它们消退；气质（特质、标记）
--- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。 强度（v60）：'feelAt'/'feelTowardAt' 在感受下挂排他 @intensity!N@ 叶；'intensityAtLeast' 供定价门禁——仍不收缩其他实践决策空间。
+-- 从不——特质使情感更可能，而非更久。 对他心可见（v59）：'express'/'expressToward' 经普通目击通道把当前感受存为同场者的 `.seen` 信念——自愿出示，非自动广播。 强度（v60）：'feelAt'/'feelTowardAt' 在感受下挂排他 @intensity!N@ 叶；'intensityAtLeast' 供定价门禁——仍不收缩其他实践决策空间。 带寿命强度（v63）：'feelAtFor'/'feelTowardAtFor' 经 'InsertFor' 断言感受，强度叶随感受子树撤回一并清除。
 module Prax.Emotion
   ( -- * An Ekman-based vocabulary (moved from Prax.Core; plain names)
     happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased
@@ -21,6 +21,8 @@ module Prax.Emotion
   , express, expressToward
     -- * Intensity (exclusive leaf under the feeling)
   , feelAt, feelTowardAt, intensityAtLeast, intensityTowardAtLeast
+    -- * Intensity with a lifetime (fades with the feeling)
+  , feelAtFor, feelTowardAtFor
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -130,3 +132,25 @@ intensityTowardAtLeast who emotion target n =
   [ Match (feelsPath who emotion ++ ".toward." ++ target ++ ".intensity!FeelIntensity")
   , Cmp Gte "FeelIntensity" (show n) ]
 
+-- | 带寿命的强度感受：感受经 'InsertFor' 在 @n@ 边界后到期；强度叶挂在感受下，
+-- 随引擎撤回感受子树一并清除（无需单独到期）。
+feelAtFor :: Int -> Int -> String -> String -> [Outcome]
+feelAtFor n intensity who emotion
+  | n < 1 = error ("feelAtFor: lifetime " ++ show n ++ " must be >= 1")
+  | intensity < 1 = error ("feelAtFor: intensity " ++ show intensity ++ " must be >= 1")
+  | not (segOk emotion) =
+      error ("feelAtFor: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise =
+      [ InsertFor n (feelsPath who emotion)
+      , Insert (feelsPath who emotion ++ ".intensity!" ++ show intensity) ]
+
+-- | 有目标的带寿命强度感受。
+feelTowardAtFor :: Int -> Int -> String -> String -> String -> [Outcome]
+feelTowardAtFor n intensity who emotion target
+  | n < 1 = error ("feelTowardAtFor: lifetime " ++ show n ++ " must be >= 1")
+  | intensity < 1 = error ("feelTowardAtFor: intensity " ++ show intensity ++ " must be >= 1")
+  | not (segOk emotion) =
+      error ("feelTowardAtFor: emotion " ++ show emotion ++ " must be a single path segment")
+  | otherwise =
+      [ InsertFor n (feelsPath who emotion ++ ".toward." ++ target)
+      , Insert (feelsPath who emotion ++ ".toward." ++ target ++ ".intensity!" ++ show intensity) ]

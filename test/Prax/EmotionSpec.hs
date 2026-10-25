@@ -213,6 +213,27 @@ tests = testGroup "Prax.Emotion"
         assertBool "zero rejected" (isLeft (r :: Either ErrorCall Int))
     ]
 
+  , testGroup "intensity with lifetime"
+    [ testCase "feelAtFor fades intensity with the feeling" $ do
+        let st0 = foldl (flip performOutcome) emptyState (feelAtFor 2 4 "ada" angry)
+        assertBool "feeling" (exists "ada.feels.angry" (db st0))
+        assertBool "intensity" (exists "ada.feels.angry.intensity!4" (db st0))
+        let st1 = roundBoundary st0
+        assertBool "still after one" (exists "ada.feels.angry.intensity!4" (db st1))
+        let st2 = roundBoundary st1
+        assertBool "feeling gone" (not (exists "ada.feels.angry" (db st2)))
+        assertBool "intensity gone with subtree" (not (exists "ada.feels.angry.intensity!4" (db st2)))
+
+    , testCase "feelTowardAtFor + reject bad args" $ do
+        let st = foldl (flip performOutcome) emptyState
+                  (feelTowardAtFor 1 2 "ada" afraid "carol")
+        assertBool "targeted" (exists "ada.feels.afraid.toward.carol.intensity!2" (db st))
+        r <- try (evaluate (length (show (feelAtFor 0 2 "ada" angry))))
+        assertBool "zero lifetime" (isLeft (r :: Either ErrorCall Int))
+        r2 <- try (evaluate (length (show (feelAtFor 2 0 "ada" angry))))
+        assertBool "zero intensity" (isLeft (r2 :: Either ErrorCall Int))
+    ]
+
   , testGroup "the invariant: feelings never gate action availability"
     [ testCase "candidateActions is identical with and without every feeling" $ do
         let vocabulary = [happy, sad, angry, afraid, disgusted, surprised, annoyed, pleased]
