@@ -31,6 +31,7 @@ import qualified Prax.Worlds.Play as Play
 import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
+import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
 import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf)
 
@@ -50,6 +51,7 @@ worldNamed ("dm" : _)       = ("the bar, and you direct it", Bar.barDirectorWorl
 worldNamed ("feud" : _)     = ("the feud (emergent sandbox)", Feud.feudWorld, Feud.playerName)
 worldNamed ("audience" : _) = ("the royal audience", Audience.audienceWorld, Audience.playerName)
 worldNamed ("village" : _)  = ("the village", Village.villageWorld, Village.playerName)
+worldNamed ("sandbox" : _)  = ("the harvest sandbox", Sandbox.sandboxWorld, Sandbox.playerName)
 worldNamed _                = ("a night at the bar", Bar.barWorld, Bar.playerName)
 
 -- @prax stress [world]@ — a QA report over many random all-AI playthroughs.
@@ -71,7 +73,7 @@ runStress args = do
 runChronicle :: [String] -> IO ()
 runChronicle args = do
   let (worldArgs, queryArgs) = case args of
-        (w : qs) | w `elem` ["village","bar","feud","intrigue","play","dm","audience"]
+        (w : qs) | w `elem` ["village","bar","feud","intrigue","play","dm","audience","sandbox"]
                  -> ([w], qs)
         qs       -> ([], qs)
       (_, world, _) = worldNamed worldArgs
@@ -320,6 +322,7 @@ runWorlds = mapM_ putStrLn
   , "intrigue   — Intrigue (Rome)"
   , "play       — the conspiracy (a play)"
   , "audience   — the royal audience"
+  , "sandbox    — harvest festival + factionStanding sandbox"
   ]
 
 -- @prax check [world]@ — static well-formedness report for a world.
@@ -364,7 +367,7 @@ usageText = unlines
   , ""
   , "Play a world:"
   , "  prax                      bar (default)"
-  , "  prax village|feud|intrigue|play|dm|audience"
+  , "  prax village|feud|intrigue|play|dm|audience|sandbox"
   , "  prax <world> resume       continue from prax.save"
   , ""
   , "Tools:"
@@ -520,6 +523,10 @@ play args = do
           ( "prax — the village"
           , "You are a villager. What you see — and what you miss — decides what you can do."
           , Village.villageWorld, Village.playerName )
+        ("sandbox" : _) ->
+          ( "prax — the harvest sandbox"
+          , "You are a mill hand. Learn, denounce at harvest, exile after — or watch the church try heresy."
+          , Sandbox.sandboxWorld, Sandbox.playerName )
         _ ->
           ( "prax — a night at the bar"
           , "You are 'you'. Others act on their own."

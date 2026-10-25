@@ -50,6 +50,7 @@ import qualified Prax.ScriptSpec
 import qualified Prax.Script.JsonSpec
 import qualified Prax.DirectorSpec
 import qualified Prax.VillageSpec
+import qualified Prax.SandboxSpec
 import qualified Prax.GateSpec
 import qualified Prax.AnalysisTableSpec
 
@@ -103,6 +104,7 @@ main = defaultMain $ testGroup "prax"
   , Prax.Script.JsonSpec.tests
   , Prax.DirectorSpec.tests
   , Prax.VillageSpec.tests
+  , Prax.SandboxSpec.tests
   , Prax.GateSpec.tests
   , Prax.AnalysisTableSpec.tests
   ]
