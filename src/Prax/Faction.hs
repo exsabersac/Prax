@@ -15,10 +15,11 @@ module Prax.Faction
   , appointLeader
   , deposeLeader
   , isLeader
+  , transferLeadership
   ) where
 
 import           Prax.Query (Condition (..))
-import           Prax.Types (Outcome (..), authoredPatClash)
+import           Prax.Types (Action, Outcome (..), action, authoredPatClash)
 import           Prax.Derive (Axiom, axiom)
 import           Prax.Db (isVariable, pathNames)
 
@@ -109,3 +110,14 @@ deposeLeader faction
 -- | 条件：@who@ 现为 @faction@ 首领。
 isLeader :: String -> String -> Condition
 isLeader who faction = Match ("leads." ++ faction ++ "!" ++ who)
+
+-- | 禅让：现任首领（Actor）将 @faction@ 领导权交给同派 @Heir@（须已有主成员）。
+transferLeadership :: String -> String -> Action
+transferLeadership faction label
+  | null faction || any (`elem` (".!" :: String)) faction =
+      error ("transferLeadership: faction " ++ show faction ++ " must be a single path segment")
+  | otherwise = action label
+      [ Match ("leads." ++ faction ++ "!Actor")
+      , Match ("member.Heir!" ++ faction)
+      , Neq "Heir" "Actor" ]
+      [ Insert ("leads." ++ faction ++ "!Heir") ]

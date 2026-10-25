@@ -351,4 +351,21 @@ tests = testGroup "Prax.Project"
       r <- try (Exc.evaluate (length (show (enlist "o.ven" "x"))))
       assertBool "dotted" (isLeft (r :: Either ErrorCall Int))
 
+
+  , testCase "unenlist removes partner from crew" $ do
+      let crewP = practice
+            { practiceId = "raid"
+            , roles = ["Owner"]
+            , actions = [ unenlist "raid" "[Actor]: dismiss [Partner] from raid" ]
+            }
+          st0 = definePractices [crewP]
+                  (foldl (flip performOutcome) emptyState
+                    [ Insert "practice.raid.ada"
+                    , Insert "practice.raid.ada.crew.ben" ])
+      assertBool "crewed" (exists "practice.raid.ada.crew.ben" (db st0))
+      let st1 = case filter (("dismiss" `isInfixOf`) . gaLabel) (possibleActions st0 "ada") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no unenlist"
+      assertBool "gone" (not (exists "practice.raid.ada.crew.ben" (db st1)))
+
   ]

@@ -467,7 +467,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **性格 → 意志**（`Prax.Persona`）*（完成 — v25）*：特质即行为估值；gale/eve 对照。
 - **⤷K 秘密与欺骗**（`Prax.Deceit`）*（完成 — v22）*：`conceal`/`lie`；构陷级联；被构陷者无救济。
 - **事实真相事件记录与洗清** *（拒绝，v25）*：历史仅经其留下的标记持久；真理恢复须经标记持有者——告白、证词——从不经咨询。告白半在 v32 到达；carol 仍无救济。
-- **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司角色仍存。
+- **告白与赦免**（`Prax.Confession`）*（完成 — v32；v58 公开告白；v64 补赎）*。累犯入性格于 v74 `bearFromRegard`、解除欺骗于 v80 `liftDeceit` 清偿；祭司/族长薄门禁于 v86 `absolveAsLeader` 清偿。
 - **敲诈**（`Prax.Blackmail`）*（完成 — v30；v49 升为 `Prax.Coerce` 实例；v54 寿命/连环）*。虚张/威胁到期/反敲诈于 v54 清偿。
 - **重复 / 连环敲诈** *（v30 存；v54 完成）*：`coComplianceLasts`。
 - **反事实放置（按 agent 世界观）** *（v23 存，诚实残余）*：预测仍在真实位置模拟，非预测者所信位置——完整按 agent 世界观整批延期。
@@ -531,4 +531,29 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：债权人催债——`demanded.Actor.Debtor.<content>` + `breach Debtor breachLabel`。
 - **测**：DebtSpec callIn marks demanded and breaches debtor。
+
+## v83 — Project unenlist
+
+- **做了什么**：Owner 将 Partner 移出 `@practice.<pid>.Actor.crew.Partner@`。
+- **测**：ProjectSpec unenlist removes partner from crew。
+
+## v84 — Faction transferLeadership
+
+- **做了什么**：现任首领禅让给同派 Heir（排他 `leads` 覆盖）。
+- **测**：FactionSpec transferLeadership。
+
+## v85 — Host queryChronicle / explainActor / livingCast
+
+- **做了什么**：薄封编年史查询、Inspect.explain、存活阵容名列表。
+- **测**：HostSpec queryChronicle and livingCast and explainActor。
+
+## v86 — Confession absolveAsLeader
+
+- **做了什么**：赦免另需 `@leads.<faction>!Actor@`（祭司/族长薄角色）。
+- **测**：ConfessionSpec absolveAsLeader requires faction leadership。
+
+## v87 — Kin 关系条件
+
+- **做了什么**：`isChildOf` / `isSiblingOf` / `isMarriedTo`。
+- **测**：KinSpec relation conditions。
 

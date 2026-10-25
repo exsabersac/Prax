@@ -1296,3 +1296,5 @@ recanted.eve: False
 > v73–v77：Kin `setAge`/`ageAtLeast`；Persona `bearFromRegard`；Rumor `gossipPublic`；Debt `forgive`；Chronicle `leads of` / `affiliates of`。
 
 > v78–v82：Kin `primogeniture`；Emotion `setMood`；Confession `liftDeceit`；Chronicle `debts of`；Debt `callIn`。
+
+> v83–v87：Project `unenlist`；Faction `transferLeadership`；Host chronicle/explain/livingCast；Confession `absolveAsLeader`；Kin 关系条件。

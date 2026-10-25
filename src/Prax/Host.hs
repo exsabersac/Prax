@@ -2,6 +2,7 @@
 -- @step@/@stepExact@ 推进一名行动者的选定动作；@inject@ 写入结果；
 -- @queryFacts@/@queryView@ 只读扫描；@available@/@availableActions@ 列菜单。
 -- 无新语义；有意保持符号、无外部模型。
+-- v85：'queryChronicle'/'explainActor' 薄封编年史与检查器。
 module Prax.Host
   ( step
   , stepExact
@@ -10,13 +11,18 @@ module Prax.Host
   , queryView
   , available
   , availableActions
+  , queryChronicle
+  , explainActor
+  , livingCast
   ) where
 
 import           Data.List (isInfixOf)
 
 import           Prax.Db (dbToSentences)
-import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), gaLabel, readView)
+import           Prax.Types (GroundedAction (..), Outcome, PraxState (..), Character (..), gaLabel, readView, livingCharacters)
 import           Prax.Engine (performAction, performOutcome, possibleActions)
+import           Prax.Chronicle (askChronicle)
+import           Prax.Inspect (explain)
 
 -- | 当前角色可选动作标签（宿主菜单）。
 available :: PraxState -> String -> [String]
@@ -55,3 +61,15 @@ queryFacts = dbToSentences . db
 -- | 只读：闭合视图句子（含派生）。
 queryView :: PraxState -> [String]
 queryView = dbToSentences . readView
+
+-- | 编年史查询（只读）：转发 'Prax.Chronicle.askChronicle'。
+queryChronicle :: PraxState -> String -> [String]
+queryChronicle = askChronicle
+
+-- | 动作检查器：对 @actor@ 解释标签含 @needle@ 的动作为何可用/阻塞。
+explainActor :: PraxState -> String -> String -> [String]
+explainActor = explain
+
+-- | 当前存活阵容名（跳过 dead.*）。
+livingCast :: PraxState -> [String]
+livingCast = map charName . livingCharacters

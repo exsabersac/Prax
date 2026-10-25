@@ -3,6 +3,7 @@
 -- 赦免者的耐心是他们所知道的（按 regarder、凭记忆永久、由八卦与坦白同样喂养）。
 -- v64：'penance' 课补赎义务；'atone' 履行并 discharge。
 -- v80：'liftDeceit' —— 告白后撤回听者对虚构事件的信念（解除欺骗）。
+-- v86：'absolveAsLeader' —— 派系首领门禁的赦免（祭司/族长薄角色）。
 module Prax.Confession
   ( confess
   , confessPublic
@@ -11,6 +12,7 @@ module Prax.Confession
   , penance
   , atone
   , liftDeceit
+  , absolveAsLeader
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -172,3 +174,23 @@ liftDeceit kind markPat depositPat label
     groundedVars = "Actor" : "H" : filter isVariable (pathNames markPat)
     ungroundable = [ v | v <- filter isVariable (pathNames depositPat)
                        , v `notElem` groundedVars ]
+
+-- | 首领赦免：同 'absolve'，另要求 Actor 现任 @faction@ 首领（@leads.<faction>!Actor@）。
+-- 供祭司/族长等职衔以外领导角色薄门禁，无需新实体类型。
+absolveAsLeader :: String -> String -> String -> String -> String -> Action
+absolveAsLeader faction defeater pat incLabel label
+  | not (segOk faction) =
+      error ("absolveAsLeader: faction " ++ show faction ++ " must be a single path segment")
+  | not (segOk defeater && segOk incLabel) =
+      error ("absolveAsLeader: defeater/label must be single path segments")
+  | (v : _) <- authoredPatClash [] (pathNames pat) =
+      error ("absolveAsLeader: event pattern reserves " ++ show v)
+  | otherwise = case filter isVariable (pathNames pat) of
+      [] -> error ("absolveAsLeader: event pattern names no confessor")
+      (confessor : _) -> action label
+        [ Match ("leads." ++ faction ++ "!Actor")
+        , Match (beliefAbout "Actor" pat ++ ".heard." ++ confessor)
+        , Neq "Actor" confessor
+        , Not ("regards.Actor." ++ confessor ++ "." ++ incLabel)
+        , Not (defeater ++ "." ++ confessor) ]
+        [ Insert (defeater ++ "." ++ confessor) ]

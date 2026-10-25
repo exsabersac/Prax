@@ -2,12 +2,14 @@ module Prax.FactionSpec (tests) where
 
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
+import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool)
 
 import           Prax.Db (exists)
-import           Prax.Types (PraxState, Outcome (..), emptyState, db, readView)
-import           Prax.Engine (performOutcome, setAxioms)
+import           Prax.Types
+import           Prax.Engine (performOutcome, setAxioms, definePractices,
+                              possibleActions, performAction)
 import           Prax.Faction
 
 -- Two houses: hall (ana, ben) and yard (cass). One shared axiom set (comrades).
@@ -161,5 +163,24 @@ tests = testGroup "Prax.Faction"
   , testCase "appointLeader rejects dotted names" $ do
       r <- try (evaluate (length (show (appointLeader "a.b" "hall"))))
       assertBool "dotted" (isLeft (r :: Either ErrorCall Int))
+
+
+  , testCase "transferLeadership hands exclusive lead to heir" $ do
+      let p = practice
+            { practiceId = "hall"
+            , roles = []
+            , actions = [ transferLeadership "hall" "[Actor]: name [Heir] as hall leader" ]
+            }
+          st0 = definePractices [p]
+                  (foldl (flip performOutcome) emptyState
+                    [ Insert "practice.hall"
+                    , Insert "leads.hall!ana"
+                    , Insert "member.ana!hall"
+                    , Insert "member.ben!hall" ])
+      let st1 = case filter (("name" `isInfixOf`) . gaLabel) (possibleActions st0 "ana") of
+                  (ga:_) -> performAction st0 ga
+                  [] -> error "no transfer"
+      assertBool "ben leads" (exists "leads.hall!ben" (db st1))
+      assertBool "ana gone" (not (exists "leads.hall!ana" (db st1)))
 
   ]

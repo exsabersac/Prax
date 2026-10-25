@@ -27,6 +27,7 @@ module Prax.Project
   , endeavor
   , endeavorCrew
   , enlist
+  , unenlist
   , abandon
   ) where
 
@@ -113,6 +114,7 @@ endeavor pid w ulabel gate parts
 -- 重新打开承接。与 ProjectSpec 已钉死的拆卸／进食周期契约相同——本组合子只是把
 -- 该拆卸暴露为可创作动作。
 -- v72：'endeavorCrew'/'enlist' —— 合作项目：部件门禁于 crew 事实，合伙人可推进同一 Owner 账本。
+-- v83：'unenlist' —— Owner 将 Partner 移出 crew。
 abandon :: String  -- ^ project id (single path segment)
         -> String  -- ^ action label
         -> Action
@@ -189,3 +191,14 @@ enlist pid label
       , Neq "Actor" "Partner"
       , Not ("practice." ++ pid ++ ".Actor.crew.Partner") ]
       [ Insert ("practice." ++ pid ++ ".Actor.crew.Partner") ]
+
+-- | Owner 将 Partner 移出本事业 crew。
+unenlist :: String -> String -> Action
+unenlist pid label
+  | null pid || any (`elem` (".!" :: String)) pid =
+      error ("unenlist: id " ++ show pid ++ " must be a single path segment")
+  | otherwise = action label
+      [ Match ("practice." ++ pid ++ ".Actor")
+      , Match ("practice." ++ pid ++ ".Actor.crew.Partner")
+      , Neq "Partner" "Actor" ]
+      [ Delete ("practice." ++ pid ++ ".Actor.crew.Partner") ]

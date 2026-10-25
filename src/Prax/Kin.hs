@@ -4,6 +4,7 @@
 -- v67：'bequeath' 持有物继承（镜像 succession 的死亡+亲子门禁，作用于 holds.<thing>!<holder>）。
 -- v73：'setAge'/'ageAtLeast' —— 排他年龄叶，供成年门禁与未来长子继承。
 -- v78：'primogeniture' —— 长子继承 office（无更年长存活兄弟姐妹）。
+-- v87：'isChildOf'/'isSiblingOf'/'isMarriedTo' 关系条件。
 module Prax.Kin
   ( kinAxioms
   , wed
@@ -15,6 +16,9 @@ module Prax.Kin
   , setAge
   , ageAtLeast
   , primogeniture
+  , isChildOf
+  , isSiblingOf
+  , isMarriedTo
   ) where
 
 import           Prax.Query (Condition (..), CmpOp (..))
@@ -123,3 +127,15 @@ primogeniture office
                , Cmp Gt "AgeS" "AgeA" ]
       ]
       [ Insert ("holds." ++ office ++ "!Actor") ]
+
+-- | 条件：@child@ 的父母为 @parent@。
+isChildOf :: String -> String -> Condition
+isChildOf child parent = Match ("parent." ++ parent ++ "." ++ child)
+
+-- | 条件：@a@ 与 @b@ 为兄弟姐妹（读派生 @sibling@）。
+isSiblingOf :: String -> String -> Condition
+isSiblingOf a b = Match ("sibling." ++ a ++ "." ++ b)
+
+-- | 条件：@a@ 与 @b@ 已婚（任一侧基事实经公理对称）。
+isMarriedTo :: String -> String -> Condition
+isMarriedTo a b = Match ("married." ++ a ++ "." ++ b)

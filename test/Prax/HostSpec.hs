@@ -2,13 +2,13 @@ module Prax.HostSpec (tests) where
 
 import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool)
+import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
 import           Prax.Types
 import           Prax.Query (Condition (..))
-import           Prax.Engine (definePractice, performOutcome)
-import           Prax.Host (step, stepExact, inject, queryFacts, queryView, available, availableActions)
+import           Prax.Engine (definePractice, setCharacters, performOutcome)
+import           Prax.Host
 
 waveP :: Practice
 waveP = practice
@@ -60,5 +60,17 @@ tests = testGroup "Prax.Host"
       assertBool "actions" (not (null (availableActions world "ada")))
       assertBool "facts" ("practice.wave" `elem` queryFacts world)
       assertBool "view" ("practice.wave" `elem` queryView world)
+
+
+  , testCase "queryChronicle and livingCast and explainActor" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "leads.hall!ana"
+                , Insert "dead.bob" ]
+          stC = setCharacters (map character ["ana", "bob", "cara"]) st
+      queryChronicle stC "leads of hall" @?= ["ana leads hall"]
+      assertBool "bob dead skipped" ("bob" `notElem` livingCast stC)
+      assertBool "ana live" ("ana" `elem` livingCast stC)
+      -- explainActor on empty practice world returns []
+      explainActor stC "ana" "nonexistent" @?= []
 
   ]

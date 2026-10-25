@@ -19,7 +19,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -653,5 +653,21 @@ tests = testGroup "Prax.Confession"
                   [] -> error "no lift"
       assertBool "belief gone" (not (exists "bea.believes.took.kit.gem" (db st1)))
       assertBool "mark remains" (exists "ada.lied.bea.took.kit.gem" (db st1))
+
+
+  , testCase "absolveAsLeader requires faction leadership" $ do
+      let absA = absolveAsLeader "church" "forgiven" "stole.Doer.X"
+                    "impenitent" "[Actor]: absolve [Doer] as church leader"
+          p = practice { practiceId = "nave", roles = [], actions = [absA] }
+          base = definePractices [p] emptyState
+          stLead = foldl (flip performOutcome) base
+                    [ Insert "practice.nave"
+                    , Insert "leads.church!priest"
+                    , Insert "priest.believes.stole.bob.loaf.heard.bob" ]
+          stNo = foldl (flip performOutcome) base
+                    [ Insert "practice.nave"
+                    , Insert "priest.believes.stole.bob.loaf.heard.bob" ]
+      assertBool "leader can" (any ("absolve" `isInfixOf`) (map gaLabel (possibleActions stLead "priest")))
+      assertBool "lay cannot" (not (any ("absolve" `isInfixOf`) (map gaLabel (possibleActions stNo "priest"))))
 
   ]
