@@ -25,6 +25,7 @@
 module Prax.Project
   ( Part (..)
   , endeavor
+  , abandon
   ) where
 
 import           Data.List (nub, (\\))
@@ -105,3 +106,16 @@ endeavor pid w ulabel gate parts
       , actions      = map partAction parts }
     pursuit = Desire ("pursues-" ++ pid)
                 (Want [ Match (inst ".Owner.did.P") ] w)
+
+-- | 放弃进行中的事业实例：子树删除 @practice.<pid>.Actor@（账本一并清除），
+-- 重新打开承接。与 ProjectSpec 已钉死的拆卸／进食周期契约相同——本组合子只是把
+-- 该拆卸暴露为可创作动作。
+abandon :: String  -- ^ project id (single path segment)
+        -> String  -- ^ action label
+        -> Action
+abandon pid label
+  | null pid || any (`elem` (".!" :: String)) pid =
+      error ("abandon: id " ++ show pid ++ " must be a single path segment")
+  | otherwise = action label
+      [ Match ("practice." ++ pid ++ ".Actor") ]
+      [ Delete ("practice." ++ pid ++ ".Actor") ]

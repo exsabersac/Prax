@@ -282,4 +282,32 @@ tests = testGroup "Prax.Project"
       errored (endeavor "oven" 1 "[Actor]: x" []
                  [ Part "x" "[Actor]: x" [] [ Match "PraxFoo.bar" ] [] ])
         >>= assertBool "the Prax namespace is reserved"
+
+  , testCase "abandon reaps the ledger subtree and re-opens undertake" $ do
+      let (take_, prac, pursuit) = ovenEnd
+          ab = abandon "oven" "[Actor]: abandon the oven"
+          yardP = practice
+            { practiceId = "yard", roles = ["R"]
+            , actions = [ take_, ab, action "[Actor]: Idle about" [] [] ] }
+          w = foldl (flip performOutcome) base
+                [ Insert "practice.yard.here", Insert "clay.available" ]
+          base = setDesires [ pursuit ]
+                   (setCharacters [ miaFor "oven", character "pat" ]
+                      (definePractices [prac, yardP] emptyState))
+          live = doAct "mia" "sweep the hearth"
+                   (doAct "mia" "resolve to build an oven" w)
+      assertBool "abandon offered while instance stands"
+        (offered "mia" "abandon the oven" live)
+      assertBool "pat cannot abandon mia's oven"
+        (not (offered "pat" "abandon the oven" live))
+      let torn = doAct "mia" "abandon the oven" live
+      assertBool "instance gone" (not (exists "practice.oven.mia" (db torn)))
+      assertBool "ledger reaped" (not (exists "practice.oven.mia.did.sweep" (db torn)))
+      assertBool "undertake re-opened" (offered "mia" "resolve to build an oven" torn)
+      assertBool "abandon not offered without instance"
+        (not (offered "mia" "abandon the oven" torn))
+
+  , testCase "abandon rejects a dotted project id" $ do
+      r <- try (Exc.evaluate (abandon "my.oven" "[Actor]: quit"))
+      assertBool "id must be a single path segment" (isLeft (r :: Either ErrorCall Action))
   ]
