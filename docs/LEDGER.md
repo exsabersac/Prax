@@ -458,7 +458,7 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果；v161 lacksNotorious/hasScorned/lacksScorned）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267** 加深为多步正义/审查弧、affiliate 负例与受害方叛逃溶解（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267–v268** 加深为多步正义/审查弧、affiliate 负例、受害方叛逃溶解与婚入获站队（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。关系条件于 v87/v98/v119（`isChildOf`/`isParentOf`/`isInLawOf` 等）。
 
@@ -1456,4 +1456,9 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：FactionSpec：受害方 carol 离开 mill 后，同派 dave 的 thief 站队溶解（`factionStanding` 接合受害方*当前*主成员）；信念基事实仍在。
 - **测**：FactionSpec village-shaped victim defection dissolves co-member regards。
+
+## v268 — 村庄形婚入磨坊获得站队
+
+- **做了什么**：FactionSpec：fran（guild）已信偷窃但无站队；`wed` 入 mill 后与受害方共成员，派生 thief 站队并打开 confront 门禁。跨 `Prax.Kin`/`Prax.Faction`；Village 金标准未动。
+- **测**：FactionSpec village-shaped wedding into mill grants factionStanding regard。
 

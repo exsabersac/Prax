@@ -12,6 +12,7 @@ import           Prax.Types
 import           Prax.Engine (performOutcome, setAxioms, definePractices,
                               possibleActions, performAction)
 import           Prax.Faction
+import           Prax.Kin (wed)
 
 -- Two houses: hall (ana, ben) and yard (cass). One shared axiom set (comrades).
 houses :: PraxState
@@ -407,5 +408,42 @@ tests = testGroup "Prax.Faction"
       assertBool "dave belief persists" (exists "dave.believes.stole.bob.carol" (db left))
       assertBool "carol now guild" (exists "member.carol!guild" (db left))
       assertBool "dave still mill" (exists "member.dave!mill" (db left))
+
+  -- Wedding into the victim's faction grants factionStanding: fran (guild)
+  -- believes the theft but derives nothing until wed into mill beside carol.
+  , testCase "village-shaped wedding into mill grants factionStanding regard" $ do
+      let justice = practice
+            { practiceId = "millWedJustice"
+            , roles = []
+            , actions =
+                [ action "[Actor]: confront the thief"
+                    [ Match "regards.Actor.bob.thief"
+                    , Not "confronted.Actor.bob" ]
+                    [ Insert "confronted.Actor.bob" ]
+                ]
+            }
+          before = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
+                     (definePractices [justice]
+                       (foldl (flip performOutcome) emptyState
+                          [ joins "bob" "guild", joins "carol" "mill"
+                          , joins "fran" "guild"
+                          , Insert "practice.millWedJustice"
+                          , Insert "fran.believes.stole.bob.carol"
+                          ]))
+          after = foldl (flip performOutcome) before (wed "fran" "mill" "carol")
+          hasAct who needle st =
+            any ((needle `isInfixOf`) . gaLabel) (possibleActions st who)
+          doAct who needle st =
+            case filter ((needle `isInfixOf`) . gaLabel) (possibleActions st who) of
+              (ga : _) -> performAction st ga
+              []       -> error ("no action " ++ show needle ++ " for " ++ who)
+      assertBool "before: no regard" (not (exists "regards.fran.bob.thief" (readView before)))
+      assertBool "before: cannot confront" (not (hasAct "fran" "confront" before))
+      assertBool "wed: fran now mill" (exists "member.fran!mill" (db after))
+      assertBool "wed: married" (exists "married.fran.carol" (db after))
+      assertBool "after: regard derives" (exists "regards.fran.bob.thief" (readView after))
+      assertBool "after: can confront" (hasAct "fran" "confront" after)
+      let stCon = doAct "fran" "confront" after
+      assertBool "confronted" (exists "confronted.fran.bob" (db stCon))
 
   ]
