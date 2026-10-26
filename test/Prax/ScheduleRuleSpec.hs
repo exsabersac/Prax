@@ -801,6 +801,9 @@ tests = testGroup "Prax.ScheduleRule"
     , testCase "pulse rejects a multi-segment name" $ do
         r <- try (evaluate (length (show (pulse "tax.day" 4 [Insert "x"]))))
         assertBool "dotted name" (isLeft (r :: Either ErrorCall Int))
+    , testCase "pulse rejects an empty name" $ do
+        r <- try (evaluate (length (show (pulse "" 4 [Insert "x"]))))
+        assertBool "empty name" (isLeft (r :: Either ErrorCall Int))
     ]
 
   , testGroup "sightRule (period-1 perception template)"

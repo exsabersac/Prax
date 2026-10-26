@@ -342,6 +342,10 @@ tests = testGroup "Prax.Project"
       erroredWith "unreachable" (endeavorCrew "oven" 1 "[Actor]: x" []
                  [ Part "a" "[Actor]: a" ["a"] [] [] ])
         >>= assertBool "crew self-edge unreachable"
+      erroredWith "unreachable" (endeavorCrew "oven" 1 "[Actor]: x" []
+                 [ Part "a" "[Actor]: a" ["b"] [] []
+                 , Part "b" "[Actor]: b" ["a"] [] [] ])
+        >>= assertBool "crew two-cycle unreachable"
       errored (endeavorCrew "oven" 1 "[Actor]: x" []
                  [ Part "x" "[Actor]: x" [] [ Match "PraxFoo.bar" ] [] ])
         >>= assertBool "crew Prax reserved"

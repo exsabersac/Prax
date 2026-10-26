@@ -2836,3 +2836,22 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`regards by` 返回观察者发出的 `regards.<who>.*` 原始叶，对齐 Host `regardsOf`；与既有目标侧 `regards of` / `regards toward` 并存；Spec 钉正例与空集。
+
+## v515 — Script.Json 其余 Condition 构造往返 Spec 钉
+
+- **做了什么**：Script.JsonSpec 钉 Eq/Count/Subquery/Or/Absent/Exists 的 JSON 往返。无新实践 / 无 want 改动。
+- **测**：Script.JsonSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v516 — Schedule pulse 空名响亮错误 Spec 钉
+
+- **做了什么**：ScheduleRuleSpec 钉 pulse 空名响亮报错（对偶点号名）。无新实践 / 无 want 改动。
+- **测**：ScheduleRuleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v517 — Project endeavorCrew 双环不可达 Spec 钉
+
+- **做了什么**：ProjectSpec 钉 endeavorCrew 双环部件不可达响亮报错（对偶 endeavor）。无新实践 / 无 want 改动。
+- **测**：ProjectSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

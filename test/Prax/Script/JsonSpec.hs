@@ -47,6 +47,17 @@ tests = testGroup "Prax.Script.Json"
       assertBool "bad calc"
         (decode "[{\"calc\":[\"R\",\"div\",\"A\",\"B\"]}]" == (Nothing :: Maybe [Condition]))
 
+  , testCase "Eq / Count / Subquery / Or / Absent / Exists round-trip through JSON" $ do
+      let cs =
+            [ Eq "A" "B"
+            , Count "N" "item.X"
+            , Subquery "S" ["find.X"] [ Match "ok.X" ]
+            , Or [ [ Match "a" ], [ Match "b" ] ]
+            , Absent [ Match "gone.X" ]
+            , Exists [ Match "here.X" ]
+            ]
+      decode (encode cs) @?= Just cs
+
   , testCase "a ForEach outcome round-trips through JSON" $ do
       let o = ForEach [ Match "at.Witness!P", Neq "Witness" "Actor" ]
                       [ Insert "Witness.believes.stole.Actor.loaf.seen" ]
