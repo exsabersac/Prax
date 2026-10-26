@@ -1794,4 +1794,40 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "fran exile yes" (hasAct "fran" "exile" stAfter)
       let stEx = doAct "fran" "exile" stAfter
       assertBool "exiled" (exists "exiled.bob" (db stEx))
+
+  , testCase "affiliate × rally: kyle affiliate-only cannot rally" $ do
+      -- factionStanding needs primary member; kyle affiliates mill but primary
+      -- guild → no regard/anger → market rally stays closed for kyle while dave
+      -- (primary mill, angry+notorious path) can rally.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db st0))
+      assertBool "kyle no regard"
+        (not (exists "regards.kyle.bob.thief" (readView st0)))
+      assertBool "notorious" (exists "notorious.bob.thief" (readView st0))
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      assertBool "kyle rally no" (not (hasAct "kyle" "rally" stM))
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+
+  , testCase "cry × exile: market cry and denounce/exile stay independent" $ do
+      -- market cry (regard) and harvest denounce→exile share no once-gate:
+      -- cry at market (tick 4), next harvest is tick 6 (harvest period 3).
+      let st0 = doAct "dave" "learn" sandboxWorld
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      let stH = iterate roundBoundary stCry !! 2
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      let stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "cried persists" (exists "cried.dave.bob" (db stEx))
   ]

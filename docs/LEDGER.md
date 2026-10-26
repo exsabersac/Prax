@@ -1935,3 +1935,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"notorious of "`，列出 `notorious.<who>.*`（对齐 Host `notoriousOf`；与 `"what is notorious"` 钩子摘要互补）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+## v351 — Sandbox 附属×集会负例（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 仅 affiliate 磨坊、主籍公会 → 无 regard/怒 → 市集 rally 关闭；dave（主籍+臭名路径）可 rally。无新实践 / 无 want 改动。
+- **测**：SandboxSpec affiliate × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v352 — Sandbox 市集喊冤×放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉市集 cry 与 harvest denounce→exile 无共享 once-gate：先 cry，下一轮 harvest 仍可 denounce/exile。无新实践 / 无 want 改动。
+- **测**：SandboxSpec cry × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
