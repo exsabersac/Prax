@@ -1,5 +1,6 @@
--- | MyTown M1 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
--- action.id、praxAct 整回合、Save/Load。@stack test --test-arguments '-p MyTown'@。
+-- | MyTown M1+M3 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06 / INV①–⑤，narrative 可读 trust）。
+-- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
 import           Data.List (isInfixOf, isPrefixOf, sort, (\\))
@@ -255,7 +256,7 @@ tests = testGroup "MyTown"
           mapM_ (\b -> assertBool ("no " ++ b)
                          (not (any (b `isInfixOf`) labels))) banned
 
-      , testCase "INV speak-up requires .seen (hearsay alone insufficient)" $ do
+      , testCase "INV③ speak-up requires .seen (hearsay alone insufficient)" $ do
           let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
               st1 = doAct "bob" "说破看见 you" st0
               st2 = doAct "bob" "前往 mill" st1
@@ -264,16 +265,131 @@ tests = testGroup "MyTown"
                            , "说破" `isInfixOf` gaLabel ga ]
           assertBool "dana cannot speak up without seeing" (null speak)
 
-      , testCase "INV eye suppressed when .seen" $ do
+      , testCase "INV⑤ eye suppressed when .seen" $ do
           let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
               eye = [ ga | ga <- possibleActions st0 "bob"
                          , "怀疑" `isInfixOf` gaLabel ga
                          , "you" `isInfixOf` gaLabel ga ]
           assertBool "eyewitness does not eye" (null eye)
 
-      , testCase "INV mill does not witness square help" $ do
+      , testCase "INV① mill does not witness square help" $ do
           let st = doAct "you" "公开帮助 carol" MyTown.myTownWorld
           assertBool "dana no seen" (not (factInfix st "dana.believes.helped.you.carol.seen"))
           assertBool "eve no seen" (not (factInfix st "eve.believes.helped.you.carol.seen"))
+
+      , testCase "INV④ trust deltas carry reason (helpedMe/sawHelp/heardRumor)" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you 帮助了 carol" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+              st4 = doAct "you" "前往 mill" st3
+              st5 = doAct "dana" "怀疑地打量 you" st4
+          assertBool "helpedMe reason"
+            (factInfix st0 "carol.relationship.you.trust.reason.helpedMe")
+          assertBool "sawHelp reason"
+            (factInfix st1 "bob.relationship.you.trust.reason.sawHelp")
+          assertBool "heardRumor reason"
+            (factInfix st5 "dana.relationship.you.trust.reason.heardRumor")
+
+      , -- INV⑥ 一弧一事（软卡）：主路径锚 didHelp.you.carol；NPC 互帮噪声不挡门禁。
+        testCase "INV⑥ soft: primary arc anchors on didHelp.you.carol" $ do
+          let st = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+          assertBool "primary didHelp" (factInfix st "didHelp.you.carol")
+      ]
+
+  , testGroup "MyTown.M3.ArcA"
+      [ testCase "A01 公开帮忙 → bob.seen + carol trust helpedMe；narrative 可读" $ do
+          s0 <- mustNew
+          (s1, r) <- actByLabel s0 "公开帮助 carol"
+          assertBool "didHelp" (factInfix (sessState s1) "didHelp.you.carol")
+          assertBool "bob.seen"
+            (factInfix (sessState s1) "bob.believes.helped.you.carol.seen")
+          assertBool "carol trust helpedMe"
+            (factInfix (sessState s1) "carol.relationship.you.trust.reason.helpedMe")
+          let narr = unlines (actNarrative r)
+          assertBool ("narrative has 帮忙: " ++ narr) ("公开帮助" `isInfixOf` narr)
+          assertBool ("narrative has 信任/helpedMe: " ++ narr)
+            ("信任" `isInfixOf` narr && "helpedMe" `isInfixOf` narr)
+          -- 不查 View 是否有 trust 字段
+          assertBool "View has no trust field surface"
+            (not ("trust" `isInfixOf` show (actView r)))
+
+      , testCase "A02 bob 说破 → spokeUp + bob trust sawHelp；narrative 可读" $ do
+          s0 <- mustNew
+          (s1, r) <- actByLabel s0 "公开帮助 carol"
+          -- 同回合 NPC：bob 说破（种子弧）
+          assertBool "spokeUp" (factInfix (sessState s1) "spokeUp.bob.you.carol")
+          assertBool "bob trust sawHelp"
+            (factInfix (sessState s1) "bob.relationship.you.trust.reason.sawHelp")
+          let narr = unlines (actNarrative r)
+          assertBool ("narrative has 说破: " ++ narr) ("说破" `isInfixOf` narr)
+          assertBool ("narrative has sawHelp 信任: " ++ narr)
+            ("sawHelp" `isInfixOf` narr && "信任" `isInfixOf` narr)
+
+      , testCase "A03 Session praxAct 主路径 narrative 含帮忙/信任" $ do
+          s0 <- mustNew
+          (_, r) <- actByLabel s0 "公开帮助 carol"
+          let narr = unlines (actNarrative r)
+          assertBool "action semantic 帮忙" ("公开帮助" `isInfixOf` narr || "帮助" `isInfixOf` narr)
+          assertBool "trust↑ narrative non-empty"
+            (any (\line -> "信任上调" `isInfixOf` line
+                         && ("helpedMe" `isInfixOf` line || "sawHelp" `isInfixOf` line))
+                 (actNarrative r))
+
+      , testCase "A04/INV① mill 无 .seen（事实；感知不靠 View.trust）" $ do
+          s0 <- mustNew
+          (s1, r) <- actByLabel s0 "公开帮助 carol"
+          assertBool "dana no seen"
+            (not (factInfix (sessState s1) "dana.believes.helped.you.carol.seen"))
+          assertBool "eve no seen"
+            (not (factInfix (sessState s1) "eve.believes.helped.you.carol.seen"))
+          assertBool "gale no seen"
+            (not (factInfix (sessState s1) "gale.believes.helped.you.carol.seen"))
+          -- A04 精神：叙事侧不依赖 View trust 字段
+          assertBool "no View.trust"
+            (not ("trust" `isInfixOf` show (actView r)))
+
+      , testCase "A05/INV③⑤ 无 seen 不能说破；转告不写 seen；有 seen 不怀疑" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+              speak = [ ga | ga <- possibleActions st3 "dana"
+                           , "说破" `isInfixOf` gaLabel ga ]
+              eyeBob = [ ga | ga <- possibleActions st0 "bob"
+                            , "怀疑" `isInfixOf` gaLabel ga
+                            , "you" `isInfixOf` gaLabel ga ]
+          assertBool "dana cannot speak up without .seen" (null speak)
+          assertBool "gossip does not write .seen"
+            (not (factInfix st3 "dana.believes.helped.you.carol.seen"))
+          assertBool "dana heard" (factInfix st3 "dana.believes.helped.you.carol.heard.bob")
+          assertBool "eyewitness does not eye" (null eyeBob)
+          -- Session 叙事侧：主路径 Act 后不靠 View.trust
+          s0 <- mustNew
+          (_, r) <- actByLabel s0 "公开帮助 carol"
+          assertBool "A05 narrative ok without View.trust"
+            (not ("trust" `isInfixOf` show (actView r))
+             && any ("信任" `isInfixOf`) (actNarrative r))
+
+      , testCase "A06/3b heard→怀疑→trust heardRumor（可跑可测）" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+              st4 = doAct "you" "前往 mill" st3
+              st5 = doAct "dana" "怀疑地打量 you" st4
+          assertBool "heard" (factInfix st3 "dana.believes.helped.you.carol.heard.bob")
+          assertBool "eyed" (factInfix st5 "eyed.dana.you")
+          assertBool "heardRumor reason"
+            (factInfix st5 "dana.relationship.you.trust.reason.heardRumor")
+          assertBool "trust score"
+            (factInfix st5 ("dana.relationship.you.trust.score."
+                            ++ show MyTown.trustHeardRumor))
+          -- 叙事 enrichment 对 heardRumor 的中文行（单元：diff 句子）
+          let before = []  -- only need after-style leaf present
+              lines_ = trustNarrativeLines before
+                         [ "dana.relationship.you.trust.reason.heardRumor" ]
+          assertBool ("heardRumor narrative: " ++ show lines_)
+            (any (\t -> "heardRumor" `isInfixOf` t && "怀疑" `isInfixOf` t) lines_)
       ]
   ]

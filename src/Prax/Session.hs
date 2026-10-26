@@ -36,17 +36,18 @@ module Prax.Session
   , worldTemplate
   , playerActions
   , ensurePlayerTurn
+  , trustNarrativeLines
   ) where
 
 import           Data.Aeson (FromJSON (..), ToJSON (..), object, withObject,
                              (.:), (.=), encode, eitherDecode)
 import qualified Data.ByteString.Lazy.Char8 as BLC
-import           Data.List (isPrefixOf)
+import           Data.List (isPrefixOf, stripPrefix)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (mapMaybe)
 import           Text.Read (readMaybe)
 
-import           Prax.Db (Val (..), dbToLabeledSentences)
+import           Prax.Db (Val (..), dbToLabeledSentences, dbToSentences)
 import           Prax.Sym (symName)
 import           Prax.Types
 import           Prax.Engine (performAction)
@@ -246,15 +247,17 @@ playerActions st actor = filter (not . isNoOp) (candidateActions st actor)
 
 -- | 玩家整回合：按 actionId 执行 + NPC 推进直至再轮到玩家。
 praxAct :: Session -> String -> Either String (Session, ActResult)
-praxAct sess@(Session wid player st) aid =
+praxAct (Session wid player st) aid =
   case filter ((== player) . charName) (characters st) of
     [] -> Left "Prax.Session.praxAct: player not in cast"
     (actor : _) ->
       case filter ((== aid) . encodeActionId) (playerActions st actor) of
         [] -> Left ("Prax.Session.praxAct: unknown actionId " ++ show aid)
         (ga : _) ->
-          let st1 = performAction st ga
-              (narr, st2) = runUntilPlayer player [gaLabel ga] st1
+          let before = dbToSentences (db st)
+              st1 = performAction st ga
+              (narr0, st2) = runUntilPlayer player [gaLabel ga] st1
+              narr = narr0 ++ trustNarrativeLines before (dbToSentences (db st2))
               sess' = Session wid player st2
               result = ActResult narr (praxView sess') (praxMenu sess')
           in Right (sess', result)
@@ -262,9 +265,45 @@ praxAct sess@(Session wid player st) aid =
 -- | 玩家稍候（对齐 CLI @m@）：不行动，让 NPC 推进直至再轮到玩家。
 praxWait :: Session -> Either String (Session, ActResult)
 praxWait (Session wid player st) =
-  let (narr, st2) = runUntilPlayer player [] st
+  let before = dbToSentences (db st)
+      (narr0, st2) = runUntilPlayer player [] st
+      narr = narr0 ++ trustNarrativeLines before (dbToSentences (db st2))
       sess' = Session wid player st2
   in Right (sess', ActResult narr (praxView sess') (praxMenu sess'))
+
+-- | 本回合新增的 @*.relationship.*.trust.reason.*@ → 中文可读行（不扩 View）。
+-- 供 Act.narrative 感知 trust/闲话后果；通用（不限 my-town）。
+trustNarrativeLines :: [String] -> [String] -> [String]
+trustNarrativeLines before after =
+  mapMaybe reasonLine [ s | s <- after, s `notElem` before ]
+  where
+    reasonLine s = case parseTrustReason s of
+      Just (who, target, reason) -> Just (renderTrust who target reason)
+      Nothing -> Nothing
+
+    parseTrustReason s =
+      case split1 ".relationship." s of
+        Just (who, rest) ->
+          case split1 ".trust.reason." rest of
+            Just (target, reason)
+              | all (not . null) [who, target, reason]
+                , all (/= '.') reason
+                -> Just (who, target, reason)
+            _ -> Nothing
+        Nothing -> Nothing
+
+    split1 sep xs =
+      let go pref rem_
+            | null rem_ = Nothing
+            | Just suf <- stripPrefix sep rem_ = Just (reverse pref, suf)
+            | otherwise = go (head rem_ : pref) (tail rem_)
+      in go [] xs
+
+    renderTrust who target reason = case reason of
+      "helpedMe"   -> who ++ " 对 " ++ target ++ " 的信任上调（helpedMe）"
+      "sawHelp"    -> who ++ " 对 " ++ target ++ " 的信任上调（sawHelp）"
+      "heardRumor" -> who ++ " 对 " ++ target ++ " 的信任下调（heardRumor／怀疑）"
+      _            -> who ++ " 对 " ++ target ++ " 的信任变化（" ++ reason ++ "）"
 
 -- | 从「玩家刚行动后 / 刚选择稍候」的状态推进 NPC，直到再次轮到玩家。
 -- 与 @app/Main.hs@ @loop@ 一致：每次先 'advance'，非玩家则 'npcAct'；
