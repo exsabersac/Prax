@@ -2954,3 +2954,14 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`affiliators of` 短语化次级归属人；Spec 钉 Host 名与 Chronicle 短语及空集。
+## v536 — Relevance eviction/atoms/bearing/producible Spec 钉
+
+- **做了什么**：RelevanceSpec 钉 evictionShadowNames、cookedOutcomeAtoms/cookedFnPool、bearingTemplates、producibleAtoms。无新实践 / 无 want 改动。
+- **测**：RelevanceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v537 — Stress runRandom ending/family Spec 钉
+
+- **做了什么**：StressSpec 钉 runRandom 在预置 ending/family 世界上的 endingReached 与 visit。无新实践 / 无 want 改动。
+- **测**：StressSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

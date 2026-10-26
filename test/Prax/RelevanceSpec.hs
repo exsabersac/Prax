@@ -11,6 +11,7 @@ import           Prax.Db (pathNames)
 import           Prax.Sym (intern)
 import           Prax.Types
 import           Prax.Worlds.Village (villageWorld)
+import           Prax.Cooked (cookOutcome)
 import           Prax.Relevance
 
 tests :: TestTree
@@ -278,4 +279,80 @@ tests = testGroup "Prax.Relevance"
                        (definePractices [eatery] emptyState)))
       Map.lookup "wants-food" (liveness st)
         @?= Just (GateCheck [[cookCondition (Match "hungry.Owner")]])
+
+  , testGroup "evictionShadowNames / cookedOutcomeAtoms / cookedFnPool"
+    [ testCase "evictionShadowNames plants PraxEvicted under each ! cut" $ do
+        -- Only the '!' cut plants a shadow ('.' does not).
+        let toks = map (\(n,o) -> (intern n, o))
+              [("at", Just '.'), ("Who", Just '!'), ("yard", Nothing)]
+        evictionShadowNames toks
+          @?= [[intern "at", intern "Who", intern "PraxEvicted"]]
+
+    , testCase "cookedOutcomeAtoms: Insert asserts; Delete retracts; excl adds shadows" $ do
+        let fns = Map.empty :: Map.Map String [CookedOutcome]
+            ins = cookedOutcomeAtoms fns [] (cookOutcome (Insert "a.b"))
+            del = cookedOutcomeAtoms fns [] (cookOutcome (Delete "a.b"))
+            excl = cookedOutcomeAtoms fns [] (cookOutcome (Insert "slot!v"))
+            wild = cookedOutcomeAtoms fns [] (cookOutcome (Call "ghost" []))
+        ins @?= Just ([[intern "a", intern "b"]], [])
+        del @?= Just ([], [[intern "a", intern "b"]])
+        case excl of
+          Just (pos, neg) -> do
+            pos @?= [[intern "slot", intern "v"]]
+            assertBool "shadows present" (not (null neg))
+          Nothing -> assertBool "excl known" False
+        wild @?= Nothing
+
+    , testCase "cookedFnPool flattens every case outcome; Call resolves through it" $ do
+        let st = defineFunctions
+              [ Function "mark" ["X"]
+                  [ FnCase [] [ Insert "marked.X" ] ] ]
+              emptyState
+            pool = cookedFnPool (cookedFns st)
+        Map.keys pool @?= ["mark"]
+        let Just outs = Map.lookup "mark" pool
+            resolved = cookedOutcomeAtoms pool [] (cookOutcome (Call "mark" ["bob"]))
+        resolved @?= Just ([[intern "marked", intern "X"]], [])
+        assertBool "case outs non-empty" (not (null outs))
+    ]
+
+  , testGroup "bearingTemplates / producibleAtoms"
+    [ testCase "bearingTemplates lists affordances whose atoms touch a cast want" $ do
+        let p0 = practice
+              { practiceId = "yard", roles = ["R"]
+              , actions =
+                  [ action "[Actor]: plant"
+                      [] [ Insert "seed.Actor" ]
+                  , action "[Actor]: wait"
+                      [] [ Insert "waited.Actor" ]
+                  ]
+              }
+            vocab = [ Desire "gardens" (Want [ Match "seed.Owner" ] 2) ]
+            c = (character "ada") { charDesires = ["gardens"] }
+            st = setDesires vocab
+                   (setCharacters [c]
+                      (definePractices [p0] emptyState))
+            tbl = bearingTemplates st
+        Map.lookup "ada" tbl @?= Just ["[Actor]: plant"]
+
+    , testCase "producibleAtoms unions inserts, db facts, and axiom heads; wild Call → Nothing" $ do
+        let p0 = practice
+              { practiceId = "yard", roles = ["R"]
+              , actions = [ action "[Actor]: plant" [] [ Insert "seed.Actor" ] ]
+              }
+            st = setAxioms [ axiom [ Match "seed.X" ] [ "grown.X" ] ]
+                   (definePractices [p0] emptyState)
+            Just atoms = producibleAtoms st
+            has s = map intern (pathNames s) `elem` atoms
+        assertBool "seed.Actor" (has "seed.Actor")
+        assertBool "grown.X head" (has "grown.X")
+        assertBool "turn!0 from db" (has "turn!0")
+        -- Unresolvable Call as an action outcome → Nothing (improves-everything).
+        let pWild = practice
+              { practiceId = "yard", roles = ["R"]
+              , actions = [ action "[Actor]: plant" [] [ Call "missing" [] ] ]
+              }
+            wild = definePractices [pWild] emptyState
+        producibleAtoms wild @?= Nothing
+    ]
   ]
