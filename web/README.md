@@ -1,42 +1,32 @@
 # 我的小镇 · 网页壳（MVP）
 
-对齐 Mach/match3 分层目标，但 **Day-1 不以 wasm 为门禁**。
+对齐 Mach/match3 分层；**Day-1 不以 wasm 为门禁**。当前用 JSON-lines 桥接真 `Prax.Session`。
 
 ## 结构
 
 ```
 web/
 ├── README.md
-├── serve.py          # 静态服；默认根目录 www/
-├── hs/               # 预留：日后 PraxWeb/Api + WebMain（JSFFI）
-└── www/              # 原生 JS 薄壳（无重框架）
-    ├── index.html
-    ├── styles.css
-    ├── main.js       # 接线：选人 → 菜单 → 行动 → 重绘
-    ├── api.js        # 会话客户端；MVP 走假数据，日后换 JSON 桥 / wasm
-    ├── scene.js
-    ├── menu.js
-    └── dialogue.js
+├── serve.py              # 静态 www/ + POST /api/session → prax-web-session
+├── hs/SessionMain.hs     # JSON-lines Session 桥
+└── www/                  # 原生 JS 薄壳
 ```
 
-## 会话契约（架构 v0.1 + 补丁）
+样例 JSON（Haskell 侧）：`examples/my-town-session.json`
 
-- `praxNew("my-town")` → `{ok,sessionId,worldId,playerId,view}`
-- `praxMenu(actorId)` → `{ok,actorId,actions[{id,label,kind,practiceId,actionId}]}`；`id` 为不透明 `ga:v1` canonical
-- `praxAct(actionId)` → 整玩家回合（含 NPC 推进）`{ok,accepted,narrative[],delta,view,menu}`
-- `praxSave` / `praxLoad`：M2
-- 错误：`{ok:false,error,message}`
-- UI 以返回的引擎快照为唯一真源；菜单只传 `action.id`，不传 label
+M2 验收锚：同文件；门禁重点 J03（同种子 actionId 集合）与 J05（Save/Load）。
 
 ## 本地预览
 
 ```sh
+stack build prax:exe:prax-web-session
 python3 web/serve.py          # http://127.0.0.1:8080
-python3 web/serve.py --port 9000
 ```
 
-## 非目标（本骨架）
+## 字段
 
-- 不编 wasm、不写 WebMain
-- 不把 practices / 信任叶逻辑写进 JS
-- 不提交 `dist/`（日后全量重建）
+以 `Prax.Session` ToJSON 为准：`actors[].here` 为地点 id；菜单用 `actionId`（ga:v1）；`praxAct` 整玩家回合。前端只做展示规范化。
+
+## 后置
+
+wasm / WebMain / `build.sh → dist`
