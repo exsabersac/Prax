@@ -732,5 +732,49 @@ tests = testGroup "Prax.Coerce"
         assertBool "isShortTempered" (satisfies (db st) [isShortTempered "ana"] Map.empty)
         assertBool "lacksAppetite on empty"
           (satisfies (db emptyState) [lacksAppetite "ana"] Map.empty)
+    , testCase "everThreatened / neverThreatened / everExtorted evaluate after threaten" $ do
+        assertBool "neverThreatened on clean"
+          (satisfies (db racketWorld) [neverThreatened "racket"] Map.empty)
+        assertBool "neverExtorted on clean"
+          (satisfies (db racketWorld) [neverExtorted "racket"] Map.empty)
+        let st = doAct "mob" "threaten" racketWorld
+        assertBool "everThreatened"
+          (satisfies (db st) [everThreatened "racket"] Map.empty)
+        assertBool "neverThreatened fails"
+          (not (satisfies (db st) [neverThreatened "racket"] Map.empty))
+        assertBool "everExtorted"
+          (satisfies (db st) [everExtorted "racket"] Map.empty)
+        assertBool "neverExtorted fails"
+          (not (satisfies (db st) [neverExtorted "racket"] Map.empty))
+    , testCase "everDefied / neverDefied evaluate after defy" $ do
+        assertBool "neverDefied on clean"
+          (satisfies (db racketWorld) [neverDefied "racket"] Map.empty)
+        let st = doAct "vic" "defy" (doAct "mob" "threaten" racketWorld)
+        assertBool "everDefied"
+          (satisfies (db st) [everDefied "racket"] Map.empty)
+        assertBool "neverDefied fails"
+          (not (satisfies (db st) [neverDefied "racket"] Map.empty))
+    , testCase "everComplied / neverComplied evaluate after favor" $ do
+        assertBool "neverComplied on clean"
+          (satisfies (db racketWorld) [neverComplied "racket"] Map.empty)
+        let st = doAct "vic" "favor" (doAct "mob" "threaten" racketWorld)
+        assertBool "everComplied"
+          (satisfies (db st) [everComplied "racket"] Map.empty)
+        assertBool "neverComplied fails"
+          (not (satisfies (db st) [neverComplied "racket"] Map.empty))
+    , testCase "isBranded / lacksBranded / isBrandedHeretic evaluate on Insert world" $ do
+        let st = foldl (flip performOutcome) emptyState
+              [ Insert "branded.bob"
+              , Insert "brandedHeretic.eve"
+              ]
+        assertBool "isBranded" (satisfies (db st) [isBranded "bob"] Map.empty)
+        assertBool "lacksBranded fails"
+          (not (satisfies (db st) [lacksBranded "bob"] Map.empty))
+        assertBool "isBrandedHeretic"
+          (satisfies (db st) [isBrandedHeretic "eve"] Map.empty)
+        assertBool "lacksBrandedHeretic fails"
+          (not (satisfies (db st) [lacksBrandedHeretic "eve"] Map.empty))
+        assertBool "lacksBranded on empty"
+          (satisfies (db emptyState) [lacksBranded "bob"] Map.empty)
     ]
   ]

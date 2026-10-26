@@ -2232,3 +2232,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec、DebtSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v401 — Coerce ever*/never* 威胁/违抗/服从/勒索世界求值
+
+- **做了什么**：Coerce Spec 钉 everThreatened/neverThreatened/everExtorted、everDefied/neverDefied、everComplied/neverComplied 在 threaten/defy/favor 动作后与净世界上的 satisfies 求值。无新实践 / 无 want 改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v402 — Coerce branded 世界求值 + Debt everOwed/neverDemanded/hasCreditorClaim
+
+- **做了什么**：Coerce Spec 钉 isBranded/lacksBranded/isBrandedHeretic Insert 世界求值；Debt Spec 钉 everOwed/neverDemanded/hasCreditorClaim/lacksCreditorClaim 世界求值。无新实践 / 无 want 改动。
+- **测**：CoerceSpec、DebtSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

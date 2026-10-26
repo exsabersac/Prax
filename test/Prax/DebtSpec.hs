@@ -254,4 +254,22 @@ tests = testGroup "Prax.Debt"
       assertBool "everDemanded after demand"
         (satisfies (db st) [everDemanded "dell"] Map.empty)
 
+  , testCase "everOwed / neverDemanded / hasCreditorClaim evaluate on worlds" $ do
+      assertBool "neverDemanded on empty"
+        (satisfies (db emptyState) [neverDemanded "dell"] Map.empty)
+      let owed = applyAll emptyState (owe "cora" "dell" "favor")
+      assertBool "everOwed while owed"
+        (satisfies (db owed) [everOwed "dell"] Map.empty)
+      assertBool "hasCreditorClaim"
+        (satisfies (db owed) [hasCreditorClaim "cora"] Map.empty)
+      assertBool "lacksCreditorClaim fails"
+        (not (satisfies (db owed) [lacksCreditorClaim "cora"] Map.empty))
+      assertBool "lacksCreditorClaim on empty"
+        (satisfies (db emptyState) [lacksCreditorClaim "cora"] Map.empty)
+      assertBool "neverDemanded on aloneWorld seed"
+        (satisfies (db aloneWorld) [neverDemanded "dell"] Map.empty)
+      let st = doAct "cora" "demand" aloneWorld
+      assertBool "neverDemanded fails after demand"
+        (not (satisfies (db st) [neverDemanded "dell"] Map.empty))
+
   ]
