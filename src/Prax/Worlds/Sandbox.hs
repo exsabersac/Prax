@@ -1,12 +1,15 @@
--- | 轻量可玩沙盒世界：把节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
--- 婚入磨坊 / 债务买沉默弧收成独立世界（非 Village）。Village / GoldenDrive
--- 金标准不动；本模块演示已有 API 的可跑闭环，并以轻量 wants 驱动 NPC 自选节拍。
+-- | 轻量可玩沙盒世界：节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
+-- 婚入磨坊 / 债务买沉默 / 双节庆错峰市集喊冤 / 受害方叛逃和解弧（非 Village）。
+-- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
   ( sandboxWorld
   , playerName
   , sandboxAxioms
   , sandboxDesires
+  , millJustice
+  , churchJustice
+  , iraJustice
   ) where
 
 import           Prax.Query (Condition (..))
@@ -15,7 +18,8 @@ import           Prax.Engine (definePractices, performOutcome, setAxioms, setCha
 import           Prax.Derive (Axiom)
 import           Prax.Deontic (obligedClose)
 import           Prax.Faction
-  ( joins, factionStanding, appointLeader, isMember, isLeader, lacksMember )
+  ( joins, factionStanding, appointLeader, isMember, isLeader, lacksMember
+  , affiliate )
 import           Prax.Kin (kinAxioms)
 import           Prax.Schedule (festival, duringFestival, outsideFestival)
 import           Prax.Debt (owe, settle, lacksOwes, owes)
@@ -52,6 +56,12 @@ sandboxDesires =
       (Want [ Match "debt.ira.bob.favor" ] 14)
   , Desire "breaks-silence-deal"
       (Want [ Match "revoked.Owner.bob" ] 10)
+  , Desire "cries-theft-at-market"
+      (Want [ Match "cried.Owner.bob" ] 7)
+  , Desire "flees-mill"
+      (Want [ Match "fled.Owner" ] 9)
+  , Desire "returns-to-mill"
+      (Want [ Match "reconciled.Owner" ] 11)
   ]
 
 millJustice :: [String]
@@ -63,9 +73,13 @@ churchJustice = ["seeks-heresy-truth", "punishes-heretic", "wants-exile-eve"]
 iraJustice :: [String]
 iraJustice = millJustice ++ ["breaks-silence-deal"]
 
--- 丰收节窗内控告 / 审查；窗外获知与放逐。
+-- 丰收节窗内控告 / 审查；窗外获知与放逐。周期 3、持续 1。
 harvestFestival :: ScheduleRule
 harvestFestival = festival "harvest" 3 1 []
+
+-- 市集节与丰收错峰：周期 4、持续 1 → 回合 3 仅 harvest，回合 4 仅 market。
+marketFestival :: ScheduleRule
+marketFestival = festival "market" 4 1 []
 
 -- 无动机者与玩家空档可等待，避免自由跑空白。
 presenceP :: Practice
@@ -174,20 +188,66 @@ millSilenceP = practice
       ]
   }
 
+-- | 市集喊冤：仅在 market 窗内、已站队磨坊成员可公开喊出贼名（与 harvest 控告错峰）。
+marketCryP :: Practice
+marketCryP = practice
+  { practiceId   = "marketCry"
+  , practiceName = "crying theft at the market booth"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: cry the theft at market"
+          [ duringFestival "market"
+          , Match "regards.Actor.bob.thief"
+          , Not "cried.Actor.bob" ]
+          [ Insert "cried.Actor.bob" ]
+      ]
+  }
+
+-- | 受害方叛逃与和解：离开磨坊溶解 factionStanding；再加入恢复站队与门禁。
+millAllegianceP :: Practice
+millAllegianceP = practice
+  { practiceId   = "millAllegiance"
+  , practiceName = "abandoning and returning to the mill"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: abandon the mill for the guild"
+          [ isMember "Actor" "mill"
+          , Match "Actor.believes.stole.bob.Actor"
+          , Not "fled.Actor" ]
+          [ Insert "fled.Actor"
+          , joins "Actor" "guild" ]
+      , action "[Actor]: return to the mill in reconciliation"
+          [ Match "fled.Actor"
+          , lacksMember "Actor" "mill"
+          , Not "reconciled.Actor" ]
+          [ Insert "reconciled.Actor"
+          , joins "Actor" "mill" ]
+      ]
+  }
+
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
 -- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
 -- ira is the mill witness bob tries to buy silence from (parallel to carol/dave justice).
+-- mill 证人另挂市集喊冤 want（权重 7 < 控告 8：harvest 窗优先控告，market 窗才喊）。
+millCry :: [String]
+millCry = millJustice ++ ["cries-theft-at-market"]
+
+iraCry :: [String]
+iraCry = iraJustice ++ ["cries-theft-at-market"]
+
 cast :: [Character]
 cast =
   [ character playerName
   , (character "bob")   { charDesires = ["buys-ira-silence"] }
-  , (character "carol") { charDesires = millJustice }
-  , (character "dave")  { charDesires = millJustice }
-  , (character "fran")  { charDesires = "joins-mill" : millJustice }
+  , (character "carol") { charDesires = millCry }
+  , (character "dave")  { charDesires = millCry }
+  , (character "fran")  { charDesires = "joins-mill" : millCry }
   , character "eve"
   , (character "gale")  { charDesires = churchJustice }
   , (character "priest") { charDesires = churchJustice }
-  , (character "ira")   { charDesires = iraJustice }
+  , (character "ira")   { charDesires = iraCry }
+  -- kyle：仅次级归属磨坊，主效忠 guild；信念种子不派生站队（affiliate 负例）。
+  , (character "kyle")  { charDesires = [] }
   ]
 
 setup :: [Outcome]
@@ -201,15 +261,20 @@ setup =
   , joins "gale" "church"
   , joins "priest" "church"
   , joins "ira" "mill"
+  , joins "kyle" "guild"
+  , affiliate "kyle" "mill"
   , appointLeader "priest" "church"
   , Insert "practice.presence"
   , Insert "practice.millTribunal"
   , Insert "practice.churchHeresy"
   , Insert "practice.millWed"
   , Insert "practice.millSilence"
-  -- Outsider negatives already hold belief without regard (demo seeds).
+  , Insert "practice.marketCry"
+  , Insert "practice.millAllegiance"
+  -- Outsider / affiliate negatives already hold belief without regard (demo seeds).
   , Insert "eve.believes.stole.bob.carol"
   , Insert "bob.believes.blasphemed.eve.gale"
+  , Insert "kyle.believes.stole.bob.carol"
   ]
 
 -- | 已调度、带 wants、可跑的沙盒世界。
@@ -222,5 +287,6 @@ sandboxWorld =
       setDesires sandboxDesires
         (setCharacters cast
           (definePractices
-             [presenceP, millTribunalP, churchHeresyP, millWedP, millSilenceP]
-             (setSchedule [harvestFestival] emptyState)))
+             [ presenceP, millTribunalP, churchHeresyP, millWedP, millSilenceP
+             , marketCryP, millAllegianceP ]
+             (setSchedule [harvestFestival, marketFestival] emptyState)))

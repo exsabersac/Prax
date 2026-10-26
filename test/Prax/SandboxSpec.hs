@@ -1,5 +1,5 @@
 -- | Prax.Worlds.Sandbox 可测闭环：磨坊审判、教会异端、婚入获站队、
--- 债务买沉默与磨坊正义交叉，以及轻量 wants 驱动的自选节拍。
+-- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解，以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
 
@@ -15,7 +15,8 @@ import           Prax.TypeCheck (typeCheck)
 import           Prax.Host (practiceNames, castNames, festivalsOf, membersOf, leadersOf)
 import           Prax.Planner (pickAction)
 import           Prax.Loop (advance, npcAct)
-import           Prax.Worlds.Sandbox (sandboxWorld, playerName, sandboxDesires)
+import           Prax.Worlds.Sandbox
+  ( sandboxWorld, playerName, sandboxDesires, millJustice )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -50,8 +51,8 @@ driveLabels n = go n
                     (charName actor ++ ": " ++ maybe "-" gaLabel mga)
                       : go (k - 1) st2
 
--- Captured from a live wants-driven run (v271). Pins harvest tribunal /
--- church heresy / mill-wedding / silence-debt beats until both exiles.
+-- Captured from a live wants-driven run (v272). Pins harvest tribunal /
+-- church heresy / mill-wedding / silence-debt / market cry / both exiles.
 sandboxGolden :: [String]
 sandboxGolden =
   [ "bob: bob: Wait a moment"
@@ -62,6 +63,7 @@ sandboxGolden =
   , "gale: gale: hear the blasphemy"
   , "priest: priest: hear the blasphemy"
   , "ira: ira: learn of the theft"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: buy ira's silence about the theft"
   , "carol: carol: Wait a moment"
   , "dave: dave: Wait a moment"
@@ -70,6 +72,7 @@ sandboxGolden =
   , "gale: gale: Wait a moment"
   , "priest: priest: Wait a moment"
   , "ira: ira: tear up bob's silence deal"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: Wait a moment"
   , "carol: carol: Wait a moment"
   , "dave: dave: Wait a moment"
@@ -78,6 +81,7 @@ sandboxGolden =
   , "gale: gale: Wait a moment"
   , "priest: priest: Wait a moment"
   , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: Wait a moment"
   , "carol: carol: denounce the thief"
   , "dave: dave: denounce the thief"
@@ -86,17 +90,19 @@ sandboxGolden =
   , "gale: gale: censure the heretic"
   , "priest: priest: censure the heretic"
   , "ira: ira: denounce the thief"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: Wait a moment"
   , "carol: carol: exile the thief"
-  , "dave: dave: Wait a moment"
-  , "fran: fran: Wait a moment"
+  , "dave: dave: cry the theft at market"
+  , "fran: fran: cry the theft at market"
   , "eve: eve: Wait a moment"
   , "gale: gale: Wait a moment"
   , "priest: priest: exile the heretic"
+  , "ira: ira: cry the theft at market"
   ]
 
 -- Focused silence arc trajectory: start after ira has learned (regard up),
--- then free-play until ira has revoked + denounced (or bob exiled path).
+-- then free-play through tear-up, harvest denounce, market cry, both exiles.
 silenceSeed :: PraxState
 silenceSeed = doAct "ira" "learn" sandboxWorld
 
@@ -110,6 +116,7 @@ sandboxSilenceGolden =
   , "gale: gale: hear the blasphemy"
   , "priest: priest: hear the blasphemy"
   , "ira: ira: tear up bob's silence deal"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: Wait a moment"
   , "carol: carol: Wait a moment"
   , "dave: dave: Wait a moment"
@@ -118,6 +125,7 @@ sandboxSilenceGolden =
   , "gale: gale: Wait a moment"
   , "priest: priest: Wait a moment"
   , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: Wait a moment"
   , "carol: carol: Wait a moment"
   , "dave: dave: Wait a moment"
@@ -126,6 +134,67 @@ sandboxSilenceGolden =
   , "gale: gale: Wait a moment"
   , "priest: priest: Wait a moment"
   , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: denounce the thief"
+  , "dave: dave: denounce the thief"
+  , "fran: fran: denounce the thief"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: censure the heretic"
+  , "priest: priest: censure the heretic"
+  , "ira: ira: denounce the thief"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: exile the thief"
+  , "dave: dave: cry the theft at market"
+  , "fran: fran: cry the theft at market"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: exile the heretic"
+  , "ira: ira: cry the theft at market"
+  ]
+
+-- Victim defection seed: dave already regards bob; carol holds flee+return wants
+-- (main cast keeps mill justice only — this seed overrides carol's desires).
+defectionSeed :: PraxState
+defectionSeed =
+  let st0 = doAct "dave" "learn" sandboxWorld
+      carol' = (actorOf "carol" st0)
+                 { charDesires = ["flees-mill", "returns-to-mill"]
+                                  ++ millJustice ++ ["cries-theft-at-market"] }
+  in st0 { characters =
+              [ if charName c == "carol" then carol' else c
+              | c <- characters st0 ] }
+
+sandboxDefectionGolden :: [String]
+sandboxDefectionGolden =
+  [ "bob: bob: Wait a moment"
+  , "carol: carol: learn of the theft"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: wed into the mill beside carol"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: hear the blasphemy"
+  , "priest: priest: hear the blasphemy"
+  , "ira: ira: learn of the theft"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: abandon the mill for the guild"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: learn of the theft"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: return to the mill in reconciliation"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
   , "bob: bob: Wait a moment"
   , "carol: carol: denounce the thief"
   , "dave: dave: denounce the thief"
@@ -147,14 +216,19 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "churchHeresy" ("churchHeresy" `elem` practiceNames sandboxWorld)
       assertBool "millWed" ("millWed" `elem` practiceNames sandboxWorld)
       assertBool "millSilence" ("millSilence" `elem` practiceNames sandboxWorld)
+      assertBool "marketCry" ("marketCry" `elem` practiceNames sandboxWorld)
+      assertBool "millAllegiance" ("millAllegiance" `elem` practiceNames sandboxWorld)
       assertBool "presence" ("presence" `elem` practiceNames sandboxWorld)
       assertBool "you mill" (playerName `elem` membersOf sandboxWorld "mill")
       assertBool "ira mill" ("ira" `elem` membersOf sandboxWorld "mill")
+      assertBool "kyle guild" ("kyle" `elem` membersOf sandboxWorld "guild")
       assertBool "priest leads" ("priest" `elem` leadersOf sandboxWorld "church")
       festivalsOf sandboxWorld @?= []
       assertBool "vocab loaded" (not (null sandboxDesires))
       assertBool "dave holds mill justice"
         ("seeks-theft-truth" `elem` charDesires (actorOf "dave" sandboxWorld))
+      assertBool "dave holds market cry"
+        ("cries-theft-at-market" `elem` charDesires (actorOf "dave" sandboxWorld))
       assertBool "priest holds church justice"
         ("punishes-heretic" `elem` charDesires (actorOf "priest" sandboxWorld))
       assertBool "fran holds joins-mill"
@@ -166,6 +240,8 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "player has no wants"
         (null (charDesires (actorOf playerName sandboxWorld))
          && null (charWants (actorOf playerName sandboxWorld)))
+      assertBool "kyle has no wants"
+        (null (charDesires (actorOf "kyle" sandboxWorld)))
 
   , testCase "mill tribunal: learn outside → denounce during → exile after" $ do
       let st0 = sandboxWorld
@@ -290,6 +366,76 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stOpen = iterate roundBoundary stPay !! 3
       assertBool "ira denounce after repay" (hasAct "ira" "denounce" stOpen)
 
+  , testCase "dual festival stagger: harvest denounce vs market cry" $ do
+      let stLearn = doAct "dave" "learn" sandboxWorld
+      assertBool "seed: neither festival" $
+        not (exists "festival.harvest" (db stLearn))
+        && not (exists "festival.market" (db stLearn))
+      assertBool "seed: no denounce" (not (hasAct "dave" "denounce" stLearn))
+      assertBool "seed: no cry" (not (hasAct "dave" "cry the theft" stLearn))
+      let stH = iterate roundBoundary stLearn !! 3
+      assertBool "t3: harvest open" (exists "festival.harvest" (db stH))
+      assertBool "t3: market closed" (not (exists "festival.market" (db stH)))
+      assertBool "t3: denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "t3: cry no" (not (hasAct "dave" "cry the theft" stH))
+      let stM = roundBoundary stH
+      assertBool "t4: harvest closed" (not (exists "festival.harvest" (db stM)))
+      assertBool "t4: market open" (exists "festival.market" (db stM))
+      assertBool "t4: denounce no" (not (hasAct "dave" "denounce" stM))
+      assertBool "t4: cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "t4: kyle (affiliate only) cry no"
+        (not (hasAct "kyle" "cry the theft" stM))
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "cry once" (not (hasAct "dave" "cry the theft" stCry))
+
+  , testCase "affiliate negative: kyle belief derives no regard / gates" $ do
+      let st0 = sandboxWorld
+      assertBool "kyle believes" (exists "kyle.believes.stole.bob.carol" (db st0))
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db st0))
+      assertBool "kyle primary guild" (exists "member.kyle!guild" (db st0))
+      assertBool "kyle no regard"
+        (not (exists "regards.kyle.bob.thief" (readView st0)))
+      assertBool "kyle cannot learn (not mill member)"
+        (not (hasAct "kyle" "learn" st0))
+      let stH = iterate roundBoundary st0 !! 3
+          stM = roundBoundary stH
+      assertBool "kyle cannot denounce at harvest"
+        (not (hasAct "kyle" "denounce" stH))
+      assertBool "kyle cannot cry at market"
+        (not (hasAct "kyle" "cry the theft" stM))
+
+  , testCase "victim defection dissolves regard; rejoin restores denounce gate" $ do
+      let stLearn = doAct "dave" "learn" sandboxWorld
+      assertBool "held: dave regards"
+        (exists "regards.dave.bob.thief" (readView stLearn))
+      -- carol must believe she is the victim before abandon is offered.
+      let stCarol = doAct "carol" "learn" stLearn
+      assertBool "carol can abandon"
+        (hasAct "carol" "abandon the mill" stCarol)
+      let stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "carol fled leaf" (exists "fled.carol" (db stFlee))
+      assertBool "carol now guild" (exists "member.carol!guild" (db stFlee))
+      assertBool "carol left mill" (not (exists "member.carol!mill" (db stFlee)))
+      assertBool "dave regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      assertBool "dave belief persists"
+        (exists "dave.believes.stole.bob.carol" (db stFlee))
+      let stH = iterate roundBoundary stFlee !! 3
+      assertBool "harvest open" (exists "festival.harvest" (db stH))
+      assertBool "dave cannot denounce without regard"
+        (not (hasAct "dave" "denounce" stH))
+      assertBool "carol can return" (hasAct "carol" "return to the mill" stH)
+      let stBack = doAct "carol" "return to the mill" stH
+      assertBool "reconciled" (exists "reconciled.carol" (db stBack))
+      assertBool "carol mill again" (exists "member.carol!mill" (db stBack))
+      assertBool "dave regard restored"
+        (exists "regards.dave.bob.thief" (readView stBack))
+      assertBool "denounce restored" (hasAct "dave" "denounce" stBack)
+      let stDen = doAct "dave" "denounce" stBack
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+
   , testCase "wants: pickAction chooses learn / hear / wed / buy at seed" $ do
       pickLabel "dave" sandboxWorld @?= Just "dave: learn of the theft"
       pickLabel "carol" sandboxWorld @?= Just "carol: learn of the theft"
@@ -299,6 +445,7 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       pickLabel "fran" sandboxWorld @?= Just "fran: wed into the mill beside carol"
       pickLabel "bob" sandboxWorld @?= Just "bob: Wait a moment"
       pickLabel "eve" sandboxWorld @?= Just "eve: Wait a moment"
+      pickLabel "kyle" sandboxWorld @?= Just "kyle: Wait a moment"
 
   , testCase "wants: after ira learns, bob buys silence" $ do
       let stLearn = doAct "ira" "learn" sandboxWorld
@@ -306,15 +453,15 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stBuy = doAct "bob" "buy" stLearn
       pickLabel "ira" stBuy @?= Just "ira: tear up bob's silence deal"
 
-  , testCase "wants: pickAction denounces during festival, exiles after" $ do
+  , testCase "wants: pickAction denounces during harvest, cries during market" $ do
       let stLearn = doAct "dave" "learn" sandboxWorld
       pickLabel "dave" stLearn @?= Just "dave: Wait a moment"
-      let stOpen = iterate roundBoundary stLearn !! 3
-      assertBool "festival open" (exists "festival.harvest" (db stOpen))
-      pickLabel "dave" stOpen @?= Just "dave: denounce the thief"
-      let stDen = doAct "dave" "denounce" stOpen
-          stAfter = roundBoundary stDen
-      pickLabel "dave" stAfter @?= Just "dave: exile the thief"
+      let stH = iterate roundBoundary stLearn !! 3
+      assertBool "harvest open" (exists "festival.harvest" (db stH))
+      pickLabel "dave" stH @?= Just "dave: denounce the thief"
+      let stM = roundBoundary stH
+      assertBool "market open" (exists "festival.market" (db stM))
+      pickLabel "dave" stM @?= Just "dave: cry the theft at market"
 
   , testCase "wants: priest pickAction hears → censures → exiles" $ do
       let stHear = doAct "priest" "hear" sandboxWorld
@@ -325,10 +472,26 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
           stAfter = roundBoundary stCen
       pickLabel "priest" stAfter @?= Just "priest: exile the heretic"
 
-  , testCase "wants free-play golden: 39 NPC turns through silence + both exiles" $
+  , testCase "wants: carol flee then return after learning (defectionSeed)" $ do
+      pickLabel "carol" defectionSeed @?= Just "carol: learn of the theft"
+      let stLearn = doAct "carol" "learn" defectionSeed
+      pickLabel "carol" stLearn @?= Just "carol: abandon the mill for the guild"
+      let stFlee = doAct "carol" "abandon the mill" stLearn
+      assertBool "regard gone"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      pickLabel "carol" stFlee @?= Just "carol: return to the mill in reconciliation"
+      let stBack = doAct "carol" "return to the mill" stFlee
+      assertBool "regard back"
+        (exists "regards.dave.bob.thief" (readView stBack))
+
+  , testCase "wants free-play golden: 44 NPC turns through silence + market cry + both exiles" $
       driveLabels (length sandboxGolden) sandboxWorld @?= sandboxGolden
 
-  , testCase "wants silence golden: 32 NPC turns from ira-learned through denounce" $
+  , testCase "wants silence golden: 44 NPC turns from ira-learned through market cry + exiles" $
       driveLabels (length sandboxSilenceGolden) silenceSeed
         @?= sandboxSilenceGolden
+
+  , testCase "wants defection golden: 35 NPC turns flee → return → denounce restored" $
+      driveLabels (length sandboxDefectionGolden) defectionSeed
+        @?= sandboxDefectionGolden
   ]

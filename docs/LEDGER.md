@@ -1482,3 +1482,16 @@ Tier 3 — 宿主游戏边界：
 
 
 
+
+## v272 — Sandbox 双节庆错峰门禁（harvest × market）
+
+- **做了什么**：`Prax.Worlds.Sandbox` 并挂 `festival "harvest" 3 1` 与 `festival "market" 4 1`（回合 3 仅丰收、回合 4 仅市集）；新实践 `marketCry`：已 `factionStanding` 站队的磨坊成员仅在 market 窗内可「市集喊冤」；欲望 `cries-theft-at-market`（权重 7 < 控告 8，故 harvest 窗优先控告）。主金与沉默金轨迹扩展纳入喊冤节拍。加分：次级归属角色 `kyle`（`affiliate` mill、主效忠 guild、已信偷窃）作可玩负例——无站队、无控告/喊冤。
+- **测**：SandboxSpec 错峰逐步（t3 denounce / t4 cry）；kyle affiliate 负例；pickAction harvest vs market；44 步主金 + 44 步沉默金。原磨坊/教会/婚入/沉默弧仍绿。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+
+## v273 — Sandbox 受害方叛逃溶解站队后再入派和解
+
+- **做了什么**：新实践 `millAllegiance`：受害方（已信 `stole.bob.Actor`）可「弃磨坊投公会」→ `joins` 覆盖主成员，同派 `factionStanding` 站队溶解（信念基事实仍在），控告门禁失效；再「和解归磨坊」→ 站队与控告恢复。欲望 `flees-mill` / `returns-to-mill`；主阵容 carol 不挂叛逃 want（免搅主金），`defectionSeed` 覆盖其欲望后自由跑。
+- **测**：SandboxSpec 逐步叛逃溶解 / 归队恢复；pickAction 弃→归；35 步 `sandboxDefectionGolden`。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+

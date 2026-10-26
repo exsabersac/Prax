@@ -51,7 +51,7 @@ worldNamed ("dm" : _)       = ("the bar, and you direct it", Bar.barDirectorWorl
 worldNamed ("feud" : _)     = ("the feud (emergent sandbox)", Feud.feudWorld, Feud.playerName)
 worldNamed ("audience" : _) = ("the royal audience", Audience.audienceWorld, Audience.playerName)
 worldNamed ("village" : _)  = ("the village", Village.villageWorld, Village.playerName)
-worldNamed ("sandbox" : _)  = ("the harvest sandbox", Sandbox.sandboxWorld, Sandbox.playerName)
+worldNamed ("sandbox" : _)  = ("the harvest/market sandbox", Sandbox.sandboxWorld, Sandbox.playerName)
 worldNamed _                = ("a night at the bar", Bar.barWorld, Bar.playerName)
 
 -- @prax stress [world]@ — a QA report over many random all-AI playthroughs.
@@ -322,7 +322,7 @@ runWorlds = mapM_ putStrLn
   , "intrigue   — Intrigue (Rome)"
   , "play       — the conspiracy (a play)"
   , "audience   — the royal audience"
-  , "sandbox    — harvest festival + factionStanding + silence-debt sandbox"
+  , "sandbox    — harvest/market festivals + factionStanding + silence/defection sandbox"
   ]
 
 -- @prax check [world]@ — static well-formedness report for a world.
@@ -524,7 +524,7 @@ play args = do
           , "You are a villager. What you see — and what you miss — decides what you can do."
           , Village.villageWorld, Village.playerName )
         ("sandbox" : _) ->
-          ( "prax — the harvest sandbox"
+          ( "prax — the harvest/market sandbox"
           , "You are a mill hand. Learn, denounce at harvest, exile after — or watch the church try heresy."
           , Sandbox.sandboxWorld, Sandbox.playerName )
         _ ->
