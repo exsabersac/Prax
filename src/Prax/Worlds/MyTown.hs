@@ -170,7 +170,9 @@ myTownWorld =
                      , Match "practice.world.world.at.carol!mill" ] 3
               , Want [ Match "eyed.carol.gale" ] 5
                 -- M6n：Village 式二传谣 → bob（≥5，优先于 mill=3；对称 bob→dana）
-              , Want [ Match "bob.believes.helped.gale.dana.heard.carol" ] 5 ] }
+              , Want [ Match "bob.believes.helped.gale.dana.heard.carol" ] 5
+                -- M6v：Village 式二源听闻 → eve（you→carol；≥5，对称 M6r bob→carol）
+              , Want [ Match "eve.believes.helped.you.carol.heard.carol" ] 5 ] }
       , (character "dana")
           { charWants =
               [ Want [ Match "practice.world.world.at.dana!mill" ] 1
