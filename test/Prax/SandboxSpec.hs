@@ -2537,4 +2537,32 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
 
+
+  , testCase "squeeze × church silence: mill squeeze open; priest debt blocks censure" $ do
+      -- coerceSeed mill squeeze stays while bob buys priest church-silence.
+      let st0 = activateChurchBob coerceSeed
+          stHear = doAct "priest" "hear of bob" st0
+          stBuy = doAct "bob" "buy priest" stHear
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      assertBool "squeeze at harvest" (hasAct "dave" "squeeze bob" stH)
+      let stSq = doAct "dave" "squeeze bob" stH
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+
+  , testCase "affiliate × church silence: kyle cannot censure; priest debt blocks priest" $ do
+      -- kyle affiliate-only stays closed; bob buys priest silence blocks censure.
+      let st0 = inquisitSeed
+          stBuy = doAct "bob" "buy priest" st0
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db stBuy))
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "kyle censure no" (not (hasAct "kyle" "censure bob" stH))
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+
   ]

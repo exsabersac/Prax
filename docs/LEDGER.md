@@ -2184,3 +2184,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v393 — Sandbox 胁迫×教会沉默 + 附属×教会沉默（钉既有门禁）
+
+- **做了什么**：Spec 钉 mill squeeze 与 priest 债挡 censure 并行；钉 kyle 无 censure 且 priest 债挡. 无新实践 / 无 want 改动。
+- **测**：SandboxSpec squeeze × church silence、affiliate × church silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v394 — Coerce recanted/fled/hungry/rallied + Chronicle beliefs/projects/bonds 对偶
+
+- **做了什么**：Coerce Spec 钉 isRecanted/isFled/isHungry/isRallied 世界求值；Chronicle Spec 钉 beliefs/projects/bonds 与 Host 对偶。无新实践 / 无 want 改动。
+- **测**：CoerceSpec、ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
