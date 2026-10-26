@@ -1959,3 +1959,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec affiliate × exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v355 — Sandbox 婚入×游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 婚入磨坊后 regard 派生，烙印路径下 parade 打开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v356 — Sandbox 教会胁迫×磨坊游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisitSeed 教会 squeeze 与磨坊 brand→parade 无共享 once-gate。无新实践 / 无 want 改动。
+- **测**：SandboxSpec inquisit × parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

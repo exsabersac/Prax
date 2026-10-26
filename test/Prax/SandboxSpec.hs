@@ -1867,4 +1867,45 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "kyle exile no" (not (hasAct "kyle" "exile" stAfter))
       let stEx = doAct "dave" "exile" stAfter
       assertBool "exiled" (exists "exiled.bob" (db stEx))
+
+  , testCase "wed × parade: fran wedding unlocks mill regard then parade" $ do
+      -- fran believes (guild) → no regard → no parade; brand path + activateParade
+      -- then wed → regard → fran parade opens (independent of dave learn alone).
+      let stBel = performOutcome (Insert "fran.believes.stole.bob.carol") coerceSeed
+          stSq = doAct "dave" "squeeze bob" stBel
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "before: no fran regard"
+        (not (exists "regards.fran.bob.thief" (readView stP)))
+      assertBool "before: fran parade no" (not (hasAct "fran" "parade bob" stP))
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stWed = doAct "fran" "wed into the mill" stP
+      assertBool "after: fran regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      assertBool "fran parade yes" (hasAct "fran" "parade bob" stWed)
+      let stPar = doAct "fran" "parade bob" stWed
+      assertBool "paraded" (exists "paraded.fran.bob" (db stPar))
+
+  , testCase "inquisit × parade: church squeeze and mill parade stay independent" $ do
+      -- inquisitSeed priest squeeze + mill brand→parade: church coerce and mill
+      -- parade share no once-gate.
+      let st0 = doAct "dave" "learn" inquisitSeed
+          stSqM = doAct "dave" "squeeze bob" (activateSqueeze st0)
+          stConf = doAct "bob" "confess the theft" stSqM
+          stSqM2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSqM2
+          stP = activateParade stBrand
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" stP)
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stSq = doAct "priest" "squeeze bob" stP
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+      assertBool "parade after squeeze" (hasAct "dave" "parade bob" stSq)
+      let stPar = doAct "dave" "parade bob" stSq
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+      assertBool "squeeze spent"
+        (not (hasAct "priest" "squeeze bob" stPar)
+         || exists "threatened.inquisit.priest.bob" (db stPar))
   ]
