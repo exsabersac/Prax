@@ -15,7 +15,8 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              brandedOf, exiledOf, denouncedOf,
                              moodsOf, arcsOf, liesOf, traitsOf,
                              chattedWithOf, esteemedOf, scornedOf,
-                             beliefsOf, projectsOf, bondsOf)
+                             beliefsOf, projectsOf, bondsOf,
+                             extortedOf, compliedOf, defiedOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -517,5 +518,16 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "beliefs of ana" @?= beliefsOf st "ana"
       askChronicle st "projects of ana" @?= projectsOf st "ana"
       askChronicle st "bonds of ana" @?= bondsOf st "ana"
+
+
+  , testCase "askChronicle extorted/complied/defied dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "mob.extorted.vic.racket"
+            , Insert "complied.racket.mob.vic"
+            , Insert "defied.racket.vic.mob"
+            ]
+      askChronicle st "extorted of vic" @?= extortedOf st "vic"
+      askChronicle st "complied of vic" @?= compliedOf st "vic"
+      askChronicle st "defied of vic" @?= defiedOf st "vic"
 
   ]

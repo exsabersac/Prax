@@ -697,5 +697,18 @@ tests = testGroup "Prax.Coerce"
         assertBool "isRallied" (satisfies (db st) [isRallied "dave" "bob"] Map.empty)
         assertBool "lacksRallied on empty"
           (satisfies (db emptyState) [lacksRallied "dave" "bob"] Map.empty)
+    , testCase "isCried / isEyed / isConfronted / isWronged evaluate on Insert world" $ do
+        let st = foldl (flip performOutcome) emptyState
+              [ Insert "cried.dave.bob"
+              , Insert "eyed.ana.bob"
+              , Insert "confronted.ana.bob"
+              , Insert "wronged.bob.carol"
+              ]
+        assertBool "isCried" (satisfies (db st) [isCried "dave" "bob"] Map.empty)
+        assertBool "isEyed" (satisfies (db st) [isEyed "ana" "bob"] Map.empty)
+        assertBool "isConfronted" (satisfies (db st) [isConfronted "ana" "bob"] Map.empty)
+        assertBool "isWronged" (satisfies (db st) [isWronged "bob" "carol"] Map.empty)
+        assertBool "lacksCried on empty"
+          (satisfies (db emptyState) [lacksCried "dave" "bob"] Map.empty)
     ]
   ]

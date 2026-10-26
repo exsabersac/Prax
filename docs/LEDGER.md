@@ -2196,3 +2196,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：CoerceSpec、ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v395 — Sandbox 放逐×教会沉默 + 婚入×磨坊沉默（钉既有门禁）
+
+- **做了什么**：Spec 钉 dave exile 与 priest 债挡 banish 并行；钉 fran 婚入 denounce 开而 ira 债挡. 无新实践 / 无 want 改动。
+- **测**：SandboxSpec exile × church silence、wed × silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v396 — Chronicle extorted/complied/defied 对偶 + Coerce cried/eyed/confronted/wronged
+
+- **做了什么**：Chronicle Spec 钉 extorted/complied/defied 与 Host 对偶；Coerce Spec 钉 isCried/isEyed/isConfronted/isWronged 世界求值。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec、CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

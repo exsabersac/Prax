@@ -2565,4 +2565,38 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "kyle censure no" (not (hasAct "kyle" "censure bob" stH))
       assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
 
+
+  , testCase "exile × church silence: mill exile open; priest debt blocks banish" $ do
+      -- dave denounce→exile stays while bob buys priest church-silence.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stDave = doAct "dave" "learn" stHear
+          stBuy = doAct "bob" "buy priest" stDave
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "priest banish no" (not (hasAct "priest" "banish bob" stAfter))
+      let stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "debt still" (exists "debt.priest.bob.church-favor" (db stEx))
+
+  , testCase "wed × silence: fran wedding unlocks mill; ira debt blocks ira denounce" $ do
+      -- fran wed → mill regard; bob buys ira silence → ira denounce closed, fran open.
+      let stBel = performOutcome (Insert "fran.believes.stole.bob.carol") sandboxWorld
+          stWed = doAct "fran" "wed into the mill" stBel
+          stIra = doAct "ira" "learn" stWed
+          stBuy = doAct "bob" "buy ira" stIra
+      assertBool "fran regard"
+        (exists "regards.fran.bob.thief" (readView stBuy))
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "fran denounce yes" (hasAct "fran" "denounce" stH)
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+
   ]
