@@ -61,6 +61,8 @@ module Prax.Coerce
   , isHungry, lacksHungry
   , isEyed, lacksEyed
   , isConfronted, lacksConfronted
+  , isWronged, lacksWronged
+  , isAllied, lacksAllied
   ) where
 
 import           Data.List (nub)
@@ -578,4 +580,29 @@ lacksConfronted :: String -> String -> Condition
 lacksConfronted actor target =
   Not ("confronted." ++ guardSeg "lacksConfronted" actor
        ++ "." ++ guardSeg "lacksConfronted" target)
+
+
+-- | 条件：@offender@ 冤屈了 @victim@（@wronged.<offender>.<victim>@；Feud）。
+isWronged :: String -> String -> Condition
+isWronged offender victim =
+  Match ("wronged." ++ guardSeg "isWronged" offender
+         ++ "." ++ guardSeg "isWronged" victim)
+
+-- | 条件：无该冤屈叶。
+lacksWronged :: String -> String -> Condition
+lacksWronged offender victim =
+  Not ("wronged." ++ guardSeg "lacksWronged" offender
+       ++ "." ++ guardSeg "lacksWronged" victim)
+
+-- | 条件：@a@ 与 @b@ 同盟（@allied.<a>.<b>@；Faction comrades / Feud）。
+isAllied :: String -> String -> Condition
+isAllied a b =
+  Match ("allied." ++ guardSeg "isAllied" a
+         ++ "." ++ guardSeg "isAllied" b)
+
+-- | 条件：无该同盟叶。
+lacksAllied :: String -> String -> Condition
+lacksAllied a b =
+  Not ("allied." ++ guardSeg "lacksAllied" a
+       ++ "." ++ guardSeg "lacksAllied" b)
 
