@@ -243,4 +243,15 @@ tests = testGroup "Prax.Debt"
       assertBool "lacksDemanded on seed"
         (satisfies (db aloneWorld) [lacksDemanded "cora" "dell" "favor"] Map.empty)
 
+
+  , testCase "neverOwed / everDemanded evaluate on clean vs demanded world" $ do
+      assertBool "neverOwed on empty"
+        (satisfies (db emptyState) [neverOwed "dell"] Map.empty)
+      let owed = applyAll emptyState (owe "cora" "dell" "favor")
+      assertBool "neverOwed fails while owed"
+        (not (satisfies (db owed) [neverOwed "dell"] Map.empty))
+      let st = doAct "cora" "demand" aloneWorld
+      assertBool "everDemanded after demand"
+        (satisfies (db st) [everDemanded "dell"] Map.empty)
+
   ]

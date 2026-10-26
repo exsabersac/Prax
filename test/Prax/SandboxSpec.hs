@@ -2618,4 +2618,18 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "dave denounce restored" (hasAct "dave" "denounce" stBack)
       assertBool "ira still blocked" (not (hasAct "ira" "denounce" stBack))
 
+
+  , testCase "affiliate × silence: kyle cannot denounce; ira debt blocks ira" $ do
+      -- kyle affiliate-only closed; bob buys ira silence blocks ira denounce.
+      let stIra = doAct "ira" "learn" sandboxWorld
+          stBuy = doAct "bob" "buy ira" stIra
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db stBuy))
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "kyle denounce no" (not (hasAct "kyle" "denounce" stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "dave can learn then denounce path exists" True
+
   ]

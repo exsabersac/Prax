@@ -2220,3 +2220,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec、SandboxSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v399 — Chronicle fled/reconciled/married/ostracized/atoned/hungry 对偶
+
+- **做了什么**：Spec 钉六条 askChronicle 臂与 Host *Of 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v400 — Sandbox 附属×磨坊沉默 + Debt neverOwed/everDemanded 世界求值
+
+- **做了什么**：Spec 钉 kyle 无 denounce 且 ira 债挡；Debt Spec 钉 neverOwed/everDemanded 世界求值。无新实践 / 无 want 改动。
+- **测**：SandboxSpec、DebtSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
