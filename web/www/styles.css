@@ -1,0 +1,105 @@
+:root {
+  --bg: #f4f1ea;
+  --panel: #fffdf8;
+  --ink: #1c1a17;
+  --muted: #5c574f;
+  --line: #d9d2c4;
+  --accent: #2f6f4e;
+  --accent-soft: #e4f0e9;
+  --warn: #8a2f2f;
+  --radius: 12px;
+  font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 1rem 1.25rem 2rem;
+}
+
+.top h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+.meta { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+.layout {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .layout { grid-template-columns: 1.1fr 1fr 1.2fr; align-items: start; }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  min-height: 10rem;
+}
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.place { font-size: 1.15rem; font-weight: 650; margin-bottom: 0.75rem; }
+
+.actors { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.actor {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.actor[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.actor:disabled { opacity: 0.45; cursor: default; }
+
+.actions { display: flex; flex-direction: column; gap: 0.45rem; }
+.action {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
+.action:hover { border-color: var(--accent); }
+.action .kind {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+}
+.empty { color: var(--muted); font-size: 0.9rem; }
+
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.log li {
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: #f7f4ee;
+  border-left: 3px solid var(--line);
+  white-space: pre-wrap;
+}
+.log li.kind-narrative { border-left-color: var(--accent); }
+.log li.kind-system { border-left-color: #8a7a4a; }
+
+.error {
+  margin-top: 1rem;
+  color: var(--warn);
+  background: #f8eaea;
+  border: 1px solid #e2bdbd;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}

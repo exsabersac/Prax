@@ -29,3 +29,6 @@ rust/target/
 
 # Stack lock is machine-local enough to keep; yaml is committed for reproducible GHC.
 # (lock optional — regenerate with stack)
+
+# Web build output (rebuild before deploy; do not hand-edit)
+web/dist/
