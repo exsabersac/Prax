@@ -4850,5 +4850,195 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
 
 
 
+  , testCase "return × denounce: flee drops denounce; return restores at harvest" $ do
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld)
+          stFlee = doAct "carol" "abandon" st0
+          stRet = doAct "carol" "return" stFlee
+          stH = iterate roundBoundary stRet !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce restored" (hasAct "dave" "denounce" stH)
+
+  , testCase "return × exile: after flee+return denounce→exile path restores" $ do
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld)
+          stFlee = doAct "carol" "abandon" st0
+          stRet = doAct "carol" "return" stFlee
+          stH = iterate roundBoundary stRet !! 3
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "exile restored" (hasAct "dave" "exile" stAfter)
+
+  , testCase "return × rally: flee drops rally; return restores at market" $ do
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stFlee = doAct "carol" "abandon" st0
+          stRet = doAct "carol" "return" stFlee
+          stM = roundBoundary (iterate roundBoundary stRet !! 3)
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "rally restored" (hasAct "dave" "rally" stM)
+
+  , testCase "shared exile race: after dual hear mill exile blocks banish" $ do
+      -- Same leaf as dual-pressure Spec; pin symbolic once from hear→denounce path.
+      let st0 = doAct "dave" "learn" (doAct "priest" "hear of bob" dualPressureSeed)
+          stH = iterate roundBoundary st0 !! 3
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "priest banish closed"
+        (not (hasAct "priest" "banish" stEx))
+
+  , testCase "shared exile race: after dual hear priest banish blocks mill exile" $ do
+      let st0 = doAct "dave" "learn" (doAct "priest" "hear of bob" dualPressureSeed)
+          stH = iterate roundBoundary st0 !! 3
+          stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "banish open" (hasAct "priest" "banish" stAfter)
+      let stBan = doAct "priest" "banish" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stBan))
+      assertBool "dave exile closed"
+        (not (hasAct "dave" "exile" stBan))
+
+  , testCase "exile × parade: mill exile and brand parade stay independent" $ do
+      -- Shared exiled.bob does not gate parade; brand parade stays open after exile.
+      let st0 = activateParade (activateSqueeze (doAct "dave" "learn" sandboxWorld))
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bobF else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stH = iterate roundBoundary stBrand !! 3
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "parade still open after exile"
+        (hasAct "dave" "parade bob" stEx)
+
+  , testCase "fran squeezeDesire before wed: gate closed until wedding" $ do
+      let st0 = activateSqueeze sandboxWorld
+          fran' = (actorOf "fran" st0)
+                    { charDesires = [joinsMillDesireName, squeezeDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "fran" then fran' else c
+                  | c <- characters st0 ] }
+          -- guild belief alone does not grant mill regard for squeeze
+          stBel = performOutcome
+                    (Insert "fran.believes.stole.bob.carol") st
+      assertBool "before wed no squeeze"
+        (not (hasAct "fran" "squeeze bob" stBel))
+      let stWed = doAct "fran" "wed" stBel
+      assertBool "after wed squeeze open"
+        (hasAct "fran" "squeeze bob" stWed)
+
+  , testCase "silence × flee: buy before flee; debt survives regard dissolve" $ do
+      -- Victim flee dissolves mill regard (buy closes after); debt leaf persists.
+      let st0 = doAct "ira" "learn"
+                  (doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld))
+      assertBool "buy open before flee" (hasAct "bob" "buy ira" st0)
+      let stBuy = doAct "bob" "buy ira" st0
+          stFlee = doAct "carol" "abandon" stBuy
+      assertBool "fled" (exists "fled.carol" (db stFlee))
+      assertBool "debt survives" (exists "debt.ira.bob.favor" (db stFlee))
+      assertBool "buy closed after regard dissolve"
+        (not (hasAct "bob" "buy ira" stFlee))
+      assertBool "ira tear still open" (hasAct "ira" "tear up bob" stFlee)
+
+  , testCase "wed × tear: fran wedding and ira tear stay independent" $ do
+      let st0 = doAct "ira" "learn" sandboxWorld
+          stBuy = doAct "bob" "buy ira" st0
+          stBel = performOutcome
+                    (Insert "fran.believes.stole.bob.carol") stBuy
+      assertBool "tear open" (hasAct "ira" "tear up bob" stBel)
+      assertBool "wed open" (hasAct "fran" "wed" stBel)
+      let stWed = doAct "fran" "wed" stBel
+      assertBool "tear still" (hasAct "ira" "tear up bob" stWed)
+      let stTear = doAct "ira" "tear up bob" stWed
+      assertBool "revoked" (exists "revoked.ira.bob" (db stTear))
+      assertBool "fran mill standing"
+        (exists "member.fran.mill" (db stTear)
+         || exists "fran.member.mill" (db stTear)
+         || hasAct "fran" "learn" stTear
+         || hasAct "fran" "denounce" (iterate roundBoundary stTear !! 3))
+
+  , testCase "wants: paradeDesire weight beats cry when both open at market" $ do
+      -- parade 10 > cry 7; after brand at market both open → pick parade.
+      let st0 = activateParade (activateSqueeze (doAct "dave" "learn" sandboxWorld))
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          dave' = (actorOf "dave" st0)
+                    { charDesires = [paradeDesireName, cryDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bobF
+                    else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stM = roundBoundary (iterate roundBoundary stBrand !! 3)
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "parade open" (hasAct "dave" "parade bob" stM)
+      assertBool "cry open" (hasAct "dave" "cry the theft" stM)
+      desireUtil paradeDesireName @?= 10
+      desireUtil cryDesireName @?= 7
+      pickLabel "dave" stM @?= Just "dave: parade bob as branded thief"
+
+  , testCase "wants: after mill brand cannot re-brand; squeeze closed" $ do
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bobF else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+      assertBool "branded" (exists "branded.bob" (db stBrand))
+      assertBool "no re-brand" (not (hasAct "dave" "brand bob" stBrand))
+      assertBool "squeeze closed after brand"
+        (not (hasAct "dave" "squeeze bob" stBrand))
+
+  , testCase "wants: affiliate kyle with rallyDesire never rallies at market" $ do
+      let st0 = doAct "dave" "learn" reputeSeed
+          kyle' = (actorOf "kyle" st0) { charDesires = [rallyDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "kyle" then kyle' else c
+                  | c <- characters st0 ] }
+          st2 = doAct "carol" "learn" st
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally open" (hasAct "dave" "rally" stM)
+      assertBool "kyle no rally" (not (hasAct "kyle" "rally" stM))
+
+  , testCase "wants: affiliate kyle with cryDesire never cries at market" $ do
+      let st0 = doAct "dave" "learn" sandboxWorld
+          kyle' = (actorOf "kyle" st0) { charDesires = [cryDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "kyle" then kyle' else c
+                  | c <- characters st0 ] }
+          stM = roundBoundary (iterate roundBoundary st !! 3)
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry open" (hasAct "dave" "cry the theft" stM)
+      assertBool "kyle no cry" (not (hasAct "kyle" "cry" stM))
+
+  , testCase "after cry once × squeeze: market cry once-gate; squeeze stays" $ do
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+          stM = roundBoundary (iterate roundBoundary st0 !! 3)
+          stCry = doAct "dave" "cry the theft" stM
+      assertBool "cry closed" (not (hasAct "dave" "cry the theft" stCry))
+      assertBool "squeeze still" (hasAct "dave" "squeeze bob" stCry)
+
+  , testCase "after rally once × squeeze: rally once-gate; squeeze stays" $ do
+      let st0 = activateSqueeze (doAct "dave" "learn" reputeSeed)
+          st2 = doAct "carol" "learn" st0
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+          stRally = doAct "dave" "rally" stM
+      assertBool "rally closed" (not (hasAct "dave" "rally" stRally))
+      assertBool "squeeze still" (hasAct "dave" "squeeze bob" stRally)
+
+
+
 
   ]

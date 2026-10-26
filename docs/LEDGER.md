@@ -2792,3 +2792,9 @@
 - **测**：PersonaSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+
+## v507 — Sandbox return×门禁 + 共享流放竞速 + affiliate cry/rally Spec
+
+- **做了什么**：SandboxSpec 追加 return×denounce/exile/rally；共享 exiled.bob 竞速（mill exile↔priest banish）；exile×parade 独立；fran squeezeDesire 婚前门禁；silence×flee（债叶存、买门关）；wed×tear；parade 权重胜 cry；brand 后不可再 brand；kyle rallyDesire/cryDesire 门禁关；cry/rally once×squeeze。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（279 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
