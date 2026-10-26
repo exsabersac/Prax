@@ -144,7 +144,7 @@ formatEvent ev rs =
 -- @"threatened of "++who@、@"threateners of "++who@、@"threatenees of "++who@、@"shunned of "++who@、@"shunners of "++who@、
 -- @"locations of "++who@、@"occupants of "++place@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
 -- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
--- @"obligations of "++who@、@"breaches of "++who@、
+-- @"obligations of "++who@、@"obliged as "++content@、@"breaches of "++who@、@"violated as "++content@、
 -- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"chatters of "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"bonders of "++who@、@"bonded of "++label@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
@@ -1281,12 +1281,38 @@ askChronicle st q
                 , ("obliged." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no obligations"]
          else rows
+  | Just content <- stripPrefix "obliged as " q =
+      -- 对齐 Host obligedAsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "obliged." `isPrefixOf` s
+            , let rest = drop (length ("obliged." :: String)) s
+            , let parts = splitDots rest
+            , length parts >= 2
+            , intercalate "." (drop 1 parts) == content
+            ]
+      in if null rows then ["nobody is obliged as " ++ content]
+         else rows
   | Just who <- stripPrefix "breaches of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
             [ s | s <- dbToSentences (readView st)
                 , ("violated." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no breaches"]
+         else rows
+  | Just content <- stripPrefix "violated as " q =
+      -- 对齐 Host violatedAsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "violated." `isPrefixOf` s
+            , let rest = drop (length ("violated." :: String)) s
+            , let parts = splitDots rest
+            , length parts >= 2
+            , intercalate "." (drop 1 parts) == content
+            ]
+      in if null rows then ["nobody violated as " ++ content]
          else rows
   | Just who <- stripPrefix "lies of " q =
       -- 对齐 Host *Of：读闭合视图。

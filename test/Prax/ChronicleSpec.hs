@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf, owedOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf, owedOf, obligedAsOf, violatedAsOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1297,5 +1297,35 @@ tests = testGroup "Prax.Chronicle"
         ["debt.cass.ana.coin"]
       askChronicle st "owed of void" @?=
         ["nobody owes void"]
+
+  , testCase "obligedAsOf / violatedAsOf dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "obliged.ana.settle.up"
+            , Insert "obliged.ben.tip.carol"
+            , Insert "obliged.cass.settle.up"
+            , Insert "violated.ana.tipping"
+            , Insert "violated.ben.courtesy"
+            , Insert "violated.dave.tipping"
+            ]
+      sort (obligedAsOf st "settle.up") @?=
+        ["obliged.ana.settle.up", "obliged.cass.settle.up"]
+      obligedAsOf st "tip.carol" @?= ["obliged.ben.tip.carol"]
+      obligedAsOf st "void" @?= []
+      sort (violatedAsOf st "tipping") @?=
+        ["violated.ana.tipping", "violated.dave.tipping"]
+      violatedAsOf st "courtesy" @?= ["violated.ben.courtesy"]
+      violatedAsOf st "void" @?= []
+      askChronicle st "obliged as settle.up" @?=
+        ["obliged.ana.settle.up", "obliged.cass.settle.up"]
+      askChronicle st "obliged as tip.carol" @?=
+        ["obliged.ben.tip.carol"]
+      askChronicle st "obliged as void" @?=
+        ["nobody is obliged as void"]
+      askChronicle st "violated as tipping" @?=
+        ["violated.ana.tipping", "violated.dave.tipping"]
+      askChronicle st "violated as courtesy" @?=
+        ["violated.ben.courtesy"]
+      askChronicle st "violated as void" @?=
+        ["nobody violated as void"]
 
   ]

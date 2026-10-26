@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, breachesOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, obligedAsOf, breachesOf, violatedAsOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -178,19 +178,27 @@ runOwed (content : ws) =
   in mapM_ putStrLn (owedOf st content)
 runOwed _ = putStrLn "usage: prax owed <content> <world>"
 
--- | List obligation leaves for a character: @prax obligations <who> <world>@.
+-- | List obligation leaves: @prax obligations <who> <world>@;
+-- @prax obligations as <content> <world>@.
 runObligations :: [String] -> IO ()
+runObligations ("as" : content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (obligedAsOf st content)
 runObligations (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (obligationsOf st who)
-runObligations _ = putStrLn "usage: prax obligations <who> <world>"
+runObligations _ = putStrLn "usage: prax obligations <who>|<as content> <world>"
 
--- | List breach leaves for a character: @prax breaches <who> <world>@.
+-- | List breach leaves: @prax breaches <who> <world>@;
+-- @prax breaches as <content> <world>@.
 runBreaches :: [String] -> IO ()
+runBreaches ("as" : content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (violatedAsOf st content)
 runBreaches (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (breachesOf st who)
-runBreaches _ = putStrLn "usage: prax breaches <who> <world>"
+runBreaches _ = putStrLn "usage: prax breaches <who>|<as content> <world>"
 
 -- | List feeling leaves: @prax feelings <who> <world>@.
 runFeelings :: [String] -> IO ()
@@ -996,8 +1004,8 @@ usageText = unlines
   , "  prax regards <who>|<toward t>|<as l> <world>  list regards leaves"
   , "  prax debts <who> <world>               list debt leaves involving who"
   , "  prax owed <content> <world>            list debt.*.*.<content> leaves"
-  , "  prax obligations <who> <world>         list obligation leaves for who"
-  , "  prax breaches <who> <world>            list violation leaves for who"
+  , "  prax obligations <who>|<as c> <world>  list obligation / content leaves"
+  , "  prax breaches <who>|<as c> <world>     list violation / content leaves"
   , "  prax feelings <who> <world>            list feeling leaves for who"
   , "  prax felt <feeling> <world>            list <who>.feels.<feeling> leaves"
   , "  prax lies <who> <world>                list lie-mark leaves for who"

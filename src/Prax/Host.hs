@@ -29,6 +29,7 @@
 -- v578：'liedOf' 谎言内容标签侧叶。
 -- v582：'regardsAsOf' 站队标签侧叶。
 -- v585：'owedOf' 债务内容标签侧叶。
+-- v588：'obligedAsOf'/'violatedAsOf' 义务/违规内容标签侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -98,7 +99,9 @@ module Prax.Host
   , debtorsOf
   , owedOf
   , obligationsOf
+  , obligedAsOf
   , breachesOf
+  , violatedAsOf
   , feelingsOf
   , feltOf
   , liesOf
@@ -541,10 +544,44 @@ obligationsOf :: PraxState -> String -> [String]
 obligationsOf st who =
   sort [ s | s <- queryView st, ("obliged." ++ who ++ ".") `isPrefixOf` s ]
 
+-- | 闭合视图中义务内容为 @content@ 的叶（@obliged.<who>.<content>@）。
+obligedAsOf :: PraxState -> String -> [String]
+obligedAsOf st content = sort
+  [ s
+  | s <- queryView st
+  , "obliged." `isPrefixOf` s
+  , let rest = drop (length ("obliged." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , intercalate "." (drop 1 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的违规叶（@violated.<who>.*@）。
 breachesOf :: PraxState -> String -> [String]
 breachesOf st who =
   sort [ s | s <- queryView st, ("violated." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中违规内容为 @content@ 的叶（@violated.<who>.<content>@）。
+violatedAsOf :: PraxState -> String -> [String]
+violatedAsOf st content = sort
+  [ s
+  | s <- queryView st
+  , "violated." `isPrefixOf` s
+  , let rest = drop (length ("violated." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , intercalate "." (drop 1 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的情感叶（@<who>.feels.*@）。
 feelingsOf :: PraxState -> String -> [String]

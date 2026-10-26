@@ -217,6 +217,10 @@ tests = testGroup "Prax.Host"
         ["obliged.ana.settle.up", "obliged.ana.whenAt.bar.greet.ben"]
       obligationsOf st "ben" @?= ["obliged.ben.tip.carol"]
       obligationsOf st "void" @?= []
+      obligedAsOf st "settle.up" @?= ["obliged.ana.settle.up"]
+      obligedAsOf st "whenAt.bar.greet.ben" @?= ["obliged.ana.whenAt.bar.greet.ben"]
+      obligedAsOf st "tip.carol" @?= ["obliged.ben.tip.carol"]
+      obligedAsOf st "void" @?= []
 
   , testCase "breachesOf lists violated.<who>.* from the closed view" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -227,6 +231,10 @@ tests = testGroup "Prax.Host"
       sort (breachesOf st "ana") @?= ["violated.ana.queue", "violated.ana.tipping"]
       breachesOf st "ben" @?= ["violated.ben.courtesy"]
       breachesOf st "void" @?= []
+      violatedAsOf st "tipping" @?= ["violated.ana.tipping"]
+      violatedAsOf st "queue" @?= ["violated.ana.queue"]
+      violatedAsOf st "courtesy" @?= ["violated.ben.courtesy"]
+      violatedAsOf st "void" @?= []
 
   , testCase "feelingsOf / liesOf / chattedWithOf list who-prefixed leaves" $ do
       let st = foldl (flip performOutcome) emptyState

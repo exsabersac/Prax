@@ -3231,3 +3231,13 @@
 - **做了什么**：SandboxSpec 追加 mill/church silence×fran wed；kyle exile 负例；dual repay 再买可撕；parade once×cry；无 churchBreak 不撕；flee×buy/denounce；return×denounce；exile/silence util；inquisit brand×cry；cast priest/gale/ira；dual silence×squeeze。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（539 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v588 — Host obligedAsOf/violatedAsOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`obligedAsOf`/`violatedAsOf` 枚举 `obliged.*.<content>`/`violated.*.<content>`；CLI `prax obligations as`/`prax breaches as`。
+
+## v589 — Chronicle obliged as/violated as + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`obliged as`/`violated as` 返回义务/违规内容标签侧叶；Spec 钉 Host 与 Chronicle 空集。
