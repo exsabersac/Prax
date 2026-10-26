@@ -1682,3 +1682,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec defection × market cry（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v307 — Coerce isDenounced / isRallied 条件对偶
+
+- **做了什么**：`isDenounced`/`lacksDenounced`、`isRallied`/`lacksRallied` 钉对应 Match/Not 对偶。无实践改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v308 — Sandbox 教会游街×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisit brand→activateChurchParade 后 market 窗内 mill cry 与 church parade 互不阻挡。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church parade × market cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

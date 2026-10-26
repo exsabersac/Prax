@@ -47,6 +47,8 @@ module Prax.Coerce
   , isBrandedHeretic, lacksBrandedHeretic
   , isParaded, lacksParaded
   , isCried, lacksCried
+  , isDenounced, lacksDenounced
+  , isRallied, lacksRallied
   ) where
 
 import           Data.List (nub)
@@ -403,4 +405,29 @@ lacksCried :: String -> String -> Condition
 lacksCried actor target =
   Not ("cried." ++ guardSeg "lacksCried" actor
        ++ "." ++ guardSeg "lacksCried" target)
+
+
+-- | 条件：@actor@ 已控告 @target@（@denounced.<actor>.<target>@；Sandbox millJustice）。
+isDenounced :: String -> String -> Condition
+isDenounced actor target =
+  Match ("denounced." ++ guardSeg "isDenounced" actor
+         ++ "." ++ guardSeg "isDenounced" target)
+
+-- | 条件：无该控告叶。
+lacksDenounced :: String -> String -> Condition
+lacksDenounced actor target =
+  Not ("denounced." ++ guardSeg "lacksDenounced" actor
+       ++ "." ++ guardSeg "lacksDenounced" target)
+
+-- | 条件：@actor@ 已市集声援 @target@（@rallied.<actor>.<target>@；Sandbox marketRally）。
+isRallied :: String -> String -> Condition
+isRallied actor target =
+  Match ("rallied." ++ guardSeg "isRallied" actor
+         ++ "." ++ guardSeg "isRallied" target)
+
+-- | 条件：无该声援叶。
+lacksRallied :: String -> String -> Condition
+lacksRallied actor target =
+  Not ("rallied." ++ guardSeg "lacksRallied" actor
+       ++ "." ++ guardSeg "lacksRallied" target)
 

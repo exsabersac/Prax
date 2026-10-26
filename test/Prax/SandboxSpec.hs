@@ -1415,4 +1415,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stM2 = iterate roundBoundary stBack !! 1
       assertBool "market again" (exists "festival.market" (db stM2))
       assertBool "cry restored" (hasAct "dave" "cry the theft" stM2)
+
+  , testCase "church parade × market cry: heretic parade and mill cry stay independent" $ do
+      let st0 = inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stDefy = doAct "bob" "defy" stSq
+          stBrand = doAct "priest" "brand bob" stDefy
+          stP = activateChurchParade stBrand
+          stDave = doAct "dave" "learn" stP
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stDave)
+      let stM = iterate roundBoundary stDave !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "parade still" (hasAct "priest" "parade bob" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "parade after cry" (hasAct "priest" "parade bob" stCry)
   ]
