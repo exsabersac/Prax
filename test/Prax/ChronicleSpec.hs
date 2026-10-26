@@ -15,7 +15,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              brandedOf, exiledOf, denouncedOf,
                              moodsOf, arcsOf, liesOf, traitsOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
-                             beliefsOf, projectsOf, bondsOf,
+                             beliefsOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
                              revokedOf, confessedOf, censuredOf,
                              paradedOf, criedOf, ralliedOf,
@@ -1032,5 +1032,26 @@ tests = testGroup "Prax.Chronicle"
         ["ana affiliates choir"]
       askChronicle st "affiliators of void" @?=
         ["no one affiliates with void"]
+
+  , testCase "practitionersOf / practitioners of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "practice.bake.ana"
+            , Insert "practice.bake.ana.crew.ben"
+            , Insert "practice.hunt.ben.did.track"
+            ]
+      sort (practitionersOf st "bake") @?=
+        [ "practice.bake.ana"
+        , "practice.bake.ana.crew.ben"
+        ]
+      practitionersOf st "hunt" @?= ["practice.hunt.ben.did.track"]
+      practitionersOf st "void" @?= []
+      askChronicle st "practitioners of bake" @?=
+        [ "practice.bake.ana"
+        , "practice.bake.ana.crew.ben"
+        ]
+      askChronicle st "practitioners of hunt" @?=
+        ["practice.hunt.ben.did.track"]
+      askChronicle st "practitioners of void" @?=
+        ["no one is in practice void"]
 
   ]

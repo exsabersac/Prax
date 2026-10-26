@@ -1329,6 +1329,13 @@ askChronicle st q
                 , parts !! 1 == who ]
       in if null rows then [who ++ " has no project marks"]
          else rows
+  | Just pid <- stripPrefix "practitioners of " q =
+      -- 对齐 Host practitionersOf：读闭合视图。
+      let pref = "practice." ++ pid ++ "."
+          rows = sort
+            [ s | s <- dbToSentences (readView st), pref `isPrefixOf` s ]
+      in if null rows then ["no one is in practice " ++ pid]
+         else rows
   | Just who <- stripPrefix "kin of " q =
       -- 对齐 Host *Of：读闭合视图。
       let kinHeads = ["married", "parent", "sibling", "inLaw", "grandparent"]

@@ -290,7 +290,7 @@ tests = testGroup "Prax.Host"
       beliefsOf st "ben" @?= ["ben.believes.flag.x"]
       beliefsOf st "void" @?= []
 
-  , testCase "arcsOf / agesOf / projectsOf from the view" $ do
+  , testCase "arcsOf / agesOf / projectsOf / practitionersOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "ana.arc!hopeful"
                 , Insert "ben.arc!bitter"
@@ -313,6 +313,13 @@ tests = testGroup "Prax.Host"
         ]
       projectsOf st "ben" @?= ["practice.hunt.ben.did.track"]
       projectsOf st "void" @?= []
+      sort (practitionersOf st "bake") @?=
+        [ "practice.bake.ana"
+        , "practice.bake.ana.crew.ben"
+        , "practice.bake.ana.did.mix"
+        ]
+      practitionersOf st "hunt" @?= ["practice.hunt.ben.did.track"]
+      practitionersOf st "void" @?= []
   
   , testCase "demandedOf / festivalsOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState

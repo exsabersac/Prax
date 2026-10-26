@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -307,6 +307,13 @@ runProjects (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (projectsOf st who)
 runProjects _ = putStrLn "usage: prax projects <who> <world>"
+
+-- | List practice leaves under pid: @prax practitioners <pid> <world>@.
+runPractitioners :: [String] -> IO ()
+runPractitioners (pid : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (practitionersOf st pid)
+runPractitioners _ = putStrLn "usage: prax practitioners <pid> <world>"
 
 runDemanded :: [String] -> IO ()
 runDemanded (who : ws) =
@@ -915,6 +922,7 @@ usageText = unlines
   , "  prax arcs <who> <world>                list arc stage leaves for who"
   , "  prax ages <who> <world>                list age leaves for who"
   , "  prax projects <who> <world>            list practice instance leaves for who"
+  , "  prax practitioners <pid> <world>  list practice.<pid>.* leaves"
   , "  prax demanded <who> <world>            list demand leaves involving who"
   , "  prax festivals <world>                 list open festival leaves"
   , "  prax stall <world>                     list stall.<item> inventory leaves"
@@ -1024,6 +1032,7 @@ main = do
     ("arcs" : ws)     -> runArcs ws
     ("ages" : ws)     -> runAges ws
     ("projects" : ws) -> runProjects ws
+    ("practitioners" : ws) -> runPractitioners ws
     ("demanded" : ws) -> runDemanded ws
     ("demanders" : ws) -> runDemanders ws
     ("demandees" : ws) -> runDemandees ws

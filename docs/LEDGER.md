@@ -2989,13 +2989,22 @@
 - **测**：DeriveSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v541 — Sandbox exile 权重拣 + silence 窗/revoke + parade×inquisit Spec
+## v542 — Sandbox exile 权重拣 + silence 窗/revoke + parade×inquisit Spec
 
 - **做了什么**：SandboxSpec 追加 cry/rally once 后 exile 权重拣；dual brand 双 parade+cry；silence 买禁 harvest；revoke 禁再买；kyle squeezeDesire；无 fearsBrand/Heretic 不拣 confess/recant；mill parade×church squeeze / 反向；joinsMill=10 权重钉；kyle 空欲望；repay 后 ira denounce。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（367 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
-## v542 — Engine renderText Spec 钉
+## v543 — Engine renderText Spec 钉
 
 - **做了什么**：EngineSpec 钉 renderText 绑定替换与未知/未闭合括号行为。无新实践 / 无 want 改动。
 - **测**：EngineSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v544 — Host practitionersOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`practitionersOf` 枚举 `practice.<pid>.*`；CLI `prax practitioners <pid> <world>`。
+
+## v545 — Chronicle practitioners of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`practitioners of` 返回实践 id 侧叶；Spec 钉 Host 与 Chronicle 空集。

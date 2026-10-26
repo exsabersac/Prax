@@ -17,6 +17,7 @@
 -- v523：'holdersOf'/'carriersOf' 持有/携带物品侧叶。
 -- v515：'occupantsOf' 位置目标侧叶（at.*.<place>）。
 -- v534：'affiliatorsOf' 派系次级归属人侧（affiliate.*.<faction>）。
+-- v544：'practitionersOf' 实践 id 侧叶（practice.<pid>.*）。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -111,6 +112,7 @@ module Prax.Host
   , arcsOf
   , agesOf
   , projectsOf
+  , practitionersOf
   , demandedOf
   , demandersOf
   , demandeesOf
@@ -734,6 +736,12 @@ projectsOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中实践 @pid@ 下的角色相关叶（@practice.<pid>.*@）。
+practitionersOf :: PraxState -> String -> [String]
+practitionersOf st pid =
+  let pref = "practice." ++ pid ++ "."
+  in sort [ s | s <- queryView st, pref `isPrefixOf` s ]
 
 -- | 闭合视图中与 @who@ 相关的催收叶（债权人或债务人；@demanded.<creditor>.<debtor>.<content>@）。
 demandedOf :: PraxState -> String -> [String]
