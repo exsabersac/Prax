@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -799,6 +799,20 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "compliees of void" @?= ["void has no known compliees"]
       askChronicle st "defiers of void" @?= ["void has no known defiers"]
       askChronicle st "defiees of void" @?= ["void has no known defiees"]
+
+
+
+  , testCase "askChronicle wrongers/wrongees dual Host raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "wronged.alice.bob"
+            , Insert "wronged.bob.carol"
+            ]
+      wrongersOf st "bob" @?= ["wronged.alice.bob"]
+      wrongeesOf st "alice" @?= ["wronged.alice.bob"]
+      askChronicle st "wrongers of bob" @?= ["alice wronger of bob"]
+      askChronicle st "wrongees of alice" @?= ["alice wronger of bob"]
+      askChronicle st "wrongers of void" @?= ["void has no known wrongers"]
+      askChronicle st "wrongees of void" @?= ["void has no known wrongees"]
 
 
   ]

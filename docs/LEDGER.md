@@ -2773,3 +2773,13 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Kin Spec 补 hasMarriedTo 世界求值；Confession Spec 补 lacksMark 世界求值；Witness Spec 钉 asRole 重定向。无新实践 / 无 want 改动。
 - **测**：KinSpec / ConfessionSpec / WitnessSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v495 — Host wrongersOf/wrongeesOf + CLI
+
+- **做了什么**：闭合视图枚举 `wronged.*.<who>` / `wronged.<who>.*`；CLI `prax wrongers`/`wrongees`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v496 — Chronicle wrongers/wrongees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"wrongers of "` / `"wrongees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。

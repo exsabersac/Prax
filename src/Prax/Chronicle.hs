@@ -136,7 +136,7 @@ formatEvent ev rs =
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
 -- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
 -- @"eyed of "++who@、@"confronted of "++who@、@"atoned of "++who@、
--- @"wronged of "++who@、@"hungry of "++who@、
+-- @"wronged of "++who@、@"wrongers of "++who@、@"wrongees of "++who@、@"hungry of "++who@、
 -- @"shortTempered of "++who@、@"appetite of "++who@、
 -- @"resents of "++who@、@"allied of "++who@、
 -- @"what is on the stall"@、@"what festivals"@、
@@ -524,6 +524,34 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no wrong marks"]
          else rows
+  | Just who <- stripPrefix "wrongers of " q =
+      -- 对齐 Host wrongersOf：读闭合视图；短语化加害人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "wronged." `isPrefixOf` s
+                , let rest = drop (length ("wronged." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known wrongers"]
+         else [ o ++ " wronger of " ++ who
+              | s <- rows
+              , let rest = drop (length ("wronged." :: String)) s
+              , let o = head (splitDot rest) ]
+  | Just who <- stripPrefix "wrongees of " q =
+      -- 对齐 Host wrongeesOf：读闭合视图；短语化受害人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "wronged." `isPrefixOf` s
+                , let rest = drop (length ("wronged." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known wrongees"]
+         else [ who ++ " wronger of " ++ v
+              | s <- rows
+              , let rest = drop (length ("wronged." :: String)) s
+              , let v = (splitDot rest) !! 1 ]
   | Just who <- stripPrefix "hungry of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

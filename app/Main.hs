@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -500,6 +500,19 @@ runWronged (who : ws) =
   in mapM_ putStrLn (wrongedOf st who)
 runWronged _ = putStrLn "usage: prax wronged <who> <world>"
 
+
+runWrongers :: [String] -> IO ()
+runWrongers (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (wrongersOf st who)
+runWrongers _ = putStrLn "usage: prax wrongers <who> <world>"
+
+runWrongees :: [String] -> IO ()
+runWrongees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (wrongeesOf st who)
+runWrongees _ = putStrLn "usage: prax wrongees <who> <world>"
+
 runHungry :: [String] -> IO ()
 runHungry (who : ws) =
   let (_, st, _) = worldNamed ws
@@ -810,6 +823,8 @@ main = do
     ("confronted" : ws) -> runConfronted ws
     ("atoned" : ws)    -> runAtoned ws
     ("wronged" : ws)   -> runWronged ws
+    ("wrongers" : ws) -> runWrongers ws
+    ("wrongees" : ws) -> runWrongees ws
     ("hungry" : ws)    -> runHungry ws
     ("short-tempered" : ws) -> runShortTempered ws
     ("appetite" : ws)  -> runAppetite ws

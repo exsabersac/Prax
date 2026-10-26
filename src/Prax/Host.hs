@@ -35,6 +35,7 @@
 -- v472：'demandersOf'/'demandeesOf' 催收方叶（demanded.<c>.<d>.*）。
 -- v481：'threatenersOf'/'threateneesOf'/'extortersOf'/'extorteesOf' 胁迫/勒索方叶。
 -- v488：'compliersOf'/'complieesOf'/'defiersOf'/'defieesOf' 顺从/违抗方叶。
+-- v495：'wrongersOf'/'wrongeesOf' 冤屈方叶（wronged.<o>.<v>）。
 module Prax.Host
   ( step
   , stepExact
@@ -127,6 +128,8 @@ module Prax.Host
   , confrontedOf
   , atonedOf
   , wrongedOf
+  , wrongersOf
+  , wrongeesOf
   , hungryOf
   , shortTemperedOf
   , appetiteOf
@@ -1114,6 +1117,41 @@ wrongedOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中 @who@ 作为受害方的冤屈叶（@wronged.<offender>.<who>@）。
+wrongersOf :: PraxState -> String -> [String]
+wrongersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "wronged." `isPrefixOf` s
+  , let rest = drop (length ("wronged." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为加害方的冤屈叶（@wronged.<who>.<victim>@）。
+wrongeesOf :: PraxState -> String -> [String]
+wrongeesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "wronged." `isPrefixOf` s
+  , let rest = drop (length ("wronged." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
   ]
   where
     splitDots :: String -> [String]

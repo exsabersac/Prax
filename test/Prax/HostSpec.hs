@@ -700,4 +700,22 @@ tests = testGroup "Prax.Host"
       defieesOf st "void" @?= []
 
 
+
+  , testCase "wrongersOf / wrongeesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "wronged.alice.bob"
+                , Insert "wronged.bob.carol"
+                , Insert "flag.x" ]
+      wrongersOf st "bob" @?=
+        ["wronged.alice.bob"]
+      wrongersOf st "carol" @?=
+        ["wronged.bob.carol"]
+      wrongersOf st "void" @?= []
+      wrongeesOf st "alice" @?=
+        ["wronged.alice.bob"]
+      wrongeesOf st "bob" @?=
+        ["wronged.bob.carol"]
+      wrongeesOf st "void" @?= []
+
+
   ]
