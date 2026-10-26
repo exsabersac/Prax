@@ -841,4 +841,19 @@ tests = testGroup "Prax.Host"
       scornersOf st "void" @?= []
 
 
+
+  , testCase "bondersOf / liarsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "bond.ana.ben.friends"
+                , Insert "bond.cass.ben"
+                , Insert "eve.lied.dana.stole.carol.loaf"
+                , Insert "nia.lied.dana.took.kit.gem"
+                , Insert "flag.x" ]
+      bondersOf st "ben" @?= ["bond.ana.ben.friends", "bond.cass.ben"]
+      bondersOf st "void" @?= []
+      liarsOf st "dana" @?=
+        ["eve.lied.dana.stole.carol.loaf", "nia.lied.dana.took.kit.gem"]
+      liarsOf st "void" @?= []
+
+
   ]

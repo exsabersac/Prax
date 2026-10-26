@@ -44,6 +44,8 @@
 -- v527：'shunnersOf' 排斥目标侧叶（shunned.*.<who>）。
 -- v531：'esteemersOf' 被赞誉侧叶（esteemed.*.<who>.*）。
 -- v533：'scornersOf' 被蔑视侧叶（scorned.*.<who>.*）。
+-- v540：'bondersOf' 纽带对象侧叶（bond.*.<who>.*）。
+-- v542：'liarsOf' 谎言听者侧叶（*.lied.<who>.*）。
 -- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
@@ -80,10 +82,12 @@ module Prax.Host
   , breachesOf
   , feelingsOf
   , liesOf
+  , liarsOf
   , chattedWithOf
   , traitsOf
   , moodsOf
   , bondsOf
+  , bondersOf
   , kinOf
   , siblingsOf
   , parentsOf
@@ -463,6 +467,23 @@ liesOf :: PraxState -> String -> [String]
 liesOf st who =
   sort [ s | s <- queryView st, (who ++ ".lied.") `isPrefixOf` s ]
 
+
+-- | 闭合视图中 @who@ 作为听者的谎言叶（@<liar>.lied.<who>.*@）。
+liarsOf :: PraxState -> String -> [String]
+liarsOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "lied"
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的聊天叶（@<who>.chattedWith.*@）。
 chattedWithOf :: PraxState -> String -> [String]
 chattedWithOf st who =
@@ -482,6 +503,24 @@ moodsOf st who =
 bondsOf :: PraxState -> String -> [String]
 bondsOf st who =
   sort [ s | s <- queryView st, ("bond." ++ who ++ ".") `isPrefixOf` s ]
+
+
+-- | 闭合视图中 @who@ 作为纽带对象的叶（@bond.<actor>.<who>[.<label>]@）。
+bondersOf :: PraxState -> String -> [String]
+bondersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "bond." `isPrefixOf` s
+  , let rest = drop (length ("bond." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中与 @who@ 相关的亲属叶（married/parent/sibling/inLaw/grandparent 任一侧）。
 kinOf :: PraxState -> String -> [String]

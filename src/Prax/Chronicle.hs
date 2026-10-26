@@ -145,8 +145,8 @@ formatEvent ev rs =
 -- @"locations of "++who@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
 -- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
--- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
--- @"bonds of "++who@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
+-- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"traits of "++who@、
+-- @"bonds of "++who@、@"bonders of "++who@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
 -- @"kin of "++who@、@"notorious of "++who@、
 -- @"regards toward "++who@、@"what factions"@。
@@ -1117,6 +1117,16 @@ askChronicle st q
                 , (who ++ ".lied.") `isPrefixOf` s ]
       in if null rows then [who ++ " has no lie marks"]
          else rows
+  | Just who <- stripPrefix "liars of " q =
+      -- 对齐 Host liarsOf：读闭合视图；短语化撒谎人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , let parts = splitDot s
+                , length parts >= 3
+                , parts !! 1 == "lied"
+                , parts !! 2 == who ]
+      in if null rows then [who ++ " has no known liars"]
+         else [ head (splitDot s) ++ " liar of " ++ who | s <- rows ]
   | Just who <- stripPrefix "chatted with " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
@@ -1138,6 +1148,19 @@ askChronicle st q
                 , ("bond." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no bonds"]
          else rows
+  | Just who <- stripPrefix "bonders of " q =
+      -- 对齐 Host bondersOf：读闭合视图；短语化纽带人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "bond." `isPrefixOf` s
+                , let rest = drop (length ("bond." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known bonders"]
+         else [ a ++ " bonder of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("bond." :: String)) s)) ]
   | Just who <- stripPrefix "esteemed of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

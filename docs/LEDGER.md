@@ -3040,6 +3040,7 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+<<<<<<< HEAD
 ## v536 — Sandbox without-accuse / seek 正例 / 节庆 once-gate（钉既有门禁）
 
 - **做了什么**：Spec 钉无 punishesThief/exileBob/punishesHeretic/exileEve 时不选控告/放逐；seeksTheft/Heresy 自选 learn/hear；denounce 后 exile 权重；parade 压 millCry；cry/rally once 后不可再做；coerce 欲望名 punishes-squeeze/inquisit。无新实践。
@@ -3051,3 +3052,28 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 kyle 挂 fearsBrand 不可 confess；玩家槽无 desire/want。无新实践。
 - **测**：SandboxSpec wants: affiliate kyle with fearsBrand；cast: player slot holds no desires。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+=======
+## v540 — Host bondersOf + CLI
+
+- **做了什么**：闭合视图枚举 `bond.*.<who>.*`；CLI `prax bonders`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v541 — Chronicle bonders of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"bonders of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v542 — Host liarsOf + CLI
+
+- **做了什么**：闭合视图枚举 `*.lied.<who>.*`；CLI `prax liars`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v543 — Chronicle liars of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"liars of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+>>>>>>> 2511069 (v540–v543: bondersOf/liarsOf + Chronicle duals + CLI)

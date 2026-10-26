@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -182,6 +182,13 @@ runFeelings (who : ws) =
 runFeelings _ = putStrLn "usage: prax feelings <who> <world>"
 
 -- | List lie-mark leaves: @prax lies <who> <world>@.
+
+runLiars :: [String] -> IO ()
+runLiars (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (liarsOf st who)
+runLiars _ = putStrLn "usage: prax liars <who> <world>"
+
 runLies :: [String] -> IO ()
 runLies (who : ws) =
   let (_, st, _) = worldNamed ws
@@ -210,6 +217,13 @@ runMoods (who : ws) =
 runMoods _ = putStrLn "usage: prax moods <who> <world>"
 
 -- | List bond leaves: @prax bonds <who> <world>@.
+
+runBonders :: [String] -> IO ()
+runBonders (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (bondersOf st who)
+runBonders _ = putStrLn "usage: prax bonders <who> <world>"
+
 runBonds :: [String] -> IO ()
 runBonds (who : ws) =
   let (_, st, _) = worldNamed ws
@@ -848,10 +862,12 @@ usageText = unlines
   , "  prax breaches <who> <world>            list violation leaves for who"
   , "  prax feelings <who> <world>            list feeling leaves for who"
   , "  prax lies <who> <world>                list lie-mark leaves for who"
+  , "  prax liars <who> <world>              list *.lied.<who>.* leaves"
   , "  prax chatted <who> <world>             list chattedWith leaves for who"
   , "  prax traits <who> <world>              list trait leaves for who"
   , "  prax moods <who> <world>               list mood leaves for who"
   , "  prax bonds <who> <world>               list bond leaves for who"
+  , "  prax bonders <who> <world>            list bond.*.<who>.* leaves"
   , "  prax kin <who> <world>                 list kin leaves involving who"
   , "  prax notorious <who> <world>           list notoriety leaves for who"
   , "  prax esteemed <who> <world>            list esteemed leaves for who"
@@ -950,10 +966,12 @@ main = do
     ("breaches" : ws)  -> runBreaches ws
     ("feelings" : ws) -> runFeelings ws
     ("lies" : ws)     -> runLies ws
+    ("liars" : ws)     -> runLiars ws
     ("chatted" : ws)  -> runChatted ws
     ("traits" : ws)   -> runTraits ws
     ("moods" : ws)    -> runMoods ws
     ("bonds" : ws)    -> runBonds ws
+    ("bonders" : ws)   -> runBonders ws
     ("kin" : ws)      -> runKin ws
     ("notorious" : ws) -> runNotorious ws
     ("esteemed" : ws) -> runEsteemed ws

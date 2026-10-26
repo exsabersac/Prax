@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf, bondersOf, liarsOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -942,6 +942,25 @@ tests = testGroup "Prax.Chronicle"
         ["ana scorner of dave", "ben scorner of dave"]
       askChronicle st "esteemers of void" @?= ["void has no known esteemers"]
       askChronicle st "scorners of void" @?= ["void has no known scorners"]
+
+
+
+  , testCase "askChronicle bonders/liars dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "bond.ana.ben.friends"
+            , Insert "bond.cass.ben"
+            , Insert "eve.lied.dana.stole.carol.loaf"
+            , Insert "nia.lied.dana.took.kit.gem"
+            ]
+      bondersOf st "ben" @?= ["bond.ana.ben.friends", "bond.cass.ben"]
+      liarsOf st "dana" @?=
+        ["eve.lied.dana.stole.carol.loaf", "nia.lied.dana.took.kit.gem"]
+      askChronicle st "bonders of ben" @?=
+        ["ana bonder of ben", "cass bonder of ben"]
+      askChronicle st "liars of dana" @?=
+        ["eve liar of dana", "nia liar of dana"]
+      askChronicle st "bonders of void" @?= ["void has no known bonders"]
+      askChronicle st "liars of void" @?= ["void has no known liars"]
 
 
   ]
