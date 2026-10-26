@@ -1,7 +1,8 @@
 -- | 轻量可玩沙盒世界：节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
 -- 婚入磨坊 / 债务买沉默 / 双节庆错峰市集喊冤 / 受害方叛逃和解 /
 -- 沉默×叛逃×节庆复合门禁 / 臭名+愤怒市集声援 /
--- 站队胁迫招供（Coerce×factionStanding，默认未激活）（非 Village）。
+-- 站队胁迫招供（Coerce×factionStanding，默认未激活）/
+-- 教会异端×磨坊正义同场双压（bob 双轨，默认未激活）（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -11,11 +12,13 @@ module Prax.Worlds.Sandbox
   , sandboxDesires
   , millJustice
   , churchJustice
+  , bobHeresyJustice
   , iraJustice
   , millCry
   , squeezeDesireName
   , fearsBrandName
   , activateSqueeze
+  , activateChurchBob
   ) where
 
 import           Prax.Query (Condition (..))
@@ -45,7 +48,7 @@ sandboxAxioms =
   , notoriety "thief" 2   -- ≥2 磨坊站队 → notorious.bob.thief，打开市集声援
   ] ++ kinAxioms
 
--- | 命名欲望词汇：磨坊正义 / 教会审查 / 婚入磨坊 / 买沉默与撕毁协议。
+-- | 命名欲望词汇：磨坊正义 / 教会审查 / bob 异端双压 / 婚入磨坊 / 买沉默与撕毁协议。
 sandboxDesires :: [Desire]
 sandboxDesires =
   [ Desire "seeks-theft-truth"
@@ -76,6 +79,11 @@ sandboxDesires =
       (Want [ Match "rallied.Owner.bob" ] 9)
   , squeezeDesire
   , fearsBrandDesire
+  , Desire "seeks-bob-heresy"
+      (Want [ Match "Owner.believes.blasphemed.bob.gale" ] 6)
+  , Desire "punishes-bob-heretic"
+      -- 权重 9 > eve 审查 8 / 磨坊控告 8：双压种子上优先钉 bob 异端轨
+      (Want [ Match "censured.Owner.bob" ] 9)
   ]
 
 millJustice :: [String]
@@ -83,6 +91,10 @@ millJustice = ["seeks-theft-truth", "punishes-thief", "wants-exile-bob"]
 
 churchJustice :: [String]
 churchJustice = ["seeks-heresy-truth", "punishes-heretic", "wants-exile-eve"]
+
+-- | 教会对 bob 的异端正义（复用 wants-exile-bob → 共享 exiled.bob）。
+bobHeresyJustice :: [String]
+bobHeresyJustice = ["seeks-bob-heresy", "punishes-bob-heretic", "wants-exile-bob"]
 
 iraJustice :: [String]
 iraJustice = millJustice ++ ["breaks-silence-deal"]
@@ -157,6 +169,38 @@ churchHeresyP = practice
           [ Insert "exiled.eve" ]
       ]
   }
+
+-- | 教会对 bob 的异端轨：与磨坊贼案共享 exiled.bob，形成同场双压竞速。
+-- 默认不 Insert practice.churchBobHeresy（免搅既有 eve 异端金轨迹）；
+-- activateChurchBob / dualPressureSeed 激活。
+churchBobHeresyP :: Practice
+churchBobHeresyP = practice
+  { practiceId   = "churchBobHeresy"
+  , practiceName = "the church tries bob's heresy around harvest"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: hear of bob's heresy"
+          [ outsideFestival "harvest"
+          , isMember "Actor" "church"
+          , Not "Actor.believes.blasphemed.bob.gale" ]
+          [ Insert "Actor.believes.blasphemed.bob.gale" ]
+      , action "[Actor]: censure bob for heresy"
+          [ duringFestival "harvest"
+          , Match "regards.Actor.bob.heretic"
+          , Not "censured.Actor.bob" ]
+          [ Insert "censured.Actor.bob" ]
+      , action "[Actor]: banish bob for heresy"
+          [ outsideFestival "harvest"
+          , isLeader "Actor" "church"
+          , Match "censured.Actor.bob"
+          , Not "exiled.bob" ]
+          [ Insert "exiled.bob" ]
+      ]
+  }
+
+-- | 激活教会-bob 异端实践（供 dualPressureSeed / 逐步测）。
+activateChurchBob :: PraxState -> PraxState
+activateChurchBob = performOutcome (Insert "practice.churchBobHeresy")
 
 -- | 婚入磨坊：非磨坊成员嫁给磨坊配偶 → 主成员切换，打开 factionStanding。
 millWedP :: Practice
@@ -369,6 +413,7 @@ sandboxWorld =
       setDesires sandboxDesires
         (setCharacters cast
           (definePractices
-             [ presenceP, millTribunalP, churchHeresyP, millWedP, millSilenceP
-             , marketCryP, millAllegianceP, millRallyP, millSqueezeP ]
+             [ presenceP, millTribunalP, churchHeresyP, churchBobHeresyP
+             , millWedP, millSilenceP, marketCryP, millAllegianceP, millRallyP
+             , millSqueezeP ]
              (setSchedule [harvestFestival, marketFestival] emptyState)))

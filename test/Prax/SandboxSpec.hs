@@ -1,6 +1,7 @@
 -- | Prax.Worlds.Sandbox 可测闭环：磨坊审判、教会异端、婚入获站队、
 -- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解、沉默×叛逃×节庆复合门禁、
--- 臭名+愤怒市集声援、站队胁迫招供（Coerce），以及轻量 wants 驱动的自选节拍。
+-- 臭名+愤怒市集声援、站队胁迫招供（Coerce）、教会异端×磨坊正义同场双压，
+-- 以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
 
@@ -18,7 +19,8 @@ import           Prax.Planner (pickAction)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Worlds.Sandbox
   ( sandboxWorld, playerName, sandboxDesires, millJustice, millCry
-  , squeezeDesireName, fearsBrandName, activateSqueeze )
+  , bobHeresyJustice, squeezeDesireName, fearsBrandName
+  , activateSqueeze, activateChurchBob )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -370,6 +372,74 @@ sandboxCoerceGolden =
   ]
 
 tests :: TestTree
+
+-- Church heresy × mill justice dual pressure on bob (shared exiled.bob race).
+-- Practice inactive by default; activate + priest/gale hold bobHeresyJustice;
+-- bob muted (no buy-silence) so tracks dominate. Mill (carol) typically wins
+-- the exile race; church censures in the same harvest window then waits.
+dualPressureSeed :: PraxState
+dualPressureSeed =
+  let st0 = activateChurchBob sandboxWorld
+      priest' = (actorOf "priest" st0) { charDesires = bobHeresyJustice }
+      gale'   = (actorOf "gale" st0)   { charDesires = bobHeresyJustice }
+      bob'    = (actorOf "bob" st0)    { charDesires = [] }
+  in st0 { characters =
+              [ if charName c == "priest" then priest'
+                else if charName c == "gale" then gale'
+                else if charName c == "bob" then bob'
+                else c
+              | c <- characters st0 ] }
+
+-- Captured live (v277): dual hear → harvest denounce+censure-bob → mill exile
+-- wins race (priest banish blocked) → market cry.
+sandboxDualPressureGolden :: [String]
+sandboxDualPressureGolden =
+  [ "bob: bob: Wait a moment"
+  , "carol: carol: learn of the theft"
+  , "dave: dave: learn of the theft"
+  , "fran: fran: wed into the mill beside carol"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: hear of bob's heresy"
+  , "priest: priest: hear of bob's heresy"
+  , "ira: ira: learn of the theft"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: learn of the theft"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: denounce the thief"
+  , "dave: dave: denounce the thief"
+  , "fran: fran: denounce the thief"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: censure bob for heresy"
+  , "priest: priest: censure bob for heresy"
+  , "ira: ira: denounce the thief"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: exile the thief"
+  , "dave: dave: cry the theft at market"
+  , "fran: fran: cry the theft at market"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: cry the theft at market"
+  ]
+
 tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs)"
   [ testCase "well-formed: typeCheck empty" $
       typeCheck sandboxWorld @?= []
@@ -387,6 +457,13 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         ("millSqueeze" `elem` practiceNames sandboxWorld)
       assertBool "millSqueeze inactive by default"
         (not (exists "practice.millSqueeze" (db sandboxWorld)))
+      assertBool "churchBobHeresy defined"
+        ("churchBobHeresy" `elem` practiceNames sandboxWorld)
+      assertBool "churchBobHeresy inactive by default"
+        (not (exists "practice.churchBobHeresy" (db sandboxWorld)))
+      assertBool "bob heresy desires in vocabulary"
+        (all (`elem` map desireName sandboxDesires)
+           ["seeks-bob-heresy", "punishes-bob-heretic"])
       assertBool "presence" ("presence" `elem` practiceNames sandboxWorld)
       assertBool "squeeze desire registered"
         (any ((== squeezeDesireName) . desireName) sandboxDesires)
@@ -810,4 +887,95 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
   , testCase "wants coerce golden: 21 NPC turns squeeze → confess → brand" $
       driveLabels (length sandboxCoerceGolden) coerceSeed
         @?= sandboxCoerceGolden
+
+  , testCase "dual pressure: churchBob inactive by default; activate opens bob heresy track" $ do
+      assertBool "default: no hear of bob"
+        (not (hasAct "priest" "hear of bob" sandboxWorld))
+      let st0 = dualPressureSeed
+      assertBool "active practice"
+        (exists "practice.churchBobHeresy" (db st0))
+      assertBool "priest hear bob" (hasAct "priest" "hear of bob" st0)
+      assertBool "dave learn" (hasAct "dave" "learn" st0)
+      -- eve blasphemy hear still defined (churchHeresy active) but muted wants.
+      assertBool "eve hear still available" (hasAct "priest" "hear the blasphemy" st0)
+
+  , testCase "dual pressure: interleaved harvest gates + shared exile race" $ do
+      let st0 = dualPressureSeed
+      let stHear = doAct "priest" "hear of bob" st0
+      assertBool "priest regards bob heretic"
+        (exists "regards.priest.bob.heretic" (readView stHear))
+      let stLearn = doAct "dave" "learn" stHear
+      assertBool "dave regards bob thief"
+        (exists "regards.dave.bob.thief" (readView stLearn))
+      assertBool "outside: no denounce" (not (hasAct "dave" "denounce" stLearn))
+      assertBool "outside: no censure bob"
+        (not (hasAct "priest" "censure bob" stLearn))
+      let stOpen = iterate roundBoundary stLearn !! 3
+      assertBool "harvest open" (exists "festival.harvest" (db stOpen))
+      -- Same window: mill denounce AND church censure-bob.
+      assertBool "mill denounce" (hasAct "dave" "denounce" stOpen)
+      assertBool "church censure bob" (hasAct "priest" "censure bob" stOpen)
+      assertBool "no exile during" $
+        not (hasAct "dave" "exile the thief" stOpen)
+        && not (hasAct "priest" "banish bob" stOpen)
+      let stCen = doAct "priest" "censure bob" stOpen
+      let stDen = doAct "dave" "denounce" stCen
+      assertBool "censured.bob" (exists "censured.priest.bob" (db stDen))
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      let stAfter = roundBoundary stDen
+      assertBool "festival closed" (not (exists "festival.harvest" (db stAfter)))
+      -- Both exile paths open; gale (non-leader) cannot banish.
+      assertBool "mill exile open" (hasAct "dave" "exile the thief" stAfter)
+      assertBool "church banish open" (hasAct "priest" "banish bob" stAfter)
+      assertBool "gale cannot banish" (not (hasAct "gale" "banish bob" stAfter))
+      -- Mill wins race → church banish blocked.
+      let stMill = doAct "dave" "exile the thief" stAfter
+      assertBool "exiled.bob" (exists "exiled.bob" (db stMill))
+      assertBool "church blocked after mill"
+        (not (hasAct "priest" "banish bob" stMill))
+      -- Inverse: church wins → mill exile blocked (fresh after-window state).
+      let stChurch = doAct "priest" "banish bob" stAfter
+      assertBool "exiled via church" (exists "exiled.bob" (db stChurch))
+      assertBool "mill blocked after church"
+        (not (hasAct "dave" "exile the thief" stChurch))
+
+  , testCase "dual pressure: wants priority bob censure (9) over eve censure (8)" $ do
+      let st0 = dualPressureSeed
+          priestBoth = (actorOf "priest" st0)
+                         { charDesires = bobHeresyJustice ++ millJustice
+                                         ++ ["seeks-heresy-truth", "punishes-heretic"
+                                            , "wants-exile-eve"] }
+          stBoth = st0 { characters =
+                           [ if charName c == "priest" then priestBoth else c
+                           | c <- characters st0 ] }
+      -- Hear both tracks (sequential outside-festival hears).
+      let stEve = doAct "priest" "hear the blasphemy" stBoth
+      let stBob = doAct "priest" "hear of bob" stEve
+      let stOpen = iterate roundBoundary stBob !! 3
+      assertBool "both regards" $
+        exists "regards.priest.eve.heretic" (readView stOpen)
+        && exists "regards.priest.bob.heretic" (readView stOpen)
+      assertBool "both censures available" $
+        hasAct "priest" "censure the heretic" stOpen
+        && hasAct "priest" "censure bob" stOpen
+      pickLabel "priest" stOpen @?= Just "priest: censure bob for heresy"
+
+  , testCase "wants: dualPressureSeed priest hears bob; harvest censures bob" $ do
+      pickLabel "priest" dualPressureSeed
+        @?= Just "priest: hear of bob's heresy"
+      pickLabel "dave" dualPressureSeed
+        @?= Just "dave: learn of the theft"
+      let stHear = doAct "priest" "hear of bob" dualPressureSeed
+      let stLearn = doAct "dave" "learn" stHear
+      let stOpen = iterate roundBoundary stLearn !! 3
+      pickLabel "priest" stOpen @?= Just "priest: censure bob for heresy"
+      pickLabel "dave" stOpen @?= Just "dave: denounce the thief"
+      let stAfter = roundBoundary (doAct "dave" "denounce"
+                        (doAct "priest" "censure bob" stOpen))
+      pickLabel "dave" stAfter @?= Just "dave: exile the thief"
+      pickLabel "priest" stAfter @?= Just "priest: banish bob for heresy"
+
+  , testCase "wants dual-pressure golden: 44 NPC turns mill wins exile race" $
+      driveLabels (length sandboxDualPressureGolden) dualPressureSeed
+        @?= sandboxDualPressureGolden
   ]

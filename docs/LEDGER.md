@@ -458,7 +458,7 @@
 Tier 1 — 社会事实，叠在 K 上：
 - **⤷K 谣言 / 带源传闻**（`Prax.Rumor`）*（完成 — v20）*：`gossip`/`heard`；多值 `.seen`/`.heard.<source>` 出处；不信任门。目击后又听说者边并存而非覆盖。
 - **⤷K 声誉**（`Prax.Repute`）*（完成 — v21；v56 分数效果；v161 lacksNotorious/hasScorned/lacksScorned）*：`standing`/`standingUnless`/`regardedAs`/`notoriety`——补偿非失忆；再犯从记忆弹回。`incorrigible`（v32）把 Count 惯用语指向内。`scornStanding`/`esteemStanding`/`scornDesire`（v56）把站队接到关系分。
-- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267–v268** 加深为多步正义/审查弧、affiliate 负例、受害方叛逃溶解与婚入获站队；**v269** 收成独立可玩 `Sandbox`；**v270** 轻量 wants；**v271–v276** 沉默/错峰/叛逃/复合门禁/臭名声援/站队胁迫（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
+- **派系与成员**（`Prax.Faction`）*（完成 — v31；v65 次级归属）*。所存：地点作用域道义规范集（v70 已给通用 `obligeWhenAt`）。`factionStanding` 于 v93 接线进 Feud；v114/v162/v184 村庄形静态夹具；**v262–v264/v267–v268** 加深为多步正义/审查弧、affiliate 负例、受害方叛逃溶解与婚入获站队；**v269** 收成独立可玩 `Sandbox`；**v270** 轻量 wants；**v271–v277** 沉默/错峰/叛逃/复合门禁/臭名声援/站队胁迫/教会×磨坊同场双压（Village 金标准仍推迟）。职衔以外领导于 v69 清偿。
 - **债务与人情**（`Prax.Debt`）*（完成 — v30）*：`owe`/`settle` 薄骑 `Prax.Deontic`；目击违约 → 老赖站队；债务人自有不可避免自我 regard。
 - **亲属与家庭**（`Prax.Kin`）*（完成 — v31；v61 离婚；v62 出生）*：`kinAxioms`、`wed`、`divorce`、`birth`/`birthInto`、`succession`。年龄于 v73、长子继承于 v78 `primogeniture` 清偿；持有继承于 v67 `bequeath` 清偿。关系条件于 v87/v98/v119（`isChildOf`/`isParentOf`/`isInLawOf` 等）。
 
@@ -474,7 +474,7 @@ Tier 2 — 长时间跨度的代理内在性：
 - **目击新近显著性** *（设计拒绝 — 用户决定）*：硬窗口即意图模型；勿再提案。
 - **衰减与漂移** *（完成 — v36）*。
 - **情感** *（完成 — v38；v59 对他心可见；v60 强度；v63 带寿命强度）*。基线心境于 v79 `setMood` 清偿；心境一致启动薄版于 v91 `moodFromFeeling`；每情绪周期仍存。每情绪默认寿命于 v68 清偿。
-- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧；**v265** 磨坊审判复合弧（节庆+factionStanding）；**v266** 教会异端弧（节庆+领袖门禁）；**v269** `Prax.Worlds.Sandbox` 可玩闭环；**v270** wants 驱动自选节拍 + 短轨迹；**v274** 沉默×叛逃×节庆复合；**v275** 臭名+愤怒市集声援；**v276** 站队胁迫招供）*。
+- **日历与集会** *（完成 — v37；v111 双集会并存测；v131 `festival` 种 `festival.<name>`；v153 `duringFestival`/`outsideFestival` 门禁对偶 + 沙盒；v199 丰收起誓叙事弧；v210 起誓违约弧；v216 节庆婚礼弧；v224 节庆狂欢心境弧；v236 节庆请愿弧；v248 节庆审判弧；v257 节庆守灵弧；v261 节庆市集弧；**v265** 磨坊审判复合弧（节庆+factionStanding）；**v266** 教会异端弧（节庆+领袖门禁）；**v269** `Prax.Worlds.Sandbox` 可玩闭环；**v270** wants 驱动自选节拍 + 短轨迹；**v274** 沉默×叛逃×节庆复合；**v275** 臭名+愤怒市集声援；**v276** 站队胁迫招供；**v277** 教会异端×磨坊正义同场双压）*。
 
 Tier 3 — 宿主游戏边界：
 - **⤷K 编年史家 / 显著性查询**（`Prax.Chronicle`）*（完成 — v55；v166 members of）*：事件流上的派生摘要——任务钩生成，以及无人能见的涌现之答；CLI `prax chronicle`。
@@ -1513,4 +1513,10 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：自定义 `Coercion`「squeeze」——触发为已 `factionStanding` 站队的磨坊成员；威胁要招供（`confessed`），违抗/站立威胁可烙印（`branded`）；惩罚核重视烙印。实践默认**未激活**（不 Insert `practice.millSqueeze`，免搅既有金轨迹）；`activateSqueeze` / `coerceSeed` 激活并把 `punishes-squeeze` / `fears-brand` 挂到 dave/bob。永久 `complied`：招供后可再胁迫但不可再买，二次威胁以烙印收场。
 - **测**：SandboxSpec 逐步（威胁→招供→再胁→烙印）；wants pick；21 步 `sandboxCoerceGolden`。默认世界既有金轨迹仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+
+## v277 — Sandbox 教会异端 × 磨坊正义同场双压
+
+- **做了什么**：新实践 `churchBobHeresy`（默认未激活）——教会对 **bob** 的听闻→审查→领袖放逐轨，与磨坊贼案共享 `exiled.bob`，形成同场竞速。欲望 `seeks-bob-heresy` / `punishes-bob-heretic`（权重 9 > eve 审查 8）+ 复用 `wants-exile-bob`；`activateChurchBob` / `dualPressureSeed` 激活并把牧师/gale 挂到 bob 异端正义。可测：harvest 窗内磨坊控告与教会审查 bob 交错并存；窗外磨坊放逐 vs 领袖放逐竞速（先到堵住后到）；权重优先 bob 审查压过 eve。44 步金轨迹钉磨坊先放逐、教会审查后等待。
+- **测**：SandboxSpec 默认未激活 / 交错门禁+双向竞速 / 权重优先 / wants pick / 44 步 `sandboxDualPressureGolden`；既有 Sandbox 金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
