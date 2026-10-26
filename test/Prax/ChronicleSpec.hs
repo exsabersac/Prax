@@ -438,6 +438,7 @@ tests = testGroup "Prax.Chronicle"
             , Insert "carrying.ben.loaf"
             ]
       askChronicle st "what festivals" @?= festivalsOf st
+      askChronicle st "festivals" @?= festivalsOf st
       askChronicle st "holding of ana" @?= holdingOf st "ana"
       askChronicle st "carrying of ben" @?= carryingOf st "ben"
       askChronicle st "holding of void" @?= ["void holds nothing"]
@@ -480,6 +481,7 @@ tests = testGroup "Prax.Chronicle"
             ]
       askChronicle st "threatened of vic" @?= threatenedOf st "vic"
       askChronicle st "what is on the stall" @?= stallOf st
+      askChronicle st "stall" @?= stallOf st
       askChronicle st "kin of mia" @?= kinOf st "mia"
 
 

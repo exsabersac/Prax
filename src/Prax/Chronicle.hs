@@ -139,7 +139,7 @@ formatEvent ev rs =
 -- @"wronged of "++who@、@"wrongers of "++who@、@"wrongees of "++who@、@"hungry of "++who@、
 -- @"shortTempered of "++who@、@"short-tempered of "++who@、@"appetite of "++who@、
 -- @"resents of "++who@、@"resenters of "++who@、@"allied of "++who@、@"allies of "++who@、
--- @"what is on the stall"@、@"what festivals"@、
+-- @"what is on the stall"@、@"stall"@、@"what festivals"@、@"festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"threateners of "++who@、@"threatenees of "++who@、@"shunned of "++who@、@"shunners of "++who@、
 -- @"locations of "++who@、@"occupants of "++place@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
@@ -900,14 +900,14 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no alliance marks"]
          else rows
-  | q == "what is on the stall" =
+  | q == "what is on the stall" || q == "stall" =
       -- 对齐 Host stallOf：读闭合视图。
       let rows = sort
             [ s | s <- dbToSentences (readView st), "stall." `isPrefixOf` s ]
       in if null rows then ["the stall is empty"]
          else rows
-  | q == "what festivals" =
-      -- 对齐 Host festivalsNamed：读闭合视图。
+  | q == "what festivals" || q == "festivals" =
+      -- 对齐 Host festivalsOf：读闭合视图。
       let rows = sort
             [ s | s <- dbToSentences (readView st), "festival." `isPrefixOf` s ]
       in if null rows then ["no festivals are open"]

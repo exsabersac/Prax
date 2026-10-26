@@ -3008,3 +3008,8 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`practitioners of` 返回实践 id 侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v546 — Chronicle festivals/stall 别名 + Spec
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`festivals`/`stall` 与既有 `what festivals`/`what is on the stall` 同义，对齐 Host `festivalsOf`/`stallOf`；Spec 钉别名。
