@@ -3263,3 +3263,9 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`practiced as` 返回实践动作后缀侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v594 — Sandbox revoke×parade + affiliate church silence/break + dual repay tear Spec
+
+- **做了什么**：SandboxSpec 追加 mill/church revoke×对侧 parade；kyle churchSilence/churchBreak 负例；dual repay 再买再撕；cry once×hear；单侧 silence×正义；无 seeksTheft 不 learn；repay×parade；cast kyle/fran/bob；dual brand×parade once×buy。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（575 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
