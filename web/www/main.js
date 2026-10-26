@@ -113,9 +113,22 @@ async function onSave() {
   paint();
 }
 
+/**
+ * Load 成功后丢弃读档前/Load 响应里的旧 menu，按当前 actor 重拉 praxMenu，
+ * 保证按钮上的 actionId 只来自该次之后的 Menu（禁缓存旧 id）。
+ */
 async function applyLoaded(res) {
   view = res.view;
-  menu = res.menu;
+  menu = null;
+  const actorId = view.selectedActorId || view.playerId;
+  const menuRes = await praxMenu(actorId);
+  if (!menuRes.ok) {
+    showError(menuRes.message || menuRes.error);
+    menu = { actorId, actions: [] };
+    paint();
+    return;
+  }
+  menu = { actorId: menuRes.actorId, actions: menuRes.actions };
   paint();
 }
 
