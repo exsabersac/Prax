@@ -2632,4 +2632,69 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
       assertBool "dave can learn then denounce path exists" True
 
+  , testCase "denounce × church silence: mill denounce open; priest debt blocks censure" $ do
+      -- dave harvest denounce completes while bob buys priest church-silence.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stDave = doAct "dave" "learn" stHear
+          stBuy = doAct "bob" "buy priest" stDave
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      let stDen = doAct "dave" "denounce" stH
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      assertBool "debt still" (exists "debt.priest.bob.church-favor" (db stDen))
+      assertBool "priest still blocked" (not (hasAct "priest" "censure bob" stDen))
+
+  , testCase "denounce × inquisit: mill denounce and church squeeze stay independent" $ do
+      -- dave harvest denounce while priest inquisit squeeze remains open (no shared gate).
+      let st0 = doAct "dave" "learn" inquisitSeed
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      let stH = iterate roundBoundary st0 !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "priest squeeze at harvest" (hasAct "priest" "squeeze bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      assertBool "priest squeeze after denounce" (hasAct "priest" "squeeze bob" stDen)
+      let stSq = doAct "priest" "squeeze bob" stDen
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+
+  , testCase "denounce × church parade: mill denounce and heretic parade stay independent" $ do
+      -- brand→activateChurchParade; harvest denounce and priest parade share no gate.
+      let st0 = doAct "dave" "learn" inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stP)
+      let stH = iterate roundBoundary stP !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "parade at harvest" (hasAct "priest" "parade bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      assertBool "parade after denounce" (hasAct "priest" "parade bob" stDen)
+      let stPar = doAct "priest" "parade bob" stDen
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+
+  , testCase "censure × mill silence: priest censure open; ira debt blocks mill denounce" $ do
+      -- ira silence blocks mill; priest hear→censure bob free at harvest.
+      let st0 = doAct "ira" "learn" (activateChurchBob sandboxWorld)
+          stHear = doAct "priest" "hear of bob" st0
+          stBuy = doAct "bob" "buy ira's silence" stHear
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+      assertBool "censured" (exists "censured.priest.bob" (db stCen))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stCen))
+      assertBool "ira still blocked" (not (hasAct "ira" "denounce" stCen))
+
   ]

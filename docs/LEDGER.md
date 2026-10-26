@@ -2243,3 +2243,34 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Coerce Spec 钉 isBranded/lacksBranded/isBrandedHeretic Insert 世界求值；Debt Spec 钉 everOwed/neverDemanded/hasCreditorClaim/lacksCreditorClaim 世界求值。无新实践 / 无 want 改动。
 - **测**：CoerceSpec、DebtSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v403 — Sandbox 控告×教会沉默交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 dave harvest denounce 完成而 priest 债挡 censure。无新实践 / 无 want 改动。
+- **测**：SandboxSpec denounce × church silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v404 — Sandbox 控告×教会胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 mill denounce 与 priest inquisit squeeze 并行、互不消耗。无新实践 / 无 want 改动。
+- **测**：SandboxSpec denounce × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v405 — Sandbox 控告×教会游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 mill denounce 与 priest heretic parade 并行、互不消耗。无新实践 / 无 want 改动。
+- **测**：SandboxSpec denounce × church parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v406 — Sandbox 检举×磨坊沉默交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 priest censure 开而 ira 债挡 mill denounce。无新实践 / 无 want 改动。
+- **测**：SandboxSpec censure × mill silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v407 — Chronicle eyed/confronted/wronged/recanted 对偶
+
+- **做了什么**：Spec 钉四条 askChronicle 臂与 Host *Of 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
