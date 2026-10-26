@@ -2281,4 +2281,46 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "exiled" (exists "exiled.bob" (db stEx))
       assertBool "cried persists" (exists "cried.dave.bob" (db stEx))
 
+
+  , testCase "squeeze × church exile: mill squeeze and priest banish stay independent" $ do
+      -- activateSqueeze + church bob heresy: squeeze and censure→banish share no gate.
+      let st0 = activateSqueeze (doAct "dave" "learn" (activateChurchBob sandboxWorld))
+          stHear = doAct "priest" "hear of bob" st0
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stHear)
+      let stH = iterate roundBoundary stHear !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      assertBool "squeeze at harvest" (hasAct "dave" "squeeze bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      assertBool "squeeze after censure" (hasAct "dave" "squeeze bob" stAfter)
+      let stSq = doAct "dave" "squeeze bob" stAfter
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+      assertBool "banish still" (hasAct "priest" "banish bob" stSq)
+      let stEx = doAct "priest" "banish bob" stSq
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+
+  , testCase "rally × church exile: market rally and priest banish stay independent" $ do
+      -- reputeSeed path + church bob heresy: market rally then next harvest banish.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stChurch = activateChurchBob st0
+          stHear = doAct "priest" "hear of bob" stChurch
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stHear))
+      let stM = iterate roundBoundary stHear !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      let stH = iterate roundBoundary stRally !! 2
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      let stEx = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "rallied persists" (exists "rallied.dave.bob" (db stEx))
+
   ]
