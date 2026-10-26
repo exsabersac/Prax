@@ -2,7 +2,7 @@
 -- action.id、praxAct 整回合、Save/Load。@stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
-import           Data.List (isInfixOf, isPrefixOf, sort)
+import           Data.List (isInfixOf, isPrefixOf, sort, (\\))
 import qualified Data.Map.Strict as Map
 import           Data.Either (isLeft, isRight)
 import           Test.Tasty (TestTree, testGroup)
@@ -179,6 +179,17 @@ tests = testGroup "MyTown"
           assertBool "eve mill" (factInfix st "at.eve.mill")
           assertBool "gale mill" (factInfix st "at.gale.mill")
           assertBool "you square" (factInfix st "at.you.square")
+
+      , testCase "NEG-ROSTER opening cast must be exactly {you,bob,carol,dana,eve,gale}" $ do
+          -- 硬卡：缺员或顶替均不得绿（集合必须恰好等于六名，不许少人/冒充）。
+          let required = sort ["you","bob","carol","dana","eve","gale"]
+              names    = sort (map charName (characters MyTown.myTownWorld))
+              missing  = required \\ names
+              impostors = names \\ required
+          length (characters MyTown.myTownWorld) @?= 6
+          names @?= required
+          assertBool ("缺员不得过: " ++ show missing) (null missing)
+          assertBool ("顶替/冒充不得过: " ++ show impostors) (null impostors)
 
       , testCase "typeCheck my-town is clean" $
           typeCheck MyTown.myTownWorld @?= []

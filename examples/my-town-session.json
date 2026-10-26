@@ -1,0 +1,118 @@
+{
+  "actResult": {
+    "menu": [
+      {
+        "actionId": "ga:v1:(\"town\",\"practice.town.here\",\"[Actor]: \\20844\\24320\\24110\\21161 [Beneficiary]\",[(\"Scene\",RS \"here\"),(\"Actor\",RS \"you\"),(\"P\",RS \"square\"),(\"Beneficiary\",RS \"carol\")])",
+        "actionName": "[Actor]: 公开帮助 [Beneficiary]",
+        "label": "you: 公开帮助 carol",
+        "practiceId": "town"
+      },
+      {
+        "actionId": "ga:v1:(\"town\",\"practice.town.here\",\"[Actor]: \\35828\\30772\\30475\\35265 [Helper] \\24110\\21161\\20102 [Beneficiary]\",[(\"Scene\",RS \"here\"),(\"Actor\",RS \"you\"),(\"P\",RS \"square\"),(\"Beneficiary\",RS \"bob\"),(\"Helper\",RS \"carol\")])",
+        "actionName": "[Actor]: 说破看见 [Helper] 帮助了 [Beneficiary]",
+        "label": "you: 说破看见 carol 帮助了 bob",
+        "practiceId": "town"
+      },
+      {
+        "actionId": "ga:v1:(\"world\",\"practice.world.world\",\"[Actor]: \\21069\\24448 [Place]\",[(\"Actor\",RS \"you\"),(\"World\",RS \"world\"),(\"OtherPlace\",RS \"square\"),(\"Place\",RS \"mill\")])",
+        "actionName": "[Actor]: 前往 [Place]",
+        "label": "you: 前往 mill",
+        "practiceId": "world"
+      }
+    ],
+    "narrative": [
+      "you: 公开帮助 bob",
+      "bob: 说破看见 you 帮助了 bob",
+      "carol: 公开帮助 bob",
+      "dana: 公开帮助 eve",
+      "eve: 公开帮助 dana",
+      "gale: 公开帮助 dana"
+    ],
+    "view": {
+      "actors": [
+        {
+          "here": "square",
+          "id": "you"
+        },
+        {
+          "here": "square",
+          "id": "bob"
+        },
+        {
+          "here": "square",
+          "id": "carol"
+        },
+        {
+          "here": "mill",
+          "id": "dana"
+        },
+        {
+          "here": "mill",
+          "id": "eve"
+        },
+        {
+          "here": "mill",
+          "id": "gale"
+        }
+      ],
+      "locationId": "square",
+      "locationLabel": "square",
+      "player": "you",
+      "worldId": "my-town"
+    }
+  },
+  "menu": [
+    {
+      "actionId": "ga:v1:(\"town\",\"practice.town.here\",\"[Actor]: \\20844\\24320\\24110\\21161 [Beneficiary]\",[(\"Scene\",RS \"here\"),(\"Actor\",RS \"you\"),(\"P\",RS \"square\"),(\"Beneficiary\",RS \"bob\")])",
+      "actionName": "[Actor]: 公开帮助 [Beneficiary]",
+      "label": "you: 公开帮助 bob",
+      "practiceId": "town"
+    },
+    {
+      "actionId": "ga:v1:(\"town\",\"practice.town.here\",\"[Actor]: \\20844\\24320\\24110\\21161 [Beneficiary]\",[(\"Scene\",RS \"here\"),(\"Actor\",RS \"you\"),(\"P\",RS \"square\"),(\"Beneficiary\",RS \"carol\")])",
+      "actionName": "[Actor]: 公开帮助 [Beneficiary]",
+      "label": "you: 公开帮助 carol",
+      "practiceId": "town"
+    },
+    {
+      "actionId": "ga:v1:(\"world\",\"practice.world.world\",\"[Actor]: \\21069\\24448 [Place]\",[(\"Actor\",RS \"you\"),(\"World\",RS \"world\"),(\"OtherPlace\",RS \"square\"),(\"Place\",RS \"mill\")])",
+      "actionName": "[Actor]: 前往 [Place]",
+      "label": "you: 前往 mill",
+      "practiceId": "world"
+    }
+  ],
+  "note": "Session API sample for frontend api.js: view (SessionView), menu ([MenuItem] with ga:v1 actionId), actResult (ActResult after one praxAct). Generated from Prax.Session on my-town.",
+  "view": {
+    "actors": [
+      {
+        "here": "square",
+        "id": "you"
+      },
+      {
+        "here": "square",
+        "id": "bob"
+      },
+      {
+        "here": "square",
+        "id": "carol"
+      },
+      {
+        "here": "mill",
+        "id": "dana"
+      },
+      {
+        "here": "mill",
+        "id": "eve"
+      },
+      {
+        "here": "mill",
+        "id": "gale"
+      }
+    ],
+    "locationId": "square",
+    "locationLabel": "square",
+    "player": "you",
+    "worldId": "my-town"
+  },
+  "worldId": "my-town"
+}
