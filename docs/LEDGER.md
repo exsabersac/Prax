@@ -2702,3 +2702,9 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"threateners of "` / `"threatenees of "` / `"extorters of "` / `"extortees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v483 — Sandbox 无胁迫 want 时不自选 squeeze（钉既有门禁）
+
+- **做了什么**：Spec 钉 activateSqueeze 后门开但 dave 仅 millJustice 时不选 squeeze；activateInquisit+hear 后门开但 priest 仅 bobHeresyJustice 时不选教会 squeeze。无新实践。
+- **测**：SandboxSpec wants: without squeezeDesire / without inquisitDesire。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。

@@ -171,7 +171,7 @@ defectionSeed =
   let st0 = doAct "dave" "learn" sandboxWorld
       carol' = (actorOf "carol" st0)
                  { charDesires = ["flees-mill", "returns-to-mill"]
-                                  ++ millJustice ++ ["cries-theft-at-market"] }
+                                  ++ millJustice ++ [cryDesireName] }
   in st0 { characters =
               [ if charName c == "carol" then carol' else c
               | c <- characters st0 ] }
@@ -3085,6 +3085,37 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "rally open" (hasAct "dave" "rally" stM)
       assertBool "cry open" (hasAct "dave" "cry the theft" stM)
       pickLabel "dave" stM @?= Just "dave: rally the square against the thief"
+
+  , testCase "wants: without squeezeDesire dave does not pick squeeze" $ do
+      -- Practice active + regards, but dave only holds millJustice — no squeeze pick.
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+          dave' = (actorOf "dave" st0) { charDesires = millJustice }
+          bob' = (actorOf "bob" st0) { charDesires = [] }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters st0 ] }
+      assertBool "squeeze open" (hasAct "dave" "squeeze bob" st)
+      let lab = pickLabel "dave" st
+      assertBool ("not squeeze, got " ++ show lab)
+        (maybe True (not . ("squeeze" `isInfixOf`)) lab)
+
+  , testCase "wants: without inquisitDesire priest does not pick church squeeze" $ do
+      let st0 = activateInquisit (activateChurchBob sandboxWorld)
+          -- priest hears so regards bob heretic; strip inquisit want
+          stHear = doAct "priest" "hear" st0
+          priest' = (actorOf "priest" stHear) { charDesires = bobHeresyJustice }
+          bob' = (actorOf "bob" stHear) { charDesires = [] }
+          st = stHear { characters =
+                  [ if charName c == "priest" then priest'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stHear ] }
+      assertBool "squeeze open" (hasAct "priest" "squeeze bob" st)
+      let lab = pickLabel "priest" st
+      assertBool ("not squeeze, got " ++ show lab)
+        (maybe True (not . ("squeeze" `isInfixOf`)) lab)
 
 
   ]
