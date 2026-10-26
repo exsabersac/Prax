@@ -1704,3 +1704,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec silence × rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v311 — Host stallOf 货摊存货叶
+
+- **做了什么**：`stallOf` 列出闭合视图中 `stall.<item>` 对象叶（Village 金轨迹叶形，对齐 `festivalsOf`）；CLI `prax stall <world>`。无实践 / 无 Village 金标准改动。
+- **测**：HostSpec stallOf（针对性；未跑全量）。
+
+## v312 — Sandbox 叛逃×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉受害方 carol 叛逃磨坊→公会后：磨坊 `regards.dave` 溶解（market cry 关），但公会已信同志（kyle+carol）重派生站队 → notoriety 仍在 → dave（仍愤怒）market rally 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

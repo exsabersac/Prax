@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -264,6 +264,11 @@ runFestivals :: [String] -> IO ()
 runFestivals ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (festivalsOf st)
+
+runStall :: [String] -> IO ()
+runStall ws =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (stallOf st)
 
 runLocations :: [String] -> IO ()
 runLocations (who : ws) =
@@ -541,6 +546,7 @@ usageText = unlines
   , "  prax projects <who> <world>            list practice instance leaves for who"
   , "  prax demanded <who> <world>            list demand leaves involving who"
   , "  prax festivals <world>                 list open festival leaves"
+  , "  prax stall <world>                     list stall.<item> inventory leaves"
   , "  prax locations <who> <world>           list at.<who>.* location leaves"
   , "  prax holding <who> <world>             list holding.<who>.* leaves"
   , "  prax carrying <who> <world>            list carrying.<who>.* leaves"
@@ -619,6 +625,7 @@ main = do
     ("projects" : ws) -> runProjects ws
     ("demanded" : ws) -> runDemanded ws
     ("festivals" : ws) -> runFestivals ws
+    ("stall" : ws)     -> runStall ws
     ("locations" : ws) -> runLocations ws
     ("holding" : ws)   -> runHolding ws
     ("carrying" : ws)  -> runCarrying ws

@@ -21,6 +21,7 @@
 -- v287：'denouncedOf'/'censuredOf'/'paradedOf' 控告/审查/游街叶（Sandbox）。
 -- v290：'criedOf'/'ralliedOf' 市集喊冤/声援叶。
 -- v291：'fledOf'/'reconciledOf'/'marriedOf' 叛逃/和解/婚入叶。
+-- v311：'stallOf' 货摊存货叶（Village stall.<item>）。
 -- v293：'eyedOf'/'confrontedOf'/'atonedOf' 目击/对质/赎罪叶（Village）。
 -- v295：'wrongedOf'/'hungryOf' 冤屈/饥饿叶（Feud / Village）。
 -- v297：'shortTemperedOf'/'appetiteOf' 暴脾气/胃口叶（Village）。
@@ -104,6 +105,7 @@ module Prax.Host
   , appetiteOf
   , resentsOf
   , alliedOf
+  , stallOf
   , checkpoint
   , restore
   ) where
@@ -866,6 +868,12 @@ alliedOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中货摊存货叶（@stall.<item>@；Village 金轨迹，对象叶形）。
+stallOf :: PraxState -> [String]
+stallOf st =
+  sort [ s | s <- queryView st, "stall." `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

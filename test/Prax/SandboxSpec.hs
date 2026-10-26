@@ -1449,4 +1449,24 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
       assertBool "debt still" (exists "debt.ira.bob.favor" (db stRally))
+
+  , testCase "defection × rally: flee transfers standing; mill cry closes, rally stays" $ do
+      -- Victim carol flees mill→guild: mill regards dissolve (dave cry closes),
+      -- but guild comrades who already believe (kyle+carol) re-derive regards →
+      -- notoriety persists → dave (still angry) keeps market rally.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+      assertBool "notorious" (exists "notorious.bob.thief" (readView st0))
+      let stFlee = doAct "carol" "abandon the mill" st0
+      assertBool "mill regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      assertBool "guild regard kyle"
+        (exists "regards.kyle.bob.thief" (readView stFlee))
+      assertBool "notoriety persists via guild"
+        (exists "notorious.bob.thief" (readView stFlee))
+      let stM = iterate roundBoundary stFlee !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "cry closed" (not (hasAct "dave" "cry the theft" stM))
+      assertBool "rally stays" (hasAct "dave" "rally" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
   ]
