@@ -1995,3 +1995,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec church parade × exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v361 — Sandbox 教会游街×磨坊胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉异端 church parade 与磨坊 squeeze 无共享 once-gate。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church parade × squeeze（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v362 — Sandbox 教会胁迫×磨坊胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisit 与 mill squeeze 双轨同时可开、互不消耗 once-gate。无新实践 / 无 want 改动。
+- **测**：SandboxSpec inquisit × squeeze（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

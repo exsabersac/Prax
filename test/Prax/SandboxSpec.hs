@@ -1985,4 +1985,39 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stEx = doAct "dave" "exile" stPar
       assertBool "exiled" (exists "exiled.bob" (db stEx))
 
+
+  , testCase "church parade × squeeze: heretic parade and mill squeeze stay independent" $ do
+      -- inquisitSeed brand→church parade + activateSqueeze dave: share no gate.
+      let st0 = activateSqueeze (doAct "dave" "learn" inquisitSeed)
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stP)
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stP)
+      let stPar = doAct "priest" "parade bob" stP
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+      assertBool "squeeze after parade" (hasAct "dave" "squeeze bob" stPar)
+      let stMill = doAct "dave" "squeeze bob" stPar
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stMill))
+      assertBool "parade spent" (not (hasAct "priest" "parade bob" stMill))
+
+  , testCase "inquisit × squeeze: church and mill squeeze stay independent" $ do
+      -- inquisitSeed priest squeeze + activateSqueeze dave mill squeeze: both
+      -- coerce tracks open without sharing once-gate.
+      let st0 = activateSqueeze (doAct "dave" "learn" inquisitSeed)
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
+      let stP = doAct "priest" "squeeze bob" st0
+      assertBool "threatened inquisit"
+        (exists "threatened.inquisit.priest.bob" (db stP))
+      assertBool "dave squeeze after" (hasAct "dave" "squeeze bob" stP)
+      let stM = doAct "dave" "squeeze bob" stP
+      assertBool "threatened mill"
+        (exists "threatened.squeeze.dave.bob" (db stM))
+      assertBool "inquisit mark persists"
+        (exists "threatened.inquisit.priest.bob" (db stM))
+
   ]
