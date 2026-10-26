@@ -22,6 +22,7 @@
 -- v550：'notorietiesOf' 恶名标签侧叶（notorious.*.<label>）。
 -- v553：'traitedOf' 性格标签侧叶（trait.*.<trait>）。
 -- v556：'moodedOf' 心境标签侧叶（mood.*.<mood>）。
+-- v566：'arcedOf'/'agedOf' 弧阶段/年龄值侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -118,7 +119,9 @@ module Prax.Host
   , beliefsOf
   , believersOf
   , arcsOf
+  , arcedOf
   , agesOf
+  , agedOf
   , projectsOf
   , practitionersOf
   , demandedOf
@@ -195,7 +198,7 @@ module Prax.Host
   , restore
   ) where
 
-import           Data.List (isInfixOf, isPrefixOf, nub, sort, (\\))
+import           Data.List (intercalate, isInfixOf, isPrefixOf, nub, sort, (\\))
 import qualified Data.Map.Strict as Map
 
 import           Prax.Db (dbToSentences, exists)
@@ -786,10 +789,45 @@ arcsOf :: PraxState -> String -> [String]
 arcsOf st who =
   sort [ s | s <- queryView st, (who ++ ".arc.") `isPrefixOf` s ]
 
+-- | 闭合视图中弧阶段为 @stage@ 的叶（@<who>.arc.<stage>@）。
+arcedOf :: PraxState -> String -> [String]
+arcedOf st stage = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "arc"
+  , intercalate "." (drop 2 parts) == stage
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的年龄叶（@age.<who>.*@）。
 agesOf :: PraxState -> String -> [String]
 agesOf st who =
   sort [ s | s <- queryView st, ("age." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中年龄值为 @n@ 的叶（@age.<who>.<n>@）。
+agedOf :: PraxState -> String -> [String]
+agedOf st n = sort
+  [ s
+  | s <- queryView st
+  , let pref = "age."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == n
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
 
 -- | 闭合视图中与 @who@ 相关的事业实例叶（@practice.<pid>.<who>.*@，含 crew/did）。
 projectsOf :: PraxState -> String -> [String]

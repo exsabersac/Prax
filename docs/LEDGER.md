@@ -3068,7 +3068,6 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`mooded of` 返回心境标签侧叶；Spec 钉 Host 与 Chronicle 空集。
-
 ## v558 — Play Spec 剧本作者钉
 
 - **做了什么**：新增 PlaySpec：playerName、scriptStart/cast/playable、cassia Want、双场景 opening/beat 计数、junction/ending 名、playWorld=compile 形。无新实践 / 无 want 改动。
@@ -3114,3 +3113,13 @@
 - **做了什么**：SandboxSpec 追加 carol flee×dave cry/ira tear；mill/heretic brand×对侧 silence buy；kyle joinsMill wed；cry/rally/parade once 跨下一窗仍关；seek<cry<denounce util；repay 后可再买（无 revoke）；cast bob/eve；squeeze 中途仍可买沉默。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（441 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v566 — Host arcedOf / agedOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`arcedOf` 枚举 `<who>.arc.<stage>`；`agedOf` 枚举 `age.*.<n>`；CLI `prax arced`/`prax aged`；empty-needle matching Spec。
+
+## v567 — Chronicle arced of / aged of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`arced of`/`aged of` 返回弧阶段/年龄值侧叶；Spec 钉 Host 与 Chronicle 空集。

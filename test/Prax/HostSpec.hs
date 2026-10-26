@@ -94,6 +94,16 @@ tests = testGroup "Prax.Host"
       let hits = queryViewMatching world "practice.wave"
       assertBool "wave practice in view" ("practice.wave" `elem` hits)
 
+  , testCase "empty needle matching returns full lists" $ do
+      let st = inject world [ Insert "flag.ada", Insert "note.hall" ]
+      queryMatching st "" @?= queryFacts st
+      queryViewMatching st "" @?= queryView st
+      livingMatching st "" @?= livingCast st
+      availableMatching world "ada" "" @?= available world "ada"
+      let (a0, r0) = factDeltaMatching "" st st
+          (a1, r1) = factDelta st st
+      (a0, r0) @?= (a1, r1)
+
   , testCase "factDelta, factDeltaMatching reports added and removed" $ do
       let before = inject world [ Insert "flag.ada", Insert "keep.x" ]
           after  = inject world [ Insert "keep.x", Insert "note.hall" ]
@@ -317,8 +327,14 @@ tests = testGroup "Prax.Host"
       arcsOf st "ana" @?= ["ana.arc.hopeful"]
       arcsOf st "ben" @?= ["ben.arc.bitter"]
       arcsOf st "void" @?= []
+      arcedOf st "hopeful" @?= ["ana.arc.hopeful"]
+      arcedOf st "bitter" @?= ["ben.arc.bitter"]
+      arcedOf st "void" @?= []
       agesOf st "ana" @?= ["age.ana.32"]
       agesOf st "ben" @?= ["age.ben.18"]
+      agedOf st "32" @?= ["age.ana.32"]
+      agedOf st "18" @?= ["age.ben.18"]
+      agedOf st "void" @?= []
       sort (projectsOf st "ana") @?=
         [ "practice.bake.ana"
         , "practice.bake.ana.crew.ben"

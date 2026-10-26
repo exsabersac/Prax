@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, agesOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -324,11 +324,25 @@ runArcs (who : ws) =
   in mapM_ putStrLn (arcsOf st who)
 runArcs _ = putStrLn "usage: prax arcs <who> <world>"
 
+-- | List arc leaves for stage: @prax arced <stage> <world>@.
+runArced :: [String] -> IO ()
+runArced (stage : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (arcedOf st stage)
+runArced _ = putStrLn "usage: prax arced <stage> <world>"
+
 runAges :: [String] -> IO ()
 runAges (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (agesOf st who)
 runAges _ = putStrLn "usage: prax ages <who> <world>"
+
+-- | List age leaves for value: @prax aged <n> <world>@.
+runAged :: [String] -> IO ()
+runAged (n : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (agedOf st n)
+runAged _ = putStrLn "usage: prax aged <n> <world>"
 
 runProjects :: [String] -> IO ()
 runProjects (who : ws) =
@@ -952,7 +966,9 @@ usageText = unlines
   , "  prax beliefs <who> <world>             list belief leaves for who"
   , "  prax believers <prop> <world>   list *.believes.<prop>… leaves"
   , "  prax arcs <who> <world>                list arc stage leaves for who"
+  , "  prax arced <stage> <world>             list <who>.arc.<stage> leaves"
   , "  prax ages <who> <world>                list age leaves for who"
+  , "  prax aged <n> <world>                  list age.*.<n> leaves"
   , "  prax projects <who> <world>            list practice instance leaves for who"
   , "  prax practitioners <pid> <world>  list practice.<pid>.* leaves"
   , "  prax demanded <who> <world>            list demand leaves involving who"
@@ -1066,7 +1082,9 @@ main = do
     ("beliefs" : ws)  -> runBeliefs ws
     ("believers" : ws) -> runBelievers ws
     ("arcs" : ws)     -> runArcs ws
+    ("arced" : ws)    -> runArced ws
     ("ages" : ws)     -> runAges ws
+    ("aged" : ws)     -> runAged ws
     ("projects" : ws) -> runProjects ws
     ("practitioners" : ws) -> runPractitioners ws
     ("demanded" : ws) -> runDemanded ws

@@ -130,7 +130,7 @@ formatEvent ev rs =
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、@"regards by "++who@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"moods of "++who@、@"mooded of "++mood@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
--- @"arc of "++who@、@"arcs of "++who@、@"age of "++who@、@"ages of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
+-- @"arc of "++who@、@"arcs of "++who@、@"arced of "++stage@、@"age of "++who@、@"ages of "++who@、@"aged of "++n@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、@"revokers of "++who@、@"revokees of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"ostracizers of "++who@、@"ostracizees of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"denouncers of "++who@、@"denouncees of "++who@、@"censured of "++who@、@"censurers of "++who@、@"censurees of "++who@、@"paraded of "++who@、@"paraders of "++who@、@"paradees of "++who@、
@@ -320,6 +320,18 @@ askChronicle st q
                         , '.' `notElem` drop (length prefix) s ]
       in if null stages then [who ++ " has no arc stage"]
          else map ((who ++ " arc ") ++) stages
+  | Just stage <- stripPrefix "arced of " q =
+      -- 对齐 Host arcedOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , let parts = splitDots s
+            , length parts >= 3
+            , parts !! 1 == "arc"
+            , intercalate "." (drop 2 parts) == stage
+            ]
+      in if null rows then ["nobody is arced " ++ stage]
+         else rows
   | Just who <- stripPrefix "ages of " q =
       -- 对齐 Host agesOf：读闭合视图，返回原始叶。
       let rows = sort
@@ -335,6 +347,21 @@ askChronicle st q
                       , '.' `notElem` drop (length prefix) s ]
       in if null ages then [who ++ " has no recorded age"]
          else map ((who ++ " age ") ++) ages
+  | Just n <- stripPrefix "aged of " q =
+      -- 对齐 Host agedOf：读闭合视图。
+      let pref = "age."
+          rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , pref `isPrefixOf` s
+            , let rest = drop (length pref) s
+            , let (who, lab) = splitLastDot rest
+            , lab == n
+            , not (null who)
+            , '.' `notElem` who
+            ]
+      in if null rows then ["nobody is aged " ++ n]
+         else rows
   | Just who <- stripPrefix "siblings of " q =
       -- 对齐 Host siblingsOf：读闭合视图；短语化客体名。
       let prefix = "sibling." ++ who ++ "."
@@ -1454,6 +1481,12 @@ askChronicle st q
   | otherwise = ["chronicle: unknown query " ++ show q]
 
 -- helpers ----------------------------------------------------------------------
+
+
+splitDots :: String -> [String]
+splitDots s = case break (== '.') s of
+  (a, '.' : b) -> a : splitDots b
+  (a, _)       -> [a | not (null a)]
 
 splitLastDot :: String -> (String, String)
 splitLastDot s =

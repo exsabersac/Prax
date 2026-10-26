@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, liesOf, traitsOf, traitedOf, moodedOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1120,5 +1120,37 @@ tests = testGroup "Prax.Chronicle"
         ["mood.ben.angry"]
       askChronicle st "mooded of void" @?=
         ["nobody is mooded void"]
+
+  , testCase "arcedOf / arced of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.arc!hopeful"
+            , Insert "ben.arc!bitter"
+            , Insert "cass.arc!hopeful"
+            ]
+      sort (arcedOf st "hopeful") @?= ["ana.arc.hopeful", "cass.arc.hopeful"]
+      arcedOf st "bitter" @?= ["ben.arc.bitter"]
+      arcedOf st "void" @?= []
+      askChronicle st "arced of hopeful" @?=
+        ["ana.arc.hopeful", "cass.arc.hopeful"]
+      askChronicle st "arced of bitter" @?=
+        ["ben.arc.bitter"]
+      askChronicle st "arced of void" @?=
+        ["nobody is arced void"]
+
+  , testCase "agedOf / aged of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "age.ana!32"
+            , Insert "age.ben!18"
+            , Insert "age.cass!32"
+            ]
+      sort (agedOf st "32") @?= ["age.ana.32", "age.cass.32"]
+      agedOf st "18" @?= ["age.ben.18"]
+      agedOf st "void" @?= []
+      askChronicle st "aged of 32" @?=
+        ["age.ana.32", "age.cass.32"]
+      askChronicle st "aged of 18" @?=
+        ["age.ben.18"]
+      askChronicle st "aged of void" @?=
+        ["nobody is aged void"]
 
   ]
