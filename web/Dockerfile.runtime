@@ -8,12 +8,10 @@
 #   cd web && docker compose up --build
 #
 # 构建上下文 = 仓库根；二进制 = web/bin/prax-web-session
-# 全量容器内 stack 构建见 web/Dockerfile（后置可选，易遇 Stackage 超时）。
+# python:3.12-slim 已带 libgmp.so.10，无需 apt（避免 Debian 源抖动挡 F01）
+# 全量容器内 stack 构建见 web/Dockerfile（后置可选）。
 
 FROM python:3.12-slim
-RUN apt-get update \
- && apt-get install -y --no-install-recommends libgmp10 ca-certificates \
- && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY web/bin/prax-web-session /usr/local/bin/prax-web-session
 RUN chmod +x /usr/local/bin/prax-web-session
