@@ -1,6 +1,7 @@
 -- | Prax.Worlds.Sandbox 可测闭环：磨坊审判、教会异端、婚入获站队、
 -- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解、沉默×叛逃×节庆复合门禁、
--- 臭名+愤怒市集声援、站队胁迫招供（Coerce）、教会异端×磨坊正义同场双压，
+-- 臭名+愤怒市集声援、站队胁迫招供（Coerce）、教会异端×磨坊正义同场双压、
+-- 教会异端×沉默债、教会胁迫悔罪（Coerce×heretic），
 -- 以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
@@ -19,8 +20,9 @@ import           Prax.Planner (pickAction)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Worlds.Sandbox
   ( sandboxWorld, playerName, sandboxDesires, millJustice, millCry
-  , bobHeresyJustice, squeezeDesireName, fearsBrandName
-  , activateSqueeze, activateChurchBob )
+  , churchJustice, bobHeresyJustice, squeezeDesireName, fearsBrandName
+  , activateSqueeze, activateChurchBob
+  , inquisitDesireName, fearsBrandHereticName, activateInquisit )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -440,6 +442,156 @@ sandboxDualPressureGolden =
   , "ira: ira: cry the theft at market"
   ]
 
+-- Heresy × silence debt (eve track): gale already heard (regard up); eve buys
+-- gale's silence; censure gated by lacksOwes until tear-up. Practice always on;
+-- seed only retargets wants (eve buys, gale breaks + church justice).
+churchSilenceSeed :: PraxState
+churchSilenceSeed =
+  let st0 = doAct "gale" "hear the blasphemy" sandboxWorld
+      eve'  = (actorOf "eve" st0)  { charDesires = ["buys-church-silence"] }
+      gale' = (actorOf "gale" st0)
+                { charDesires = churchJustice ++ ["breaks-church-silence"] }
+      -- Mute bob buy-silence + mill justice noise so church silence dominates.
+      bob'  = (actorOf "bob" st0) { charDesires = [] }
+      carol' = (actorOf "carol" st0) { charDesires = [] }
+      dave'  = (actorOf "dave" st0) { charDesires = [] }
+      fran'  = (actorOf "fran" st0) { charDesires = [] }
+      ira'   = (actorOf "ira" st0) { charDesires = [] }
+      priest' = (actorOf "priest" st0) { charDesires = churchJustice }
+  in st0 { characters =
+              [ if charName c == "eve" then eve'
+                else if charName c == "gale" then gale'
+                else if charName c == "bob" then bob'
+                else if charName c == "carol" then carol'
+                else if charName c == "dave" then dave'
+                else if charName c == "fran" then fran'
+                else if charName c == "ira" then ira'
+                else if charName c == "priest" then priest'
+                else c
+              | c <- characters st0 ] }
+
+-- Coerce × church heresy (bob): activate churchBob + inquisit; priest hears bob
+-- (regard up) and holds punishes-inquisit; bob fears brand-heretic. Mill muted.
+inquisitSeed :: PraxState
+inquisitSeed =
+  let st0 = activateInquisit (activateChurchBob sandboxWorld)
+      st1 = doAct "priest" "hear of bob" st0
+      priest' = (actorOf "priest" st1)
+                  { charDesires = [inquisitDesireName] ++ bobHeresyJustice }
+      gale'   = (actorOf "gale" st1) { charDesires = bobHeresyJustice }
+      bob'    = (actorOf "bob" st1)  { charDesires = [fearsBrandHereticName] }
+      carol'  = (actorOf "carol" st1) { charDesires = [] }
+      dave'   = (actorOf "dave" st1) { charDesires = [] }
+      fran'   = (actorOf "fran" st1) { charDesires = [] }
+      ira'    = (actorOf "ira" st1) { charDesires = [] }
+  in st1 { characters =
+              [ if charName c == "priest" then priest'
+                else if charName c == "gale" then gale'
+                else if charName c == "bob" then bob'
+                else if charName c == "carol" then carol'
+                else if charName c == "dave" then dave'
+                else if charName c == "fran" then fran'
+                else if charName c == "ira" then ira'
+                else c
+              | c <- characters st1 ] }
+
+-- Captured live (v278): eve buys → gale tears → harvest censure → priest exile.
+sandboxChurchSilenceGolden :: [String]
+sandboxChurchSilenceGolden =
+  [ "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: buy gale's silence about the heresy"
+  , "gale: gale: tear up eve's heresy silence deal"
+  , "priest: priest: hear the blasphemy"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: censure the heretic"
+  , "priest: priest: censure the heretic"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: exile the heretic"
+  ]
+
+-- Captured live (v279): squeeze → recant → re-squeeze → brand → censure → banish.
+sandboxInquisitGolden :: [String]
+sandboxInquisitGolden =
+  [ "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: hear of bob's heresy"
+  , "priest: priest: squeeze bob for a recantation"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: recant the heresy to priest"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: squeeze bob for a recantation"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: brand bob as unrepentant heretic"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: censure bob for heresy"
+  , "priest: priest: censure bob for heresy"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: banish bob for heresy"
+  ]
+
+
 tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs)"
   [ testCase "well-formed: typeCheck empty" $
       typeCheck sandboxWorld @?= []
@@ -457,6 +609,19 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         ("millSqueeze" `elem` practiceNames sandboxWorld)
       assertBool "millSqueeze inactive by default"
         (not (exists "practice.millSqueeze" (db sandboxWorld)))
+      assertBool "churchSilence" ("churchSilence" `elem` practiceNames sandboxWorld)
+      assertBool "churchSilence active"
+        (exists "practice.churchSilence" (db sandboxWorld))
+      assertBool "churchInquisit defined"
+        ("churchInquisit" `elem` practiceNames sandboxWorld)
+      assertBool "churchInquisit inactive by default"
+        (not (exists "practice.churchInquisit" (db sandboxWorld)))
+      assertBool "inquisit desire registered"
+        (any ((== inquisitDesireName) . desireName) sandboxDesires)
+      assertBool "fears-brand-heretic registered"
+        (any ((== fearsBrandHereticName) . desireName) sandboxDesires)
+      assertBool "buys-church-silence registered"
+        (any ((== "buys-church-silence") . desireName) sandboxDesires)
       assertBool "churchBobHeresy defined"
         ("churchBobHeresy" `elem` practiceNames sandboxWorld)
       assertBool "churchBobHeresy inactive by default"
@@ -978,4 +1143,94 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
   , testCase "wants dual-pressure golden: 44 NPC turns mill wins exile race" $
       driveLabels (length sandboxDualPressureGolden) dualPressureSeed
         @?= sandboxDualPressureGolden
+
+  , testCase "heresy × silence: buy blocks censure; tear-up restores gate" $ do
+      let st0 = churchSilenceSeed
+      assertBool "gale regards eve"
+        (exists "regards.gale.eve.heretic" (readView st0))
+      assertBool "eve can buy" (hasAct "eve" "buy gale" st0)
+      assertBool "outside: no censure" (not (hasAct "gale" "censure the heretic" st0))
+      let stBuy = doAct "eve" "buy gale" st0
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest open" (exists "festival.harvest" (db stH))
+      assertBool "debt blocks censure" (not (hasAct "gale" "censure the heretic" stH))
+      assertBool "gale can tear" (hasAct "gale" "tear up eve" stH)
+      let stTear = doAct "gale" "tear up eve" stH
+      assertBool "debt gone" (not (exists "debt.gale.eve.church-favor" (db stTear)))
+      assertBool "revoked" (exists "revoked.gale.eve" (db stTear))
+      assertBool "censure open after tear" (hasAct "gale" "censure the heretic" stTear)
+      let stCen = doAct "gale" "censure the heretic" stTear
+      assertBool "censured" (exists "censured.gale.eve" (db stCen))
+      let stAfter = roundBoundary stCen
+      -- priest also heard in free play? not in this seed — only gale heard.
+      -- gale is not leader → cannot exile; priest still can if censured.priest.
+      assertBool "gale non-leader no exile"
+        (not (hasAct "gale" "exile the heretic" stAfter))
+
+  , testCase "wants: churchSilenceSeed eve buys; gale tears then censures" $ do
+      pickLabel "eve" churchSilenceSeed
+        @?= Just "eve: buy gale's silence about the heresy"
+      let stBuy = doAct "eve" "buy gale" churchSilenceSeed
+      pickLabel "gale" stBuy @?= Just "gale: tear up eve's heresy silence deal"
+      let stTear = doAct "gale" "tear up eve" stBuy
+      let stH = iterate roundBoundary stTear !! 3
+      pickLabel "gale" stH @?= Just "gale: censure the heretic"
+
+  , testCase "coerce × heresy: squeeze → recant; re-squeeze → brand; censure still open" $ do
+      let st0 = inquisitSeed
+      assertBool "inquisit active" ("churchInquisit" `elem` practiceNames st0)
+      assertBool "churchBob active"
+        (exists "practice.churchBobHeresy" (db st0))
+      assertBool "priest regards bob heretic"
+        (exists "regards.priest.bob.heretic" (readView st0))
+      assertBool "priest can squeeze" (hasAct "priest" "squeeze bob" st0)
+      assertBool "default world: no inquisit"
+        (not (hasAct "priest" "squeeze bob" sandboxWorld))
+      let stSq = doAct "priest" "squeeze bob" st0
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+      assertBool "bob can recant" (hasAct "bob" "recant the heresy" stSq)
+      assertBool "bob can defy" (hasAct "bob" "defy" stSq)
+      let stRec = doAct "bob" "recant the heresy" stSq
+      assertBool "recanted" (exists "recanted.bob" (db stRec))
+      assertBool "complied"
+        (exists "complied.inquisit.priest.bob" (db stRec))
+      -- Re-squeeze → brand (permanent complied blocks re-pay).
+      assertBool "re-squeeze" (hasAct "priest" "squeeze bob" stRec)
+      let stSq2 = doAct "priest" "squeeze bob" stRec
+      assertBool "no re-recant" (not (hasAct "bob" "recant the heresy" stSq2))
+      assertBool "can brand" (hasAct "priest" "brand bob" stSq2)
+      let stBrand = doAct "priest" "brand bob" stSq2
+      assertBool "brandedHeretic" (exists "brandedHeretic.bob" (db stBrand))
+      -- Heresy track still open at harvest (independent of coerce).
+      let stOpen = iterate roundBoundary stBrand !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stOpen))
+      assertBool "censure bob still" (hasAct "priest" "censure bob" stOpen)
+      let stCen = doAct "priest" "censure bob" stOpen
+      let stAfter = roundBoundary stCen
+      assertBool "banish open" (hasAct "priest" "banish bob" stAfter)
+      let stBan = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stBan))
+
+  , testCase "wants: inquisitSeed priest squeezes; bob recants; then brand path" $ do
+      pickLabel "priest" inquisitSeed
+        @?= Just "priest: squeeze bob for a recantation"
+      let stSq = doAct "priest" "squeeze bob" inquisitSeed
+      pickLabel "bob" stSq @?= Just "bob: recant the heresy to priest"
+      let stRec = doAct "bob" "recant" stSq
+      pickLabel "priest" stRec
+        @?= Just "priest: squeeze bob for a recantation"
+      let stSq2 = doAct "priest" "squeeze bob" stRec
+      pickLabel "bob" stSq2 @?= Just "bob: Wait a moment"
+      pickLabel "priest" stSq2
+        @?= Just "priest: brand bob as unrepentant heretic"
+
+  , testCase "wants church-silence golden: 43 NPC turns buy → tear → censure → exile" $
+      driveLabels (length sandboxChurchSilenceGolden) churchSilenceSeed
+        @?= sandboxChurchSilenceGolden
+
+  , testCase "wants inquisit golden: 43 NPC turns squeeze → recant → brand → banish" $
+      driveLabels (length sandboxInquisitGolden) inquisitSeed
+        @?= sandboxInquisitGolden
   ]

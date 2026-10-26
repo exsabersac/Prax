@@ -2,7 +2,9 @@
 -- 婚入磨坊 / 债务买沉默 / 双节庆错峰市集喊冤 / 受害方叛逃和解 /
 -- 沉默×叛逃×节庆复合门禁 / 臭名+愤怒市集声援 /
 -- 站队胁迫招供（Coerce×factionStanding，默认未激活）/
--- 教会异端×磨坊正义同场双压（bob 双轨，默认未激活）（非 Village）。
+-- 教会异端×磨坊正义同场双压（bob 双轨，默认未激活）/
+-- 教会异端×沉默债（审查门禁 lacksOwes）/
+-- 教会胁迫悔罪（Coerce×heretic 站队，默认未激活）（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -19,6 +21,9 @@ module Prax.Worlds.Sandbox
   , fearsBrandName
   , activateSqueeze
   , activateChurchBob
+  , inquisitDesireName
+  , fearsBrandHereticName
+  , activateInquisit
   ) where
 
 import           Prax.Query (Condition (..))
@@ -48,7 +53,8 @@ sandboxAxioms =
   , notoriety "thief" 2   -- ≥2 磨坊站队 → notorious.bob.thief，打开市集声援
   ] ++ kinAxioms
 
--- | 命名欲望词汇：磨坊正义 / 教会审查 / bob 异端双压 / 婚入磨坊 / 买沉默与撕毁协议。
+-- | 命名欲望词汇：磨坊正义 / 教会审查 / bob 异端双压 / 婚入磨坊 / 买沉默与撕毁 /
+-- 教会异端沉默 / 教会胁迫悔罪。
 sandboxDesires :: [Desire]
 sandboxDesires =
   [ Desire "seeks-theft-truth"
@@ -84,6 +90,13 @@ sandboxDesires =
   , Desire "punishes-bob-heretic"
       -- 权重 9 > eve 审查 8 / 磨坊控告 8：双压种子上优先钉 bob 异端轨
       (Want [ Match "censured.Owner.bob" ] 9)
+  , Desire "buys-church-silence"
+      -- eve 向已站队教会证人买人情封口（异端轨）
+      (Want [ Match "debt.gale.Owner.church-favor" ] 14)
+  , Desire "breaks-church-silence"
+      (Want [ Match "revoked.Owner.eve" ] 10)
+  , inquisitDesire
+  , fearsBrandHereticDesire
   ]
 
 millJustice :: [String]
@@ -159,6 +172,7 @@ churchHeresyP = practice
       , action "[Actor]: censure the heretic"
           [ duringFestival "harvest"
           , Match "regards.Actor.eve.heretic"
+          , lacksOwes "Actor" "eve" "church-favor"
           , Not "censured.Actor.eve" ]
           [ Insert "censured.Actor.eve" ]
       , action "[Actor]: exile the heretic"
@@ -187,6 +201,7 @@ churchBobHeresyP = practice
       , action "[Actor]: censure bob for heresy"
           [ duringFestival "harvest"
           , Match "regards.Actor.bob.heretic"
+          , lacksOwes "Actor" "bob" "church-favor"
           , Not "censured.Actor.bob" ]
           [ Insert "censured.Actor.bob" ]
       , action "[Actor]: banish bob for heresy"
@@ -244,6 +259,35 @@ millSilenceP = practice
           [ owes "Creditor" "Actor" "favor"
           , Not "revoked.Creditor.Actor" ]
           (settle "Creditor" "Actor" "favor")
+      ]
+  }
+
+-- | 教会异端×沉默债：异端在窗外向已站队教会证人买人情封口；
+-- 债权人可撕毁协议，之后窗内审查门禁（lacksOwes）再开。
+-- 与磨坊沉默同形，但触发 regards.*.heretic、堵住 censure 而非 denounce。
+churchSilenceP :: Practice
+churchSilenceP = practice
+  { practiceId   = "churchSilence"
+  , practiceName = "buying silence about church heresy"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: buy [Creditor]'s silence about the heresy"
+          [ outsideFestival "harvest"
+          , Match "regards.Creditor.Actor.heretic"
+          , lacksOwes "Creditor" "Actor" "church-favor"
+          , Not "censured.Creditor.Actor"
+          , Not "revoked.Creditor.Actor"
+          , Neq "Actor" "Creditor" ]
+          (owe "Creditor" "Actor" "church-favor")
+      , action "[Actor]: tear up [Debtor]'s heresy silence deal"
+          [ owes "Actor" "Debtor" "church-favor"
+          , Not "revoked.Actor.Debtor" ]
+          (settle "Actor" "Debtor" "church-favor"
+            ++ [ Insert "revoked.Actor.Debtor" ])
+      , action "[Actor]: repay [Creditor] for keeping heresy silent"
+          [ owes "Creditor" "Actor" "church-favor"
+          , Not "revoked.Creditor.Actor" ]
+          (settle "Creditor" "Actor" "church-favor")
       ]
   }
 
@@ -350,6 +394,55 @@ millSqueezeP = practice
 activateSqueeze :: PraxState -> PraxState
 activateSqueeze = performOutcome (Insert "practice.millSqueeze")
 
+-- | 教会胁迫悔罪：已 factionStanding 站队的教会成员可胁迫异端悔罪；违抗则烙异端印。
+-- 默认不 Insert practice.churchInquisit（免搅既有金轨迹）；inquisitSeed / activateInquisit 激活。
+-- 与 churchBobHeresy / churchHeresy 交错：窗外可胁，窗内仍可审查，窗外领袖放逐。
+churchInquisitCoercion :: Coercion
+churchInquisitCoercion = Coercion
+  { coId            = "inquisit"
+  , coVictim        = "Mark"
+  , coTrigger       =
+      [ Match "regards.Actor.Mark.heretic"
+      , isMember "Actor" "church"
+      ]
+  , coThreatenLabel = "[Actor]: squeeze [Mark] for a recantation"
+  , coDemandLabel   = "[Actor]: recant the heresy to [E]"
+  , coDemand        = [ Insert "recanted.Actor" ]
+  , coPunishLabel   = "[Actor]: brand [Mark] as unrepentant heretic"
+  , coPunishWhen    = [ Not "brandedHeretic.Mark" ]
+  , coPunishOuts    = [ Insert "brandedHeretic.Mark" ]
+  , coKernel        = [ Match "brandedHeretic.Mark" ]
+  , coWeight        = 10
+  , coThreatLasts     = Nothing
+  , coComplianceLasts = Nothing
+  }
+
+inquisitDesire :: Desire
+inquisitActs :: [Action]
+(inquisitDesire, inquisitActs) = coerce churchInquisitCoercion
+
+inquisitDesireName :: String
+inquisitDesireName = desireName inquisitDesire
+
+fearsBrandHereticName :: String
+fearsBrandHereticName = "fears-brand-heretic"
+
+fearsBrandHereticDesire :: Desire
+fearsBrandHereticDesire =
+  Desire fearsBrandHereticName (Want [ Match "brandedHeretic.Owner" ] (-12))
+
+churchInquisitP :: Practice
+churchInquisitP = practice
+  { practiceId   = "churchInquisit"
+  , practiceName = "squeezing a regarded heretic for recantation"
+  , roles        = []
+  , actions      = inquisitActs
+  }
+
+-- | 激活教会胁迫悔罪实践（供 inquisitSeed / 逐步测）。
+activateInquisit :: PraxState -> PraxState
+activateInquisit = performOutcome (Insert "practice.churchInquisit")
+
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
 -- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
 -- ira is the mill witness bob tries to buy silence from (parallel to carol/dave justice).
@@ -394,6 +487,7 @@ setup =
   , Insert "practice.churchHeresy"
   , Insert "practice.millWed"
   , Insert "practice.millSilence"
+  , Insert "practice.churchSilence"
   , Insert "practice.marketCry"
   , Insert "practice.millAllegiance"
   , Insert "practice.millRally"
@@ -414,6 +508,6 @@ sandboxWorld =
         (setCharacters cast
           (definePractices
              [ presenceP, millTribunalP, churchHeresyP, churchBobHeresyP
-             , millWedP, millSilenceP, marketCryP, millAllegianceP, millRallyP
-             , millSqueezeP ]
+             , millWedP, millSilenceP, churchSilenceP, marketCryP
+             , millAllegianceP, millRallyP, millSqueezeP, churchInquisitP ]
              (setSchedule [harvestFestival, marketFestival] emptyState)))

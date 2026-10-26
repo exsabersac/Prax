@@ -1520,3 +1520,16 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：新实践 `churchBobHeresy`（默认未激活）——教会对 **bob** 的听闻→审查→领袖放逐轨，与磨坊贼案共享 `exiled.bob`，形成同场竞速。欲望 `seeks-bob-heresy` / `punishes-bob-heretic`（权重 9 > eve 审查 8）+ 复用 `wants-exile-bob`；`activateChurchBob` / `dualPressureSeed` 激活并把牧师/gale 挂到 bob 异端正义。可测：harvest 窗内磨坊控告与教会审查 bob 交错并存；窗外磨坊放逐 vs 领袖放逐竞速（先到堵住后到）；权重优先 bob 审查压过 eve。44 步金轨迹钉磨坊先放逐、教会审查后等待。
 - **测**：SandboxSpec 默认未激活 / 交错门禁+双向竞速 / 权重优先 / wants pick / 44 步 `sandboxDualPressureGolden`；既有 Sandbox 金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+
+
+## v278 — Sandbox 教会异端 × 沉默债
+
+- **做了什么**：新实践 `churchSilence`（默认激活，与磨坊沉默同形但异质）——异端向已 `regards.*.heretic` 的教会证人买 `church-favor` 封口；债权人可撕毁（`revoked`）。`churchHeresy` / `churchBobHeresy` 的审查动作加 `lacksOwes … church-favor` 门禁：买沉默堵住审查，撕债后翻转。债务内容与磨坊 `favor` 分离，免抢撕毁标签。欲望 `buys-church-silence` / `breaks-church-silence`；`churchSilenceSeed` 挂 eve/gale，静音磨坊噪声。
+- **测**：SandboxSpec 逐步（买→堵审查→撕→审查开）；wants pick；43 步 `sandboxChurchSilenceGolden`（买→撕→审查→领袖放逐）。既有 Sandbox 金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+
+## v279 — Sandbox 教会胁迫悔罪（Coerce × heretic 站队）
+
+- **做了什么**：自定义 `Coercion`「inquisit」——触发为已 `factionStanding` 站队的**教会**成员；威胁要悔罪（`recanted`），违抗/站立威胁可烙异端印（`brandedHeretic`）。实践默认**未激活**；`activateInquisit` / `inquisitSeed` 与 `churchBobHeresy` 同开，牧师挂 `punishes-inquisit`，bob 挂 `fears-brand-heretic`。与异端轨真正交错：窗外胁→悔→再胁→烙印，harvest 仍可审查，窗外领袖放逐。
+- **测**：SandboxSpec 逐步（胁→悔→再胁→烙→审查→放逐仍开）；wants pick；43 步 `sandboxInquisitGolden`。既有金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
