@@ -34,6 +34,7 @@
 -- v458：'creditorsOf'/'debtorsOf' 债权/债务方叶（debt.<c>.<d>.*）。
 -- v472：'demandersOf'/'demandeesOf' 催收方叶（demanded.<c>.<d>.*）。
 -- v481：'threatenersOf'/'threateneesOf'/'extortersOf'/'extorteesOf' 胁迫/勒索方叶。
+-- v488：'compliersOf'/'complieesOf'/'defiersOf'/'defieesOf' 顺从/违抗方叶。
 module Prax.Host
   ( step
   , stepExact
@@ -103,7 +104,11 @@ module Prax.Host
   , extortersOf
   , extorteesOf
   , compliedOf
+  , compliersOf
+  , complieesOf
   , defiedOf
+  , defiersOf
+  , defieesOf
   , brandedOf
   , revokedOf
   , confessedOf
@@ -769,6 +774,41 @@ compliedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+-- | 闭合视图中 @who@ 作为被顺从方的叶（@complied.<sid>.<who>.<victim>@）。
+compliersOf :: PraxState -> String -> [String]
+compliersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "complied." `isPrefixOf` s
+  , let rest = drop (length ("complied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为顺从方的叶（@complied.<sid>.<extorter>.<who>@）。
+complieesOf :: PraxState -> String -> [String]
+complieesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "complied." `isPrefixOf` s
+  , let rest = drop (length ("complied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中与 @who@ 相关的违抗叶（@defied.<sid>.<victim>.<extorter>@，任一侧）。
 defiedOf :: PraxState -> String -> [String]
 defiedOf st who = sort
@@ -786,6 +826,41 @@ defiedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+
+-- | 闭合视图中 @who@ 作为被违抗方的叶（@defied.<sid>.<victim>.<who>@）。
+defiersOf :: PraxState -> String -> [String]
+defiersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "defied." `isPrefixOf` s
+  , let rest = drop (length ("defied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为违抗方的叶（@defied.<sid>.<who>.<extorter>@）。
+defieesOf :: PraxState -> String -> [String]
+defieesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "defied." `isPrefixOf` s
+  , let rest = drop (length ("defied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的烙印叶（@branded.<who>@ / @brandedHeretic.<who>@ 等 branded* 前缀）。
 brandedOf :: PraxState -> String -> [String]

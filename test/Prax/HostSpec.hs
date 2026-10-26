@@ -670,4 +670,34 @@ tests = testGroup "Prax.Host"
       extorteesOf st "void" @?= []
 
 
+
+  , testCase "compliersOf / complieesOf / defiersOf / defieesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "complied.sid1.ana.ben"
+                , Insert "complied.sid2.cai.ana"
+                , Insert "defied.sid3.ben.ana"
+                , Insert "defied.sid4.ana.dai"
+                , Insert "flag.x" ]
+      compliersOf st "ana" @?=
+        ["complied.sid1.ana.ben"]
+      compliersOf st "cai" @?=
+        ["complied.sid2.cai.ana"]
+      compliersOf st "void" @?= []
+      complieesOf st "ben" @?=
+        ["complied.sid1.ana.ben"]
+      complieesOf st "ana" @?=
+        ["complied.sid2.cai.ana"]
+      complieesOf st "void" @?= []
+      defiersOf st "ana" @?=
+        ["defied.sid3.ben.ana"]
+      defiersOf st "dai" @?=
+        ["defied.sid4.ana.dai"]
+      defiersOf st "void" @?= []
+      defieesOf st "ben" @?=
+        ["defied.sid3.ben.ana"]
+      defieesOf st "ana" @?=
+        ["defied.sid4.ana.dai"]
+      defieesOf st "void" @?= []
+
+
   ]

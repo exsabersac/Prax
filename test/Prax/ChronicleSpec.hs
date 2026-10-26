@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -777,6 +777,28 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "threatenees of void" @?= ["void has no known threatenees"]
       askChronicle st "extorters of void" @?= ["void has no known extorters"]
       askChronicle st "extortees of void" @?= ["void has no known extortees"]
+
+
+
+  , testCase "askChronicle compliers/compliees/defiers/defiees dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "complied.sid1.ana.ben"
+            , Insert "complied.sid2.cai.ana"
+            , Insert "defied.sid3.ben.ana"
+            , Insert "defied.sid4.ana.dai"
+            ]
+      compliersOf st "ana" @?= ["complied.sid1.ana.ben"]
+      complieesOf st "ben" @?= ["complied.sid1.ana.ben"]
+      defiersOf st "ana" @?= ["defied.sid3.ben.ana"]
+      defieesOf st "ben" @?= ["defied.sid3.ben.ana"]
+      askChronicle st "compliers of ana" @?= ["ben complier of ana"]
+      askChronicle st "compliees of ben" @?= ["ben complier of ana"]
+      askChronicle st "defiers of ana" @?= ["ben defier of ana"]
+      askChronicle st "defiees of ben" @?= ["ben defier of ana"]
+      askChronicle st "compliers of void" @?= ["void has no known compliers"]
+      askChronicle st "compliees of void" @?= ["void has no known compliees"]
+      askChronicle st "defiers of void" @?= ["void has no known defiers"]
+      askChronicle st "defiees of void" @?= ["void has no known defiees"]
 
 
   ]

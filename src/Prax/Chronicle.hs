@@ -143,7 +143,7 @@ formatEvent ev rs =
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"threateners of "++who@、@"threatenees of "++who@、@"shunned of "++who@、
 -- @"locations of "++who@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
--- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"defied of "++who@、
+-- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
@@ -733,6 +733,34 @@ askChronicle st q
                 , (parts !! 1) == who || (parts !! 2) == who ]
       in if null rows then [who ++ " has no compliance marks"]
          else rows
+  | Just who <- stripPrefix "compliers of " q =
+      -- 对齐 Host compliersOf：读闭合视图；短语化顺从人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "complied." `isPrefixOf` s
+                , let rest = drop (length ("complied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known compliers"]
+         else [ v ++ " complier of " ++ who
+              | s <- rows
+              , let rest = drop (length ("complied." :: String)) s
+              , let v = (splitDot rest) !! 2 ]
+  | Just who <- stripPrefix "compliees of " q =
+      -- 对齐 Host complieesOf：读闭合视图；短语化被顺从人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "complied." `isPrefixOf` s
+                , let rest = drop (length ("complied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 2 == who ]
+      in if null rows then [who ++ " has no known compliees"]
+         else [ who ++ " complier of " ++ e
+              | s <- rows
+              , let rest = drop (length ("complied." :: String)) s
+              , let e = (splitDot rest) !! 1 ]
   | Just who <- stripPrefix "defied of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
@@ -744,6 +772,34 @@ askChronicle st q
                 , (parts !! 1) == who || (parts !! 2) == who ]
       in if null rows then [who ++ " has no defiance marks"]
          else rows
+  | Just who <- stripPrefix "defiers of " q =
+      -- 对齐 Host defiersOf：读闭合视图；短语化违抗人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "defied." `isPrefixOf` s
+                , let rest = drop (length ("defied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 2 == who ]
+      in if null rows then [who ++ " has no known defiers"]
+         else [ v ++ " defier of " ++ who
+              | s <- rows
+              , let rest = drop (length ("defied." :: String)) s
+              , let v = (splitDot rest) !! 1 ]
+  | Just who <- stripPrefix "defiees of " q =
+      -- 对齐 Host defieesOf：读闭合视图；短语化被违抗人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "defied." `isPrefixOf` s
+                , let rest = drop (length ("defied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known defiees"]
+         else [ who ++ " defier of " ++ e
+              | s <- rows
+              , let rest = drop (length ("defied." :: String)) s
+              , let e = (splitDot rest) !! 2 ]
   | Just who <- stripPrefix "obligations of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

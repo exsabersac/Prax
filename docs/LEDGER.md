@@ -2732,3 +2732,14 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 abandon 门开但 carol 仅 millJustice 时不选 abandon；flee 后 return 门开但无 returnDesire 时不选和解。无新实践。
 - **测**：SandboxSpec wants: without fleeDesire / without returnDesire。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+## v488 — Host compliers/compliees/defiers/defiees + CLI
+
+- **做了什么**：闭合视图枚举 `complied.*.<who>.*` / `complied.*.*.<who>` 与 `defied.*.*.<who>` / `defied.*.<who>.*`；CLI `prax compliers`/`compliees`/`defiers`/`defiees`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v489 — Chronicle compliers/compliees/defiers/defiees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"compliers of "` / `"compliees of "` / `"defiers of "` / `"defiees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
