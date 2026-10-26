@@ -1737,3 +1737,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec church parade × rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v317 — Coerce isMarried / isOstracized 条件对偶
+
+- **做了什么**：`isMarried`/`lacksMarried`（`married.<a>.<b>`）、`isOstracized`/`lacksOstracized`（`ostracized.<a>.<t>`）Match/Not 对偶。无实践改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v318 — Sandbox 市集喊冤×声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 reputeSeed 臭名路径下 market 窗内 cry 与 rally 互不阻挡（无共享 once-gate）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec cry × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

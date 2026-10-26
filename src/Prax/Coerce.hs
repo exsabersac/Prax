@@ -55,6 +55,8 @@ module Prax.Coerce
   , isReconciled, lacksReconciled
   , isConfessed, lacksConfessed
   , isRecanted, lacksRecanted
+  , isMarried, lacksMarried
+  , isOstracized, lacksOstracized
   ) where
 
 import           Data.List (nub)
@@ -501,4 +503,29 @@ isRecanted who =
 lacksRecanted :: String -> Condition
 lacksRecanted who =
   Not ("recanted." ++ guardSeg "lacksRecanted" who)
+
+
+-- | 条件：@a@ 与 @b@ 已婚入同盟（@married.<a>.<b>@；Sandbox millWed）。
+isMarried :: String -> String -> Condition
+isMarried a b =
+  Match ("married." ++ guardSeg "isMarried" a
+         ++ "." ++ guardSeg "isMarried" b)
+
+-- | 条件：无该婚入叶。
+lacksMarried :: String -> String -> Condition
+lacksMarried a b =
+  Not ("married." ++ guardSeg "lacksMarried" a
+       ++ "." ++ guardSeg "lacksMarried" b)
+
+-- | 条件：@actor@ 已放逐排斥 @target@（@ostracized.<actor>.<target>@）。
+isOstracized :: String -> String -> Condition
+isOstracized actor target =
+  Match ("ostracized." ++ guardSeg "isOstracized" actor
+         ++ "." ++ guardSeg "isOstracized" target)
+
+-- | 条件：无该排斥叶。
+lacksOstracized :: String -> String -> Condition
+lacksOstracized actor target =
+  Not ("ostracized." ++ guardSeg "lacksOstracized" actor
+       ++ "." ++ guardSeg "lacksOstracized" target)
 

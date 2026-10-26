@@ -1510,4 +1510,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
       assertBool "parade after rally" (hasAct "priest" "parade bob" stRally)
+
+  , testCase "cry × rally: market cry and rally stay independent" $ do
+      -- reputeSeed → notorious+angry; market: cry (regard) and rally
+      -- (notorious+angry) share no once-gate.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+      assertBool "notorious" (exists "notorious.bob.thief" (readView st0))
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "rally after cry" (hasAct "dave" "rally" stCry)
+      let stRally = doAct "dave" "rally" stCry
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "cry spent" (not (hasAct "dave" "cry the theft" stRally))
   ]
