@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -323,6 +323,31 @@ runThreatened (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (threatenedOf st who)
 runThreatened _ = putStrLn "usage: prax threatened <who> <world>"
+
+
+runThreateners :: [String] -> IO ()
+runThreateners (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (threatenersOf st who)
+runThreateners _ = putStrLn "usage: prax threateners <who> <world>"
+
+runThreatenees :: [String] -> IO ()
+runThreatenees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (threateneesOf st who)
+runThreatenees _ = putStrLn "usage: prax threatenees <who> <world>"
+
+runExtorters :: [String] -> IO ()
+runExtorters (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (extortersOf st who)
+runExtorters _ = putStrLn "usage: prax extorters <who> <world>"
+
+runExtortees :: [String] -> IO ()
+runExtortees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (extorteesOf st who)
+runExtortees _ = putStrLn "usage: prax extortees <who> <world>"
 
 runExtorted :: [String] -> IO ()
 runExtorted (who : ws) =
@@ -731,7 +756,11 @@ main = do
     ("carrying" : ws)  -> runCarrying ws
     ("shunned" : ws)   -> runShunned ws
     ("threatened" : ws) -> runThreatened ws
+    ("threateners" : ws) -> runThreateners ws
+    ("threatenees" : ws) -> runThreatenees ws
     ("extorted" : ws)  -> runExtorted ws
+    ("extorters" : ws) -> runExtorters ws
+    ("extortees" : ws) -> runExtortees ws
     ("complied" : ws)  -> runComplied ws
     ("defied" : ws)    -> runDefied ws
     ("branded" : ws)   -> runBranded ws

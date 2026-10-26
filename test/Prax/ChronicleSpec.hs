@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -756,5 +756,27 @@ tests = testGroup "Prax.Chronicle"
         ["ira demander of bob", "ira demander of dave"]
       askChronicle st "demanders of void" @?= ["void has no known demanders"]
       askChronicle st "demandees of void" @?= ["void has no known demandees"]
+
+
+  , testCase "askChronicle threateners/threatenees/extorters/extortees dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "threatened.sid1.ana.ben"
+            , Insert "threatened.sid2.cai.ana"
+            , Insert "ana.extorted.ben.sid1"
+            , Insert "dai.extorted.ana.sid3"
+            ]
+      threatenersOf st "ben" @?= ["threatened.sid1.ana.ben"]
+      threateneesOf st "ana" @?= ["threatened.sid1.ana.ben"]
+      extortersOf st "ben" @?= ["ana.extorted.ben.sid1"]
+      extorteesOf st "ana" @?= ["ana.extorted.ben.sid1"]
+      askChronicle st "threateners of ben" @?= ["ana threatener of ben"]
+      askChronicle st "threatenees of ana" @?= ["ana threatener of ben"]
+      askChronicle st "extorters of ben" @?= ["ana extorter of ben"]
+      askChronicle st "extortees of ana" @?= ["ana extorter of ben"]
+      askChronicle st "threateners of void" @?= ["void has no known threateners"]
+      askChronicle st "threatenees of void" @?= ["void has no known threatenees"]
+      askChronicle st "extorters of void" @?= ["void has no known extorters"]
+      askChronicle st "extortees of void" @?= ["void has no known extortees"]
+
 
   ]

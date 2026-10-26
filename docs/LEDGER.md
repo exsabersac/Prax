@@ -2691,3 +2691,14 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 market 门开时仅 millCry（无 rally）不选 rally 而选 cry；仅 millJustice（无 cry）不选 cry。无新实践。
 - **测**：SandboxSpec wants: without rallyDesire / without cryDesire。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+## v481 — Host threateners/threatenees/extorters/extortees + CLI
+
+- **做了什么**：闭合视图枚举 `threatened.*.*.<who>` / `threatened.*.<who>.*` 与 `*.extorted.<who>.*` / `<who>.extorted.*.*`；CLI `prax threateners`/`threatenees`/`extorters`/`extortees`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v482 — Chronicle threateners/threatenees/extorters/extortees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"threateners of "` / `"threatenees of "` / `"extorters of "` / `"extortees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

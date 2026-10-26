@@ -33,6 +33,7 @@
 -- v456：'spousesOf' 婚偶叶（married.<who>.* 主体侧）。
 -- v458：'creditorsOf'/'debtorsOf' 债权/债务方叶（debt.<c>.<d>.*）。
 -- v472：'demandersOf'/'demandeesOf' 催收方叶（demanded.<c>.<d>.*）。
+-- v481：'threatenersOf'/'threateneesOf'/'extortersOf'/'extorteesOf' 胁迫/勒索方叶。
 module Prax.Host
   ( step
   , stepExact
@@ -96,7 +97,11 @@ module Prax.Host
   , carryingOf
   , shunnedOf
   , threatenedOf
+  , threatenersOf
+  , threateneesOf
   , extortedOf
+  , extortersOf
+  , extorteesOf
   , compliedOf
   , defiedOf
   , brandedOf
@@ -663,6 +668,41 @@ threatenedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+-- | 闭合视图中 @who@ 作为受威胁方的叶（@threatened.<sid>.<extorter>.<who>@）。
+threatenersOf :: PraxState -> String -> [String]
+threatenersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "threatened." `isPrefixOf` s
+  , let rest = drop (length ("threatened." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为施威胁方的叶（@threatened.<sid>.<who>.<victim>@）。
+threateneesOf :: PraxState -> String -> [String]
+threateneesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "threatened." `isPrefixOf` s
+  , let rest = drop (length ("threatened." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中与 @who@ 相关的勒索痕（@<extorter>.extorted.<victim>.<sid>@，任一侧）。
 extortedOf :: PraxState -> String -> [String]
 extortedOf st who = sort
@@ -672,6 +712,39 @@ extortedOf st who = sort
   , length parts >= 4
   , parts !! 1 == "extorted"
   , head parts == who || (parts !! 2) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中 @who@ 作为被勒索方的痕（@<extorter>.extorted.<who>.<sid>@）。
+extortersOf :: PraxState -> String -> [String]
+extortersOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 4
+  , parts !! 1 == "extorted"
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为勒索方的痕（@<who>.extorted.<victim>.<sid>@）。
+extorteesOf :: PraxState -> String -> [String]
+extorteesOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 4
+  , parts !! 1 == "extorted"
+  , head parts == who
   ]
   where
     splitDots :: String -> [String]

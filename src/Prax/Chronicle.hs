@@ -141,9 +141,9 @@ formatEvent ev rs =
 -- @"resents of "++who@、@"allied of "++who@、
 -- @"what is on the stall"@、@"what festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
--- @"threatened of "++who@、@"shunned of "++who@、
+-- @"threatened of "++who@、@"threateners of "++who@、@"threatenees of "++who@、@"shunned of "++who@、
 -- @"locations of "++who@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
--- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@、
+-- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"defied of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
@@ -603,6 +603,35 @@ askChronicle st q
                 , (parts !! 1) == who || (parts !! 2) == who ]
       in if null rows then [who ++ " has no threat marks"]
          else rows
+  | Just who <- stripPrefix "threateners of " q =
+      -- 对齐 Host threatenersOf：读闭合视图；短语化施威胁人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "threatened." `isPrefixOf` s
+                , let rest = drop (length ("threatened." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 2 == who ]
+      in if null rows then [who ++ " has no known threateners"]
+         else [ e ++ " threatener of " ++ who
+              | s <- rows
+              , let rest = drop (length ("threatened." :: String)) s
+              , let e = (splitDot rest) !! 1 ]
+  | Just who <- stripPrefix "threatenees of " q =
+      -- 对齐 Host threateneesOf：读闭合视图；短语化受威胁人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "threatened." `isPrefixOf` s
+                , let rest = drop (length ("threatened." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known threatenees"]
+         else [ who ++ " threatener of " ++ v
+              | s <- rows
+              , let rest = drop (length ("threatened." :: String)) s
+              , let parts = splitDot rest
+              , let v = parts !! 2 ]
   | Just who <- stripPrefix "shunned of " q =
       -- 对齐 Host shunnedOf：读闭合视图。
       let rows = sort
@@ -667,6 +696,32 @@ askChronicle st q
                 , head parts == who || (parts !! 2) == who ]
       in if null rows then [who ++ " has no extortion marks"]
          else rows
+  | Just who <- stripPrefix "extorters of " q =
+      -- 对齐 Host extortersOf：读闭合视图；短语化勒索人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , let parts = splitDot s
+                , length parts >= 4
+                , parts !! 1 == "extorted"
+                , parts !! 2 == who ]
+      in if null rows then [who ++ " has no known extorters"]
+         else [ e ++ " extorter of " ++ who
+              | s <- rows
+              , let parts = splitDot s
+              , let e = head parts ]
+  | Just who <- stripPrefix "extortees of " q =
+      -- 对齐 Host extorteesOf：读闭合视图；短语化被勒索人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , let parts = splitDot s
+                , length parts >= 4
+                , parts !! 1 == "extorted"
+                , head parts == who ]
+      in if null rows then [who ++ " has no known extortees"]
+         else [ who ++ " extorter of " ++ v
+              | s <- rows
+              , let parts = splitDot s
+              , let v = parts !! 2 ]
   | Just who <- stripPrefix "complied of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

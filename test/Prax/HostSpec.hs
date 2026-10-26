@@ -640,4 +640,34 @@ tests = testGroup "Prax.Host"
         ["demanded.ira.bob.favor", "demanded.ira.dave.favor"]
       demandeesOf st "void" @?= []
 
+
+  , testCase "threatenersOf / threateneesOf / extortersOf / extorteesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "threatened.sid1.ana.ben"
+                , Insert "threatened.sid2.cai.ana"
+                , Insert "ana.extorted.ben.sid1"
+                , Insert "dai.extorted.ana.sid3"
+                , Insert "flag.x" ]
+      threatenersOf st "ben" @?=
+        ["threatened.sid1.ana.ben"]
+      threatenersOf st "ana" @?=
+        ["threatened.sid2.cai.ana"]
+      threatenersOf st "void" @?= []
+      threateneesOf st "ana" @?=
+        ["threatened.sid1.ana.ben"]
+      threateneesOf st "cai" @?=
+        ["threatened.sid2.cai.ana"]
+      threateneesOf st "void" @?= []
+      extortersOf st "ben" @?=
+        ["ana.extorted.ben.sid1"]
+      extortersOf st "ana" @?=
+        ["dai.extorted.ana.sid3"]
+      extortersOf st "void" @?= []
+      extorteesOf st "ana" @?=
+        ["ana.extorted.ben.sid1"]
+      extorteesOf st "dai" @?=
+        ["dai.extorted.ana.sid3"]
+      extorteesOf st "void" @?= []
+
+
   ]
