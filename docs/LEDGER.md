@@ -3043,3 +3043,13 @@
 - **做了什么**：SandboxSpec 追加 cry/rally once×inquisit；parade once×rally；dual brand×cry/parade 独立；kyle returnDesire；flee×parade 关/return 复；dual repay 双轨 harvest 开；denounce/censure once×次市 cry；mill exile×ira tear；kyle churchParade；repay 后 ira cry。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（393 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v553 — Host traitedOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`traitedOf` 枚举 `trait.*.<trait>`；CLI `prax traited <trait> <world>`。
+
+## v554 — Chronicle traited of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`traited of` 返回性格标签侧叶；Spec 钉 Host 与 Chronicle 空集。

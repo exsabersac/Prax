@@ -1251,6 +1251,21 @@ askChronicle st q
                 , ("trait." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no traits on record"]
          else rows
+  | Just trait <- stripPrefix "traited of " q =
+      -- 对齐 Host traitedOf：读闭合视图。
+      let pref = "trait."
+          rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , pref `isPrefixOf` s
+            , let rest = drop (length pref) s
+            , let (who, lab) = splitLastDot rest
+            , lab == trait
+            , not (null who)
+            , '.' `notElem` who
+            ]
+      in if null rows then ["nobody is traited " ++ trait]
+         else rows
   | Just who <- stripPrefix "bonds of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

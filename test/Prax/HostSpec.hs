@@ -242,7 +242,7 @@ tests = testGroup "Prax.Host"
       regardsToward st "eve" @?= ["regards.dave.eve.hero"]
       factionsNamed st @?= ["choir", "guild", "mill"]
 
-  , testCase "traitsOf / moodsOf / bondsOf / kinOf / notoriousOf / notorietiesOf from the view" $ do
+  , testCase "traitsOf / traitedOf / moodsOf / bondsOf / kinOf / notoriousOf / notorietiesOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "trait.ana.brave"
                 , Insert "trait.ana.stubborn"
@@ -261,6 +261,9 @@ tests = testGroup "Prax.Host"
       sort (traitsOf st "ana") @?= ["trait.ana.brave", "trait.ana.stubborn"]
       traitsOf st "ben" @?= ["trait.ben.shy"]
       traitsOf st "void" @?= []
+      traitedOf st "brave" @?= ["trait.ana.brave"]
+      traitedOf st "shy" @?= ["trait.ben.shy"]
+      traitedOf st "void" @?= []
       moodsOf st "ana" @?= ["mood.ana.calm"]
       moodsOf st "ben" @?= ["mood.ben.angry"]
       bondsOf st "ana" @?= ["bond.ana.ben.friends"]
