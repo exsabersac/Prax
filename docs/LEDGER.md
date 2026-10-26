@@ -2826,3 +2826,9 @@
 - **测**：PersonaSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+
+## v513 — Sandbox parade/tear 交叉 + affiliate heresy/wed Spec
+
+- **做了什么**：SandboxSpec 追加 parade once×denounce、churchParade×mill denounce、tear×异轨沉默独立、wed×cry、kyle seeksHeresy/punishesHeretic/joinsMill（可 wed 获站队）、parade 后 cryDesire 独拣、millBreak 权重胜 cry、brand 路径×cry、censure once×cry、denounce×church squeeze、kyle millSilence 不买。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（294 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
