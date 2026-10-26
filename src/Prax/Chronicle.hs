@@ -136,7 +136,8 @@ formatEvent ev rs =
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
 -- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
 -- @"eyed of "++who@、@"confronted of "++who@、@"atoned of "++who@、
--- @"wronged of "++who@、@"hungry of "++who@。
+-- @"wronged of "++who@、@"hungry of "++who@、
+-- @"shortTempered of "++who@、@"appetite of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -397,6 +398,20 @@ askChronicle st q
                 , s == ("hungry." ++ who)
                   || ("hungry." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no hunger mark"]
+         else rows
+  | Just who <- stripPrefix "shortTempered of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("shortTempered." ++ who)
+                  || ("shortTempered." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no short-temper mark"]
+         else rows
+  | Just who <- stripPrefix "appetite of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("appetite." ++ who)
+                  || ("appetite." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no appetite mark"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

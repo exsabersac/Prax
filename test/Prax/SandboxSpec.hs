@@ -1325,4 +1325,25 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "regard restored"
         (exists "regards.dave.bob.thief" (readView stBack))
       assertBool "squeeze restored" (hasAct "dave" "squeeze bob" stBack)
+
+  , testCase "parade × market cry: brand parade and market cry stay independent" $ do
+      -- Brand path then activate mill parade; market cry still opens on regard+festival,
+      -- and parade stays open without sharing cry's once-gate.
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "dave can parade" (hasAct "dave" "parade bob" stP)
+      let stM = iterate roundBoundary stP !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "parade still" (hasAct "dave" "parade bob" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "parade after cry" (hasAct "dave" "parade bob" stCry)
+      let stPar = doAct "dave" "parade bob" stCry
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+      assertBool "cry spent" (not (hasAct "dave" "cry the theft" stPar))
   ]

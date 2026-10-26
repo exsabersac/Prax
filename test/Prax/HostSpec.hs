@@ -509,4 +509,14 @@ tests = testGroup "Prax.Host"
       hungryOf st "bob" @?= ["hungry.bob"]
       hungryOf st "void" @?= []
 
+  , testCase "shortTemperedOf / appetiteOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "shortTempered.carol"
+                , Insert "appetite.bob"
+                , Insert "flag.x" ]
+      shortTemperedOf st "carol" @?= ["shortTempered.carol"]
+      shortTemperedOf st "void" @?= []
+      appetiteOf st "bob" @?= ["appetite.bob"]
+      appetiteOf st "void" @?= []
+
   ]

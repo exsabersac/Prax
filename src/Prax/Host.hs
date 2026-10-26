@@ -23,6 +23,7 @@
 -- v291：'fledOf'/'reconciledOf'/'marriedOf' 叛逃/和解/婚入叶。
 -- v293：'eyedOf'/'confrontedOf'/'atonedOf' 目击/对质/赎罪叶（Village）。
 -- v295：'wrongedOf'/'hungryOf' 冤屈/饥饿叶（Feud / Village）。
+-- v297：'shortTemperedOf'/'appetiteOf' 暴脾气/胃口叶（Village）。
 module Prax.Host
   ( step
   , stepExact
@@ -97,6 +98,8 @@ module Prax.Host
   , atonedOf
   , wrongedOf
   , hungryOf
+  , shortTemperedOf
+  , appetiteOf
   , checkpoint
   , restore
   ) where
@@ -816,6 +819,20 @@ hungryOf :: PraxState -> String -> [String]
 hungryOf st who =
   sort [ s | s <- queryView st, s == ("hungry." ++ who)
               || ("hungry." ++ who ++ ".") `isPrefixOf` s ]
+
+
+
+-- | 闭合视图中 @who@ 的暴脾气叶（@shortTempered.<who>@；Village）。
+shortTemperedOf :: PraxState -> String -> [String]
+shortTemperedOf st who =
+  sort [ s | s <- queryView st, s == ("shortTempered." ++ who)
+              || ("shortTempered." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的胃口叶（@appetite.<who>@；Village）。
+appetiteOf :: PraxState -> String -> [String]
+appetiteOf st who =
+  sort [ s | s <- queryView st, s == ("appetite." ++ who)
+              || ("appetite." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

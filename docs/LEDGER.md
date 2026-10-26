@@ -1627,3 +1627,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec defection × squeeze。Village / GoldenDrive / Feud 金标准未动。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village/Feud 金标准。
 
+## v297 — Host shortTemperedOf / appetiteOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举暴脾气叶（`shortTempered.<who>`）与胃口叶（`appetite.<who>`；Village）；CLI `prax short-tempered|appetite`；`askChronicle` 对应查询；help 同步。
+- **测**：HostSpec / ChronicleSpec。
+
+## v298 — Sandbox 烙印游街×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 brand→activateParade 后 market 窗内 cry 与 parade 互不阻挡：喊冤落 `cried` 后仍可游街；游街后 cry 已消耗。无新实践 / 无 want 改动。
+- **测**：SandboxSpec parade × market cry。Village / GoldenDrive 金标准未动。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
