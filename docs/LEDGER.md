@@ -2632,3 +2632,15 @@
 - **做了什么**：ScheduleRuleSpec 钉 sightRule 周期-1 体（Neq Seer/Seen、turn!Now、信念戳）。无新实践 / 无 want 改动。
 - **测**：ScheduleRuleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v480 — Sandbox 正义包列表 + fearsBrand 叶 + tear 后门再开（钉既有门禁）
+
+- **做了什么**：Spec 钉 millJustice/churchJustice/bobHeresyJustice/millCry 列表；fearsBrand 条件含 branded；无 cry 有 rally 时市集选 rally；tear 后 harvest 再开 denounce/censure；bob 异端 censure 后 banish。无新实践。
+- **测**：SandboxSpec wants: justice bundle / fearsBrand conditions / without cry with rally / after mill|church tear gate / after bob heresy censure banish。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
+
+## v481 — Sandbox activate 幂等 + affiliate tear 负例 + return/brand 正例（钉既有门禁）
+
+- **做了什么**：Spec 钉 activateParade/inquisit/churchBob/churchParade 幂等；kyle 挂 breakSilence 不可 tear；仅 returnDesire 选归队；brand 后 bob 不再 confess。无新实践。
+- **测**：SandboxSpec wants: activate* idempotent / affiliate millBreakSilence / after flee returnDesire / after brand no re-confess。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
