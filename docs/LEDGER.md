@@ -2482,13 +2482,13 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v441 — Host grandparentsOf/grandchildrenOf/inLawsOf + CLI
+## v445 — Host grandparentsOf/grandchildrenOf/inLawsOf + CLI
 
 - **做了什么**：闭合视图枚举 `grandparent.<g>.<who>` / `grandparent.<who>.<c>` / `inLaw.<x>.<who>`；CLI `prax grandparents`/`grandchildren`/`in-laws`；补 siblings/parents/children/explain help。无实践 / 无 want 改动。
 - **测**：HostSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v442 — Chronicle grandparents/grandchildren/in-laws of + Host 对偶
+## v446 — Chronicle grandparents/grandchildren/in-laws of + Host 对偶
 
 - **做了什么**：`askChronicle` 增加 `"grandparents of "` / `"grandchildren of "` / `"in-laws of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。

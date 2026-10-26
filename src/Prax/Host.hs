@@ -29,7 +29,7 @@
 -- v301：'alliedOf' 同盟叶（Feud）。
 -- v423：'siblingsOf' 兄弟姐妹叶（对齐 Chronicle siblings of）。
 -- v429：'parentsOf'/'childrenOf' 亲子叶（parent.<p>.<c>）。
--- v441：'grandparentsOf'/'grandchildrenOf'/'inLawsOf' 祖孙/姻亲叶。
+-- v445：'grandparentsOf'/'grandchildrenOf'/'inLawsOf' 祖孙/姻亲叶。
 module Prax.Host
   ( step
   , stepExact
