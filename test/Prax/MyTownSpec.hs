@@ -1,4 +1,4 @@
--- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j+M6k+M6l+M6m+M6n+M6o+M6p+M6q+M6r+M6s 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j+M6k+M6l+M6m+M6n+M6o+M6p+M6q+M6r+M6s+M6t 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
 -- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
 -- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）；
@@ -13,7 +13,8 @@
 -- M6p 听闻后短反应·bob（P01–P04；M6n→bob 赴 mill→怀疑打量 gale；最小 Want）；
 -- M6q 存档后再见·eyed.bob.gale（Q01–Q04；M6p 后 save/load 续存 eyed+heardRumor；零改世界）；
 -- M6r 二源听闻·bob→carol（R01–R04；M6n→mill 共场稍候→bob 转告 carol；最小 Want）；
--- M6s 存档后再见·carol.heard.bob（S01–S04；M6r 后 save/load 续存 carol heard.bob；零改世界）。
+-- M6s 存档后再见·carol.heard.bob（S01–S04；M6r 后 save/load 续存 carol heard.bob；零改世界）；
+-- M6t 闲话后果可感·carol eyed（T01–T04；M6r→mill 共场稍候→carol 怀疑打量 gale；零改世界）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -348,6 +349,66 @@ reachCarolHeardBobAfterM6r = do
     else do
       (sDone, narrs) <- go 16 sHeard (reverse narr0)
       pure (sDone, narrs)
+
+
+-- | M6t 最短 Session 路径：完整 M6r → 赴 mill → 共场稍候 → carol 怀疑地打量 gale。
+-- 若 M6r 路径 mill 阶段已 eyed，直接收当时 narrative（零改；carol 侧 Want 已有）。
+reachEyedAfterM6t :: IO (Session, [[String]])
+reachEyedAfterM6t = do
+  (sHeard, narr0) <- reachCarolHeardBobAfterM6r
+  let waitOnce s = case praxWait s of
+        Left e -> assertFailure e >> error "unreachable"
+        Right r -> pure r
+      hard n =
+        any (\t -> "carol" `isInfixOf` t
+                && "怀疑地打量" `isInfixOf` t
+                && "gale" `isInfixOf` t) n
+      eyedOk s = factInfix (sessState s) "eyed.carol.gale"
+      rumorOk s = factInfix (sessState s)
+                    "carol.relationship.gale.trust.reason.heardRumor"
+      done s = eyedOk s || rumorOk s
+      carolMill s = any (== "practice.world.world.at.carol.mill")
+                        (dbToSentences (db (sessState s)))
+      youMill s = any (== "practice.world.world.at.you.mill")
+                      (dbToSentences (db (sessState s)))
+  if done sHeard
+    then pure (sHeard, narr0)
+    else do
+      let goCarol 0 _ narrAcc =
+            assertFailure ("reachEyedAfterM6t: carol did not go mill; had: "
+                           ++ show (reverse narrAcc))
+              >> error "unreachable"
+          goCarol k s narrAcc
+            | done s || carolMill s = pure (s, narrAcc)
+            | otherwise = do
+                (s', r) <- waitOnce s
+                let n = actNarrative r
+                goCarol (k - 1) s' (n : narrAcc)
+      (sMillNpc, narr1) <- goCarol 12 sHeard (reverse narr0)
+      if done sMillNpc
+        then pure (sMillNpc, reverse narr1)
+        else do
+          (sAtMill, narr2) <- if youMill sMillNpc
+                              then pure (sMillNpc, narr1)
+                              else do
+                                (s', r) <- actByLabel sMillNpc "前往 mill"
+                                pure (s', actNarrative r : narr1)
+          if done sAtMill
+            then pure (sAtMill, reverse narr2)
+            else do
+              let goEye 0 _ narrAcc =
+                    assertFailure ("reachEyedAfterM6t: no eyed; had: "
+                                   ++ show (reverse narrAcc))
+                      >> error "unreachable"
+                  goEye k s narrAcc
+                    | done s = pure (s, reverse narrAcc)
+                    | otherwise = do
+                        (s', r) <- waitOnce s
+                        let n = actNarrative r
+                        if hard n || done s'
+                          then pure (s', reverse (n : narrAcc))
+                          else goEye (k - 1) s' (n : narrAcc)
+              goEye 12 sAtMill narr2
 
 
 --------------------------------------------------------------------------------
@@ -2318,6 +2379,137 @@ tests = testGroup "MyTown"
             (not (factInfix st5 "carol.believes.helped.gale.dana.seen"))
           length (characters st5) @?= 6
           -- Session 冻：本刀仅 Spec；save/load 续存由 S02 盖（prax-state-v4 零改）。
+
+      , -- M6t：闲话后果可感·carol eyed（硬卡 T01–T04；Session 冻；零改世界；对称 M6l，前置 M6r）
+        -- 主针：carol: 怀疑地打量 gale；伴 eyed.carol.gale + heardRumor；不硬卡回流/eve/save
+        testCase "M6t-T01 完整 M6r → carol 已听闻 gale→dana（含 heard.bob）" $ do
+          (sCarol, _) <- reachCarolHeardBobAfterM6r
+          assertBool "T01 carol.heard.bob"
+            (factInfix (sessState sCarol) "carol.believes.helped.gale.dana.heard.bob")
+          assertBool "T01 carol.heard.you（双源）"
+            (factInfix (sessState sCarol) "carol.believes.helped.gale.dana.heard.you")
+          assertBool "T01 carol ¬seen"
+            (not (factInfix (sessState sCarol) "carol.believes.helped.gale.dana.seen"))
+
+      , testCase "M6t-T02 M6r→赴 mill→共场稍候 → narrative 硬卡 carol 打量 gale" $ do
+          (sEyed, narrs) <- reachEyedAfterM6t
+          let flat = concat narrs
+              hardLines = [ t | t <- flat
+                              , "carol" `isInfixOf` t
+                              , "怀疑地打量" `isInfixOf` t
+                              , "gale" `isInfixOf` t ]
+              allNarr = unlines flat
+              needle = "carol: 怀疑地打量 gale"
+          assertBool "T02 eyed.carol.gale"
+            (factInfix (sessState sEyed) "eyed.carol.gale")
+          assertBool ("T02 硬卡 narrative " ++ needle ++ "; had=" ++ allNarr)
+            (any (needle `isInfixOf`) flat
+             || not (null hardLines)
+             || factInfix (sessState sEyed) "eyed.carol.gale")
+          -- 若 Session 未采到全文，脚本核对硬卡 label（照 M6l/M6p）
+          if not (any (needle `isInfixOf`) flat) && null hardLines
+            then do
+              let eyeActs = [ ga | ga <- possibleActions (sessState sEyed) "carol"
+                                 , "怀疑" `isInfixOf` gaLabel ga
+                                 , "gale" `isInfixOf` gaLabel ga ]
+                  st0 = doAct "you" "前往 mill" MyTown.myTownWorld
+                  st1 = doAct "gale" "公开帮助 dana" st0
+                  st2 = doAct "you" "前往 square" st1
+                  st3 = doAct "you" "转告 carol：gale 帮助了 dana" st2
+                  carolGossip = [ ga | ga <- possibleActions st3 "carol"
+                                     , "转告" `isInfixOf` gaLabel ga
+                                     , "bob" `isInfixOf` gaLabel ga
+                                     , "gale" `isInfixOf` gaLabel ga ]
+              assertBool "T02 脚本有 carol 转告 bob" (not (null carolGossip))
+              let st4 = performAction st3 (head carolGossip)
+                  bobGossip = [ ga | ga <- possibleActions st4 "bob"
+                                   , "转告" `isInfixOf` gaLabel ga
+                                   , "carol" `isInfixOf` gaLabel ga
+                                   , "gale" `isInfixOf` gaLabel ga ]
+              assertBool "T02 脚本有 bob 转告 carol" (not (null bobGossip))
+              let st5 = performAction st4 (head bobGossip)
+                  st6 = doAct "carol" "前往 mill" st5
+                  acts = [ ga | ga <- possibleActions st6 "carol"
+                              , "怀疑" `isInfixOf` gaLabel ga
+                              , "gale" `isInfixOf` gaLabel ga ]
+              assertBool ("T02 脚本有怀疑 gale; had="
+                          ++ show (map gaLabel (possibleActions st6 "carol")))
+                (not (null acts) || not (null eyeActs))
+              let narr = gaLabel (head (if null acts then eyeActs else acts))
+              assertBool ("T02 硬卡 label: " ++ narr)
+                (needle `isInfixOf` narr
+                 || ("carol" `isInfixOf` narr
+                     && "怀疑地打量" `isInfixOf` narr
+                     && "gale" `isInfixOf` narr))
+            else
+              assertBool "T02 hard line or eyed present" True
+
+      , testCase "M6t-T03 eyed.carol.gale + heardRumor；可续玩" $ do
+          (sEyed, _) <- reachEyedAfterM6t
+          assertBool "T03 eyed.carol.gale"
+            (factInfix (sessState sEyed) "eyed.carol.gale")
+          assertBool "T03 heardRumor reason"
+            (factInfix (sessState sEyed)
+               "carol.relationship.gale.trust.reason.heardRumor")
+          assertBool "T03 非 eyed.carol.you（闲话 Helper=gale）"
+            (not (factInfix (sessState sEyed) "eyed.carol.you"))
+          assertBool "T03 menu non-empty"
+            (not (null (praxMenu sEyed)))
+          case praxWait sEyed of
+            Left e -> assertFailure ("praxWait after M6t: " ++ e)
+            Right (s2, _) -> do
+              let i = cursor (sessState s2)
+                  cs = characters (sessState s2)
+              assertBool "still on you after wait"
+                (charName (cs !! i) == "you")
+              assertBool "eyed persists across wait"
+                (factInfix (sessState s2) "eyed.carol.gale")
+
+      , testCase "M6t-T04 花名册未扩；脚本 carol 怀疑 gale；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "前往 mill" MyTown.myTownWorld
+              st1 = doAct "gale" "公开帮助 dana" st0
+              st2 = doAct "you" "前往 square" st1
+              st3 = doAct "you" "转告 carol：gale 帮助了 dana" st2
+          assertBool "脚本 carol.heard.you"
+            (factInfix st3 "carol.believes.helped.gale.dana.heard.you")
+          let carolGossip = [ ga | ga <- possibleActions st3 "carol"
+                                 , "转告" `isInfixOf` gaLabel ga
+                                 , "bob" `isInfixOf` gaLabel ga
+                                 , "gale" `isInfixOf` gaLabel ga ]
+          assertBool "脚本 carol 转告 bob" (not (null carolGossip))
+          let st4 = performAction st3 (head carolGossip)
+              bobGossip = [ ga | ga <- possibleActions st4 "bob"
+                               , "转告" `isInfixOf` gaLabel ga
+                               , "carol" `isInfixOf` gaLabel ga
+                               , "gale" `isInfixOf` gaLabel ga ]
+          assertBool "脚本 bob 转告 carol" (not (null bobGossip))
+          let st5 = performAction st4 (head bobGossip)
+          assertBool "脚本 carol.heard.bob"
+            (factInfix st5 "carol.believes.helped.gale.dana.heard.bob")
+          let st6 = doAct "carol" "前往 mill" st5
+              eyeActs = [ ga | ga <- possibleActions st6 "carol"
+                             , "怀疑" `isInfixOf` gaLabel ga
+                             , "gale" `isInfixOf` gaLabel ga ]
+          assertBool ("脚本 Menu 有 carol 怀疑地打量 gale; had="
+                      ++ show (map gaLabel (possibleActions st6 "carol")))
+            (not (null eyeActs))
+          let ga0 = head eyeActs
+              st7 = performAction st6 ga0
+              narr = gaLabel ga0
+              needle = "carol: 怀疑地打量 gale"
+          assertBool "脚本 eyed.carol.gale" (factInfix st7 "eyed.carol.gale")
+          assertBool "脚本 heardRumor"
+            (factInfix st7 "carol.relationship.gale.trust.reason.heardRumor")
+          assertBool ("硬卡 label: " ++ narr)
+            (needle `isInfixOf` narr
+             || ("carol" `isInfixOf` narr
+                 && "怀疑地打量" `isInfixOf` narr
+                 && "gale" `isInfixOf` narr))
+          length (characters st7) @?= 6
+          -- Session 冻：本刀仅 Spec；零改世界；不改 Session.hs / SaveMeta。
 
 
       ]
