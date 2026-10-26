@@ -72,6 +72,8 @@ library
                       Prax.Worlds.Audience
                       Prax.Worlds.Village
                       Prax.Worlds.Sandbox
+                      Prax.Worlds.MyTown
+                      Prax.Session
 
 executable prax
     import:           warnings
@@ -158,4 +160,5 @@ test-suite prax-test
                       Prax.DirectorSpec
                       Prax.VillageSpec
                       Prax.SandboxSpec
+                      Prax.MyTownSpec
                       Prax.AnalysisTableSpec

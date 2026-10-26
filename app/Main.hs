@@ -32,6 +32,7 @@ import qualified Prax.Worlds.Feud as Feud
 import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
+import qualified Prax.Worlds.MyTown as MyTown
 import           Prax.Chronicle (askChronicle, summarize)
 import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
@@ -52,6 +53,7 @@ worldNamed ("feud" : _)     = ("the feud (emergent sandbox)", Feud.feudWorld, Fe
 worldNamed ("audience" : _) = ("the royal audience", Audience.audienceWorld, Audience.playerName)
 worldNamed ("village" : _)  = ("the village", Village.villageWorld, Village.playerName)
 worldNamed ("sandbox" : _)  = ("the harvest/market sandbox", Sandbox.sandboxWorld, Sandbox.playerName)
+worldNamed ("my-town" : _) = ("my town (MVP)", MyTown.myTownWorld, MyTown.playerName)
 worldNamed _                = ("a night at the bar", Bar.barWorld, Bar.playerName)
 
 -- @prax stress [world]@ — a QA report over many random all-AI playthroughs.
@@ -73,7 +75,7 @@ runStress args = do
 runChronicle :: [String] -> IO ()
 runChronicle args = do
   let (worldArgs, queryArgs) = case args of
-        (w : qs) | w `elem` ["village","bar","feud","intrigue","play","dm","audience","sandbox"]
+        (w : qs) | w `elem` ["village","bar","feud","intrigue","play","dm","audience","sandbox","my-town"]
                  -> ([w], qs)
         qs       -> ([], qs)
       (_, world, _) = worldNamed worldArgs
@@ -782,6 +784,7 @@ runWorlds = mapM_ putStrLn
   , "play       — the conspiracy (a play)"
   , "audience   — the royal audience"
   , "sandbox    — harvest/market festivals + factionStanding + silence/defection sandbox"
+  , "my-town    — 我的小镇 MVP（Session/帮忙弧）"
   ]
 
 -- @prax check [world]@ — static well-formedness report for a world.
@@ -826,7 +829,7 @@ usageText = unlines
   , ""
   , "Play a world:"
   , "  prax                      bar (default)"
-  , "  prax village|feud|intrigue|play|dm|audience|sandbox"
+  , "  prax village|feud|intrigue|play|dm|audience|sandbox|my-town"
   , "  prax <world> resume       continue from prax.save"
   , ""
   , "Tools:"
@@ -1107,6 +1110,10 @@ play args = do
           ( "prax — the harvest/market sandbox"
           , "You are a mill hand. Learn, denounce at harvest, exile after — or watch the church try heresy."
           , Sandbox.sandboxWorld, Sandbox.playerName )
+        ("my-town" : _) ->
+          ( "prax — 我的小镇"
+          , "你是村民 you。广场与磨坊之间走动；公开帮忙、说破、转告与怀疑。"
+          , MyTown.myTownWorld, MyTown.playerName )
         _ ->
           ( "prax — a night at the bar"
           , "You are 'you'. Others act on their own."
