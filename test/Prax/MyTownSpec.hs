@@ -1,4 +1,4 @@
--- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j+M6k+M6l+M6m+M6n+M6o+M6p+M6q+M6r+M6s+M6t+M6u+M6v 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j+M6k+M6l+M6m+M6n+M6o+M6p+M6q+M6r+M6s+M6t+M6u+M6v+M6w 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
 -- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
 -- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）；
@@ -16,7 +16,8 @@
 -- M6s 存档后再见·carol.heard.bob（S01–S04；M6r 后 save/load 续存 carol heard.bob；零改世界）；
 -- M6t 闲话后果可感·carol eyed（T01–T04；M6r→mill 共场稍候→carol 怀疑打量 gale；零改世界）；
 -- M6u 存档后再见·eyed.carol.gale（U01–U04；M6t 后 save/load 续存 eyed+heardRumor；零改世界）；
--- M6v 二源听闻·carol→eve（V01–V04；公开帮 carol→赴 mill 共场→carol 转告 eve；最小 Want）。
+-- M6v 二源听闻·carol→eve（V01–V04；公开帮 carol→赴 mill 共场→carol 转告 eve；最小 Want）；
+-- M6w 存档后再见·eve.heard.carol（W01–W04；M6v 后 save/load 续存 eve heard.carol；零改世界）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -2768,6 +2769,82 @@ tests = testGroup "MyTown"
                  && "you" `isInfixOf` narr))
           length (characters st2) @?= 6
           -- Session 冻：本刀仅 Want+Spec；不改 Session.hs / SaveMeta。
+
+      , -- M6w：存档后再见·eve.heard.carol（硬卡 W01–W04；Session 冻；零改世界；对称 M6o/M6s，锚 M6v）
+        -- 「后再见」= 事实续存 + 可续玩；不硬卡 narrative 全文；主针 eve.believes.helped.you.carol.heard.carol ∧ ¬seen
+        testCase "M6w-W01 完整 M6v → eve.heard.carol（¬seen）" $ do
+          (sEve, _) <- reachEveHeardCarolAfterM6v
+          assertBool "W01 eve.heard.carol"
+            (factInfix (sessState sEve) "eve.believes.helped.you.carol.heard.carol")
+          assertBool "W01 eve ¬seen"
+            (not (factInfix (sessState sEve) "eve.believes.helped.you.carol.seen"))
+
+      , testCase "M6w-W02 save→load 后 eve.heard.carol 仍在（非冷开局）" $ do
+          (sEve, _) <- reachEveHeardCarolAfterM6v
+          let raw = praxSave sEve
+          assertBool "format prax-state-v4" ("prax-state-v4" `isInfixOf` raw)
+          assertBool "worldId my-town" ("my-town" `isInfixOf` raw)
+          case praxLoad raw of
+            Left e -> assertFailure e
+            Right sLoad -> do
+              sessWorldId sLoad @?= "my-town"
+              assertBool "load eve.heard.carol"
+                (factInfix (sessState sLoad) "eve.believes.helped.you.carol.heard.carol")
+              assertBool "load eve ¬seen"
+                (not (factInfix (sessState sLoad) "eve.believes.helped.you.carol.seen"))
+              sCold <- mustNew
+              assertBool "cold has no eve.heard.carol"
+                (not (factInfix (sessState sCold)
+                       "eve.believes.helped.you.carol.heard.carol"))
+
+      , testCase "M6w-W03 load 后可续玩（Menu/Act 不炸；转告后果仍在）" $ do
+          (sEve, _) <- reachEveHeardCarolAfterM6v
+          case praxLoad (praxSave sEve) of
+            Left e -> assertFailure e
+            Right sLoad -> do
+              sessPlayer sLoad @?= "you"
+              assertBool "menu non-empty after load"
+                (not (null (praxMenu sLoad)))
+              -- M6v 路径：赴 mill 共场转告；偶发仍 square
+              assertBool ("W03 location mill|square; had="
+                          ++ show (viewLocationId (praxView sLoad)))
+                (viewLocationId (praxView sLoad) `elem` [Just "mill", Just "square"])
+              assertBool "eve.heard.carol still after load"
+                (factInfix (sessState sLoad) "eve.believes.helped.you.carol.heard.carol")
+              assertBool "carol.seen you→carol still after load"
+                (factInfix (sessState sLoad) "carol.believes.helped.you.carol.seen")
+              case praxWait sLoad of
+                Left e -> assertFailure ("praxWait after load: " ++ e)
+                Right (s2, _) -> do
+                  let i = cursor (sessState s2)
+                      cs = characters (sessState s2)
+                  assertBool "still on you after wait"
+                    (charName (cs !! i) == "you")
+                  assertBool "eve.heard.carol persists across wait"
+                    (factInfix (sessState s2) "eve.believes.helped.you.carol.heard.carol")
+
+      , testCase "M6w-W04 花名册未扩；脚本 eve.heard.carol 路径；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+          assertBool "脚本 carol.seen"
+            (factInfix st0 "carol.believes.helped.you.carol.seen")
+          let st1 = doAct "carol" "前往 mill" st0
+              gossipActs = [ ga | ga <- possibleActions st1 "carol"
+                                , "转告" `isInfixOf` gaLabel ga
+                                , "eve" `isInfixOf` gaLabel ga
+                                , "you" `isInfixOf` gaLabel ga ]
+          assertBool ("脚本 Menu 有 carol 转告 eve; had="
+                      ++ show (map gaLabel (possibleActions st1 "carol")))
+            (not (null gossipActs))
+          let st2 = performAction st1 (head gossipActs)
+          assertBool "脚本 eve.heard.carol"
+            (factInfix st2 "eve.believes.helped.you.carol.heard.carol")
+          assertBool "脚本 eve ¬seen"
+            (not (factInfix st2 "eve.believes.helped.you.carol.seen"))
+          length (characters st2) @?= 6
+          -- Session 冻：本刀仅 Spec；save/load 续存由 W02 盖（prax-state-v4 零改）。
 
 
       ]
