@@ -59,6 +59,8 @@ module Prax.Coerce
   , isOstracized, lacksOstracized
   , isAtoned, lacksAtoned
   , isHungry, lacksHungry
+  , isEyed, lacksEyed
+  , isConfronted, lacksConfronted
   ) where
 
 import           Data.List (nub)
@@ -551,4 +553,29 @@ isHungry who =
 lacksHungry :: String -> Condition
 lacksHungry who =
   Not ("hungry." ++ guardSeg "lacksHungry" who)
+
+
+-- | 条件：@actor@ 已目击疑心 @target@（@eyed.<actor>.<target>@；Village）。
+isEyed :: String -> String -> Condition
+isEyed actor target =
+  Match ("eyed." ++ guardSeg "isEyed" actor
+         ++ "." ++ guardSeg "isEyed" target)
+
+-- | 条件：无该目击叶。
+lacksEyed :: String -> String -> Condition
+lacksEyed actor target =
+  Not ("eyed." ++ guardSeg "lacksEyed" actor
+       ++ "." ++ guardSeg "lacksEyed" target)
+
+-- | 条件：@actor@ 已对质 @target@（@confronted.<actor>.<target>@；Village）。
+isConfronted :: String -> String -> Condition
+isConfronted actor target =
+  Match ("confronted." ++ guardSeg "isConfronted" actor
+         ++ "." ++ guardSeg "isConfronted" target)
+
+-- | 条件：无该对质叶。
+lacksConfronted :: String -> String -> Condition
+lacksConfronted actor target =
+  Not ("confronted." ++ guardSeg "lacksConfronted" actor
+       ++ "." ++ guardSeg "lacksConfronted" target)
 

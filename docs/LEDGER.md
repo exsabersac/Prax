@@ -1759,3 +1759,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec silence × exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v321 — Coerce isEyed / isConfronted 条件对偶
+
+- **做了什么**：`isEyed`/`lacksEyed`、`isConfronted`/`lacksConfronted` 钉 Village 目击/对质 binary Match/Not 对偶。无实践改动；未动 Village 金标准。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v322 — Sandbox 教会沉默×磨坊放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 bob 买牧师异端沉默债后 harvest censure/banish 被堵住，dave 磨坊 denounce→exile 仍开（双轨独立）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church silence × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
