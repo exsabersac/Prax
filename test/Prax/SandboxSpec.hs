@@ -2061,4 +2061,39 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stPar = doAct "priest" "parade bob" stFlee
       assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
 
+
+  , testCase "silence × church parade: mill debt blocks ira; heretic parade stays" $ do
+      -- ira silence debt blocks mill denounce; church heretic parade unconstrained.
+      let st0 = doAct "ira" "learn" inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+          stBuy = doAct "bob" "buy ira's silence" stP
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "parade at harvest" (hasAct "priest" "parade bob" stH)
+      let stPar = doAct "priest" "parade bob" stH
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stPar))
+
+  , testCase "silence × inquisit: mill debt blocks ira; priest squeeze stays" $ do
+      -- bob buys ira silence; mill denounce gated; church inquisit squeeze open.
+      let st0 = doAct "ira" "learn" inquisitSeed
+          stBuy = doAct "bob" "buy ira's silence" st0
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "priest squeeze still" (hasAct "priest" "squeeze bob" stH)
+      let stSq = doAct "priest" "squeeze bob" stH
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stSq))
+
   ]

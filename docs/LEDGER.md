@@ -2029,3 +2029,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"what factions"`，列出 member/affiliate/leads 上的派系名（对齐 Host `factionsNamed`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+## v367 — Sandbox 磨坊沉默×教会游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 ira 沉默债挡 denounce，异端 church parade 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × church parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v368 — Sandbox 磨坊沉默×教会胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 ira 沉默债挡 denounce，priest inquisit squeeze 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
