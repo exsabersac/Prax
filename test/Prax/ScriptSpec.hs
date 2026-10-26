@@ -327,6 +327,16 @@ tests = testGroup "Prax.Script"
       endingOf (iterate roundBoundary resumed !! 2) @?= Nothing        -- boundary 4
       endingOf (iterate roundBoundary resumed !! 3) @?= Just "dismissed"  -- boundary 5
 
+  , testCase "withTraits / concernedWith alone append castTraits / castDesires" $ do
+      let tonly = member "ada" `withTraits` [ "proud", "shy" ]
+          conly = member "ben" `concernedWith` [ ("trust", 7) ]
+      castTraits tonly @?= [ "proud", "shy" ]
+      castDesires tonly @?= []
+      castTraits conly @?= []
+      castDesires conly @?=
+        [ Want [ Match "Other.relationship.ben.trust.score!N"
+               , Neq "Other" "ben", Cmp Gt "N" "0" ] 7 ]
+
   , testCase "a character sketch compiles concerns to wants and traits to facts" $ do
       let cm = member "vain" `concernedWith` [ ("beauty", 50) ] `withTraits` [ "proud" ]
       castDesires cm @?=

@@ -2735,3 +2735,21 @@
 - **测**：RumorSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v497 — Schedule 节庆门禁名段错误 Spec 钉
+
+- **做了什么**：ScheduleSpec 钉 duringFestival/outsideFestival/hasFestival/lacksFestival 点号/空名响亮报错。无新实践 / 无 want 改动。
+- **测**：ScheduleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v498 — Project endeavorCrew 构造响亮错误 Spec 钉
+
+- **做了什么**：ProjectSpec 钉 endeavorCrew 无部件/点号 id 响亮报错（对偶 endeavor）。无新实践 / 无 want 改动。
+- **测**：ProjectSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v499 — Script withTraits/concernedWith 单独追加 Spec 钉
+
+- **做了什么**：ScriptSpec 钉 withTraits/concernedWith 各自单独追加 castTraits/castDesires。无新实践 / 无 want 改动。
+- **测**：ScriptSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

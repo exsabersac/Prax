@@ -173,4 +173,14 @@ tests = testGroup "Prax.Schedule"
       r <- try (evaluate (length (show (lasts 2 (Delete "mood!a")))))
       assertBool "lasts on Delete errors" (isLeft (r :: Either ErrorCall Int))
 
+  , testCase "duringFestival / outsideFestival / hasFestival / lacksFestival reject bad names" $ do
+      r1 <- try (evaluate (length (show (duringFestival "har.vest"))))
+      assertBool "duringFestival dotted" (isLeft (r1 :: Either ErrorCall Int))
+      r2 <- try (evaluate (length (show (outsideFestival ""))))
+      assertBool "outsideFestival empty" (isLeft (r2 :: Either ErrorCall Int))
+      r3 <- try (evaluate (length (show (hasFestival "a!b"))))
+      assertBool "hasFestival bang" (isLeft (r3 :: Either ErrorCall Int))
+      r4 <- try (evaluate (length (show (lacksFestival "x.y"))))
+      assertBool "lacksFestival dotted" (isLeft (r4 :: Either ErrorCall Int))
+
   ]

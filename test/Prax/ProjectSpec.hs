@@ -322,6 +322,12 @@ tests = testGroup "Prax.Project"
       r <- try (Exc.evaluate (abandon "my.oven" "[Actor]: quit"))
       assertBool "id must be a single path segment" (isLeft (r :: Either ErrorCall Action))
 
+  , testCase "endeavorCrew with no parts / dotted id errors loudly" $ do
+      errored (endeavorCrew "idle" 1 "[Actor]: x" [] [])
+        >>= assertBool "crew endeavor is work"
+      errored (endeavorCrew "my.oven" 1 "[Actor]: x" [] chainParts)
+        >>= assertBool "crew id must be a single path segment"
+
   , testCase "endeavorCrew + enlist: partner advances owner ledger" $ do
       let parts = [ Part "sweep" "[Actor]: sweep the hearth" [] [] []
                   , Part "fire"  "[Actor]: fire it" ["sweep"] [] [ Insert "oven.standing" ]
