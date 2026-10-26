@@ -43,29 +43,29 @@ module Prax.Coerce
   , everDefied, neverDefied
   , everComplied, neverComplied
   , everExtorted, neverExtorted
-  , isBranded, lacksBranded
-  , isBrandedHeretic, lacksBrandedHeretic
-  , isParaded, lacksParaded
-  , isCried, lacksCried
-  , isDenounced, lacksDenounced
-  , isRallied, lacksRallied
-  , isCensured, lacksCensured
-  , isExiled, lacksExiled
-  , isFled, lacksFled
-  , isReconciled, lacksReconciled
-  , isConfessed, lacksConfessed
-  , isRecanted, lacksRecanted
-  , isMarried, lacksMarried
-  , isOstracized, lacksOstracized
-  , isAtoned, lacksAtoned
-  , isHungry, lacksHungry
-  , isEyed, lacksEyed
-  , isConfronted, lacksConfronted
-  , isWronged, lacksWronged
-  , isAllied, lacksAllied
-  , isResents, lacksResents
-  , isShortTempered, lacksShortTempered
-  , isAppetite, lacksAppetite
+  , isBranded, lacksBranded, hasBranded
+  , isBrandedHeretic, lacksBrandedHeretic, hasBrandedHeretic
+  , isParaded, lacksParaded, hasParaded
+  , isCried, lacksCried, hasCried
+  , isDenounced, lacksDenounced, hasDenounced
+  , isRallied, lacksRallied, hasRallied
+  , isCensured, lacksCensured, hasCensured
+  , isExiled, lacksExiled, hasExiled
+  , isFled, lacksFled, hasFled
+  , isReconciled, lacksReconciled, hasReconciled
+  , isConfessed, lacksConfessed, hasConfessed
+  , isRecanted, lacksRecanted, hasRecanted
+  , isMarried, lacksMarried, hasMarried
+  , isOstracized, lacksOstracized, hasOstracized
+  , isAtoned, lacksAtoned, hasAtoned
+  , isHungry, lacksHungry, hasHungry
+  , isEyed, lacksEyed, hasEyed
+  , isConfronted, lacksConfronted, hasConfronted
+  , isWronged, lacksWronged, hasWronged
+  , isAllied, lacksAllied, hasAllied
+  , isResents, lacksResents, hasResents
+  , isShortTempered, lacksShortTempered, hasShortTempered
+  , isAppetite, lacksAppetite, hasAppetite
   ) where
 
 import           Data.List (nub)
@@ -387,6 +387,10 @@ lacksBranded :: String -> Condition
 lacksBranded who =
   Not ("branded." ++ guardSeg "lacksBranded" who)
 
+-- | 条件：已烙贼印（@isBranded@ 同体；对齐 has* 命名）。
+hasBranded :: String -> Condition
+hasBranded = isBranded
+
 -- | 条件：@who@ 已烙异端印（@brandedHeretic.<who>@；Sandbox churchInquisit 惩罚核）。
 isBrandedHeretic :: String -> Condition
 isBrandedHeretic who =
@@ -396,6 +400,10 @@ isBrandedHeretic who =
 lacksBrandedHeretic :: String -> Condition
 lacksBrandedHeretic who =
   Not ("brandedHeretic." ++ guardSeg "lacksBrandedHeretic" who)
+
+-- | 条件：已烙异端印（@isBrandedHeretic@ 同体；对齐 has* 命名）。
+hasBrandedHeretic :: String -> Condition
+hasBrandedHeretic = isBrandedHeretic
 
 
 -- | 条件：@actor@ 已对 @target@ 游街（@paraded.<actor>.<target>@；Sandbox brand parade）。
@@ -410,6 +418,10 @@ lacksParaded actor target =
   Not ("paraded." ++ guardSeg "lacksParaded" actor
        ++ "." ++ guardSeg "lacksParaded" target)
 
+-- | 条件：已对 target 游街（@isParaded@ 同体；对齐 has* 命名）。
+hasParaded :: String -> String -> Condition
+hasParaded = isParaded
+
 
 -- | 条件：@actor@ 已对 @target@ 市集喊冤（@cried.<actor>.<target>@；Sandbox marketCry）。
 isCried :: String -> String -> Condition
@@ -422,6 +434,10 @@ lacksCried :: String -> String -> Condition
 lacksCried actor target =
   Not ("cried." ++ guardSeg "lacksCried" actor
        ++ "." ++ guardSeg "lacksCried" target)
+
+-- | 条件：已对 target 市集喊冤（@isCried@ 同体；对齐 has* 命名）。
+hasCried :: String -> String -> Condition
+hasCried = isCried
 
 
 -- | 条件：@actor@ 已控告 @target@（@denounced.<actor>.<target>@；Sandbox millJustice）。
@@ -436,6 +452,10 @@ lacksDenounced actor target =
   Not ("denounced." ++ guardSeg "lacksDenounced" actor
        ++ "." ++ guardSeg "lacksDenounced" target)
 
+-- | 条件：已控告 target（@isDenounced@ 同体；对齐 has* 命名）。
+hasDenounced :: String -> String -> Condition
+hasDenounced = isDenounced
+
 -- | 条件：@actor@ 已市集声援 @target@（@rallied.<actor>.<target>@；Sandbox marketRally）。
 isRallied :: String -> String -> Condition
 isRallied actor target =
@@ -447,6 +467,10 @@ lacksRallied :: String -> String -> Condition
 lacksRallied actor target =
   Not ("rallied." ++ guardSeg "lacksRallied" actor
        ++ "." ++ guardSeg "lacksRallied" target)
+
+-- | 条件：已市集声援 target（@isRallied@ 同体；对齐 has* 命名）。
+hasRallied :: String -> String -> Condition
+hasRallied = isRallied
 
 
 -- | 条件：@actor@ 已审查 @target@（@censured.<actor>.<target>@；Sandbox churchHeresy）。
@@ -461,6 +485,10 @@ lacksCensured actor target =
   Not ("censured." ++ guardSeg "lacksCensured" actor
        ++ "." ++ guardSeg "lacksCensured" target)
 
+-- | 条件：已审查 target（@isCensured@ 同体；对齐 has* 命名）。
+hasCensured :: String -> String -> Condition
+hasCensured = isCensured
+
 -- | 条件：@who@ 已被放逐（@exiled.<who>@；Sandbox mill/church exile）。
 isExiled :: String -> Condition
 isExiled who =
@@ -470,6 +498,10 @@ isExiled who =
 lacksExiled :: String -> Condition
 lacksExiled who =
   Not ("exiled." ++ guardSeg "lacksExiled" who)
+
+-- | 条件：已被放逐（@isExiled@ 同体；对齐 has* 命名）。
+hasExiled :: String -> Condition
+hasExiled = isExiled
 
 
 -- | 条件：@who@ 已叛逃（@fled.<who>@；Sandbox millAllegiance）。
@@ -482,6 +514,10 @@ lacksFled :: String -> Condition
 lacksFled who =
   Not ("fled." ++ guardSeg "lacksFled" who)
 
+-- | 条件：已叛逃（@isFled@ 同体；对齐 has* 命名）。
+hasFled :: String -> Condition
+hasFled = isFled
+
 -- | 条件：@who@ 已和解回队（@reconciled.<who>@；Sandbox millAllegiance）。
 isReconciled :: String -> Condition
 isReconciled who =
@@ -491,6 +527,10 @@ isReconciled who =
 lacksReconciled :: String -> Condition
 lacksReconciled who =
   Not ("reconciled." ++ guardSeg "lacksReconciled" who)
+
+-- | 条件：已和解回队（@isReconciled@ 同体；对齐 has* 命名）。
+hasReconciled :: String -> Condition
+hasReconciled = isReconciled
 
 
 -- | 条件：@who@ 已招供（@confessed.<who>@；Sandbox millSqueeze demand）。
@@ -503,6 +543,10 @@ lacksConfessed :: String -> Condition
 lacksConfessed who =
   Not ("confessed." ++ guardSeg "lacksConfessed" who)
 
+-- | 条件：已招供（@isConfessed@ 同体；对齐 has* 命名）。
+hasConfessed :: String -> Condition
+hasConfessed = isConfessed
+
 -- | 条件：@who@ 已悔罪（@recanted.<who>@；Sandbox churchInquisit demand）。
 isRecanted :: String -> Condition
 isRecanted who =
@@ -512,6 +556,10 @@ isRecanted who =
 lacksRecanted :: String -> Condition
 lacksRecanted who =
   Not ("recanted." ++ guardSeg "lacksRecanted" who)
+
+-- | 条件：已悔罪（@isRecanted@ 同体；对齐 has* 命名）。
+hasRecanted :: String -> Condition
+hasRecanted = isRecanted
 
 
 -- | 条件：@a@ 与 @b@ 已婚入同盟（@married.<a>.<b>@；Sandbox millWed）。
@@ -526,6 +574,10 @@ lacksMarried a b =
   Not ("married." ++ guardSeg "lacksMarried" a
        ++ "." ++ guardSeg "lacksMarried" b)
 
+-- | 条件：与 b 已婚入同盟（@isMarried@ 同体；对齐 has* 命名）。
+hasMarried :: String -> String -> Condition
+hasMarried = isMarried
+
 -- | 条件：@actor@ 已放逐排斥 @target@（@ostracized.<actor>.<target>@）。
 isOstracized :: String -> String -> Condition
 isOstracized actor target =
@@ -538,6 +590,10 @@ lacksOstracized actor target =
   Not ("ostracized." ++ guardSeg "lacksOstracized" actor
        ++ "." ++ guardSeg "lacksOstracized" target)
 
+-- | 条件：已放逐排斥 target（@isOstracized@ 同体；对齐 has* 命名）。
+hasOstracized :: String -> String -> Condition
+hasOstracized = isOstracized
+
 
 -- | 条件：@who@ 已赎罪（@atoned.<who>@；Village standingUnless 击败者）。
 isAtoned :: String -> Condition
@@ -549,6 +605,10 @@ lacksAtoned :: String -> Condition
 lacksAtoned who =
   Not ("atoned." ++ guardSeg "lacksAtoned" who)
 
+-- | 条件：已赎罪（@isAtoned@ 同体；对齐 has* 命名）。
+hasAtoned :: String -> Condition
+hasAtoned = isAtoned
+
 -- | 条件：@who@ 饥饿（@hungry.<who>@；Village）。
 isHungry :: String -> Condition
 isHungry who =
@@ -558,6 +618,10 @@ isHungry who =
 lacksHungry :: String -> Condition
 lacksHungry who =
   Not ("hungry." ++ guardSeg "lacksHungry" who)
+
+-- | 条件：饥饿（@isHungry@ 同体；对齐 has* 命名）。
+hasHungry :: String -> Condition
+hasHungry = isHungry
 
 
 -- | 条件：@actor@ 已目击疑心 @target@（@eyed.<actor>.<target>@；Village）。
@@ -572,6 +636,10 @@ lacksEyed actor target =
   Not ("eyed." ++ guardSeg "lacksEyed" actor
        ++ "." ++ guardSeg "lacksEyed" target)
 
+-- | 条件：已目击疑心 target（@isEyed@ 同体；对齐 has* 命名）。
+hasEyed :: String -> String -> Condition
+hasEyed = isEyed
+
 -- | 条件：@actor@ 已对质 @target@（@confronted.<actor>.<target>@；Village）。
 isConfronted :: String -> String -> Condition
 isConfronted actor target =
@@ -583,6 +651,10 @@ lacksConfronted :: String -> String -> Condition
 lacksConfronted actor target =
   Not ("confronted." ++ guardSeg "lacksConfronted" actor
        ++ "." ++ guardSeg "lacksConfronted" target)
+
+-- | 条件：已对质 target（@isConfronted@ 同体；对齐 has* 命名）。
+hasConfronted :: String -> String -> Condition
+hasConfronted = isConfronted
 
 
 -- | 条件：@offender@ 冤屈了 @victim@（@wronged.<offender>.<victim>@；Feud）。
@@ -597,6 +669,10 @@ lacksWronged offender victim =
   Not ("wronged." ++ guardSeg "lacksWronged" offender
        ++ "." ++ guardSeg "lacksWronged" victim)
 
+-- | 条件：冤屈了 victim（@isWronged@ 同体；对齐 has* 命名）。
+hasWronged :: String -> String -> Condition
+hasWronged = isWronged
+
 -- | 条件：@a@ 与 @b@ 同盟（@allied.<a>.<b>@；Faction comrades / Feud）。
 isAllied :: String -> String -> Condition
 isAllied a b =
@@ -608,6 +684,10 @@ lacksAllied :: String -> String -> Condition
 lacksAllied a b =
   Not ("allied." ++ guardSeg "lacksAllied" a
        ++ "." ++ guardSeg "lacksAllied" b)
+
+-- | 条件：与 b 同盟（@isAllied@ 同体；对齐 has* 命名）。
+hasAllied :: String -> String -> Condition
+hasAllied = isAllied
 
 
 -- | 条件：@who@ 怨恨 @target@（@resents.<who>.<target>@；Feud）。
@@ -622,6 +702,10 @@ lacksResents who target =
   Not ("resents." ++ guardSeg "lacksResents" who
        ++ "." ++ guardSeg "lacksResents" target)
 
+-- | 条件：怨恨 target（@isResents@ 同体；对齐 has* 命名）。
+hasResents :: String -> String -> Condition
+hasResents = isResents
+
 -- | 条件：@who@ 暴脾气（@shortTempered.<who>@；Village）。
 isShortTempered :: String -> Condition
 isShortTempered who =
@@ -632,6 +716,10 @@ lacksShortTempered :: String -> Condition
 lacksShortTempered who =
   Not ("shortTempered." ++ guardSeg "lacksShortTempered" who)
 
+-- | 条件：暴脾气（@isShortTempered@ 同体；对齐 has* 命名）。
+hasShortTempered :: String -> Condition
+hasShortTempered = isShortTempered
+
 -- | 条件：@who@ 有胃口（@appetite.<who>@；Village）。
 isAppetite :: String -> Condition
 isAppetite who =
@@ -641,4 +729,8 @@ isAppetite who =
 lacksAppetite :: String -> Condition
 lacksAppetite who =
   Not ("appetite." ++ guardSeg "lacksAppetite" who)
+
+-- | 条件：有胃口（@isAppetite@ 同体；对齐 has* 命名）。
+hasAppetite :: String -> Condition
+hasAppetite = isAppetite
 

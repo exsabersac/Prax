@@ -223,5 +223,12 @@ tests = testGroup "Prax.Repute"
         (not (satisfies (db st) [lacksEsteemed "ana" "kai" "hero"] Map.empty))
       assertBool "lacksScorned fails"
         (not (satisfies (db st) [lacksScorned "ana" "kai" "brute"] Map.empty))
+      assertBool "lacksRegardedAs fails"
+        (not (satisfies (db st) [lacksRegardedAs "ana" "kai" "thief"] Map.empty))
+      assertBool "lacksRegardedAs on empty"
+        (satisfies (db emptyState) [lacksRegardedAs "ana" "kai" "thief"] Map.empty)
+
+  , testCase "lacksRegardedAs is Not of regards path" $
+      lacksRegardedAs "ada" "bex" "thief" @?= Not "regards.ada.bex.thief"
 
   ]

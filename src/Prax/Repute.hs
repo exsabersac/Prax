@@ -17,6 +17,7 @@ module Prax.Repute
   , standingUnless
   , regardedAs
   , hasRegardedAs
+  , lacksRegardedAs
   , notoriety
   , scornStanding
   , esteemStanding
@@ -81,6 +82,11 @@ regardedAs observer subject label =
 -- | 条件：@observer@ 将 @subject@ 视为 @label@（@regardedAs@ 同体；对齐 has* 命名）。
 hasRegardedAs :: String -> String -> String -> Condition
 hasRegardedAs = regardedAs
+
+-- | 条件：@observer@ 未将 @subject@ 视为 @label@（@regardedAs@ 的 Not 对偶）。
+lacksRegardedAs :: String -> String -> String -> Condition
+lacksRegardedAs observer subject label =
+  Not ("regards." ++ observer ++ "." ++ subject ++ "." ++ label)
 
 -- | 当至少 @n@ 名观察者 regard 主体时，@notorious.\<subject\>.\<label\>@ 成立。
 notoriety :: String -> Int -> Axiom

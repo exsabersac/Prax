@@ -2708,3 +2708,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 activateSqueeze 后门开但 dave 仅 millJustice 时不选 squeeze；activateInquisit+hear 后门开但 priest 仅 bobHeresyJustice 时不选教会 squeeze。无新实践。
 - **测**：SandboxSpec wants: without squeezeDesire / without inquisitDesire。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v484 — Coerce has* 叶门禁对偶（对齐 is*）
+
+- **做了什么**：Coerce 为 Sandbox/Village 叶门禁补 hasBranded/hasParaded/hasAtoned/hasEyed 等 has*（= is*）；Spec 钉结构别名与 Insert 世界求值。无新实践 / 无 want 改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v485 — Repute lacksRegardedAs 对偶
+
+- **做了什么**：Repute 增加 lacksRegardedAs（regardedAs 的 Not 对偶）；Spec 钉结构与 Insert/净世界求值。无新实践 / 无 want 改动。
+- **测**：ReputeSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

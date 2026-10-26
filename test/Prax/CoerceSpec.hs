@@ -25,29 +25,29 @@ import           Prax.Coerce (Coercion (..), coerce,
                              everDefied, neverDefied,
                              everComplied, neverComplied,
                              everExtorted, neverExtorted,
-                             isBranded, lacksBranded,
-                             isBrandedHeretic, lacksBrandedHeretic,
-                             isParaded, lacksParaded,
-                             isCried, lacksCried,
-                             isDenounced, lacksDenounced,
-                             isRallied, lacksRallied,
-                             isCensured, lacksCensured,
-                             isExiled, lacksExiled,
-                             isFled, lacksFled,
-                             isReconciled, lacksReconciled,
-                             isConfessed, lacksConfessed,
-                             isRecanted, lacksRecanted,
-                             isMarried, lacksMarried,
-                             isOstracized, lacksOstracized,
-                             isAtoned, lacksAtoned,
-                             isHungry, lacksHungry,
-                             isEyed, lacksEyed,
-                             isConfronted, lacksConfronted,
-                             isWronged, lacksWronged,
-                             isAllied, lacksAllied,
-                             isResents, lacksResents,
-                             isShortTempered, lacksShortTempered,
-                             isAppetite, lacksAppetite)
+                             isBranded, lacksBranded, hasBranded,
+                             isBrandedHeretic, lacksBrandedHeretic, hasBrandedHeretic,
+                             isParaded, lacksParaded, hasParaded,
+                             isCried, lacksCried, hasCried,
+                             isDenounced, lacksDenounced, hasDenounced,
+                             isRallied, lacksRallied, hasRallied,
+                             isCensured, lacksCensured, hasCensured,
+                             isExiled, lacksExiled, hasExiled,
+                             isFled, lacksFled, hasFled,
+                             isReconciled, lacksReconciled, hasReconciled,
+                             isConfessed, lacksConfessed, hasConfessed,
+                             isRecanted, lacksRecanted, hasRecanted,
+                             isMarried, lacksMarried, hasMarried,
+                             isOstracized, lacksOstracized, hasOstracized,
+                             isAtoned, lacksAtoned, hasAtoned,
+                             isHungry, lacksHungry, hasHungry,
+                             isEyed, lacksEyed, hasEyed,
+                             isConfronted, lacksConfronted, hasConfronted,
+                             isWronged, lacksWronged, hasWronged,
+                             isAllied, lacksAllied, hasAllied,
+                             isResents, lacksResents, hasResents,
+                             isShortTempered, lacksShortTempered, hasShortTempered,
+                             isAppetite, lacksAppetite, hasAppetite)
 
 -- A protection racket, the SECOND instance of the leverage skeleton (blackmail
 -- is the first): mob threatens to burn a barn-owner's barn unless they do a
@@ -863,5 +863,56 @@ tests = testGroup "Prax.Coerce"
         (not (satisfies (db st) [lacksOstracized "dana" "bob"] Map.empty))
       assertBool "lacksShortTempered fails"
         (not (satisfies (db st) [lacksShortTempered "ana"] Map.empty))
+
+  , testCase "has* aliases match is* for Sandbox/Village leaf gates" $ do
+      hasBranded "bob" @?= isBranded "bob"
+      hasBrandedHeretic "eve" @?= isBrandedHeretic "eve"
+      hasParaded "ana" "bob" @?= isParaded "ana" "bob"
+      hasCried "ana" "bob" @?= isCried "ana" "bob"
+      hasDenounced "ana" "bob" @?= isDenounced "ana" "bob"
+      hasRallied "ana" "bob" @?= isRallied "ana" "bob"
+      hasCensured "ana" "bob" @?= isCensured "ana" "bob"
+      hasExiled "bob" @?= isExiled "bob"
+      hasFled "carol" @?= isFled "carol"
+      hasReconciled "carol" @?= isReconciled "carol"
+      hasConfessed "bob" @?= isConfessed "bob"
+      hasRecanted "eve" @?= isRecanted "eve"
+      hasMarried "ana" "bob" @?= isMarried "ana" "bob"
+      hasOstracized "dana" "bob" @?= isOstracized "dana" "bob"
+      hasAtoned "bob" @?= isAtoned "bob"
+      hasHungry "bob" @?= isHungry "bob"
+      hasEyed "ana" "bob" @?= isEyed "ana" "bob"
+      hasConfronted "ana" "bob" @?= isConfronted "ana" "bob"
+      hasWronged "bob" "carol" @?= isWronged "bob" "carol"
+      hasAllied "ana" "bob" @?= isAllied "ana" "bob"
+      hasResents "carol" "bob" @?= isResents "carol" "bob"
+      hasShortTempered "ana" @?= isShortTempered "ana"
+      hasAppetite "bob" @?= isAppetite "bob"
+
+  , testCase "hasBranded / hasAtoned / hasEyed / hasFled evaluate on Insert worlds" $ do
+      assertBool "hasBranded fails on empty"
+        (not (satisfies (db emptyState) [hasBranded "bob"] Map.empty))
+      assertBool "hasAtoned fails on empty"
+        (not (satisfies (db emptyState) [hasAtoned "bob"] Map.empty))
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "branded.bob"
+            , Insert "brandedHeretic.eve"
+            , Insert "paraded.ana.bob"
+            , Insert "atoned.bob"
+            , Insert "eyed.ana.bob"
+            , Insert "fled.carol"
+            , Insert "exiled.dana"
+            , Insert "appetite.bob"
+            ]
+      assertBool "hasBranded" (satisfies (db st) [hasBranded "bob"] Map.empty)
+      assertBool "hasBrandedHeretic"
+        (satisfies (db st) [hasBrandedHeretic "eve"] Map.empty)
+      assertBool "hasParaded"
+        (satisfies (db st) [hasParaded "ana" "bob"] Map.empty)
+      assertBool "hasAtoned" (satisfies (db st) [hasAtoned "bob"] Map.empty)
+      assertBool "hasEyed" (satisfies (db st) [hasEyed "ana" "bob"] Map.empty)
+      assertBool "hasFled" (satisfies (db st) [hasFled "carol"] Map.empty)
+      assertBool "hasExiled" (satisfies (db st) [hasExiled "dana"] Map.empty)
+      assertBool "hasAppetite" (satisfies (db st) [hasAppetite "bob"] Map.empty)
 
   ]
