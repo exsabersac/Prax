@@ -71,7 +71,7 @@ function showGuide() {
   for (const line of [
     "地点：广场（square）、磨坊（mill）",
     "阵容：你（you）+ Bob / Carol / Dana / Eve / Gale",
-    "下一步：点角色 → 看菜单 → 点行动",
+    "下一步：点一名居民或选一个动作继续",
   ]) {
     const li = document.createElement("li");
     li.textContent = line;
