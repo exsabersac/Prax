@@ -1748,3 +1748,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec cry × rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v319 — Coerce isAtoned / isHungry 条件对偶
+
+- **做了什么**：`isAtoned`/`lacksAtoned`、`isHungry`/`lacksHungry` 钉 Village 赎罪/饥饿 unary Match/Not 对偶。无实践改动；未动 Village 金标准。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v320 — Sandbox 沉默×放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 bob 买 ira 沉默债后 harvest ira denounce/exile 链被 `lacksOwes` 堵住，dave 仍可 denounce→exile。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

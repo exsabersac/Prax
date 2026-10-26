@@ -57,6 +57,8 @@ module Prax.Coerce
   , isRecanted, lacksRecanted
   , isMarried, lacksMarried
   , isOstracized, lacksOstracized
+  , isAtoned, lacksAtoned
+  , isHungry, lacksHungry
   ) where
 
 import           Data.List (nub)
@@ -528,4 +530,25 @@ lacksOstracized :: String -> String -> Condition
 lacksOstracized actor target =
   Not ("ostracized." ++ guardSeg "lacksOstracized" actor
        ++ "." ++ guardSeg "lacksOstracized" target)
+
+
+-- | 条件：@who@ 已赎罪（@atoned.<who>@；Village standingUnless 击败者）。
+isAtoned :: String -> Condition
+isAtoned who =
+  Match ("atoned." ++ guardSeg "isAtoned" who)
+
+-- | 条件：无赎罪叶。
+lacksAtoned :: String -> Condition
+lacksAtoned who =
+  Not ("atoned." ++ guardSeg "lacksAtoned" who)
+
+-- | 条件：@who@ 饥饿（@hungry.<who>@；Village）。
+isHungry :: String -> Condition
+isHungry who =
+  Match ("hungry." ++ guardSeg "isHungry" who)
+
+-- | 条件：无饥饿叶。
+lacksHungry :: String -> Condition
+lacksHungry who =
+  Not ("hungry." ++ guardSeg "lacksHungry" who)
 

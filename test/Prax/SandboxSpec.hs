@@ -1526,4 +1526,23 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stCry
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
       assertBool "cry spent" (not (hasAct "dave" "cry the theft" stRally))
+
+  , testCase "silence × exile: debt blocks ira denounce/exile; dave exile still open" $ do
+      -- ira silenced → cannot denounce → cannot exile; dave free path
+      -- denounce@harvest → exile after window.
+      let stIra = doAct "ira" "learn" sandboxWorld
+          stDave = doAct "dave" "learn" stIra
+          stBuy = doAct "bob" "buy ira's silence" stDave
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "ira exile no" (not (hasAct "ira" "exile" stAfter))
+      let stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stEx))
   ]

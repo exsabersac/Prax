@@ -38,7 +38,9 @@ import           Prax.Coerce (Coercion (..), coerce,
                              isConfessed, lacksConfessed,
                              isRecanted, lacksRecanted,
                              isMarried, lacksMarried,
-                             isOstracized, lacksOstracized)
+                             isOstracized, lacksOstracized,
+                             isAtoned, lacksAtoned,
+                             isHungry, lacksHungry)
 
 -- A protection racket, the SECOND instance of the leverage skeleton (blackmail
 -- is the first): mob threatens to burn a barn-owner's barn unless they do a
@@ -583,6 +585,12 @@ tests = testGroup "Prax.Coerce"
     , testCase "isOstracized / lacksOstracized duals" $ do
         isOstracized "dana" "bob" @?= Match "ostracized.dana.bob"
         lacksOstracized "dana" "bob" @?= Not "ostracized.dana.bob"
+    , testCase "isAtoned / lacksAtoned duals" $ do
+        isAtoned "bob" @?= Match "atoned.bob"
+        lacksAtoned "bob" @?= Not "atoned.bob"
+    , testCase "isHungry / lacksHungry duals" $ do
+        isHungry "ana" @?= Match "hungry.ana"
+        lacksHungry "ana" @?= Not "hungry.ana"
     , testCase "hasComplied / lacksComplied duals" $ do
         hasComplied "racket" "mob" "vic" @?= Match "complied.racket.mob.vic"
         lacksComplied "racket" "mob" "vic" @?= Not "complied.racket.mob.vic"
