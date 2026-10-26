@@ -1792,3 +1792,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec wed × cry（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v327 — Chronicle what is on the stall
+
+- **做了什么**：`askChronicle` 增加 `"what is on the stall"`，列出 `stall.<item>` 基事实（对齐 Host `stallOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+
+## v328 — Sandbox 胁迫×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 activateSqueeze 后 market 窗内 mill squeeze 与 cry 互不阻挡。无新实践 / 无 want 改动。
+- **测**：SandboxSpec squeeze × cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

@@ -238,4 +238,12 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "allied of bob" @?= ["allied.bob.carol"]
       askChronicle st "allied of void" @?= ["void has no alliance marks"]
 
+  , testCase "askChronicle what-is-on-the-stall" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "stall.loaf"
+                , Insert "stall.pie"
+                , Insert "flag.x" ]
+      askChronicle st "what is on the stall" @?= ["stall.loaf", "stall.pie"]
+      askChronicle emptyState "what is on the stall" @?= ["the stall is empty"]
+
   ]

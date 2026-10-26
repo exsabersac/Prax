@@ -1593,4 +1593,15 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "fran cry yes" (hasAct "fran" "cry the theft" stM)
       let stCry = doAct "fran" "cry the theft" stM
       assertBool "cried" (exists "cried.fran.bob" (db stCry))
+
+  , testCase "squeeze × cry: mill squeeze and market cry stay independent" $ do
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "squeeze still" (hasAct "dave" "squeeze bob" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "squeeze after cry" (hasAct "dave" "squeeze bob" stCry)
   ]
