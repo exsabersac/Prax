@@ -3092,3 +3092,8 @@
 - **做了什么**：ViewInvariantSpec 钉 playWorld（idle marcus）与 barDirectorWorld；GateSpec 钉 Worlds/ 下七个演示世界文件清单。无新实践 / 无 want 改动。
 - **测**：ViewInvariant / Gate 针对性。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v562 — Sandbox dual parade×cry + silence×exile 交叉 + wed×cry Spec
+
+- **做了什么**：SandboxSpec 追加 church brand×mill cry；mill brand×censure；dual parade once×cry；kyle paradeDesire；revoke×ira cry；mill silence×priest banish；church silence×mill exile；cry<rally<parade util；fran wed×denounce/cry；defy brand×inquisit；cast iraCry/gale。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（417 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
