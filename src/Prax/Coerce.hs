@@ -45,6 +45,7 @@ module Prax.Coerce
   , everExtorted, neverExtorted
   , isBranded, lacksBranded
   , isBrandedHeretic, lacksBrandedHeretic
+  , isParaded, lacksParaded
   ) where
 
 import           Data.List (nub)
@@ -375,4 +376,17 @@ isBrandedHeretic who =
 lacksBrandedHeretic :: String -> Condition
 lacksBrandedHeretic who =
   Not ("brandedHeretic." ++ guardSeg "lacksBrandedHeretic" who)
+
+
+-- | 条件：@actor@ 已对 @target@ 游街（@paraded.<actor>.<target>@；Sandbox brand parade）。
+isParaded :: String -> String -> Condition
+isParaded actor target =
+  Match ("paraded." ++ guardSeg "isParaded" actor
+         ++ "." ++ guardSeg "isParaded" target)
+
+-- | 条件：无该游街叶（@isParaded@ 的 Not 对偶）。
+lacksParaded :: String -> String -> Condition
+lacksParaded actor target =
+  Not ("paraded." ++ guardSeg "lacksParaded" actor
+       ++ "." ++ guardSeg "lacksParaded" target)
 

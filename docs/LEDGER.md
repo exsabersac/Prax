@@ -1660,3 +1660,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec silence × parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v303 — Coerce isParaded / lacksParaded 条件对偶
+
+- **做了什么**：`isParaded`/`lacksParaded` 钉 `paraded.<actor>.<target>` Match/Not 对偶（对齐 brand parade 门禁）。无实践改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v304 — Sandbox 教会沉默×异端游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisit brand→activateChurchParade 后 bob 买牧师异端沉默债：harvest censure 被 `lacksOwes` 堵住，priest parade 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church silence × parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

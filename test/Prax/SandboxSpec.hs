@@ -1381,4 +1381,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "harvest" (exists "festival.harvest" (db stOpen))
       assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stOpen))
       assertBool "dave parade at harvest" (hasAct "dave" "parade bob" stOpen)
+
+  , testCase "church silence × parade: debt blocks censure; priest parade still open" $ do
+      -- inquisit brand path + church parade; bob buys priest silence.
+      -- Harvest censure gated by lacksOwes; parade only needs regards+brandedHeretic.
+      let st0 = inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stDefy = doAct "bob" "defy" stSq
+          stBrand = doAct "priest" "brand bob" stDefy
+          stP = activateChurchParade stBrand
+          stBuy = doAct "bob" "buy priest" stP
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stBuy)
+      let stOpen = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stOpen))
+      assertBool "censure blocked" (not (hasAct "priest" "censure bob" stOpen))
+      assertBool "parade at harvest" (hasAct "priest" "parade bob" stOpen)
   ]
