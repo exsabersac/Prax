@@ -2855,3 +2855,9 @@
 - **测**：ProjectSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+
+## v518 — Sandbox exile×parade 双轨 + dual coerce 序 + affiliate heresy Spec
+
+- **做了什么**：SandboxSpec 追加 mill exile×church parade、priest banish×mill parade；cry/rally once×denounce；fran rally 婚前关闭；kyle exileEve/seeksBobHeresy/punishesBobHeretic 门禁；无 paradeDesire 不拣；squeeze=parade 权重钉；repay 关 tear；dual coerce 正反序；returnDesire 胜 flee。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（309 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
