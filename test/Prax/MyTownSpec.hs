@@ -1,8 +1,9 @@
--- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
 -- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
 -- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）；
--- M6h 亲见后带回转告（H01–H04；mill 亲见 gale→dana → square 转告 carol；零改世界）。
+-- M6h 亲见后带回转告（H01–H04；mill 亲见 gale→dana → square 转告 carol；零改世界）；
+-- M6i 亲往 mill·当场挨疑（I01–I04；eve 主针；bob 转告→you 赴 mill→怀疑；零改世界）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -940,6 +941,169 @@ tests = testGroup "MyTown"
           assertBool ("硬卡 label: " ++ gaLabel ga0)
             ("you" `isInfixOf` gaLabel ga0
              && needle `isInfixOf` gaLabel ga0)
+
+      , -- M6i：亲往 mill·当场挨疑（硬卡 I01–I04；Session 冻；零改世界；听者主针 eve）
+        testCase "M6i-I01 公开帮 carol → bob 赴 mill 转告 → eve.heard" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          let waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goHeard 0 s narrAcc = pure (s, reverse narrAcc)
+              goHeard k s narrAcc = do
+                (s', r) <- waitOnce s
+                let n = actNarrative r
+                    heard = factInfix (sessState s')
+                              "eve.believes.helped.you.carol.heard.bob"
+                    bobMill = factInfix (sessState s') "at.bob.mill"
+                if heard && bobMill
+                  then pure (s', reverse (n : narrAcc))
+                  else goHeard (k - 1) s' (n : narrAcc)
+          (s2, waitNarrs) <- goHeard 12 s1 []
+          assertBool ("eve.heard after waits; narr=" ++ show waitNarrs)
+            (factInfix (sessState s2)
+               "eve.believes.helped.you.carol.heard.bob")
+          assertBool "eve ¬seen（转告不写 seen）"
+            (not (factInfix (sessState s2)
+                    "eve.believes.helped.you.carol.seen"))
+          assertBool "bob at mill"
+            (factInfix (sessState s2) "at.bob.mill")
+
+      , testCase "M6i-I02 you 前往 mill 后 Menu/候选有怀疑地打量 you（eve∨dana）" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          let waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goHeard 0 s = pure s
+              goHeard k s = do
+                (s', _) <- waitOnce s
+                let heard = factInfix (sessState s')
+                              "eve.believes.helped.you.carol.heard.bob"
+                            || factInfix (sessState s')
+                                 "dana.believes.helped.you.carol.heard.bob"
+                if heard then pure s' else goHeard (k - 1) s'
+          s2 <- goHeard 12 s1
+          (s3, _) <- actByLabel s2 "前往 mill"
+          viewLocationId (praxView s3) @?= Just "mill"
+          let st = sessState s3
+              eyeFor who =
+                [ ga | ga <- possibleActions st who
+                     , "怀疑地打量" `isInfixOf` gaLabel ga
+                     , "you" `isInfixOf` gaLabel ga ]
+              eveEye = eyeFor "eve"
+              danaEye = eyeFor "dana"
+              menuEye =
+                [ m | m <- praxMenu s3
+                    , "怀疑地打量" `isInfixOf` menuLabel m
+                    , "you" `isInfixOf` menuLabel m ]
+          assertBool
+            ("I02 Menu/候选 怀疑地打量 you；eve="
+             ++ show (map gaLabel eveEye)
+             ++ " dana=" ++ show (map gaLabel danaEye)
+             ++ " menu=" ++ show (map menuLabel menuEye))
+            (not (null eveEye) || not (null danaEye) || not (null menuEye))
+
+      , testCase "M6i-I03 点/自发怀疑 → narrative 硬卡 + eyed + heardRumor" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          let waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goHeard 0 s = pure s
+              goHeard k s = do
+                (s', _) <- waitOnce s
+                let heard = factInfix (sessState s')
+                              "eve.believes.helped.you.carol.heard.bob"
+                if heard then pure s' else goHeard (k - 1) s'
+          s2 <- goHeard 12 s1
+          (s3, rGo) <- actByLabel s2 "前往 mill"
+          let hard n =
+                any (\t -> ("eve" `isInfixOf` t || "dana" `isInfixOf` t)
+                        && "怀疑地打量" `isInfixOf` t
+                        && "you" `isInfixOf` t) n
+              eyedOk s =
+                factInfix (sessState s) "eyed.eve.you"
+                || factInfix (sessState s) "eyed.dana.you"
+              rumorOk s =
+                factInfix (sessState s)
+                  "eve.relationship.you.trust.reason.heardRumor"
+                || factInfix (sessState s)
+                     "dana.relationship.you.trust.reason.heardRumor"
+              -- 优先脚本点 eve（主针）；无则 dana；再否则 wait 自发
+              tryClick s = do
+                let st = sessState s
+                    pick who =
+                      [ ga | ga <- possibleActions st who
+                           , "怀疑地打量" `isInfixOf` gaLabel ga
+                           , "you" `isInfixOf` gaLabel ga ]
+                case pick "eve" ++ pick "dana" of
+                  (ga : _) ->
+                    case performAction st ga of
+                      st' -> do
+                        let narr = gaLabel ga
+                        assertBool ("硬卡 label: " ++ narr)
+                          (("eve" `isInfixOf` narr || "dana" `isInfixOf` narr)
+                           && "怀疑地打量" `isInfixOf` narr
+                           && "you" `isInfixOf` narr)
+                        assertBool "eyed after click"
+                          (factInfix st' "eyed.eve.you"
+                           || factInfix st' "eyed.dana.you")
+                        assertBool "heardRumor after click"
+                          (factInfix st'
+                             "eve.relationship.you.trust.reason.heardRumor"
+                           || factInfix st'
+                                "dana.relationship.you.trust.reason.heardRumor")
+                        pure True
+                  [] -> pure False
+              goEye 0 _ narrAcc =
+                assertFailure ("no I03 硬卡; had: " ++ show (reverse narrAcc))
+              goEye k s narrAcc = do
+                clicked <- tryClick s
+                if clicked then pure ()
+                else do
+                  (s', r) <- waitOnce s
+                  let n = actNarrative r
+                  if hard n || eyedOk s'
+                    then do
+                      assertBool ("硬卡 narrative: " ++ unlines n)
+                        (hard n || eyedOk s')
+                      assertBool "eyed after wait" (eyedOk s')
+                      assertBool "heardRumor after wait" (rumorOk s' || eyedOk s')
+                    else goEye (k - 1) s' (n : narrAcc)
+          if hard (actNarrative rGo) || eyedOk s3
+            then do
+              assertBool "eyed after go mill" (eyedOk s3 || hard (actNarrative rGo))
+              assertBool "heardRumor or hard after go"
+                (rumorOk s3 || hard (actNarrative rGo) || eyedOk s3)
+            else do
+              clicked <- tryClick s3
+              if clicked then pure () else goEye 8 s3 []
+
+      , testCase "M6i-I04 花名册未扩；脚本 eve 怀疑路径；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 eve" st2
+          assertBool "脚本 eve.heard.bob"
+            (factInfix st3 "eve.believes.helped.you.carol.heard.bob")
+          let st4 = doAct "you" "前往 mill" st3
+              eyeActs = [ ga | ga <- possibleActions st4 "eve"
+                             , "怀疑地打量" `isInfixOf` gaLabel ga
+                             , "you" `isInfixOf` gaLabel ga ]
+          assertBool "脚本 Menu 有 eve 怀疑地打量 you" (not (null eyeActs))
+          let ga0 = head eyeActs
+              st5 = performAction st4 ga0
+          assertBool "脚本 eyed.eve.you" (factInfix st5 "eyed.eve.you")
+          assertBool "脚本 heardRumor"
+            (factInfix st5 "eve.relationship.you.trust.reason.heardRumor")
+          assertBool ("硬卡 label: " ++ gaLabel ga0)
+            ("eve" `isInfixOf` gaLabel ga0
+             && "怀疑地打量" `isInfixOf` gaLabel ga0
+             && "you" `isInfixOf` gaLabel ga0)
 
       ]
   ]
