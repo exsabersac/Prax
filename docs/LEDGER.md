@@ -2882,3 +2882,9 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`occupants of` 短语化在场角色；Spec 钉 Host 叶与 Chronicle 短语及空集。
+
+## v523 — Sandbox tear复门 + debt×cry + fran coerce 链 + affiliate silence Spec
+
+- **做了什么**：SandboxSpec 追加 tear 后 denounce/censure 复开；silence debt 下 cry 仍开；church debt 堵 gale 不堵 priest；fran wed×squeeze×parade 链；kyle churchSilence；brand 后 fears 满足；denounce×rally；censure×squeeze；exile 权重胜 rally；flee×church hear；无 joinsMill 不拣 wed。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（324 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
