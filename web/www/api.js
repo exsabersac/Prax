@@ -8,7 +8,7 @@ const ACTOR_LABEL = {
   you: "你", bob: "Bob", carol: "Carol", dana: "Dana", eve: "Eve", gale: "Gale",
 };
 
-/** 已知 error 码 → 中文默认（仍优先用服务端 message） */
+/** 已知 error 码 → 中文（坏档/桥死等强制中文，勿被桥端英文技术串盖掉） */
 const ERROR_ZH = {
   network: "网络连接失败，请检查服务是否在运行。",
   bad_response: "服务返回无法解析，请稍后重试。",
@@ -20,15 +20,33 @@ const ERROR_ZH = {
   no_session: "还没有会话，请先新开一局。",
   bad_save: "存档无效或已损坏。",
   load_failed: "读档失败，存档可能已损坏。",
+  // 桥端 SessionMain / praxLoad 实际 error 码
+  praxLoad: "读档失败，存档可能已损坏。",
+  save_decode: "存档无效或已损坏。",
+  exception: "出错了，请稍后重试。",
   rejected: "行动未被接受。",
 };
 
+/** 含汉字则视为可读中文；否则当技术串处理 */
+function isReadableZh(msg) {
+  return /[\u4e00-\u9fff]/.test(msg);
+}
+
+/**
+ * D01：load_failed / bad_save / bad_json / praxLoad / 桥死等优先 ERROR_ZH；
+ * 仅当服务端 message 已是中文时才原样展示，避免 Prax.Session.praxLoad: JSON Error… 露给玩家。
+ */
 export function formatError(res, fallback = "出错了，请稍后重试。") {
   if (!res) return fallback;
-  const msg = (res.message && String(res.message).trim()) || "";
-  if (msg) return msg;
   const code = res.error && String(res.error);
-  if (code && ERROR_ZH[code]) return ERROR_ZH[code];
+  const msg = (res.message && String(res.message).trim()) || "";
+  const zh = code && ERROR_ZH[code];
+  if (zh) {
+    if (!msg || !isReadableZh(msg)) return zh;
+    return msg;
+  }
+  if (msg && isReadableZh(msg)) return msg;
+  if (msg) return fallback;
   if (code) return `出错了（${code}）。`;
   return fallback;
 }
