@@ -9,7 +9,9 @@ import           Prax.Engine (definePractices, performOutcome, setAxioms, setCha
 import           Prax.Repute (standingUnless, notoriety)
 import           Prax.Chronicle
 import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
-                             carryingOf, shunnedOf, locationsOf)
+                             carryingOf, shunnedOf, locationsOf,
+                             obligationsOf, breachesOf, debtsOf,
+                             threatenedOf, stallOf, kinOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -437,5 +439,27 @@ tests = testGroup "Prax.Chronicle"
             , Insert "ana.feels.pride"
             ]
       askChronicle st "feelings of ana" @?= feelingsOf st "ana"
+
+
+  , testCase "askChronicle obligations/breaches/debts dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "obliged.ana.guard.gate"
+            , Insert "violated.ben.guard.gate"
+            , Insert "debt.cora.dell.favor"
+            ]
+      askChronicle st "obligations of ana" @?= obligationsOf st "ana"
+      askChronicle st "breaches of ben" @?= breachesOf st "ben"
+      askChronicle st "debts of cora" @?= debtsOf st "cora"
+
+  , testCase "askChronicle threatened/stall/kin dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "threatened.racket.mob.vic"
+            , Insert "stall.loaf"
+            , Insert "sibling.mia.pat"
+            , Insert "parent.mia.ada"
+            ]
+      askChronicle st "threatened of vic" @?= threatenedOf st "vic"
+      askChronicle st "what is on the stall" @?= stallOf st
+      askChronicle st "kin of mia" @?= kinOf st "mia"
 
   ]

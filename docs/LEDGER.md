@@ -2136,3 +2136,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec defection × church exile、affiliate × inquisit（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v385 — Chronicle 余下 Host *Of 读视图对齐
+
+- **做了什么**：四十余条 askChronicle 臂（debts/branded/…/kin/stall 等）改读 `readView`，对齐 Host *Of；Spec 钉 obligations/breaches/debts/threatened/stall/kin 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v386 — Sandbox 附属×教会游街 + Debt/Coerce 边角世界求值
+
+- **做了什么**：Spec 钉 kyle 无教会 parade、harvest 无 denounce/censure；Debt Spec 钉 owes/lacksOwes/hasRevoked 世界求值；Coerce Spec 钉 isThreatened/lacksThreatened 与 isExiled/isParaded 世界求值。无新实践 / 无 want 改动。
+- **测**：SandboxSpec、DebtSpec、CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

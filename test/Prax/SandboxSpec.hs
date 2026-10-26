@@ -2402,4 +2402,30 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "threatened"
         (exists "threatened.inquisit.priest.bob" (db stSq))
 
+
+  , testCase "affiliate × church parade: kyle cannot parade heretic" $ do
+      -- kyle affiliate-only; priest brand→church parade open for priest only.
+      let st0 = doAct "dave" "learn" inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db stP))
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stP)
+      assertBool "kyle parade no" (not (hasAct "kyle" "parade bob" stP))
+      let stPar = doAct "priest" "parade bob" stP
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+
+  , testCase "affiliate × church exile path: kyle cannot censure after hear" $ do
+      -- reinforce affiliate×church: even at harvest after hear, kyle stays closed.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stH = iterate roundBoundary stHear !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "kyle denounce mill no" (not (hasAct "kyle" "denounce" stH))
+      assertBool "kyle censure no" (not (hasAct "kyle" "censure bob" stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+
   ]

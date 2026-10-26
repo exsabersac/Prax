@@ -8,7 +8,7 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction,
                               setDesires, setCharacters, roundBoundary)
@@ -638,5 +638,25 @@ tests = testGroup "Prax.Coerce"
         let st = doAct "mob" "threaten" racketWorld
         assertBool "threatened leaf" (exists "threatened.racket.mob.vic" (db st))
         assertBool "extorted mark" (exists "mob.extorted.vic.racket" (db st))
+    , testCase "isThreatened / lacksThreatened evaluate on threaten then clean" $ do
+        let st = doAct "mob" "threaten" racketWorld
+        assertBool "isThreatened" (satisfies (db st) [isThreatened "racket" "mob" "vic"] Map.empty)
+        assertBool "lacksThreatened fails"
+          (not (satisfies (db st) [lacksThreatened "racket" "mob" "vic"] Map.empty))
+        assertBool "lacksThreatened on clean world"
+          (satisfies (db racketWorld) [lacksThreatened "racket" "mob" "vic"] Map.empty)
+    , testCase "isExiled / lacksExiled and isParaded / lacksParaded on Insert world" $ do
+        let st = foldl (flip performOutcome) emptyState
+              [ Insert "exiled.bob"
+              , Insert "paraded.dave.bob"
+              ]
+        assertBool "isExiled" (satisfies (db st) [isExiled "bob"] Map.empty)
+        assertBool "lacksExiled fails"
+          (not (satisfies (db st) [lacksExiled "bob"] Map.empty))
+        assertBool "isParaded" (satisfies (db st) [isParaded "dave" "bob"] Map.empty)
+        assertBool "lacksParaded fails"
+          (not (satisfies (db st) [lacksParaded "dave" "bob"] Map.empty))
+        assertBool "lacksExiled on empty"
+          (satisfies (db emptyState) [lacksExiled "bob"] Map.empty)
     ]
   ]

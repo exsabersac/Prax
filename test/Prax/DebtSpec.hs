@@ -3,11 +3,12 @@ module Prax.DebtSpec (tests) where
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists, dbToSentences)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setAxioms, setCharacters)
 import           Prax.Deontic (oblige, discharge, obligationPath, breach)
@@ -210,5 +211,26 @@ tests = testGroup "Prax.Debt"
   , testCase "hasRevoked / lacksRevoked duals over revoked.<creditor>.<debtor>" $ do
       hasRevoked "ira" "bob" @?= Match "revoked.ira.bob"
       lacksRevoked "ira" "bob" @?= Not "revoked.ira.bob"
+
+
+  , testCase "owes / lacksOwes evaluate on a lent-then-settled world" $ do
+      let owed = applyAll emptyState (owe "cora" "dell" "favor")
+      assertBool "owes holds" (satisfies (db owed) [owes "cora" "dell" "favor"] Map.empty)
+      assertBool "lacksOwes fails while owed"
+        (not (satisfies (db owed) [lacksOwes "cora" "dell" "favor"] Map.empty))
+      let settled = applyAll owed (settle "cora" "dell" "favor")
+      assertBool "lacksOwes after settle"
+        (satisfies (db settled) [lacksOwes "cora" "dell" "favor"] Map.empty)
+      assertBool "owes gone after settle"
+        (not (satisfies (db settled) [owes "cora" "dell" "favor"] Map.empty))
+
+  , testCase "hasRevoked / lacksRevoked evaluate after revoke Insert" $ do
+      let st = applyAll emptyState [Insert "revoked.ira.bob"]
+      assertBool "hasRevoked" (satisfies (db st) [hasRevoked "ira" "bob"] Map.empty)
+      assertBool "lacksRevoked fails"
+        (not (satisfies (db st) [lacksRevoked "ira" "bob"] Map.empty))
+      let clean = emptyState
+      assertBool "lacksRevoked on clean"
+        (satisfies (db clean) [lacksRevoked "ira" "bob"] Map.empty)
 
   ]
