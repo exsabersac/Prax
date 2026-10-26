@@ -1556,3 +1556,20 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：村庄实践加 `[Actor]: ostracize [T] as oathbreaker`——门禁于 `regardedAs … oathbreaker`，与村级 `thief`/`shun` 解耦。赎罪清 thief 站队并关闭 shun 后，磨坊目击仍可放逐；局外信念不派生站队故无放逐。**无**角色 want 匹配 `ostracized.*`（仅 Spec/玩家驱动），早期自由跑不偷窃 → `GoldenDrive`/`AnalysisTable` caresAbout 预期不变。
 - **测**：VillageSpec v281 案（赎罪后 ostracize 开 / shun 闭 / 一击叶 / eve 负例）。全量 `stack test --fast` **992/992** 绿（1842.98s）；`GoldenDrive`/`AnalysisTable` village 绿。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；Sandbox 未改；未再堆其他 Condition has*/lacks*。
+
+## v284 — Host confessedOf / recantedOf / ostracizedOf / exiledOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举招供叶（`confessed.<who>` 与 Village 形 `<who>.confessed.*`）、悔罪叶（`recanted.<who>`）、放逐叶（`ostracized.<a>.<t>` 任一侧）、流放叶（`exiled.<who>`）；CLI `prax confessed|recanted|ostracized|exiled`；`askChronicle` 加对应 `"… of "` 查询；help 同步。
+- **测**：HostSpec / ChronicleSpec 四对偶。
+
+## v285 — Debt hasRevoked / lacksRevoked；Sandbox 沉默门禁改用别名
+
+- **做了什么**：`hasRevoked` / `lacksRevoked` 覆盖 `revoked.<creditor>.<debtor>`；`millSilence` / `churchSilence` 门禁由裸 `Not "revoked…"` 改为 `lacksRevoked`（语义同体）。
+- **测**：DebtSpec hasRevoked / lacksRevoked duals；既有沉默弧回归。
+
+## v286 — Sandbox 沉默×胁迫交叉 + 烙印游街（默认未激活）
+
+- **做了什么**：Spec 钉沉默债堵住 ira 控告时 dave 胁迫仍开（交叉既有原语）。新实践 `millBrandParade`：已 `regards…thief` 的磨坊成员对 `branded.T` 可游街（`paraded.Actor.T`）；默认不 Insert practice；`activateParade` 激活；**无** want 匹配 `paraded.*`（免搅金轨迹）。
+- **测**：SandboxSpec silence×squeeze；brand parade 门禁/一击/负例。既有 Sandbox 金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。全量 `stack test --fast` **997/997** 绿（1792.43s）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未再堆其他 Condition has*/lacks*；未动 Village 金标准。
+

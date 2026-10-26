@@ -17,6 +17,7 @@
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
+-- v284：'confessedOf'/'recantedOf'/'ostracizedOf'/'exiledOf' 招供/悔罪/放逐/流放叶。
 module Prax.Host
   ( step
   , stepExact
@@ -74,6 +75,10 @@ module Prax.Host
   , defiedOf
   , brandedOf
   , revokedOf
+  , confessedOf
+  , recantedOf
+  , ostracizedOf
+  , exiledOf
   , checkpoint
   , restore
   ) where
@@ -561,6 +566,53 @@ revokedOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+
+
+-- | 闭合视图中 @who@ 的招供叶（@confessed.<who>@ 或 @<who>.confessed.@* Village 形）。
+confessedOf :: PraxState -> String -> [String]
+confessedOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 2
+  , (head parts == "confessed" && (parts !! 1) == who)
+    || (head parts == who && (parts !! 1) == "confessed")
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的悔罪叶（@recanted.<who>@）。
+recantedOf :: PraxState -> String -> [String]
+recantedOf st who =
+  sort [ s | s <- queryView st, s == ("recanted." ++ who)
+              || ("recanted." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中与 @who@ 相关的放逐叶（@ostracized.<actor>.<target>@，任一侧）。
+ostracizedOf :: PraxState -> String -> [String]
+ostracizedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "ostracized." `isPrefixOf` s
+  , let rest = drop (length ("ostracized." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的流放叶（@exiled.<who>@）。
+exiledOf :: PraxState -> String -> [String]
+exiledOf st who =
+  sort [ s | s <- queryView st, s == ("exiled." ++ who)
+              || ("exiled." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

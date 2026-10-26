@@ -147,4 +147,21 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "revoked of bob" @?= ["revoked.ira.bob"]
       askChronicle st "revoked of void" @?= ["void has no revoked deals"]
 
+  , testCase "askChronicle confessed/recanted/ostracized/exiled-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "confessed.bob"
+                , Insert "ana.confessed.H.stole.C.loaf"
+                , Insert "recanted.eve"
+                , Insert "ostracized.dana.bob"
+                , Insert "exiled.bob" ]
+      askChronicle st "confessed of bob" @?= ["confessed.bob"]
+      askChronicle st "confessed of ana" @?= ["ana.confessed.H.stole.C.loaf"]
+      askChronicle st "confessed of void" @?= ["void has no confessions on record"]
+      askChronicle st "recanted of eve" @?= ["recanted.eve"]
+      askChronicle st "recanted of void" @?= ["void has no recantation on record"]
+      askChronicle st "ostracized of bob" @?= ["ostracized.dana.bob"]
+      askChronicle st "ostracized of void" @?= ["void has no ostracize marks"]
+      askChronicle st "exiled of bob" @?= ["exiled.bob"]
+      askChronicle st "exiled of void" @?= ["void has no exile mark"]
+
   ]

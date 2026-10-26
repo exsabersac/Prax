@@ -31,6 +31,8 @@ module Prax.Debt
   , lacksDemanded
   , everDemanded
   , neverDemanded
+  , hasRevoked
+  , lacksRevoked
   ) where
 
 import           Prax.Query (Condition (..))
@@ -140,4 +142,12 @@ everDemanded debtor = Exists [ Match ("demanded.Creditor." ++ debtor ++ ".Conten
 -- | 条件：@debtor@ 从未被催收（@everDemanded@ 的 Absent 对偶）。
 neverDemanded :: String -> Condition
 neverDemanded debtor = Absent [ Match ("demanded.Creditor." ++ debtor ++ ".Content") ]
+
+-- | 条件：债权人已撕毁与债务人的沉默/人情协议（@revoked.<creditor>.<debtor>@；Sandbox 叶）。
+hasRevoked :: String -> String -> Condition
+hasRevoked creditor debtor = Match ("revoked." ++ creditor ++ "." ++ debtor)
+
+-- | 条件：尚未撕毁该协议（@hasRevoked@ 的 Not 对偶）。
+lacksRevoked :: String -> String -> Condition
+lacksRevoked creditor debtor = Not ("revoked." ++ creditor ++ "." ++ debtor)
 

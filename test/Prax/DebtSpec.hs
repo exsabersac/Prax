@@ -207,4 +207,8 @@ tests = testGroup "Prax.Debt"
       hasOwed "ben" @?= isOwed "ben"
       hasDemanded "ana" "ben" "favor" @?= isDemanded "ana" "ben" "favor"
 
+  , testCase "hasRevoked / lacksRevoked duals over revoked.<creditor>.<debtor>" $ do
+      hasRevoked "ira" "bob" @?= Match "revoked.ira.bob"
+      lacksRevoked "ira" "bob" @?= Not "revoked.ira.bob"
+
   ]

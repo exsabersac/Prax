@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -325,6 +325,30 @@ runRevoked (who : ws) =
   in mapM_ putStrLn (revokedOf st who)
 runRevoked _ = putStrLn "usage: prax revoked <who> <world>"
 
+runConfessed :: [String] -> IO ()
+runConfessed (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (confessedOf st who)
+runConfessed _ = putStrLn "usage: prax confessed <who> <world>"
+
+runRecanted :: [String] -> IO ()
+runRecanted (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (recantedOf st who)
+runRecanted _ = putStrLn "usage: prax recanted <who> <world>"
+
+runOstracized :: [String] -> IO ()
+runOstracized (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (ostracizedOf st who)
+runOstracized _ = putStrLn "usage: prax ostracized <who> <world>"
+
+runExiled :: [String] -> IO ()
+runExiled (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (exiledOf st who)
+runExiled _ = putStrLn "usage: prax exiled <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -425,6 +449,10 @@ usageText = unlines
   , "  prax defied <who> <world>              list defied leaves involving who"
   , "  prax branded <who> <world>             list branded* leaves for who"
   , "  prax revoked <who> <world>             list revoked leaves involving who"
+  , "  prax confessed <who> <world>           list confessed leaves for who"
+  , "  prax recanted <who> <world>            list recanted leaves for who"
+  , "  prax ostracized <who> <world>          list ostracized leaves involving who"
+  , "  prax exiled <who> <world>              list exiled leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -482,6 +510,10 @@ main = do
     ("defied" : ws)    -> runDefied ws
     ("branded" : ws)   -> runBranded ws
     ("revoked" : ws)   -> runRevoked ws
+    ("confessed" : ws) -> runConfessed ws
+    ("recanted" : ws)  -> runRecanted ws
+    ("ostracized" : ws) -> runOstracized ws
+    ("exiled" : ws)    -> runExiled ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

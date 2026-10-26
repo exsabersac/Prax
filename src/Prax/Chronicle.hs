@@ -131,7 +131,8 @@ formatEvent ev rs =
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
 -- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、
--- @"branded of "++who@、@"revoked of "++who@。
+-- @"branded of "++who@、@"revoked of "++who@、
+-- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -241,6 +242,39 @@ askChronicle st q
                 , length parts >= 2
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no revoked deals"]
+         else rows
+  | Just who <- stripPrefix "confessed of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , let parts = splitDot s
+                , length parts >= 2
+                , (head parts == "confessed" && (parts !! 1) == who)
+                  || (head parts == who && (parts !! 1) == "confessed") ]
+      in if null rows then [who ++ " has no confessions on record"]
+         else rows
+  | Just who <- stripPrefix "recanted of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("recanted." ++ who)
+                  || ("recanted." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no recantation on record"]
+         else rows
+  | Just who <- stripPrefix "ostracized of " q =
+      let prefix = "ostracized."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no ostracize marks"]
+         else rows
+  | Just who <- stripPrefix "exiled of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("exiled." ++ who)
+                  || ("exiled." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no exile mark"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

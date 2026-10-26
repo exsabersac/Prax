@@ -1,7 +1,8 @@
 -- | Prax.Worlds.Sandbox 可测闭环：磨坊审判、教会异端、婚入获站队、
 -- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解、沉默×叛逃×节庆复合门禁、
 -- 臭名+愤怒市集声援、站队胁迫招供（Coerce）、教会异端×磨坊正义同场双压、
--- 教会异端×沉默债、教会胁迫悔罪（Coerce×heretic），
+-- 教会异端×沉默债、教会胁迫悔罪（Coerce×heretic）、
+-- 沉默×胁迫交叉与烙印游街（默认未激活），
 -- 以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
@@ -22,7 +23,8 @@ import           Prax.Worlds.Sandbox
   ( sandboxWorld, playerName, sandboxDesires, millJustice, millCry
   , churchJustice, bobHeresyJustice, squeezeDesireName, fearsBrandName
   , activateSqueeze, activateChurchBob
-  , inquisitDesireName, fearsBrandHereticName, activateInquisit )
+  , inquisitDesireName, fearsBrandHereticName, activateInquisit
+  , activateParade )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -1233,4 +1235,34 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
   , testCase "wants inquisit golden: 43 NPC turns squeeze → recant → brand → banish" $
       driveLabels (length sandboxInquisitGolden) inquisitSeed
         @?= sandboxInquisitGolden
+
+  , testCase "silence × squeeze: debt blocks ira denounce; dave squeeze still open" $ do
+      let stLearn = doAct "dave" "learn" (doAct "ira" "learn" sandboxWorld)
+          stBuy = doAct "bob" "buy ira's silence" stLearn
+          stSq = activateSqueeze stBuy
+      assertBool "debt holds" (exists "debt.ira.bob.favor" (db stSq))
+      assertBool "dave regards" (exists "regards.dave.bob.thief" (readView stSq))
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stSq)
+      let stOpen = iterate roundBoundary stSq !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stOpen))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stOpen))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stOpen)
+      assertBool "dave squeeze still" (hasAct "dave" "squeeze bob" stOpen)
+
+  , testCase "brand parade: after brand, mill can parade; default inactive" $ do
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+      assertBool "branded" (exists "branded.bob" (db stBrand))
+      assertBool "default: no parade practice action"
+        (not (hasAct "dave" "parade" stBrand))
+      let stP = activateParade stBrand
+      assertBool "parade active" ("millBrandParade" `elem` practiceNames stP)
+      assertBool "dave can parade" (hasAct "dave" "parade bob" stP)
+      assertBool "eve no parade (no regard)" (not (hasAct "eve" "parade" stP))
+      let stPar = doAct "dave" "parade bob" stP
+      assertBool "paraded leaf" (exists "paraded.dave.bob" (db stPar))
+      assertBool "parade once" (not (hasAct "dave" "parade bob" stPar))
   ]

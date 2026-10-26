@@ -4,7 +4,8 @@
 -- 站队胁迫招供（Coerce×factionStanding，默认未激活）/
 -- 教会异端×磨坊正义同场双压（bob 双轨，默认未激活）/
 -- 教会异端×沉默债（审查门禁 lacksOwes）/
--- 教会胁迫悔罪（Coerce×heretic 站队，默认未激活）（非 Village）。
+-- 教会胁迫悔罪（Coerce×heretic 站队，默认未激活）/
+-- 烙印游街（branded 叶门禁，默认未激活）（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -24,6 +25,7 @@ module Prax.Worlds.Sandbox
   , inquisitDesireName
   , fearsBrandHereticName
   , activateInquisit
+  , activateParade
   ) where
 
 import           Prax.Query (Condition (..))
@@ -36,7 +38,7 @@ import           Prax.Faction
   , affiliate )
 import           Prax.Kin (kinAxioms)
 import           Prax.Schedule (festival, duringFestival, outsideFestival)
-import           Prax.Debt (owe, settle, lacksOwes, owes)
+import           Prax.Debt (owe, settle, lacksOwes, owes, lacksRevoked)
 import           Prax.Repute (notoriety, isNotorious)
 import           Prax.Emotion (feelToward, angry, feelingToward)
 import           Prax.Coerce (Coercion (..), coerce)
@@ -247,17 +249,17 @@ millSilenceP = practice
           , Match "regards.Creditor.Actor.thief"
           , lacksOwes "Creditor" "Actor" "favor"
           , Not "denounced.Creditor.Actor"
-          , Not "revoked.Creditor.Actor"
+          , lacksRevoked "Creditor" "Actor"
           , Neq "Actor" "Creditor" ]
           (owe "Creditor" "Actor" "favor")
       , action "[Actor]: tear up [Debtor]'s silence deal"
           [ owes "Actor" "Debtor" "favor"
-          , Not "revoked.Actor.Debtor" ]
+          , lacksRevoked "Actor" "Debtor" ]
           (settle "Actor" "Debtor" "favor"
             ++ [ Insert "revoked.Actor.Debtor" ])
       , action "[Actor]: repay [Creditor] for keeping silent"
           [ owes "Creditor" "Actor" "favor"
-          , Not "revoked.Creditor.Actor" ]
+          , lacksRevoked "Creditor" "Actor" ]
           (settle "Creditor" "Actor" "favor")
       ]
   }
@@ -276,17 +278,17 @@ churchSilenceP = practice
           , Match "regards.Creditor.Actor.heretic"
           , lacksOwes "Creditor" "Actor" "church-favor"
           , Not "censured.Creditor.Actor"
-          , Not "revoked.Creditor.Actor"
+          , lacksRevoked "Creditor" "Actor"
           , Neq "Actor" "Creditor" ]
           (owe "Creditor" "Actor" "church-favor")
       , action "[Actor]: tear up [Debtor]'s heresy silence deal"
           [ owes "Actor" "Debtor" "church-favor"
-          , Not "revoked.Actor.Debtor" ]
+          , lacksRevoked "Actor" "Debtor" ]
           (settle "Actor" "Debtor" "church-favor"
             ++ [ Insert "revoked.Actor.Debtor" ])
       , action "[Actor]: repay [Creditor] for keeping heresy silent"
           [ owes "Creditor" "Actor" "church-favor"
-          , Not "revoked.Creditor.Actor" ]
+          , lacksRevoked "Creditor" "Actor" ]
           (settle "Creditor" "Actor" "church-favor")
       ]
   }
@@ -443,6 +445,28 @@ churchInquisitP = practice
 activateInquisit :: PraxState -> PraxState
 activateInquisit = performOutcome (Insert "practice.churchInquisit")
 
+
+-- | 烙印游街：已站队磨坊成员可对已 branded 的贼公开游街（叠 branded 叶，非新原语）。
+-- 默认不 Insert practice.millBrandParade；activateParade / Spec 激活。无 want 匹配 paraded.*。
+millBrandParadeP :: Practice
+millBrandParadeP = practice
+  { practiceId   = "millBrandParade"
+  , practiceName = "parading a branded thief through the square"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: parade [T] as branded thief"
+          [ Match "regards.Actor.T.thief"
+          , isMember "Actor" "mill"
+          , Match "branded.T"
+          , Not "paraded.Actor.T" ]
+          [ Insert "paraded.Actor.T" ]
+      ]
+  }
+
+-- | 激活烙印游街实践（供 Spec / 交叉弧）。
+activateParade :: PraxState -> PraxState
+activateParade = performOutcome (Insert "practice.millBrandParade")
+
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
 -- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
 -- ira is the mill witness bob tries to buy silence from (parallel to carol/dave justice).
@@ -509,5 +533,6 @@ sandboxWorld =
           (definePractices
              [ presenceP, millTribunalP, churchHeresyP, churchBobHeresyP
              , millWedP, millSilenceP, churchSilenceP, marketCryP
-             , millAllegianceP, millRallyP, millSqueezeP, churchInquisitP ]
+             , millAllegianceP, millRallyP, millSqueezeP, churchInquisitP
+             , millBrandParadeP ]
              (setSchedule [harvestFestival, marketFestival] emptyState)))

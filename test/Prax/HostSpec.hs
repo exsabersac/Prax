@@ -401,4 +401,26 @@ tests = testGroup "Prax.Host"
         ]
       revokedOf st "void" @?= []
 
+  , testCase "confessedOf / recantedOf / ostracizedOf / exiledOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "confessed.bob"
+                , Insert "ana.confessed.H.stole.C.loaf"
+                , Insert "recanted.eve"
+                , Insert "ostracized.dana.bob"
+                , Insert "ostracized.bob.carol"
+                , Insert "exiled.bob"
+                , Insert "flag.x" ]
+      confessedOf st "bob" @?= ["confessed.bob"]
+      confessedOf st "ana" @?= ["ana.confessed.H.stole.C.loaf"]
+      confessedOf st "void" @?= []
+      recantedOf st "eve" @?= ["recanted.eve"]
+      recantedOf st "void" @?= []
+      ostracizedOf st "bob" @?=
+        [ "ostracized.bob.carol"
+        , "ostracized.dana.bob"
+        ]
+      ostracizedOf st "void" @?= []
+      exiledOf st "bob" @?= ["exiled.bob"]
+      exiledOf st "void" @?= []
+
   ]
