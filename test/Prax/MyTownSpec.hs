@@ -1,4 +1,4 @@
--- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j+M6k+M6l+M6m+M6n+M6o+M6p 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j+M6k+M6l+M6m+M6n+M6o+M6p+M6q 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
 -- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
 -- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）；
@@ -10,7 +10,8 @@
 -- M6m 存档后再见·eyed.carol.gale（M01–M04；M6l 后 save/load 续存 eyed+heardRumor；零改世界）；
 -- M6n 二传谣·carol→bob（N01–N04；M6h→square 稍候→carol 转告 bob；最小 Want）；
 -- M6o 存档后再见·bob.heard.carol（O01–O04；M6n 后 save/load 续存 bob heard.carol；零改世界）；
--- M6p 听闻后短反应·bob（P01–P04；M6n→bob 赴 mill→怀疑打量 gale；最小 Want）。
+-- M6p 听闻后短反应·bob（P01–P04；M6n→bob 赴 mill→怀疑打量 gale；最小 Want）；
+-- M6q 存档后再见·eyed.bob.gale（Q01–Q04；M6p 后 save/load 续存 eyed+heardRumor；零改世界）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -1979,6 +1980,100 @@ tests = testGroup "MyTown"
              && "gale" `isInfixOf` narr)
           length (characters st6) @?= 6
           -- Session 冻：本刀仅 Want+Spec；不改 Session.hs / SaveMeta。
+
+      , -- M6q：存档后再见·eyed.bob.gale（硬卡 Q01–Q04；Session 冻；零改世界；对称 M6m）
+        -- 「后再见」= 事实续存 + 可续玩；不硬卡 narrative 全文；主针 eyed.bob.gale + heardRumor
+        testCase "M6q-Q01 完整 M6p → eyed.bob.gale + heardRumor" $ do
+          (sEyed, _) <- reachEyedAfterM6p
+          assertBool "Q01 eyed.bob.gale"
+            (factInfix (sessState sEyed) "eyed.bob.gale")
+          assertBool "Q01 heardRumor"
+            (factInfix (sessState sEyed)
+               "bob.relationship.gale.trust.reason.heardRumor")
+
+      , testCase "M6q-Q02 save→load 后 eyed.bob.gale + heardRumor 仍在（非冷开局）" $ do
+          (sEyed, _) <- reachEyedAfterM6p
+          let raw = praxSave sEyed
+          assertBool "format prax-state-v4" ("prax-state-v4" `isInfixOf` raw)
+          assertBool "worldId my-town" ("my-town" `isInfixOf` raw)
+          case praxLoad raw of
+            Left e -> assertFailure e
+            Right sLoad -> do
+              sessWorldId sLoad @?= "my-town"
+              assertBool "load eyed.bob.gale"
+                (factInfix (sessState sLoad) "eyed.bob.gale")
+              assertBool "load heardRumor"
+                (factInfix (sessState sLoad)
+                   "bob.relationship.gale.trust.reason.heardRumor")
+              sCold <- mustNew
+              assertBool "cold has no eyed.bob.gale"
+                (not (factInfix (sessState sCold) "eyed.bob.gale"))
+              assertBool "cold has no bob→gale heardRumor"
+                (not (factInfix (sessState sCold)
+                       "bob.relationship.gale.trust.reason.heardRumor"))
+
+      , testCase "M6q-Q03 load 后可续玩（Menu/Act 不炸；怀疑后果仍在）" $ do
+          (sEyed, _) <- reachEyedAfterM6p
+          case praxLoad (praxSave sEyed) of
+            Left e -> assertFailure e
+            Right sLoad -> do
+              sessPlayer sLoad @?= "you"
+              assertBool "menu non-empty after load"
+                (not (null (praxMenu sLoad)))
+              viewLocationId (praxView sLoad) @?= Just "mill"
+              assertBool "eyed still after load"
+                (factInfix (sessState sLoad) "eyed.bob.gale")
+              assertBool "heardRumor still after load"
+                (factInfix (sessState sLoad)
+                   "bob.relationship.gale.trust.reason.heardRumor")
+              case praxWait sLoad of
+                Left e -> assertFailure ("praxWait after load: " ++ e)
+                Right (s2, _) -> do
+                  let i = cursor (sessState s2)
+                      cs = characters (sessState s2)
+                  assertBool "still on you after wait"
+                    (charName (cs !! i) == "you")
+                  assertBool "eyed persists across wait"
+                    (factInfix (sessState s2) "eyed.bob.gale")
+                  assertBool "heardRumor persists across wait"
+                    (factInfix (sessState s2)
+                       "bob.relationship.gale.trust.reason.heardRumor")
+
+      , testCase "M6q-Q04 花名册未扩；脚本 eyed.bob.gale 路径；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "前往 mill" MyTown.myTownWorld
+              st1 = doAct "gale" "公开帮助 dana" st0
+              st2 = doAct "you" "前往 square" st1
+              st3 = doAct "you" "转告 carol：gale 帮助了 dana" st2
+          assertBool "脚本 carol.heard.you"
+            (factInfix st3 "carol.believes.helped.gale.dana.heard.you")
+          let gossipActs = [ ga | ga <- possibleActions st3 "carol"
+                                , "转告" `isInfixOf` gaLabel ga
+                                , "bob" `isInfixOf` gaLabel ga
+                                , "gale" `isInfixOf` gaLabel ga ]
+          assertBool ("脚本 Menu 有 carol 转告 bob; had="
+                      ++ show (map gaLabel (possibleActions st3 "carol")))
+            (not (null gossipActs))
+          let st4 = performAction st3 (head gossipActs)
+          assertBool "脚本 bob.heard.carol"
+            (factInfix st4 "bob.believes.helped.gale.dana.heard.carol")
+          assertBool "脚本 bob ¬seen"
+            (not (factInfix st4 "bob.believes.helped.gale.dana.seen"))
+          let st5 = doAct "bob" "前往 mill" st4
+              eyeActs = [ ga | ga <- possibleActions st5 "bob"
+                             , "怀疑" `isInfixOf` gaLabel ga
+                             , "gale" `isInfixOf` gaLabel ga ]
+          assertBool ("脚本 Menu 有 bob 怀疑地打量 gale; had="
+                      ++ show (map gaLabel (possibleActions st5 "bob")))
+            (not (null eyeActs))
+          let st6 = performAction st5 (head eyeActs)
+          assertBool "脚本 eyed.bob.gale" (factInfix st6 "eyed.bob.gale")
+          assertBool "脚本 heardRumor"
+            (factInfix st6 "bob.relationship.gale.trust.reason.heardRumor")
+          length (characters st6) @?= 6
+          -- Session 冻：本刀仅 Spec；save/load 续存由 Q02 盖（prax-state-v4 零改）。
 
 
       ]
