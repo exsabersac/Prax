@@ -2650,3 +2650,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v474 — Sandbox 无教会游街 want 时不自选游街（钉既有门禁）
+
+- **做了什么**：Spec 钉 heretic brand + activateChurchParade 后 priest 仅挂 bobHeresyJustice（无 `parades-branded-heretic`）时 `pickAction` 不选 parade。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wants: without churchParadeDesire priest does not pick parade。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v475 — Sandbox 放逐权重压过教会游街 want（钉既有门禁）
+
+- **做了什么**：Spec 钉 censure 后牧师同挂 `wants-exile-bob`(12) 与 `parades-branded-heretic`(10) 时优先 exile/banish。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wants: bob exile weight beats church parade when both open。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。

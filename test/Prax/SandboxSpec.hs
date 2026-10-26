@@ -2998,5 +2998,51 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "parade open" (hasAct "dave" "parade bob" st)
       pickLabel "dave" st @?= Just "dave: exile the thief"
 
+  , testCase "wants: without churchParadeDesire priest does not pick parade" $ do
+      let st0 = inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stDefy = doAct "bob" "defy" stSq
+          stBrand = activateChurchParade (doAct "priest" "brand bob" stDefy)
+          priest' = (actorOf "priest" stBrand) { charDesires = bobHeresyJustice }
+          bob' = (actorOf "bob" stBrand) { charDesires = [] }
+          st = stBrand { characters =
+                  [ if charName c == "priest" then priest'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stBrand ] }
+      assertBool "parade open" (hasAct "priest" "parade bob" st)
+      let lab = pickLabel "priest" st
+      assertBool ("not parade, got " ++ show lab)
+        (maybe True (not . ("parade" `isInfixOf`)) lab)
+
+  , testCase "wants: bob exile weight beats church parade when both open" $ do
+      -- After heretic brand + harvest censure, priest holds exile(12) + church parade(10).
+      let st0 = activateChurchParade inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stDefy = doAct "bob" "defy" stSq
+          stBrand = doAct "priest" "brand bob" stDefy
+          stH = iterate roundBoundary stBrand !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "censure open" (hasAct "priest" "censure" stH)
+      let stCen = doAct "priest" "censure" stH
+          stAfter = roundBoundary stCen
+          priest' = (actorOf "priest" stAfter)
+                      { charDesires = ["wants-exile-bob", churchParadeDesireName] }
+          bob' = (actorOf "bob" stAfter) { charDesires = [] }
+          st = stAfter { characters =
+                  [ if charName c == "priest" then priest'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stAfter ] }
+      assertBool "banish open" (hasAct "priest" "banish" st || hasAct "priest" "exile" st)
+      assertBool "parade open" (hasAct "priest" "parade bob" st)
+      let lab = pickLabel "priest" st
+      assertBool ("exile/banish over parade, got " ++ show lab)
+        (case lab of
+           Just l -> ("exile" `isInfixOf` l || "banish" `isInfixOf` l)
+                     && not ("parade" `isInfixOf` l)
+           Nothing -> False)
+
+
 
   ]
