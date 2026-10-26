@@ -3269,3 +3269,9 @@
 - **做了什么**：SandboxSpec 追加 mill/church revoke×对侧 parade；kyle churchSilence/churchBreak 负例；dual repay 再买再撕；cry once×hear；单侧 silence×正义；无 seeksTheft 不 learn；repay×parade；cast kyle/fran/bob；dual brand×parade once×buy。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（575 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v595 — Sandbox silence×parade once + repay re-buy justice + without punishes Spec
+
+- **做了什么**：SandboxSpec 追加 mill/church silence×对侧 parade once×squeeze 关；kyle punishesThief 负例；dual silence×revoke 正义恢复；repay 再买+正义；无 punishesHeretic 不 censure；flee×church buy；return×cry/denounce；joins/flee util；brand×parade×buy；cast iraCry。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（587 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
