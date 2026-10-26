@@ -1311,4 +1311,18 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "harvest" (exists "festival.harvest" (db stOpen))
       assertBool "censure blocked" (not (hasAct "priest" "censure bob" stOpen))
       assertBool "squeeze still at harvest" (hasAct "priest" "squeeze bob" stOpen)
+
+  , testCase "defection × squeeze: flee drops regard/squeeze; return restores" $ do
+      let st0 = coerceSeed
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
+      let stCarol = doAct "carol" "learn" st0
+          stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      assertBool "squeeze closed" (not (hasAct "dave" "squeeze bob" stFlee))
+      let stH = iterate roundBoundary stFlee !! 3
+          stBack = doAct "carol" "return to the mill" stH
+      assertBool "regard restored"
+        (exists "regards.dave.bob.thief" (readView stBack))
+      assertBool "squeeze restored" (hasAct "dave" "squeeze bob" stBack)
   ]

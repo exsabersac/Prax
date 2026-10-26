@@ -495,4 +495,18 @@ tests = testGroup "Prax.Host"
       atonedOf st "bob" @?= ["atoned.bob"]
       atonedOf st "void" @?= []
 
+  , testCase "wrongedOf / hungryOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "wronged.alice.bob"
+                , Insert "wronged.bob.carol"
+                , Insert "hungry.bob"
+                , Insert "flag.x" ]
+      wrongedOf st "bob" @?=
+        [ "wronged.alice.bob"
+        , "wronged.bob.carol"
+        ]
+      wrongedOf st "void" @?= []
+      hungryOf st "bob" @?= ["hungry.bob"]
+      hungryOf st "void" @?= []
+
   ]

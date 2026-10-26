@@ -22,6 +22,7 @@
 -- v290：'criedOf'/'ralliedOf' 市集喊冤/声援叶。
 -- v291：'fledOf'/'reconciledOf'/'marriedOf' 叛逃/和解/婚入叶。
 -- v293：'eyedOf'/'confrontedOf'/'atonedOf' 目击/对质/赎罪叶（Village）。
+-- v295：'wrongedOf'/'hungryOf' 冤屈/饥饿叶（Feud / Village）。
 module Prax.Host
   ( step
   , stepExact
@@ -94,6 +95,8 @@ module Prax.Host
   , eyedOf
   , confrontedOf
   , atonedOf
+  , wrongedOf
+  , hungryOf
   , checkpoint
   , restore
   ) where
@@ -788,6 +791,31 @@ atonedOf :: PraxState -> String -> [String]
 atonedOf st who =
   sort [ s | s <- queryView st, s == ("atoned." ++ who)
               || ("atoned." ++ who ++ ".") `isPrefixOf` s ]
+
+
+
+-- | 闭合视图中与 @who@ 相关的冤屈叶（@wronged.<offender>.<victim>@，任一侧；Feud）。
+wrongedOf :: PraxState -> String -> [String]
+wrongedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "wronged." `isPrefixOf` s
+  , let rest = drop (length ("wronged." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的饥饿叶（@hungry.<who>@；Village）。
+hungryOf :: PraxState -> String -> [String]
+hungryOf st who =
+  sort [ s | s <- queryView st, s == ("hungry." ++ who)
+              || ("hungry." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

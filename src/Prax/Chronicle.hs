@@ -135,7 +135,8 @@ formatEvent ev rs =
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
 -- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
--- @"eyed of "++who@、@"confronted of "++who@、@"atoned of "++who@。
+-- @"eyed of "++who@、@"confronted of "++who@、@"atoned of "++who@、
+-- @"wronged of "++who@、@"hungry of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -379,6 +380,23 @@ askChronicle st q
                 , s == ("atoned." ++ who)
                   || ("atoned." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no atonement on record"]
+         else rows
+  | Just who <- stripPrefix "wronged of " q =
+      let prefix = "wronged."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no wrong marks"]
+         else rows
+  | Just who <- stripPrefix "hungry of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("hungry." ++ who)
+                  || ("hungry." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no hunger mark"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

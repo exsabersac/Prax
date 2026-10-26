@@ -1616,3 +1616,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec church silence × inquisit。Village / GoldenDrive 金标准未动。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v295 — Host wrongedOf / hungryOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举冤屈叶（`wronged.<offender>.<victim>` 任一侧；Feud）与饥饿叶（`hungry.<who>`；Village）；CLI `prax wronged|hungry`；`askChronicle` 对应查询；help 同步。
+- **测**：HostSpec / ChronicleSpec。
+
+## v296 — Sandbox 叛逃×胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 `coerceSeed` 下受害方 carol 叛逃溶解 dave 的 `regards…thief` 后 squeeze 关闭；和解回磨坊后站队与 squeeze 恢复。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × squeeze。Village / GoldenDrive / Feud 金标准未动。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village/Feud 金标准。
+

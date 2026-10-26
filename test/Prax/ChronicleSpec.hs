@@ -206,4 +206,13 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "atoned of bob" @?= ["atoned.bob"]
       askChronicle st "atoned of void" @?= ["void has no atonement on record"]
 
+  , testCase "askChronicle wronged/hungry-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "wronged.alice.bob"
+                , Insert "hungry.bob" ]
+      askChronicle st "wronged of bob" @?= ["wronged.alice.bob"]
+      askChronicle st "wronged of void" @?= ["void has no wrong marks"]
+      askChronicle st "hungry of bob" @?= ["hungry.bob"]
+      askChronicle st "hungry of void" @?= ["void has no hunger mark"]
+
   ]
