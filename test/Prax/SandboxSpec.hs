@@ -6384,6 +6384,178 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "dave cry still"
         (hasAct "dave" "cry the theft" stM)
 
+  , testCase "after cry once × inquisit stays" $ do
+      let st0 = activateInquisit (activateChurchBob
+                  (doAct "dave" "learn" sandboxWorld))
+          stHear = doAct "priest" "hear of bob" st0
+          stM = roundBoundary (iterate roundBoundary stHear !! 3)
+          stCry = doAct "dave" "cry the theft" stM
+      assertBool "cry once" (not (hasAct "dave" "cry the theft" stCry))
+      assertBool "priest squeeze still"
+        (hasAct "priest" "squeeze bob" stCry)
+
+  , testCase "after rally once × church squeeze stays" $ do
+      let st0 = activateInquisit (activateChurchBob
+                  (doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)))
+          stHear = doAct "priest" "hear of bob" st0
+          stM = roundBoundary (iterate roundBoundary stHear !! 3)
+          stRally = doAct "dave" "rally" stM
+      assertBool "rally once" (not (hasAct "dave" "rally" stRally))
+      assertBool "priest squeeze still"
+        (hasAct "priest" "squeeze bob" stRally)
+
+  , testCase "after parade once × rally still open at market" $ do
+      let st0 = activateParade (activateSqueeze
+                  (doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)))
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bobF else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stM = roundBoundary (iterate roundBoundary stBrand !! 3)
+          stPar = doAct "dave" "parade bob" stM
+      assertBool "market" (exists "festival.market" (db stPar))
+      assertBool "parade once" (not (hasAct "dave" "parade bob" stPar))
+      assertBool "rally still" (hasAct "dave" "rally" stPar)
+
+  , testCase "after dual brand × dual cry/parade independence at market" $ do
+      let st0 = activateChurchParade (activateParade
+                  (activateInquisit (activateSqueeze
+                    (activateChurchBob (doAct "dave" "learn" sandboxWorld)))))
+          stHear = doAct "priest" "hear of bob" st0
+          bobF = (actorOf "bob" stHear)
+                   { charDesires = [fearsBrandName, fearsBrandHereticName] }
+          st = stHear { characters =
+                  [ if charName c == "bob" then bobF else c
+                  | c <- characters stHear ] }
+          stSqM = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSqM
+          stSqM2 = doAct "dave" "squeeze bob" stConf
+          stBrandM = doAct "dave" "brand bob" stSqM2
+          stSqC = doAct "priest" "squeeze bob" stBrandM
+          stRec = doAct "bob" "recant" stSqC
+          stSqC2 = doAct "priest" "squeeze bob" stRec
+          stBrandC = doAct "priest" "brand bob" stSqC2
+          stM = roundBoundary (iterate roundBoundary stBrandC !! 3)
+          stParM = doAct "dave" "parade bob" stM
+          stCry = doAct "dave" "cry the theft" stParM
+      assertBool "dave parade once"
+        (not (hasAct "dave" "parade bob" stCry))
+      assertBool "dave cry once"
+        (not (hasAct "dave" "cry the theft" stCry))
+      assertBool "priest parade still"
+        (hasAct "priest" "parade bob" stCry)
+
+  , testCase "wants: affiliate kyle with returnDesire never returns after flee seed" $ do
+      -- kyle not mill member; cannot abandon; with returnDesire alone still Wait.
+      let st0 = sandboxWorld
+          kyle' = (actorOf "kyle" st0)
+                    { charDesires = [fleeDesireName, returnDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "kyle" then kyle' else c
+                  | c <- characters st0 ] }
+      assertBool "kyle no abandon" (not (hasAct "kyle" "abandon" st))
+      assertBool "kyle no return" (not (hasAct "kyle" "return" st))
+      let lab = pickLabel "kyle" st
+      assertBool ("Wait-ish, got " ++ show lab)
+        (lab == Just "kyle: Wait" || lab == Nothing
+         || maybe True (not . (\s -> "abandon" `isInfixOf` s
+                                    || "return" `isInfixOf` s)) lab)
+
+  , testCase "after flee × parade closed; return restores parade path" $ do
+      let st0 = activateParade (activateSqueeze
+                  (doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld)))
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bobF else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+      assertBool "parade before flee" (hasAct "dave" "parade bob" stBrand)
+      let stFlee = doAct "carol" "abandon" stBrand
+      assertBool "parade closed while fled"
+        (not (hasAct "dave" "parade bob" stFlee))
+      let stRet = doAct "carol" "return" stFlee
+      assertBool "parade restored" (hasAct "dave" "parade bob" stRet)
+
+  , testCase "after dual repay both denounce/censure open at harvest" $ do
+      let st0 = doAct "gale" "hear the blasphemy"
+                  (doAct "ira" "learn" sandboxWorld)
+          stBuyM = doAct "bob" "buy ira" st0
+          stBuyC = doAct "eve" "buy gale" stBuyM
+          stPayM = doAct "bob" "repay" stBuyC
+          stPayC = doAct "eve" "repay" stPayM
+          stH = iterate roundBoundary stPayC !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce" (hasAct "ira" "denounce" stH)
+      assertBool "gale censure" (hasAct "gale" "censure" stH)
+
+  , testCase "after denounce once × cry still opens next market" $ do
+      let st0 = doAct "dave" "learn" sandboxWorld
+          stH = iterate roundBoundary st0 !! 3
+          stDen = doAct "dave" "denounce" stH
+          stM = roundBoundary stDen
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "cry open after denounce"
+        (hasAct "dave" "cry the theft" stM)
+
+  , testCase "after censure once × mill cry still opens next market" $ do
+      let st0 = doAct "gale" "hear the blasphemy"
+                  (doAct "dave" "learn" sandboxWorld)
+          stH = iterate roundBoundary st0 !! 3
+          stCen = doAct "gale" "censure" stH
+          stM = roundBoundary stCen
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry still"
+        (hasAct "dave" "cry the theft" stM)
+
+  , testCase "after mill exile × ira tear still (independent of shared exile)" $ do
+      let st0 = doAct "ira" "learn" (doAct "dave" "learn" sandboxWorld)
+          stBuy = doAct "bob" "buy ira" st0
+          stH = iterate roundBoundary stBuy !! 3
+          -- ira blocked by debt; dave denounces then exiles
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "ira tear still" (hasAct "ira" "tear up bob" stEx)
+
+  , testCase "wants: affiliate kyle with churchParadeDesire never parades after heretic brand" $ do
+      let st0 = activateChurchParade (activateInquisit
+                  (activateChurchBob sandboxWorld))
+          stHear = doAct "priest" "hear of bob" st0
+          bobF = (actorOf "bob" stHear)
+                   { charDesires = [fearsBrandHereticName] }
+          kyle' = (actorOf "kyle" stHear)
+                    { charDesires = [churchParadeDesireName] }
+          st = stHear { characters =
+                  [ if charName c == "bob" then bobF
+                    else if charName c == "kyle" then kyle'
+                    else c
+                  | c <- characters stHear ] }
+          stSq = doAct "priest" "squeeze bob" st
+          stRec = doAct "bob" "recant" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+      assertBool "priest parade open"
+        (hasAct "priest" "parade bob" stBrand)
+      assertBool "kyle no parade"
+        (not (hasAct "kyle" "parade" stBrand))
+
+  , testCase "after repay mill × ira cry open at market" $ do
+      let st0 = doAct "ira" "learn" sandboxWorld
+          stBuy = doAct "bob" "buy ira" st0
+          stPay = doAct "bob" "repay" stBuy
+          stM = roundBoundary (iterate roundBoundary stPay !! 3)
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "ira cry after repay"
+        (hasAct "ira" "cry the theft" stM)
+
 
 
 
