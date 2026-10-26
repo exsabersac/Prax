@@ -9,9 +9,11 @@ const elDialogue = document.getElementById("dialogue");
 const elMeta = document.getElementById("meta");
 const elError = document.getElementById("error");
 
+/** J05：扁平 SaveMeta 持久化，刷新后 praxLoad 可恢复 */
+const SAVE_KEY = "prax.my-town.saveMeta";
+
 let view = null;
 let menu = null;
-let lastSave = null;
 
 function showError(msg) {
   if (!msg) {
@@ -21,6 +23,32 @@ function showError(msg) {
   }
   elError.hidden = false;
   elError.textContent = msg;
+}
+
+function readStoredSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const meta = JSON.parse(raw);
+    if (!meta || typeof meta.blob !== "string") return null;
+    return {
+      format: meta.format || "prax-state-v4",
+      worldId: meta.worldId || "my-town",
+      blob: meta.blob,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSave(save) {
+  if (!save || typeof save.blob !== "string") return;
+  const meta = {
+    format: save.format || "prax-state-v4",
+    worldId: save.worldId || "my-town",
+    blob: save.blob,
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(meta));
 }
 
 function paint() {
@@ -75,30 +103,35 @@ async function onSave() {
     showError(res.message || res.error);
     return;
   }
-  lastSave = res.save;
+  writeStoredSave(res.save);
   if (view) {
     view = {
       ...view,
-      log: (view.log || []).concat([{ kind: "system", text: "已存档（内存）。" }]),
+      log: (view.log || []).concat([{ kind: "system", text: "已存档（localStorage）。" }]),
     };
   }
   paint();
 }
 
+async function applyLoaded(res) {
+  view = res.view;
+  menu = res.menu;
+  paint();
+}
+
 async function onLoad() {
   showError("");
-  if (lastSave == null) {
+  const stored = readStoredSave();
+  if (!stored) {
     showError("还没有存档，请先存档。");
     return;
   }
-  const res = await praxLoad(lastSave);
+  const res = await praxLoad(stored);
   if (!res.ok) {
     showError(res.message || res.error);
     return;
   }
-  view = res.view;
-  menu = res.menu;
-  paint();
+  await applyLoaded(res);
 }
 
 function wireToolbar() {
@@ -121,6 +154,17 @@ function wireToolbar() {
 
 async function boot() {
   wireToolbar();
+  const stored = readStoredSave();
+  if (stored) {
+    const loaded = await praxLoad(stored);
+    if (loaded.ok) {
+      await applyLoaded(loaded);
+      return;
+    }
+    // 坏档则清掉并新开
+    localStorage.removeItem(SAVE_KEY);
+    showError(loaded.message || loaded.error || "存档无效，已新开会话。");
+  }
   const res = await praxNew("my-town");
   if (!res.ok) {
     showError(res.message || res.error || "无法连接 Session 桥");
