@@ -423,4 +423,25 @@ tests = testGroup "Prax.Host"
       exiledOf st "bob" @?= ["exiled.bob"]
       exiledOf st "void" @?= []
 
+  , testCase "denouncedOf / censuredOf / paradedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "denounced.dave.bob"
+                , Insert "denounced.bob.carol"
+                , Insert "censured.priest.eve"
+                , Insert "censured.gale.bob"
+                , Insert "paraded.dave.bob"
+                , Insert "paraded.priest.eve"
+                , Insert "flag.x" ]
+      denouncedOf st "bob" @?=
+        [ "denounced.bob.carol"
+        , "denounced.dave.bob"
+        ]
+      denouncedOf st "void" @?= []
+      censuredOf st "bob" @?= ["censured.gale.bob"]
+      censuredOf st "eve" @?= ["censured.priest.eve"]
+      censuredOf st "void" @?= []
+      paradedOf st "bob" @?= ["paraded.dave.bob"]
+      paradedOf st "eve" @?= ["paraded.priest.eve"]
+      paradedOf st "void" @?= []
+
   ]

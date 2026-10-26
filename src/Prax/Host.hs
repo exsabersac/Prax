@@ -18,6 +18,7 @@
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
 -- v284：'confessedOf'/'recantedOf'/'ostracizedOf'/'exiledOf' 招供/悔罪/放逐/流放叶。
+-- v287：'denouncedOf'/'censuredOf'/'paradedOf' 控告/审查/游街叶（Sandbox）。
 module Prax.Host
   ( step
   , stepExact
@@ -79,6 +80,9 @@ module Prax.Host
   , recantedOf
   , ostracizedOf
   , exiledOf
+  , denouncedOf
+  , censuredOf
+  , paradedOf
   , checkpoint
   , restore
   ) where
@@ -613,6 +617,59 @@ exiledOf :: PraxState -> String -> [String]
 exiledOf st who =
   sort [ s | s <- queryView st, s == ("exiled." ++ who)
               || ("exiled." ++ who ++ ".") `isPrefixOf` s ]
+
+
+
+-- | 闭合视图中与 @who@ 相关的控告叶（@denounced.<actor>.<target>@，任一侧）。
+denouncedOf :: PraxState -> String -> [String]
+denouncedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "denounced." `isPrefixOf` s
+  , let rest = drop (length ("denounced." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的审查叶（@censured.<actor>.<target>@，任一侧）。
+censuredOf :: PraxState -> String -> [String]
+censuredOf st who = sort
+  [ s
+  | s <- queryView st
+  , "censured." `isPrefixOf` s
+  , let rest = drop (length ("censured." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的游街叶（@paraded.<actor>.<target>@，任一侧）。
+paradedOf :: PraxState -> String -> [String]
+paradedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "paraded." `isPrefixOf` s
+  , let rest = drop (length ("paraded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

@@ -5,7 +5,7 @@
 -- 教会异端×磨坊正义同场双压（bob 双轨，默认未激活）/
 -- 教会异端×沉默债（审查门禁 lacksOwes）/
 -- 教会胁迫悔罪（Coerce×heretic 站队，默认未激活）/
--- 烙印游街（branded 叶门禁，默认未激活）（非 Village）。
+-- 烙印游街（branded / brandedHeretic 叶门禁，默认未激活）（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -26,6 +26,7 @@ module Prax.Worlds.Sandbox
   , fearsBrandHereticName
   , activateInquisit
   , activateParade
+  , activateChurchParade
   ) where
 
 import           Prax.Query (Condition (..))
@@ -41,7 +42,9 @@ import           Prax.Schedule (festival, duringFestival, outsideFestival)
 import           Prax.Debt (owe, settle, lacksOwes, owes, lacksRevoked)
 import           Prax.Repute (notoriety, isNotorious)
 import           Prax.Emotion (feelToward, angry, feelingToward)
-import           Prax.Coerce (Coercion (..), coerce)
+import           Prax.Coerce (Coercion (..), coerce,
+                              isBranded, lacksBranded,
+                              isBrandedHeretic, lacksBrandedHeretic)
 
 -- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧与沉默债。玩家槽无 want。
 playerName :: String
@@ -362,9 +365,9 @@ millSqueezeCoercion = Coercion
   , coDemandLabel   = "[Actor]: confess the theft to [E]"
   , coDemand        = [ Insert "confessed.Actor" ]
   , coPunishLabel   = "[Actor]: brand [Mark] as unrepentant"
-  , coPunishWhen    = [ Not "branded.Mark" ]
+  , coPunishWhen    = [ lacksBranded "Mark" ]
   , coPunishOuts    = [ Insert "branded.Mark" ]
-  , coKernel        = [ Match "branded.Mark" ]
+  , coKernel        = [ isBranded "Mark" ]
   , coWeight        = 10
   , coThreatLasts     = Nothing
   , coComplianceLasts = Nothing
@@ -382,7 +385,7 @@ fearsBrandName = "fears-brand"
 
 fearsBrandDesire :: Desire
 fearsBrandDesire =
-  Desire fearsBrandName (Want [ Match "branded.Owner" ] (-12))
+  Desire fearsBrandName (Want [ isBranded "Owner" ] (-12))
 
 millSqueezeP :: Practice
 millSqueezeP = practice
@@ -411,9 +414,9 @@ churchInquisitCoercion = Coercion
   , coDemandLabel   = "[Actor]: recant the heresy to [E]"
   , coDemand        = [ Insert "recanted.Actor" ]
   , coPunishLabel   = "[Actor]: brand [Mark] as unrepentant heretic"
-  , coPunishWhen    = [ Not "brandedHeretic.Mark" ]
+  , coPunishWhen    = [ lacksBrandedHeretic "Mark" ]
   , coPunishOuts    = [ Insert "brandedHeretic.Mark" ]
-  , coKernel        = [ Match "brandedHeretic.Mark" ]
+  , coKernel        = [ isBrandedHeretic "Mark" ]
   , coWeight        = 10
   , coThreatLasts     = Nothing
   , coComplianceLasts = Nothing
@@ -431,7 +434,7 @@ fearsBrandHereticName = "fears-brand-heretic"
 
 fearsBrandHereticDesire :: Desire
 fearsBrandHereticDesire =
-  Desire fearsBrandHereticName (Want [ Match "brandedHeretic.Owner" ] (-12))
+  Desire fearsBrandHereticName (Want [ isBrandedHeretic "Owner" ] (-12))
 
 churchInquisitP :: Practice
 churchInquisitP = practice
@@ -457,7 +460,7 @@ millBrandParadeP = practice
       [ action "[Actor]: parade [T] as branded thief"
           [ Match "regards.Actor.T.thief"
           , isMember "Actor" "mill"
-          , Match "branded.T"
+          , isBranded "T"
           , Not "paraded.Actor.T" ]
           [ Insert "paraded.Actor.T" ]
       ]
@@ -466,6 +469,27 @@ millBrandParadeP = practice
 -- | 激活烙印游街实践（供 Spec / 交叉弧）。
 activateParade :: PraxState -> PraxState
 activateParade = performOutcome (Insert "practice.millBrandParade")
+
+-- | 异端烙印游街：已站队教会成员可对已 brandedHeretic 公开游街（叠 paraded 叶）。
+-- 默认不 Insert practice.churchBrandParade；activateChurchParade / Spec 激活。无 want 匹配 paraded.*。
+churchBrandParadeP :: Practice
+churchBrandParadeP = practice
+  { practiceId   = "churchBrandParade"
+  , practiceName = "parading a branded heretic through the square"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: parade [T] as branded heretic"
+          [ Match "regards.Actor.T.heretic"
+          , isMember "Actor" "church"
+          , isBrandedHeretic "T"
+          , Not "paraded.Actor.T" ]
+          [ Insert "paraded.Actor.T" ]
+      ]
+  }
+
+-- | 激活异端烙印游街实践（供 Spec / 交叉弧）。
+activateChurchParade :: PraxState -> PraxState
+activateChurchParade = performOutcome (Insert "practice.churchBrandParade")
 
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
 -- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
@@ -534,5 +558,5 @@ sandboxWorld =
              [ presenceP, millTribunalP, churchHeresyP, churchBobHeresyP
              , millWedP, millSilenceP, churchSilenceP, marketCryP
              , millAllegianceP, millRallyP, millSqueezeP, churchInquisitP
-             , millBrandParadeP ]
+             , millBrandParadeP, churchBrandParadeP ]
              (setSchedule [harvestFestival, marketFestival] emptyState)))

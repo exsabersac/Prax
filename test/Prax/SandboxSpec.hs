@@ -24,7 +24,7 @@ import           Prax.Worlds.Sandbox
   , churchJustice, bobHeresyJustice, squeezeDesireName, fearsBrandName
   , activateSqueeze, activateChurchBob
   , inquisitDesireName, fearsBrandHereticName, activateInquisit
-  , activateParade )
+  , activateParade, activateChurchParade )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -1265,4 +1265,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stPar = doAct "dave" "parade bob" stP
       assertBool "paraded leaf" (exists "paraded.dave.bob" (db stPar))
       assertBool "parade once" (not (hasAct "dave" "parade bob" stPar))
+
+  , testCase "church brand parade: after heretic brand, church can parade; default inactive" $ do
+      let st0 = inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stDefy = doAct "bob" "defy" stSq
+          stBrand = doAct "priest" "brand bob" stDefy
+      assertBool "brandedHeretic" (exists "brandedHeretic.bob" (db stBrand))
+      assertBool "default: no church parade"
+        (not (hasAct "priest" "parade" stBrand))
+      let stP = activateChurchParade stBrand
+      assertBool "church parade active" ("churchBrandParade" `elem` practiceNames stP)
+      assertBool "priest can parade" (hasAct "priest" "parade bob" stP)
+      assertBool "dave no church parade" (not (hasAct "dave" "parade" stP))
+      let stPar = doAct "priest" "parade bob" stP
+      assertBool "paraded leaf" (exists "paraded.priest.bob" (db stPar))
+      assertBool "parade once" (not (hasAct "priest" "parade bob" stPar))
   ]

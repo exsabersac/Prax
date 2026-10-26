@@ -132,7 +132,8 @@ formatEvent ev rs =
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
 -- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、
--- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@。
+-- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
+-- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -275,6 +276,36 @@ askChronicle st q
                 , s == ("exiled." ++ who)
                   || ("exiled." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no exile mark"]
+         else rows
+  | Just who <- stripPrefix "denounced of " q =
+      let prefix = "denounced."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no denounce marks"]
+         else rows
+  | Just who <- stripPrefix "censured of " q =
+      let prefix = "censured."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no censure marks"]
+         else rows
+  | Just who <- stripPrefix "paraded of " q =
+      let prefix = "paraded."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no parade marks"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

@@ -164,4 +164,16 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "exiled of bob" @?= ["exiled.bob"]
       askChronicle st "exiled of void" @?= ["void has no exile mark"]
 
+  , testCase "askChronicle denounced/censured/paraded-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "denounced.dave.bob"
+                , Insert "censured.priest.eve"
+                , Insert "paraded.dave.bob" ]
+      askChronicle st "denounced of bob" @?= ["denounced.dave.bob"]
+      askChronicle st "denounced of void" @?= ["void has no denounce marks"]
+      askChronicle st "censured of eve" @?= ["censured.priest.eve"]
+      askChronicle st "censured of void" @?= ["void has no censure marks"]
+      askChronicle st "paraded of bob" @?= ["paraded.dave.bob"]
+      askChronicle st "paraded of void" @?= ["void has no parade marks"]
+
   ]

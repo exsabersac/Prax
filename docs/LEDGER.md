@@ -1573,3 +1573,19 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec silence×squeeze；brand parade 门禁/一击/负例。既有 Sandbox 金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。全量 `stack test --fast` **997/997** 绿（1792.43s）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未再堆其他 Condition has*/lacks*；未动 Village 金标准。
 
+## v287 — Host denouncedOf / censuredOf / paradedOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举控告叶（`denounced.<a>.<t>` 任一侧）、审查叶（`censured.<a>.<t>`）、游街叶（`paraded.<a>.<t>`）；CLI `prax denounced|censured|paraded`；`askChronicle` 加对应 `"… of "`；help 同步。
+- **测**：HostSpec / ChronicleSpec 三对偶。
+
+## v288 — Coerce isBranded / lacksBranded / isBrandedHeretic / lacksBrandedHeretic
+
+- **做了什么**：烙印 Condition 别名；Sandbox `millSqueeze`/`churchInquisit` 的 `coPunishWhen`/`coKernel`/恐惧 Want 与 `millBrandParade` 门禁改用别名（语义同体）。
+- **测**：CoerceSpec branded duals；既有 coerce/inquisit/parade 回归。
+
+## v289 — Sandbox churchBrandParade（默认未激活）
+
+- **做了什么**：新实践 `churchBrandParade`：已 `regards…heretic` 的教会成员对 `brandedHeretic.T` 可游街（`paraded.Actor.T`）；默认不 Insert practice；`activateChurchParade` 激活；**无** want 匹配 `paraded.*`。
+- **测**：SandboxSpec church brand parade 门禁/一击/负例。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

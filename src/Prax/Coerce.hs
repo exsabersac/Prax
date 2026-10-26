@@ -43,6 +43,8 @@ module Prax.Coerce
   , everDefied, neverDefied
   , everComplied, neverComplied
   , everExtorted, neverExtorted
+  , isBranded, lacksBranded
+  , isBrandedHeretic, lacksBrandedHeretic
   ) where
 
 import           Data.List (nub)
@@ -353,3 +355,24 @@ everExtorted sid =
 neverExtorted :: String -> Condition
 neverExtorted sid =
   Absent [ Match ("Extorter.extorted.Victim." ++ guardSeg "neverExtorted" sid) ]
+
+-- | 条件：@who@ 已烙贼印（@branded.<who>@；Sandbox millSqueeze 惩罚核）。
+isBranded :: String -> Condition
+isBranded who =
+  Match ("branded." ++ guardSeg "isBranded" who)
+
+-- | 条件：无贼烙印。
+lacksBranded :: String -> Condition
+lacksBranded who =
+  Not ("branded." ++ guardSeg "lacksBranded" who)
+
+-- | 条件：@who@ 已烙异端印（@brandedHeretic.<who>@；Sandbox churchInquisit 惩罚核）。
+isBrandedHeretic :: String -> Condition
+isBrandedHeretic who =
+  Match ("brandedHeretic." ++ guardSeg "isBrandedHeretic" who)
+
+-- | 条件：无异端烙印。
+lacksBrandedHeretic :: String -> Condition
+lacksBrandedHeretic who =
+  Not ("brandedHeretic." ++ guardSeg "lacksBrandedHeretic" who)
+
