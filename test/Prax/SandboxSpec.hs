@@ -1297,4 +1297,18 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stCry = doAct "ira" "cry the theft" stM
       assertBool "cried leaf" (exists "cried.ira.bob" (db stCry))
       assertBool "debt still" (exists "debt.ira.bob.favor" (db stCry))
+
+  , testCase "church silence × inquisit: debt blocks censure; priest squeeze still open" $ do
+      -- inquisitSeed: priest regards bob; bob buys priest church-silence; harvest
+      -- censure gated by lacksOwes, but coerce squeeze ignores owes.
+      let st0 = inquisitSeed
+      assertBool "priest can squeeze" (hasAct "priest" "squeeze bob" st0)
+      assertBool "bob can buy priest silence" (hasAct "bob" "buy priest" st0)
+      let stBuy = doAct "bob" "buy priest" st0
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      assertBool "squeeze still" (hasAct "priest" "squeeze bob" stBuy)
+      let stOpen = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stOpen))
+      assertBool "censure blocked" (not (hasAct "priest" "censure bob" stOpen))
+      assertBool "squeeze still at harvest" (hasAct "priest" "squeeze bob" stOpen)
   ]

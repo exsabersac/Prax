@@ -194,4 +194,16 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "married of fran" @?= ["married.fran.carol"]
       askChronicle st "married of void" @?= ["void has no marriage marks"]
 
+  , testCase "askChronicle eyed/confronted/atoned-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "eyed.dana.bob"
+                , Insert "confronted.carol.bob"
+                , Insert "atoned.bob" ]
+      askChronicle st "eyed of bob" @?= ["eyed.dana.bob"]
+      askChronicle st "eyed of void" @?= ["void has no eye marks"]
+      askChronicle st "confronted of bob" @?= ["confronted.carol.bob"]
+      askChronicle st "confronted of void" @?= ["void has no confront marks"]
+      askChronicle st "atoned of bob" @?= ["atoned.bob"]
+      askChronicle st "atoned of void" @?= ["void has no atonement on record"]
+
   ]

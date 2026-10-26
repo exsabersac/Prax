@@ -1605,3 +1605,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec silence × market cry。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未把 owes 接到 cry；未动 Village 金标准。
 
+## v293 — Host eyedOf / confrontedOf / atonedOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举目击疑心叶（`eyed.<a>.<t>`）、对质叶（`confronted.<a>.<t>`）、赎罪叶（`atoned.<who>`）；CLI `prax eyed|confronted|atoned`；`askChronicle` 对应 `"… of "`；help 同步。
+- **测**：HostSpec / ChronicleSpec。
+
+## v294 — Sandbox 教会沉默×胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 `inquisitSeed` 下 bob 买牧师异端沉默债后：harvest `censure bob` 被 `lacksOwes` 堵住，牧师 `squeeze bob` 仍开（coerce 不读 owes）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church silence × inquisit。Village / GoldenDrive 金标准未动。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

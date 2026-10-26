@@ -21,6 +21,7 @@
 -- v287：'denouncedOf'/'censuredOf'/'paradedOf' 控告/审查/游街叶（Sandbox）。
 -- v290：'criedOf'/'ralliedOf' 市集喊冤/声援叶。
 -- v291：'fledOf'/'reconciledOf'/'marriedOf' 叛逃/和解/婚入叶。
+-- v293：'eyedOf'/'confrontedOf'/'atonedOf' 目击/对质/赎罪叶（Village）。
 module Prax.Host
   ( step
   , stepExact
@@ -90,6 +91,9 @@ module Prax.Host
   , fledOf
   , reconciledOf
   , marriedOf
+  , eyedOf
+  , confrontedOf
+  , atonedOf
   , checkpoint
   , restore
   ) where
@@ -742,6 +746,48 @@ marriedOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+
+
+-- | 闭合视图中与 @who@ 相关的目击疑心叶（@eyed.<actor>.<target>@，任一侧）。
+eyedOf :: PraxState -> String -> [String]
+eyedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "eyed." `isPrefixOf` s
+  , let rest = drop (length ("eyed." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的对质叶（@confronted.<actor>.<target>@，任一侧）。
+confrontedOf :: PraxState -> String -> [String]
+confrontedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "confronted." `isPrefixOf` s
+  , let rest = drop (length ("confronted." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的赎罪叶（@atoned.<who>@）。
+atonedOf :: PraxState -> String -> [String]
+atonedOf st who =
+  sort [ s | s <- queryView st, s == ("atoned." ++ who)
+              || ("atoned." ++ who ++ ".") `isPrefixOf` s ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -397,6 +397,24 @@ runMarried (who : ws) =
   in mapM_ putStrLn (marriedOf st who)
 runMarried _ = putStrLn "usage: prax married <who> <world>"
 
+runEyed :: [String] -> IO ()
+runEyed (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (eyedOf st who)
+runEyed _ = putStrLn "usage: prax eyed <who> <world>"
+
+runConfronted :: [String] -> IO ()
+runConfronted (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (confrontedOf st who)
+runConfronted _ = putStrLn "usage: prax confronted <who> <world>"
+
+runAtoned :: [String] -> IO ()
+runAtoned (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (atonedOf st who)
+runAtoned _ = putStrLn "usage: prax atoned <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -509,6 +527,9 @@ usageText = unlines
   , "  prax fled <who> <world>                list fled leaves for who"
   , "  prax reconciled <who> <world>          list reconciled leaves for who"
   , "  prax married <who> <world>             list married leaves involving who"
+  , "  prax eyed <who> <world>                list eyed leaves involving who"
+  , "  prax confronted <who> <world>          list confronted leaves involving who"
+  , "  prax atoned <who> <world>              list atoned leaves for who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -578,6 +599,9 @@ main = do
     ("fled" : ws)      -> runFled ws
     ("reconciled" : ws) -> runReconciled ws
     ("married" : ws)   -> runMarried ws
+    ("eyed" : ws)      -> runEyed ws
+    ("confronted" : ws) -> runConfronted ws
+    ("atoned" : ws)    -> runAtoned ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

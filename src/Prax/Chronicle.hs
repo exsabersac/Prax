@@ -134,7 +134,8 @@ formatEvent ev rs =
 -- @"branded of "++who@、@"revoked of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
--- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@。
+-- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
+-- @"eyed of "++who@、@"confronted of "++who@、@"atoned of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -351,6 +352,33 @@ askChronicle st q
                 , length parts >= 2
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no marriage marks"]
+         else rows
+  | Just who <- stripPrefix "eyed of " q =
+      let prefix = "eyed."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no eye marks"]
+         else rows
+  | Just who <- stripPrefix "confronted of " q =
+      let prefix = "confronted."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no confront marks"]
+         else rows
+  | Just who <- stripPrefix "atoned of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("atoned." ++ who)
+                  || ("atoned." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no atonement on record"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

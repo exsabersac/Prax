@@ -474,4 +474,25 @@ tests = testGroup "Prax.Host"
       marriedOf st "dave" @?= ["married.dave.eve"]
       marriedOf st "void" @?= []
 
+  , testCase "eyedOf / confrontedOf / atonedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "eyed.dana.bob"
+                , Insert "eyed.bob.eve"
+                , Insert "confronted.carol.bob"
+                , Insert "confronted.bob.gale"
+                , Insert "atoned.bob"
+                , Insert "flag.x" ]
+      eyedOf st "bob" @?=
+        [ "eyed.bob.eve"
+        , "eyed.dana.bob"
+        ]
+      eyedOf st "void" @?= []
+      confrontedOf st "bob" @?=
+        [ "confronted.bob.gale"
+        , "confronted.carol.bob"
+        ]
+      confrontedOf st "void" @?= []
+      atonedOf st "bob" @?= ["atoned.bob"]
+      atonedOf st "void" @?= []
+
   ]
