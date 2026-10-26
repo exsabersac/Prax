@@ -359,4 +359,22 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "projects of ana" @?= ["practice.mill.ana.crew"]
       askChronicle st "projects of void" @?= ["void has no project marks"]
 
+  , testCase "askChronicle kin-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "married.ana.ben"
+                , Insert "parent.ana.cara"
+                , Insert "sibling.ben.dave"
+                , Insert "inLaw.ana.eve"
+                , Insert "grandparent.ana.fay"
+                , Insert "flag.x" ]
+      askChronicle st "kin of ana" @?=
+        [ "grandparent.ana.fay"
+        , "inLaw.ana.eve"
+        , "married.ana.ben"
+        , "parent.ana.cara"
+        ]
+      askChronicle st "kin of ben" @?= ["married.ana.ben", "sibling.ben.dave"]
+      askChronicle st "kin of cara" @?= ["parent.ana.cara"]
+      askChronicle st "kin of void" @?= ["void has no kin marks"]
+
   ]

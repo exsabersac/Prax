@@ -147,7 +147,8 @@ formatEvent ev rs =
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
--- @"beliefs of "++who@、@"projects of "++who@。
+-- @"beliefs of "++who@、@"projects of "++who@、
+-- @"kin of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -585,6 +586,16 @@ askChronicle st q
                 , length parts >= 2
                 , parts !! 1 == who ]
       in if null rows then [who ++ " has no project marks"]
+         else rows
+  | Just who <- stripPrefix "kin of " q =
+      let kinHeads = ["married", "parent", "sibling", "inLaw", "grandparent"]
+          rows = sort
+            [ s | s <- dbToSentences (db st)
+                , let parts = splitDot s
+                , length parts >= 3
+                , head parts `elem` kinHeads
+                , who `elem` drop 1 parts ]
+      in if null rows then [who ++ " has no kin marks"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

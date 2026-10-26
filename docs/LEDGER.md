@@ -1911,3 +1911,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"beliefs of "` / `"projects of "`（对齐 Host `beliefsOf`/`projectsOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v347 — Sandbox 教会沉默×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 bob 买牧师异端沉默债后 harvest censure 被堵住，dave market rally 仍开（臭名路径）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church silence × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v348 — Chronicle kin of
+
+- **做了什么**：`askChronicle` 增加 `"kin of "`，列出 married/parent/sibling/inLaw/grandparent 任一侧（对齐 Host `kinOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+
