@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -739,5 +739,22 @@ tests = testGroup "Prax.Chronicle"
         ["ira creditor of bob", "ira creditor of dave"]
       askChronicle st "creditors of void" @?= ["void has no known creditors"]
       askChronicle st "debtors of void" @?= ["void has no known debtors"]
+
+  , testCase "askChronicle demanders/demandees dual Host raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "demanded.ira.bob.favor"
+            , Insert "demanded.gale.bob.church-favor"
+            , Insert "demanded.ira.dave.favor"
+            ]
+      demandersOf st "bob" @?=
+        ["demanded.gale.bob.church-favor", "demanded.ira.bob.favor"]
+      demandeesOf st "ira" @?=
+        ["demanded.ira.bob.favor", "demanded.ira.dave.favor"]
+      askChronicle st "demanders of bob" @?=
+        ["gale demander of bob", "ira demander of bob"]
+      askChronicle st "demandees of ira" @?=
+        ["ira demander of bob", "ira demander of dave"]
+      askChronicle st "demanders of void" @?= ["void has no known demanders"]
+      askChronicle st "demandees of void" @?= ["void has no known demandees"]
 
   ]

@@ -142,7 +142,7 @@ formatEvent ev rs =
 -- @"what is on the stall"@、@"what festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"shunned of "++who@、
--- @"locations of "++who@、@"demanded of "++who@、
+-- @"locations of "++who@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
 -- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
@@ -628,6 +628,35 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no demand marks"]
          else rows
+  | Just who <- stripPrefix "demanders of " q =
+      -- 对齐 Host demandersOf：读闭合视图；短语化催收人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "demanded." `isPrefixOf` s
+                , let rest = drop (length ("demanded." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known demanders"]
+         else [ c ++ " demander of " ++ who
+              | s <- rows
+              , let rest = drop (length ("demanded." :: String)) s
+              , let c = head (splitDot rest) ]
+  | Just who <- stripPrefix "demandees of " q =
+      -- 对齐 Host demandeesOf：读闭合视图；短语化被催收人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "demanded." `isPrefixOf` s
+                , let rest = drop (length ("demanded." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , head parts == who ]
+      in if null rows then [who ++ " has no known demandees"]
+         else [ who ++ " demander of " ++ d
+              | s <- rows
+              , let rest = drop (length ("demanded." :: String)) s
+              , let parts = splitDot rest
+              , let d = parts !! 1 ]
   | Just who <- stripPrefix "extorted of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

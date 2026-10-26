@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -271,6 +271,18 @@ runDemanded (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (demandedOf st who)
 runDemanded _ = putStrLn "usage: prax demanded <who> <world>"
+
+runDemanders :: [String] -> IO ()
+runDemanders (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (demandersOf st who)
+runDemanders _ = putStrLn "usage: prax demanders <who> <world>"
+
+runDemandees :: [String] -> IO ()
+runDemandees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (demandeesOf st who)
+runDemandees _ = putStrLn "usage: prax demandees <who> <world>"
 
 runFestivals :: [String] -> IO ()
 runFestivals ws =
@@ -710,6 +722,8 @@ main = do
     ("ages" : ws)     -> runAges ws
     ("projects" : ws) -> runProjects ws
     ("demanded" : ws) -> runDemanded ws
+    ("demanders" : ws) -> runDemanders ws
+    ("demandees" : ws) -> runDemandees ws
     ("festivals" : ws) -> runFestivals ws
     ("stall" : ws)     -> runStall ws
     ("locations" : ws) -> runLocations ws

@@ -32,6 +32,7 @@
 -- v445：'grandparentsOf'/'grandchildrenOf'/'inLawsOf' 祖孙/姻亲叶。
 -- v456：'spousesOf' 婚偶叶（married.<who>.* 主体侧）。
 -- v458：'creditorsOf'/'debtorsOf' 债权/债务方叶（debt.<c>.<d>.*）。
+-- v472：'demandersOf'/'demandeesOf' 催收方叶（demanded.<c>.<d>.*）。
 module Prax.Host
   ( step
   , stepExact
@@ -87,6 +88,8 @@ module Prax.Host
   , agesOf
   , projectsOf
   , demandedOf
+  , demandersOf
+  , demandeesOf
   , festivalsOf
   , locationsOf
   , holdingOf
@@ -577,6 +580,40 @@ demandedOf st who = sort
   , let parts = splitDots rest
   , length parts >= 3
   , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为被催收方的叶（@demanded.<creditor>.<who>.*@）。
+demandersOf :: PraxState -> String -> [String]
+demandersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "demanded." `isPrefixOf` s
+  , let rest = drop (length ("demanded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为催收方的叶（@demanded.<who>.<debtor>.*@）。
+demandeesOf :: PraxState -> String -> [String]
+demandeesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "demanded." `isPrefixOf` s
+  , let rest = drop (length ("demanded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , head parts == who
   ]
   where
     splitDots :: String -> [String]

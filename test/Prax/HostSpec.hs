@@ -627,4 +627,17 @@ tests = testGroup "Prax.Host"
       -- availableMatching covered elsewhere; empty menu OK
       availableMatching st2 "ana" "wave" @?= []
 
+  , testCase "demandersOf / demandeesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "demanded.ira.bob.favor"
+                , Insert "demanded.gale.bob.church-favor"
+                , Insert "demanded.ira.dave.favor"
+                , Insert "flag.x" ]
+      demandersOf st "bob" @?=
+        ["demanded.gale.bob.church-favor", "demanded.ira.bob.favor"]
+      demandersOf st "void" @?= []
+      demandeesOf st "ira" @?=
+        ["demanded.ira.bob.favor", "demanded.ira.dave.favor"]
+      demandeesOf st "void" @?= []
+
   ]

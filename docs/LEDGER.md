@@ -2638,3 +2638,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Conversation Spec 钉 beginConversation 世界上 onTopic/hasTopic/isSpeaker/isListener/offTopic/lacksSpeaker/lacksListener（A/B/Actor 绑定）。无新实践 / 无 want 改动。
 - **测**：ConversationSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v472 — Host demandersOf/demandeesOf + CLI
+
+- **做了什么**：闭合视图枚举 `demanded.*.<who>.*` / `demanded.<who>.*.*`；CLI `prax demanders`/`demandees`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v473 — Chronicle demanders/demandees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"demanders of "` / `"demandees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
