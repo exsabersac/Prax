@@ -14,7 +14,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
                              moodsOf, arcsOf, liesOf, traitsOf,
-                             chattedWithOf, esteemedOf, scornedOf,
+                             chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, projectsOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
                              revokedOf, confessedOf, censuredOf,
@@ -972,6 +972,18 @@ tests = testGroup "Prax.Chronicle"
         ["eve liar of dana", "nia liar of dana"]
       askChronicle st "bonders of void" @?= ["void has no known bonders"]
       askChronicle st "liars of void" @?= ["void has no known liars"]
+
+  , testCase "askChronicle chatters dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.chattedWith.ben"
+            , Insert "cass.chattedWith.ben"
+            , Insert "dave.chattedWith.eve"
+            ]
+      chattersOf st "ben" @?= ["ana.chattedWith.ben", "cass.chattedWith.ben"]
+      askChronicle st "chatters of ben" @?=
+        ["ana chatter of ben", "cass chatter of ben"]
+      askChronicle st "chatters of eve" @?= ["dave chatter of eve"]
+      askChronicle st "chatters of void" @?= ["void has no known chatters"]
 
 
   ]

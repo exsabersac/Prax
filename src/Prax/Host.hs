@@ -46,6 +46,7 @@
 -- v533：'scornersOf' 被蔑视侧叶（scorned.*.<who>.*）。
 -- v540：'bondersOf' 纽带对象侧叶（bond.*.<who>.*）。
 -- v542：'liarsOf' 谎言听者侧叶（*.lied.<who>.*）。
+-- v504：'chattersOf' 聊天对象侧叶（*.chattedWith.<who>）。
 -- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
@@ -84,6 +85,7 @@ module Prax.Host
   , liesOf
   , liarsOf
   , chattedWithOf
+  , chattersOf
   , traitsOf
   , moodsOf
   , bondsOf
@@ -488,6 +490,23 @@ liarsOf st who = sort
 chattedWithOf :: PraxState -> String -> [String]
 chattedWithOf st who =
   sort [ s | s <- queryView st, (who ++ ".chattedWith.") `isPrefixOf` s ]
+
+
+-- | 闭合视图中 @who@ 作为聊天对象的叶（@<actor>.chattedWith.<who>@）。
+chattersOf :: PraxState -> String -> [String]
+chattersOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "chattedWith"
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的性格叶（@trait.<who>.*@）。
 traitsOf :: PraxState -> String -> [String]

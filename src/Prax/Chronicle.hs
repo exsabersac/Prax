@@ -145,7 +145,7 @@ formatEvent ev rs =
 -- @"locations of "++who@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
 -- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
--- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"traits of "++who@、
+-- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"chatters of "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"bonders of "++who@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
 -- @"kin of "++who@、@"notorious of "++who@、
@@ -1171,6 +1171,18 @@ askChronicle st q
                 , (who ++ ".chattedWith.") `isPrefixOf` s ]
       in if null rows then [who ++ " has chatted with no one"]
          else rows
+  | Just who <- stripPrefix "chatters of " q =
+      -- 对齐 Host chattersOf：读闭合视图；短语化聊天人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , let parts = splitDot s
+                , length parts >= 3
+                , parts !! 1 == "chattedWith"
+                , parts !! 2 == who ]
+      in if null rows then [who ++ " has no known chatters"]
+         else [ a ++ " chatter of " ++ who
+              | s <- rows
+              , let a = head (splitDot s) ]
   | Just who <- stripPrefix "traits of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

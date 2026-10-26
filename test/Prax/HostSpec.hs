@@ -855,5 +855,14 @@ tests = testGroup "Prax.Host"
         ["eve.lied.dana.stole.carol.loaf", "nia.lied.dana.took.kit.gem"]
       liarsOf st "void" @?= []
 
+  , testCase "chattersOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.chattedWith.ben"
+            , Insert "cass.chattedWith.ben"
+            , Insert "dave.chattedWith.eve"
+            ]
+      chattersOf st "ben" @?= ["ana.chattedWith.ben", "cass.chattedWith.ben"]
+      chattersOf st "eve" @?= ["dave.chattedWith.eve"]
+      chattersOf st "void" @?= []
 
   ]
