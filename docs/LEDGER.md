@@ -2915,3 +2915,39 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 kyle 挂 millCry/squeeze+parade/churchJustice+inquisit/flee 时门禁仍关、不选对应 act；挂 joinsMill 可 wed。无新实践。
 - **测**：SandboxSpec wants: affiliate kyle with …。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v519 — Host ostracizers..paradees + CLI
+
+- **做了什么**：闭合视图枚举 ostracized/denounced/censured/paraded 的 `*.<who>` / `<who>.*`；CLI 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v520 — Chronicle ostracizers..paradees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加对应臂；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v521 — Host criersOf/crieesOf/ralliersOf/rallieesOf + CLI
+
+- **做了什么**：闭合视图枚举 `cried`/`rallied` 双边；CLI 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v522 — Chronicle criers/criees/ralliers/ralliees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加对应臂；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v523 — Host alliesOf + CLI
+
+- **做了什么**：闭合视图枚举 `allied.<who>.*`（对齐 spousesOf）；CLI `prax allies`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v524 — Chronicle allies of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"allies of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

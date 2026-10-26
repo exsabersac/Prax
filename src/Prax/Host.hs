@@ -37,6 +37,9 @@
 -- v488：'compliersOf'/'complieesOf'/'defiersOf'/'defieesOf' 顺从/违抗方叶。
 -- v495：'wrongersOf'/'wrongeesOf' 冤屈方叶（wronged.<o>.<v>）。
 -- v497：'eyersOf'/'eyeesOf'/'confrontersOf'/'confronteesOf' 目击/对质方叶。
+-- v512：'ostracizersOf'..'paradeesOf' 放逐/控告/审查/游街方叶。
+-- v514：'criersOf'/'crieesOf'/'ralliersOf'/'rallieesOf' 喊冤/声援方叶。
+-- v516：'alliesOf' 同盟主体侧叶（对齐 spousesOf）。
 -- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
@@ -119,12 +122,24 @@ module Prax.Host
   , confessedOf
   , recantedOf
   , ostracizedOf
+  , ostracizersOf
+  , ostracizeesOf
   , exiledOf
   , denouncedOf
+  , denouncersOf
+  , denounceesOf
   , censuredOf
+  , censurersOf
+  , censureesOf
   , paradedOf
+  , paradersOf
+  , paradeesOf
   , criedOf
+  , criersOf
+  , crieesOf
   , ralliedOf
+  , ralliersOf
+  , rallieesOf
   , fledOf
   , reconciledOf
   , marriedOf
@@ -143,6 +158,7 @@ module Prax.Host
   , appetiteOf
   , resentsOf
   , alliedOf
+  , alliesOf
   , stallOf
   , checkpoint
   , restore
@@ -982,6 +998,41 @@ ostracizedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+-- | 闭合视图中 @who@ 作为被方的叶（@ostracized.<actor>.<who>@）。
+ostracizersOf :: PraxState -> String -> [String]
+ostracizersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "ostracized." `isPrefixOf` s
+  , let rest = drop (length ("ostracized." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主动方的叶（@ostracized.<who>.<target>@）。
+ostracizeesOf :: PraxState -> String -> [String]
+ostracizeesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "ostracized." `isPrefixOf` s
+  , let rest = drop (length ("ostracized." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的流放叶（@exiled.<who>@）。
 exiledOf :: PraxState -> String -> [String]
 exiledOf st who =
@@ -1007,6 +1058,41 @@ denouncedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+-- | 闭合视图中 @who@ 作为被方的叶（@denounced.<actor>.<who>@）。
+denouncersOf :: PraxState -> String -> [String]
+denouncersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "denounced." `isPrefixOf` s
+  , let rest = drop (length ("denounced." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主动方的叶（@denounced.<who>.<target>@）。
+denounceesOf :: PraxState -> String -> [String]
+denounceesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "denounced." `isPrefixOf` s
+  , let rest = drop (length ("denounced." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中与 @who@ 相关的审查叶（@censured.<actor>.<target>@，任一侧）。
 censuredOf :: PraxState -> String -> [String]
 censuredOf st who = sort
@@ -1017,6 +1103,41 @@ censuredOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中 @who@ 作为被方的叶（@censured.<actor>.<who>@）。
+censurersOf :: PraxState -> String -> [String]
+censurersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "censured." `isPrefixOf` s
+  , let rest = drop (length ("censured." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主动方的叶（@censured.<who>.<target>@）。
+censureesOf :: PraxState -> String -> [String]
+censureesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "censured." `isPrefixOf` s
+  , let rest = drop (length ("censured." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
   ]
   where
     splitDots :: String -> [String]
@@ -1043,6 +1164,41 @@ paradedOf st who = sort
 
 
 
+
+-- | 闭合视图中 @who@ 作为被方的叶（@paraded.<actor>.<who>@）。
+paradersOf :: PraxState -> String -> [String]
+paradersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "paraded." `isPrefixOf` s
+  , let rest = drop (length ("paraded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主动方的叶（@paraded.<who>.<target>@）。
+paradeesOf :: PraxState -> String -> [String]
+paradeesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "paraded." `isPrefixOf` s
+  , let rest = drop (length ("paraded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中与 @who@ 相关的市集喊冤叶（@cried.<actor>.<target>@，任一侧）。
 criedOf :: PraxState -> String -> [String]
 criedOf st who = sort
@@ -1060,6 +1216,41 @@ criedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+-- | 闭合视图中 @who@ 作为被方的叶（@cried.<actor>.<who>@）。
+criersOf :: PraxState -> String -> [String]
+criersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "cried." `isPrefixOf` s
+  , let rest = drop (length ("cried." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主动方的叶（@cried.<who>.<target>@）。
+crieesOf :: PraxState -> String -> [String]
+crieesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "cried." `isPrefixOf` s
+  , let rest = drop (length ("cried." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中与 @who@ 相关的市集声援叶（@rallied.<actor>.<target>@，任一侧）。
 ralliedOf :: PraxState -> String -> [String]
 ralliedOf st who = sort
@@ -1070,6 +1261,41 @@ ralliedOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中 @who@ 作为被方的叶（@rallied.<actor>.<who>@）。
+ralliersOf :: PraxState -> String -> [String]
+ralliersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "rallied." `isPrefixOf` s
+  , let rest = drop (length ("rallied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主动方的叶（@rallied.<who>.<target>@）。
+rallieesOf :: PraxState -> String -> [String]
+rallieesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "rallied." `isPrefixOf` s
+  , let rest = drop (length ("rallied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
   ]
   where
     splitDots :: String -> [String]
@@ -1303,6 +1529,15 @@ resentsOf st who = sort
   ]
 
 
+
+
+-- | 闭合视图中 @who@ 作为主体的同盟叶（@allied.<who>.*@；对齐 spousesOf / Chronicle @"allies of "@）。
+alliesOf :: PraxState -> String -> [String]
+alliesOf st who =
+  sort [ s | s <- queryView st
+           , let pref = "allied." ++ who ++ "."
+           , pref `isPrefixOf` s
+           , '.' `notElem` drop (length pref) s ]
 
 -- | 闭合视图中与 @who@ 相关的同盟叶（@allied.<a>.<b>@ 任一侧；Feud）。
 alliedOf :: PraxState -> String -> [String]

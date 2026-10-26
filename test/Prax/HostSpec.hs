@@ -754,4 +754,61 @@ tests = testGroup "Prax.Host"
       revokeesOf st "void" @?= []
 
 
+
+  , testCase "ostracizers/ostracizees/denouncers/denouncees/censurers/censurees/paraders/paradees from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "ostracized.ira.bob"
+                , Insert "ostracized.bob.dave"
+                , Insert "denounced.gale.eve"
+                , Insert "denounced.eve.fran"
+                , Insert "censured.ira.bob"
+                , Insert "censured.bob.kyle"
+                , Insert "paraded.gale.eve"
+                , Insert "paraded.eve.fran"
+                , Insert "flag.x" ]
+      ostracizersOf st "bob" @?= ["ostracized.ira.bob"]
+      ostracizersOf st "dave" @?= ["ostracized.bob.dave"]
+      ostracizeesOf st "ira" @?= ["ostracized.ira.bob"]
+      ostracizeesOf st "bob" @?= ["ostracized.bob.dave"]
+      denouncersOf st "eve" @?= ["denounced.gale.eve"]
+      denounceesOf st "gale" @?= ["denounced.gale.eve"]
+      censurersOf st "bob" @?= ["censured.ira.bob"]
+      censureesOf st "ira" @?= ["censured.ira.bob"]
+      paradersOf st "eve" @?= ["paraded.gale.eve"]
+      paradeesOf st "gale" @?= ["paraded.gale.eve"]
+      ostracizersOf st "void" @?= []
+      paradeesOf st "void" @?= []
+
+
+  , testCase "criersOf / crieesOf / ralliersOf / rallieesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "cried.bob.ira"
+                , Insert "cried.eve.gale"
+                , Insert "rallied.fran.bob"
+                , Insert "rallied.bob.eve"
+                , Insert "flag.x" ]
+      criersOf st "ira" @?= ["cried.bob.ira"]
+      criersOf st "gale" @?= ["cried.eve.gale"]
+      crieesOf st "bob" @?= ["cried.bob.ira"]
+      crieesOf st "eve" @?= ["cried.eve.gale"]
+      ralliersOf st "bob" @?= ["rallied.fran.bob"]
+      ralliersOf st "eve" @?= ["rallied.bob.eve"]
+      rallieesOf st "fran" @?= ["rallied.fran.bob"]
+      rallieesOf st "bob" @?= ["rallied.bob.eve"]
+      criersOf st "void" @?= []
+      rallieesOf st "void" @?= []
+
+
+  , testCase "alliesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "allied.bob.fran"
+                , Insert "allied.fran.bob"
+                , Insert "allied.eve.gale"
+                , Insert "flag.x" ]
+      alliesOf st "bob" @?= ["allied.bob.fran"]
+      alliesOf st "fran" @?= ["allied.fran.bob"]
+      alliesOf st "eve" @?= ["allied.eve.gale"]
+      alliesOf st "void" @?= []
+
+
   ]

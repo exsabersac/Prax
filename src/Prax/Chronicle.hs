@@ -132,13 +132,13 @@ formatEvent ev rs =
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
 -- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、@"revokers of "++who@、@"revokees of "++who@、
--- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
--- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
--- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
+-- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"ostracizers of "++who@、@"ostracizees of "++who@、@"exiled of "++who@、
+-- @"denounced of "++who@、@"denouncers of "++who@、@"denouncees of "++who@、@"censured of "++who@、@"censurers of "++who@、@"censurees of "++who@、@"paraded of "++who@、@"paraders of "++who@、@"paradees of "++who@、
+-- @"cried of "++who@、@"criers of "++who@、@"criees of "++who@、@"rallied of "++who@、@"ralliers of "++who@、@"ralliees of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
 -- @"eyed of "++who@、@"eyers of "++who@、@"eyees of "++who@、@"confronted of "++who@、@"confronters of "++who@、@"confrontees of "++who@、@"atoned of "++who@、
 -- @"wronged of "++who@、@"wrongers of "++who@、@"wrongees of "++who@、@"hungry of "++who@、
 -- @"shortTempered of "++who@、@"appetite of "++who@、
--- @"resents of "++who@、@"allied of "++who@、
+-- @"resents of "++who@、@"allied of "++who@、@"allies of "++who@、
 -- @"what is on the stall"@、@"what festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"threateners of "++who@、@"threatenees of "++who@、@"shunned of "++who@、
@@ -419,6 +419,32 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no ostracize marks"]
          else rows
+  | Just who <- stripPrefix "ostracizers of " q =
+      -- 对齐 Host ostracizersOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "ostracized." `isPrefixOf` s
+                , let rest = drop (length ("ostracized." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known ostracizers"]
+         else [ a ++ " ostracizer of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("ostracized." :: String)) s)) ]
+  | Just who <- stripPrefix "ostracizees of " q =
+      -- 对齐 Host ostracizeesOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "ostracized." `isPrefixOf` s
+                , let rest = drop (length ("ostracized." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known ostracizees"]
+         else [ who ++ " ostracizer of " ++ t
+              | s <- rows
+              , let t = (splitDot (drop (length ("ostracized." :: String)) s)) !! 1 ]
   | Just who <- stripPrefix "exiled of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
@@ -438,6 +464,32 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no denounce marks"]
          else rows
+  | Just who <- stripPrefix "denouncers of " q =
+      -- 对齐 Host denouncersOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "denounced." `isPrefixOf` s
+                , let rest = drop (length ("denounced." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known denouncers"]
+         else [ a ++ " denouncer of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("denounced." :: String)) s)) ]
+  | Just who <- stripPrefix "denouncees of " q =
+      -- 对齐 Host denounceesOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "denounced." `isPrefixOf` s
+                , let rest = drop (length ("denounced." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known denouncees"]
+         else [ who ++ " denouncer of " ++ t
+              | s <- rows
+              , let t = (splitDot (drop (length ("denounced." :: String)) s)) !! 1 ]
   | Just who <- stripPrefix "censured of " q =
       -- 对齐 Host *Of：读闭合视图。
       let prefix = "censured."
@@ -449,6 +501,32 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no censure marks"]
          else rows
+  | Just who <- stripPrefix "censurers of " q =
+      -- 对齐 Host censurersOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "censured." `isPrefixOf` s
+                , let rest = drop (length ("censured." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known censurers"]
+         else [ a ++ " censurer of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("censured." :: String)) s)) ]
+  | Just who <- stripPrefix "censurees of " q =
+      -- 对齐 Host censureesOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "censured." `isPrefixOf` s
+                , let rest = drop (length ("censured." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known censurees"]
+         else [ who ++ " censurer of " ++ t
+              | s <- rows
+              , let t = (splitDot (drop (length ("censured." :: String)) s)) !! 1 ]
   | Just who <- stripPrefix "paraded of " q =
       -- 对齐 Host *Of：读闭合视图。
       let prefix = "paraded."
@@ -460,6 +538,32 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no parade marks"]
          else rows
+  | Just who <- stripPrefix "paraders of " q =
+      -- 对齐 Host paradersOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "paraded." `isPrefixOf` s
+                , let rest = drop (length ("paraded." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known paraders"]
+         else [ a ++ " parader of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("paraded." :: String)) s)) ]
+  | Just who <- stripPrefix "paradees of " q =
+      -- 对齐 Host paradeesOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "paraded." `isPrefixOf` s
+                , let rest = drop (length ("paraded." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known paradees"]
+         else [ who ++ " parader of " ++ t
+              | s <- rows
+              , let t = (splitDot (drop (length ("paraded." :: String)) s)) !! 1 ]
   | Just who <- stripPrefix "cried of " q =
       -- 对齐 Host *Of：读闭合视图。
       let prefix = "cried."
@@ -471,6 +575,32 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no cry marks"]
          else rows
+  | Just who <- stripPrefix "criers of " q =
+      -- 对齐 Host criersOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "cried." `isPrefixOf` s
+                , let rest = drop (length ("cried." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known criers"]
+         else [ a ++ " crier of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("cried." :: String)) s)) ]
+  | Just who <- stripPrefix "criees of " q =
+      -- 对齐 Host crieesOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "cried." `isPrefixOf` s
+                , let rest = drop (length ("cried." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known criees"]
+         else [ who ++ " crier of " ++ t
+              | s <- rows
+              , let t = (splitDot (drop (length ("cried." :: String)) s)) !! 1 ]
   | Just who <- stripPrefix "rallied of " q =
       -- 对齐 Host *Of：读闭合视图。
       let prefix = "rallied."
@@ -482,6 +612,32 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no rally marks"]
          else rows
+  | Just who <- stripPrefix "ralliers of " q =
+      -- 对齐 Host ralliersOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "rallied." `isPrefixOf` s
+                , let rest = drop (length ("rallied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known ralliers"]
+         else [ a ++ " rallier of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("rallied." :: String)) s)) ]
+  | Just who <- stripPrefix "ralliees of " q =
+      -- 对齐 Host rallieesOf：读闭合视图；短语化。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "rallied." `isPrefixOf` s
+                , let rest = drop (length ("rallied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who ]
+      in if null rows then [who ++ " has no known ralliees"]
+         else [ who ++ " rallier of " ++ t
+              | s <- rows
+              , let t = (splitDot (drop (length ("rallied." :: String)) s)) !! 1 ]
   | Just who <- stripPrefix "fled of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
@@ -684,6 +840,14 @@ askChronicle st q
             [ s | s <- dbToSentences (readView st), "festival." `isPrefixOf` s ]
       in if null rows then ["no festivals are open"]
          else rows
+  | Just who <- stripPrefix "allies of " q =
+      -- 对齐 Host alliesOf：读闭合视图；短语化同盟名。
+      let prefix = "allied." ++ who ++ "."
+          als = sort [ drop (length prefix) s
+                     | s <- dbToSentences (readView st), prefix `isPrefixOf` s
+                     , '.' `notElem` drop (length prefix) s ]
+      in if null als then [who ++ " has no known allies"]
+         else map ((who ++ " ally ") ++) als
   | Just who <- stripPrefix "holding of " q =
       -- 对齐 Host holdingsOf：读闭合视图。
       let rows = sort

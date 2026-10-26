@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -848,6 +848,64 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "revokees of ira" @?= ["ira revoker of bob"]
       askChronicle st "revokers of void" @?= ["void has no known revokers"]
       askChronicle st "revokees of void" @?= ["void has no known revokees"]
+
+
+
+  , testCase "askChronicle ostracizers..paradees dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ostracized.ira.bob"
+            , Insert "denounced.gale.eve"
+            , Insert "censured.ira.bob"
+            , Insert "paraded.gale.eve"
+            ]
+      ostracizersOf st "bob" @?= ["ostracized.ira.bob"]
+      ostracizeesOf st "ira" @?= ["ostracized.ira.bob"]
+      denouncersOf st "eve" @?= ["denounced.gale.eve"]
+      denounceesOf st "gale" @?= ["denounced.gale.eve"]
+      censurersOf st "bob" @?= ["censured.ira.bob"]
+      censureesOf st "ira" @?= ["censured.ira.bob"]
+      paradersOf st "eve" @?= ["paraded.gale.eve"]
+      paradeesOf st "gale" @?= ["paraded.gale.eve"]
+      askChronicle st "ostracizers of bob" @?= ["ira ostracizer of bob"]
+      askChronicle st "ostracizees of ira" @?= ["ira ostracizer of bob"]
+      askChronicle st "denouncers of eve" @?= ["gale denouncer of eve"]
+      askChronicle st "denouncees of gale" @?= ["gale denouncer of eve"]
+      askChronicle st "censurers of bob" @?= ["ira censurer of bob"]
+      askChronicle st "censurees of ira" @?= ["ira censurer of bob"]
+      askChronicle st "paraders of eve" @?= ["gale parader of eve"]
+      askChronicle st "paradees of gale" @?= ["gale parader of eve"]
+      askChronicle st "ostracizers of void" @?= ["void has no known ostracizers"]
+      askChronicle st "paradees of void" @?= ["void has no known paradees"]
+
+
+  , testCase "askChronicle criers/criees/ralliers/ralliees dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "cried.bob.ira"
+            , Insert "rallied.fran.bob"
+            ]
+      criersOf st "ira" @?= ["cried.bob.ira"]
+      crieesOf st "bob" @?= ["cried.bob.ira"]
+      ralliersOf st "bob" @?= ["rallied.fran.bob"]
+      rallieesOf st "fran" @?= ["rallied.fran.bob"]
+      askChronicle st "criers of ira" @?= ["bob crier of ira"]
+      askChronicle st "criees of bob" @?= ["bob crier of ira"]
+      askChronicle st "ralliers of bob" @?= ["fran rallier of bob"]
+      askChronicle st "ralliees of fran" @?= ["fran rallier of bob"]
+      askChronicle st "criers of void" @?= ["void has no known criers"]
+      askChronicle st "ralliees of void" @?= ["void has no known ralliees"]
+
+
+  , testCase "askChronicle allies dual Host alliesOf raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "allied.bob.fran"
+            , Insert "allied.fran.bob"
+            , Insert "allied.eve.gale"
+            ]
+      alliesOf st "bob" @?= ["allied.bob.fran"]
+      alliesOf st "fran" @?= ["allied.fran.bob"]
+      askChronicle st "allies of bob" @?= ["bob ally fran"]
+      askChronicle st "allies of fran" @?= ["fran ally bob"]
+      askChronicle st "allies of void" @?= ["void has no known allies"]
 
 
   ]
