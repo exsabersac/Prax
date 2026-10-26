@@ -24,7 +24,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              eyedOf, confrontedOf, wrongedOf,
                              recantedOf, shortTemperedOf, appetiteOf,
                              resentsOf, alliedOf, demandedOf,
-                             notoriousOf, regardsToward, factionsNamed,
+                             notoriousOf, regardsOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
                              grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf, bondersOf, liarsOf)
@@ -679,6 +679,10 @@ tests = testGroup "Prax.Chronicle"
       regardsToward st "dog" @?= ["regards.kai.dog.victim"]
       askChronicle st "regards of eve" @?= ["dave as hero"]
       askChronicle st "regards of dog" @?= ["kai as victim"]
+      regardsOf st "dave" @?= ["regards.dave.eve.hero"]
+      askChronicle st "regards by dave" @?= regardsOf st "dave"
+      askChronicle st "regards by kai" @?= regardsOf st "kai"
+      askChronicle st "regards by void" @?= ["void regards nobody"]
 
   , testCase "askChronicle siblings dual Host siblingsOf raw leaves" $ do
       let st = foldl (flip performOutcome) emptyState

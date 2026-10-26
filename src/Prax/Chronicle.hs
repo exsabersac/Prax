@@ -128,7 +128,7 @@ formatEvent ev rs =
 
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
--- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
+-- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、@"regards by "++who@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"moods of "++who@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
 -- @"arc of "++who@、@"arcs of "++who@、@"age of "++who@、@"ages of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、@"revokers of "++who@、@"revokees of "++who@、
@@ -161,6 +161,13 @@ askChronicle st q
       let hs = notorietyHooks st
       in if null hs then ["nothing is notorious"]
          else [ s ++ " as " ++ l | NotoriousHook s l <- sort hs ]
+  | Just who <- stripPrefix "regards by " q =
+      -- 对齐 Host regardsOf：观察者发出的站队原始叶。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , ("regards." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " regards nobody"]
+         else rows
   | Just subj <- stripPrefix "regards of " q =
       let hs = [ h | h@(RegardHook _ s _) <- regardingHooks st, s == subj ]
       in if null hs then ["nobody regards " ++ subj]
