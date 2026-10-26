@@ -3155,3 +3155,9 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`esteems of`/`scorns of` 返回赞誉/蔑视标签侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v574 — Sandbox revoke×cross + affiliate×want + dual repay Spec
+
+- **做了什么**：SandboxSpec 追加 mill/church revoke×对侧 cry/squeeze；kyle churchJustice/parade/squeeze 负例；双沉默债挡正义；parade once×squeeze 跨市；无 cry/parade want 负例；cry once×squeeze；dual repay 双再买+正义恢复；break>cry util；cast ira/bob；flee×hear bob。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（479 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
