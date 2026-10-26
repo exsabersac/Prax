@@ -142,4 +142,12 @@ tests = testGroup "Prax.Derive (m(X) closure)"
         (not (monotoneAxioms (cookAxioms [ axiom [ Count "N" "Rs", Neq "N" "3" ] [ "q.T" ] ])))
       assertBool "Eq over Match-bound names stays monotone"
         (monotoneAxioms (cookAxioms [ axiom [ Match "a.X", Match "b.Y", Eq "X" "Y" ] [ "c.X" ] ]))
+
+  , testCase "axiomHeadPatterns collects cooked head token paths" $ do
+      let rules = cookAxioms [ axiom [ Match "parent.X.Y" ] [ "elder.X", "kin.X.Y" ] ]
+          heads = axiomHeadPatterns rules
+          hasPath s = map intern (pathNames s) `elem` heads
+      assertBool "elder.X" (hasPath "elder.X")
+      assertBool "kin.X.Y" (hasPath "kin.X.Y")
+      assertBool "body not a head" (not (hasPath "parent.X.Y"))
   ]

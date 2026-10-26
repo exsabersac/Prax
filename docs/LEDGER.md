@@ -2898,3 +2898,20 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`holders of`/`carriers of` 短语化持有/携带人；Spec 钉 Host 叶与 Chronicle 短语及空集。
+## v526 — Cooked cookPractice/Functions/ScheduleRule Spec 钉
+
+- **做了什么**：CookedSpec 钉 cookPractice 实例路径与动作/init 煮熟，以及 cookFunctions/cookScheduleRule 键控与体。无新实践 / 无 want 改动。
+- **测**：CookedSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v527 — Query satisfies/count/conditionVars/condSents Spec 钉
+
+- **做了什么**：QuerySpec 钉 satisfies/countSatisfying 与 conditionVars/condSents 行走。无新实践 / 无 want 改动。
+- **测**：QuerySpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v528 — Derive axiomHeadPatterns Spec 钉
+
+- **做了什么**：DeriveSpec 钉 axiomHeadPatterns 收集煮熟头路径。无新实践 / 无 want 改动。
+- **测**：DeriveSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

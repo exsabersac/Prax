@@ -5,7 +5,8 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, (@?=), assertBool, assertFailure)
 
 import           Prax.Db
-import           Prax.Query (CmpOp(..), CalcOp(..), Condition(..), forAll, implies, groundCondition, query, cookCondition, cookedReadAnchors)
+import           Prax.Query (CmpOp(..), CalcOp(..), Condition(..), forAll, implies, groundCondition, query, cookCondition, cookedReadAnchors,
+                              satisfies, countSatisfying, conditionVars, condSents)
 import           Prax.Sym (Sym, intern)
 
 build :: [String] -> Db
@@ -194,6 +195,23 @@ tests = testGroup "Prax.Query"
         assertBool "Or branch read"  (want "d.X")
         assertBool "Absent-in-Or read" (want "e.X")
         length anchors @?= 5
+    ]
+
+  , testGroup "satisfies / countSatisfying / conditionVars / condSents"
+    [ testCase "satisfies is non-empty query; countSatisfying is its length" $ do
+        let d = build ["at.bob!square", "at.eve!mill"]
+            conds = [ Match "at.Who!square" ]
+        satisfies d conds Map.empty @?= True
+        satisfies d [ Match "at.Who!hall" ] Map.empty @?= False
+        countSatisfying d conds Map.empty @?= 1
+        countSatisfying d [ Match "at.Who!Where" ] Map.empty @?= 2
+
+    , testCase "conditionVars / condSents walk Match/Not/quantifiers; skip pure Eq from condSents" $ do
+        conditionVars (Match "at.Who!Where") @?= ["at", "Who", "Where"]
+        conditionVars (Eq "A" "B") @?= ["A", "B"]
+        condSents [ Match "a.X", Not "b.Y", Eq "A" "B" ] @?= ["a.X", "b.Y"]
+        condSents [ Absent [ Match "gone.X" ], Exists [ Match "here.Y" ] ]
+          @?= ["gone.X", "here.Y"]
     ]
   ]
 
