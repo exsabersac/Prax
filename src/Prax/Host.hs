@@ -30,7 +30,7 @@
 -- v423：'siblingsOf' 兄弟姐妹叶（对齐 Chronicle siblings of）。
 -- v429：'parentsOf'/'childrenOf' 亲子叶（parent.<p>.<c>）。
 -- v445：'grandparentsOf'/'grandchildrenOf'/'inLawsOf' 祖孙/姻亲叶。
--- v442：'spousesOf' 婚偶叶（married.<who>.* 主体侧）。
+-- v456：'spousesOf' 婚偶叶（married.<who>.* 主体侧）。
 module Prax.Host
   ( step
   , stepExact
