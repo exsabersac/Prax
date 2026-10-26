@@ -129,15 +129,15 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
--- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
+-- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"moods of "++who@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
+-- @"arc of "++who@、@"arcs of "++who@、@"age of "++who@、@"ages of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、@"revokers of "++who@、@"revokees of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"ostracizers of "++who@、@"ostracizees of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"denouncers of "++who@、@"denouncees of "++who@、@"censured of "++who@、@"censurers of "++who@、@"censurees of "++who@、@"paraded of "++who@、@"paraders of "++who@、@"paradees of "++who@、
 -- @"cried of "++who@、@"criers of "++who@、@"criees of "++who@、@"rallied of "++who@、@"ralliers of "++who@、@"ralliees of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@、
 -- @"eyed of "++who@、@"eyers of "++who@、@"eyees of "++who@、@"confronted of "++who@、@"confronters of "++who@、@"confrontees of "++who@、@"atoned of "++who@、
 -- @"wronged of "++who@、@"wrongers of "++who@、@"wrongees of "++who@、@"hungry of "++who@、
--- @"shortTempered of "++who@、@"appetite of "++who@、
+-- @"shortTempered of "++who@、@"short-tempered of "++who@、@"appetite of "++who@、
 -- @"resents of "++who@、@"resenters of "++who@、@"allied of "++who@、@"allies of "++who@、
 -- @"what is on the stall"@、@"what festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
@@ -209,6 +209,14 @@ askChronicle st q
               , let rest = drop (length ("debt." :: String)) s
               , let parts = splitDot rest
               , let d = parts !! 1 ]
+  | Just faction <- stripPrefix "leaders of " q =
+      -- 对齐 Host leadersOf / CLI leaders：与 leads of 同义。
+      let prefix = "leads." ++ faction ++ "."
+          ls = sort [ drop (length prefix) s
+                    | s <- dbToSentences (readView st), prefix `isPrefixOf` s
+                    , '.' `notElem` drop (length prefix) s ]
+      in if null ls then ["nobody leads " ++ faction]
+         else map (++ (" leads " ++ faction)) ls
   | Just faction <- stripPrefix "leads of " q =
       -- 对齐 Host leadersOf：读闭合视图；! 展成 .
       let prefix = "leads." ++ faction ++ "."
@@ -245,6 +253,13 @@ askChronicle st q
           fs = sort [ s | s <- dbToSentences (readView st), prefix `isPrefixOf` s ]
       in if null fs then [who ++ " has no recorded feelings"]
          else fs
+  | Just who <- stripPrefix "moods of " q =
+      -- 对齐 Host moodsOf：读闭合视图，返回原始叶。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , ("mood." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no mood marks"]
+         else rows
   | Just who <- stripPrefix "mood of " q =
       -- 对齐 Host moodOf：读闭合视图。
       let prefix = "mood." ++ who ++ "."
@@ -253,6 +268,13 @@ askChronicle st q
                     , '.' `notElem` drop (length prefix) s ]
       in if null ms then [who ++ " has no baseline mood"]
          else map ((who ++ " mood ") ++) ms
+  | Just who <- stripPrefix "arcs of " q =
+      -- 对齐 Host arcsOf：读闭合视图，返回原始叶。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , (who ++ ".arc.") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no arc marks"]
+         else rows
   | Just who <- stripPrefix "arc of " q =
       -- 对齐 Host arcOf：读闭合视图。
       let prefix = who ++ ".arc."
@@ -261,6 +283,13 @@ askChronicle st q
                         , '.' `notElem` drop (length prefix) s ]
       in if null stages then [who ++ " has no arc stage"]
          else map ((who ++ " arc ") ++) stages
+  | Just who <- stripPrefix "ages of " q =
+      -- 对齐 Host agesOf：读闭合视图，返回原始叶。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , ("age." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no age marks"]
+         else rows
   | Just who <- stripPrefix "age of " q =
       -- 对齐 Host ageOf：读闭合视图。
       let prefix = "age." ++ who ++ "."
@@ -793,6 +822,14 @@ askChronicle st q
                 , s == ("hungry." ++ who)
                   || ("hungry." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no hunger mark"]
+         else rows
+  | Just who <- stripPrefix "short-tempered of " q =
+      -- 对齐 Host shortTemperedOf / CLI short-tempered 别名：读闭合视图。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , s == ("shortTempered." ++ who)
+                  || ("shortTempered." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no short-temper mark"]
          else rows
   | Just who <- stripPrefix "shortTempered of " q =
       -- 对齐 Host *Of：读闭合视图。

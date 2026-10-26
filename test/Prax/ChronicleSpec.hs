@@ -120,6 +120,8 @@ tests = testGroup "Prax.Chronicle"
                 [ Insert "leads.hall!ana"
                 , Insert "affiliate.ana.guild" ]
       askChronicle st "leads of hall" @?= ["ana leads hall"]
+      askChronicle st "leaders of hall" @?= ["ana leads hall"]
+      askChronicle st "leaders of void" @?= ["nobody leads void"]
       askChronicle st "affiliates of ana" @?= ["ana affiliates guild"]
 
 
@@ -240,7 +242,9 @@ tests = testGroup "Prax.Chronicle"
                 [ Insert "shortTempered.carol"
                 , Insert "appetite.bob" ]
       askChronicle st "shortTempered of carol" @?= ["shortTempered.carol"]
+      askChronicle st "short-tempered of carol" @?= ["shortTempered.carol"]
       askChronicle st "shortTempered of void" @?= ["void has no short-temper mark"]
+      askChronicle st "short-tempered of void" @?= ["void has no short-temper mark"]
       askChronicle st "appetite of bob" @?= ["appetite.bob"]
       askChronicle st "appetite of void" @?= ["void has no appetite mark"]
 
@@ -499,6 +503,10 @@ tests = testGroup "Prax.Chronicle"
       arcsOf st "mia" @?= ["mia.arc.hopeful"]
       askChronicle st "mood of ana" @?= ["ana mood cheerful"]
       askChronicle st "arc of mia" @?= ["mia arc hopeful"]
+      askChronicle st "moods of ana" @?= moodsOf st "ana"
+      askChronicle st "arcs of mia" @?= arcsOf st "mia"
+      askChronicle st "moods of void" @?= ["void has no mood marks"]
+      askChronicle st "arcs of void" @?= ["void has no arc marks"]
 
 
   , testCase "askChronicle lies/traits/chatted dual Host view" $ do
@@ -605,6 +613,7 @@ tests = testGroup "Prax.Chronicle"
             , Insert "appetite.bob"
             ]
       askChronicle st "shortTempered of carol" @?= shortTemperedOf st "carol"
+      askChronicle st "short-tempered of carol" @?= shortTemperedOf st "carol"
       askChronicle st "appetite of bob" @?= appetiteOf st "bob"
 
   , testCase "askChronicle resents/allied dual Host view" $ do
@@ -657,6 +666,8 @@ tests = testGroup "Prax.Chronicle"
             ]
       agesOf st "mia" @?= ["age.mia.17"]
       askChronicle st "age of mia" @?= ["mia age 17"]
+      askChronicle st "ages of mia" @?= agesOf st "mia"
+      askChronicle st "ages of void" @?= ["void has no age marks"]
 
   , testCase "askChronicle regards-of dual Host regardsToward phrasing" $ do
       -- Host regardsToward returns full leaves on target; Chronicle phrases observers.

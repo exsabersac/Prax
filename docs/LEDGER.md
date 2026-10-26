@@ -2753,9 +2753,23 @@
 - **测**：ScriptSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-
 ## v500 — Sandbox 交叉 once-gate + affiliate×want 边角 Spec
 
 - **做了什么**：SandboxSpec 追加 rally×exile、return×squeeze/parade/cry、parade once×cry/rally、churchParade×mill cry、dual tear/brand/parade；affiliate kyle 挂 paradeDesire/churchParadeDesire/fearsBrandHeretic/seeksTheft/punishesThief 门禁关闭；fran 未婚 millCry；cry once 后 rally 仍拣；denounce 后 market cry 开但 exile 胜拣。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（264 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v501 — Chronicle short-tempered of 别名 + Host/CLI 对偶 Spec
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`short-tempered of` 与既有 `shortTempered of` / Host `shortTemperedOf` / CLI `short-tempered` 同义；Spec 钉别名与空集文案。
+
+## v502 — Chronicle moods/arcs/ages of 原始叶对偶 + Spec
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`moods of`/`arcs of`/`ages of` 返回与 Host `moodsOf`/`arcsOf`/`agesOf` 对齐的原始叶；既有短语化 `mood`/`arc`/`age of` 不变；Spec 钉正例与空集。
+
+## v503 — Chronicle leaders of 别名 + Host leadersOf 对偶 Spec
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`leaders of` 与 `leads of` / Host `leadersOf` / CLI `leaders` 同义；Spec 钉别名与空派系文案。
