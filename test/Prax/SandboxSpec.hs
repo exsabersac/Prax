@@ -4467,5 +4467,83 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
 
 
 
+  , testCase "wants: after victim flee mill regard dissolves (dave no denounce)" $ do
+      -- carol abandon inserts fled + dissolves mill regard on bob; dave loses denounce.
+      let st0 = doAct "carol" "abandon"
+                  (doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld))
+          stH = iterate roundBoundary st0 !! 3
+      assertBool "carol fled" (exists "fled.carol" (db st0))
+      assertBool "dave no denounce after regard dissolve"
+        (not (hasAct "dave" "denounce" stH))
+
+  , testCase "wants: after return mill regard restores denounce for carol" $ do
+      let st0 = doAct "carol" "return"
+                  (doAct "carol" "abandon"
+                    (doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld)))
+          carol' = (actorOf "carol" st0) { charDesires = millJustice }
+          st = st0 { characters =
+                  [ if charName c == "carol" then carol' else c
+                  | c <- characters st0 ] }
+          stH = iterate roundBoundary st !! 3
+      assertBool "denounce open after return"
+        (hasAct "carol" "denounce" stH)
+      pickLabel "carol" stH @?= Just "carol: denounce the thief"
+
+  , testCase "wants: bobHeresy censure weight 9 beats mill denounce 8 on dualPressure" $ do
+      -- Already have bobHeresy beats eve; pin numeric utilities vs mill accuse.
+      desireUtil punishesBobHereticDesireName @?= 9
+      desireUtil punishesThiefDesireName @?= 8
+      desireUtil punishesHereticDesireName @?= 8
+
+  , testCase "wants: after brand paradeDesire alone picks parade" $ do
+      let st0 = activateParade (activateSqueeze (doAct "dave" "learn" sandboxWorld))
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          dave' = (actorOf "dave" st0)
+                    { charDesires = [squeezeDesireName, paradeDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bobF
+                    else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          dave2 = (actorOf "dave" stBrand)
+                    { charDesires = [paradeDesireName] }
+          stP = stBrand { characters =
+                  [ if charName c == "dave" then dave2 else c
+                  | c <- characters stBrand ] }
+      assertBool "parade open" (hasAct "dave" "parade bob" stP)
+      pickLabel "dave" stP @?= Just "dave: parade bob as branded thief"
+
+  , testCase "wants: affiliate kyle with churchBreakSilence never tears gale deal" $ do
+      let st0 = doAct "eve" "buy gale" (doAct "gale" "hear" sandboxWorld)
+          kyle' = (actorOf "kyle" st0)
+                    { charDesires = [churchBreakSilenceDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "kyle" then kyle' else c
+                  | c <- characters st0 ] }
+      assertBool "kyle no tear" (not (hasAct "kyle" "tear" st))
+      let lab = pickLabel "kyle" st
+      assertBool ("not tear, got " ++ show lab)
+        (maybe True (not . ("tear" `isInfixOf`)) lab)
+
+  , testCase "wants: sandboxDesires registers every exported desire name" $ do
+      let names = map desireName sandboxDesires
+      mapM_ (\n -> assertBool n (n `elem` names))
+        [ seeksTheftDesireName, punishesThiefDesireName, exileBobDesireName
+        , seeksHeresyDesireName, punishesHereticDesireName, exileEveDesireName
+        , joinsMillDesireName, millSilenceDesireName, millBreakSilenceDesireName
+        , cryDesireName, fleeDesireName, returnDesireName, rallyDesireName
+        , squeezeDesireName, fearsBrandName
+        , seeksBobHeresyDesireName, punishesBobHereticDesireName
+        , churchSilenceDesireName, churchBreakSilenceDesireName
+        , inquisitDesireName, fearsBrandHereticName
+        , paradeDesireName, churchParadeDesireName
+        ]
+
+
+
 
   ]

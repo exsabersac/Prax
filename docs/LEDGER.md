@@ -2674,3 +2674,9 @@
 - **做了什么**：Spec 钉买沉默后 denounce/censure 关闭、tear 后再开；activateSqueeze/Parade 不往阵容挂 want；parade 后 exile 仍开；harvest/market 错峰。无新实践。
 - **测**：SandboxSpec wants: after mill|church buy … closed until tear / activate* does not hang / exile after parade / harvest and market stagger；cast: playerName。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
+
+## v487 — Sandbox 叛逃溶解 regard + return 复门 + desire 注册表（钉既有门禁）
+
+- **做了什么**：Spec 钉受害方 flee 溶解 mill regard（dave 无 denounce）；return 后 carol 可控告；bobHeresy(9)>denounce(8) 数值；仅 paradeDesire 选游街；kyle 挂 churchBreak 不可 tear；sandboxDesires 注册全导出名。无新实践。
+- **测**：SandboxSpec wants: after victim flee / after return denounce / bobHeresy weight 9 / paradeDesire alone / affiliate churchBreakSilence / sandboxDesires registers。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
