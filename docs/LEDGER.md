@@ -1947,3 +1947,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec cry × exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v353 — Sandbox 附属×游街负例（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 仅 affiliate 磨坊 → 无 regard → parade 关闭；dave 烙印路径可 parade。无新实践 / 无 want 改动。
+- **测**：SandboxSpec affiliate × parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v354 — Sandbox 附属×放逐负例（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 仅 affiliate → harvest denounce/exile 关闭；dave 可完成放逐。无新实践 / 无 want 改动。
+- **测**：SandboxSpec affiliate × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
