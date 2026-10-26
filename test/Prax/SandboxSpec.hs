@@ -2133,4 +2133,49 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (exists "threatened.inquisit.priest.bob" (db stSq))
       assertBool "cry spent" (not (hasAct "dave" "cry the theft" stSq))
 
+
+  , testCase "rally × inquisit: market rally and church squeeze stay independent" $ do
+      -- reputeSeed path + inquisitSeed: market rally and priest squeeze share no gate.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" inquisitSeed)
+          -- dave needs angry+notorious; inquisitSeed already has dave learn above;
+          -- ensure repute anger: carol learn gave two regards → notorious if dave angry.
+          dave' = (actorOf "dave" st0)
+                    { charDesires = ["rallies-against-thief"] ++ millCry }
+          stR = st0 { characters =
+                        [ if charName c == "dave" then dave' else c
+                        | c <- characters st0 ] }
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stR))
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" stR)
+      let stM = iterate roundBoundary stR !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      assertBool "priest squeeze at market" (hasAct "priest" "squeeze bob" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "squeeze after rally" (hasAct "priest" "squeeze bob" stRally)
+      let stSq = doAct "priest" "squeeze bob" stRally
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+
+  , testCase "wed × church parade: fran wedding unlocks mill; heretic parade stays" $ do
+      -- fran wed unlocks mill regard; church heretic parade independent.
+      let st0 = inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+          stBel = performOutcome (Insert "fran.believes.stole.bob.carol") stP
+      assertBool "before: no fran regard"
+        (not (exists "regards.fran.bob.thief" (readView stBel)))
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stBel)
+      let stWed = doAct "fran" "wed into the mill" stBel
+      assertBool "after: fran regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      assertBool "priest parade still" (hasAct "priest" "parade bob" stWed)
+      let stPar = doAct "priest" "parade bob" stWed
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+      assertBool "fran regard persists"
+        (exists "regards.fran.bob.thief" (readView stPar))
+
   ]
