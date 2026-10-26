@@ -1,5 +1,5 @@
--- | MyTown M1+M3 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
--- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06 / INV①–⑤，narrative 可读 trust）。
+-- | MyTown M1+M3+M4 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -391,5 +391,172 @@ tests = testGroup "MyTown"
                          [ "dana.relationship.you.trust.reason.heardRumor" ]
           assertBool ("heardRumor narrative: " ++ show lines_)
             (any (\t -> "heardRumor" `isInfixOf` t && "怀疑" `isInfixOf` t) lines_)
+      ]
+  , testGroup "MyTown.M4"
+      [ -- INV01–06 拆条具名硬卡（编号钉死；复用现有 helper / 世界逻辑）
+        testCase "INV01 square 帮忙后 mill 角色无 .seen" $ do
+          let st = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+          assertBool "dana no seen"
+            (not (factInfix st "dana.believes.helped.you.carol.seen"))
+          assertBool "eve no seen"
+            (not (factInfix st "eve.believes.helped.you.carol.seen"))
+          assertBool "gale no seen"
+            (not (factInfix st "gale.believes.helped.you.carol.seen"))
+
+      , testCase "INV02 didHelp + 共场 bob .seen；narrative 含帮忙" $ do
+          s0 <- mustNew
+          (s1, r) <- actByLabel s0 "公开帮助 carol"
+          assertBool "didHelp" (factInfix (sessState s1) "didHelp.you.carol")
+          assertBool "bob.seen"
+            (factInfix (sessState s1) "bob.believes.helped.you.carol.seen")
+          let narr = unlines (actNarrative r)
+          assertBool ("narrative 含帮忙: " ++ narr)
+            ("公开帮助" `isInfixOf` narr || "帮助" `isInfixOf` narr)
+
+      , testCase "INV03a 仅 heard 无 .seen ⇒ Menu 无说破" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+          assertBool "dana heard"
+            (factInfix st3 "dana.believes.helped.you.carol.heard.bob")
+          assertBool "dana ¬seen"
+            (not (factInfix st3 "dana.believes.helped.you.carol.seen"))
+          let speak = [ ga | ga <- possibleActions st3 "dana"
+                           , "说破" `isInfixOf` gaLabel ga ]
+          assertBool "Menu/affordance 无说破" (null speak)
+
+      , testCase "INV03b 已 .seen ⇒ Menu 无怀疑同命题" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+          assertBool "bob.seen"
+            (factInfix st0 "bob.believes.helped.you.carol.seen")
+          let eye = [ ga | ga <- possibleActions st0 "bob"
+                         , "怀疑" `isInfixOf` gaLabel ga
+                         , "you" `isInfixOf` gaLabel ga ]
+          assertBool "Menu 无怀疑同命题" (null eye)
+
+      , testCase "INV04 trust 变必有 reason helpedMe/sawHelp/heardRumor (±5)" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you 帮助了 carol" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+              st4 = doAct "you" "前往 mill" st3
+              st5 = doAct "dana" "怀疑地打量 you" st4
+          assertBool "helpedMe reason"
+            (factInfix st0 "carol.relationship.you.trust.reason.helpedMe")
+          assertBool "helpedMe ±5"
+            (factInfix st0 ("carol.relationship.you.trust.score."
+                            ++ show MyTown.trustHelpedMe))
+          assertBool "sawHelp reason"
+            (factInfix st1 "bob.relationship.you.trust.reason.sawHelp")
+          assertBool "sawHelp ±5"
+            (factInfix st1 ("bob.relationship.you.trust.score."
+                            ++ show MyTown.trustSawHelp))
+          assertBool "heardRumor reason"
+            (factInfix st5 "dana.relationship.you.trust.reason.heardRumor")
+          assertBool "heardRumor ±5"
+            (factInfix st5 ("dana.relationship.you.trust.score."
+                            ++ show MyTown.trustHeardRumor))
+          MyTown.trustHelpedMe @?= 5
+          MyTown.trustSawHelp @?= 5
+          MyTown.trustHeardRumor @?= (-5)
+
+      , testCase "INV05 转告：heard 有、seen 无" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+          assertBool "heard 有"
+            (factInfix st3 "dana.believes.helped.you.carol.heard.bob")
+          assertBool "seen 无"
+            (not (factInfix st3 "dana.believes.helped.you.carol.seen"))
+
+      , testCase "INV06 单局单 helped 种子（硬卡）" $ do
+          let openSents = dbToSentences (db MyTown.myTownWorld)
+              openHelps = [ s | s <- openSents, "didHelp." `isPrefixOf` s ]
+          assertBool ("开局无 didHelp: " ++ show openHelps) (null openHelps)
+          let st = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              helps = [ s | s <- dbToSentences (db st), "didHelp." `isPrefixOf` s ]
+          assertBool "primary didHelp.you.carol" (factInfix st "didHelp.you.carol")
+          helps @?= ["didHelp.you.carol"]
+          -- 同 Actor/Beneficiary 不可再帮（Not didHelp 门）
+          let rehelp = [ ga | ga <- possibleActions st "you"
+                            , "公开帮助" `isInfixOf` gaLabel ga
+                            , "carol" `isInfixOf` gaLabel ga ]
+          assertBool "同种子不可再公开帮助 carol" (null rehelp)
+
+      , -- 3b 硬卡 B1–B5（可接主路径步1；不强制先说破——脚本仍经说破以获转告证据链）
+        testCase "B1 bob→mill" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+          assertBool "bob at mill" (factInfix st2 "at.bob.mill")
+          assertBool "bob left square" (not (factInfix st2 "at.bob.square"))
+
+      , testCase "B2 bob 转告 dana → heard.bob ∧ ¬seen；narrative 含转告" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              gossipActs = [ ga | ga <- possibleActions st2 "bob"
+                                , "转告" `isInfixOf` gaLabel ga
+                                , "dana" `isInfixOf` gaLabel ga ]
+          assertBool "Menu 有转告 dana" (not (null gossipActs))
+          let ga0 = head gossipActs
+              st3 = performAction st2 ga0
+          assertBool "heard.bob"
+            (factInfix st3 "dana.believes.helped.you.carol.heard.bob")
+          assertBool "¬seen"
+            (not (factInfix st3 "dana.believes.helped.you.carol.seen"))
+          assertBool ("narrative/label 含转告: " ++ gaLabel ga0)
+            ("转告" `isInfixOf` gaLabel ga0)
+
+      , testCase "B3 dana∧you 共场" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+              st4 = doAct "you" "前往 mill" st3
+          assertBool "you mill" (factInfix st4 "at.you.mill")
+          assertBool "dana mill" (factInfix st4 "at.dana.mill")
+
+      , testCase "B4 dana 怀疑地打量 you → eyed + trust−5 heardRumor；narrative 含怀疑" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 dana" st2
+              st4 = doAct "you" "前往 mill" st3
+              before = dbToSentences (db st4)
+              eyeActs = [ ga | ga <- possibleActions st4 "dana"
+                             , "怀疑" `isInfixOf` gaLabel ga
+                             , "you" `isInfixOf` gaLabel ga ]
+          assertBool "Menu 有怀疑地打量 you" (not (null eyeActs))
+          let ga0 = head eyeActs
+              st5 = performAction st4 ga0
+              after = dbToSentences (db st5)
+              narr = gaLabel ga0 : trustNarrativeLines before after
+          assertBool "eyed" (factInfix st5 "eyed.dana.you")
+          assertBool "heardRumor reason"
+            (factInfix st5 "dana.relationship.you.trust.reason.heardRumor")
+          assertBool "trust −5"
+            (factInfix st5 ("dana.relationship.you.trust.score."
+                            ++ show MyTown.trustHeardRumor))
+          MyTown.trustHeardRumor @?= (-5)
+          assertBool ("narrative 含怀疑: " ++ unlines narr)
+            (any ("怀疑" `isInfixOf`) narr)
+
+      , testCase "B5 负例：无 heard 无怀疑；bob（seen）无怀疑 you" $ do
+          -- 开局：dana 无 heard → Menu 无怀疑 you
+          let eyeOpen = [ ga | ga <- possibleActions MyTown.myTownWorld "dana"
+                             , "怀疑" `isInfixOf` gaLabel ga
+                             , "you" `isInfixOf` gaLabel ga ]
+          assertBool "无 heard ⇒ 无怀疑" (null eyeOpen)
+          -- 帮忙后 bob 有 .seen → 无怀疑 you
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+          assertBool "bob.seen"
+            (factInfix st0 "bob.believes.helped.you.carol.seen")
+          let eyeBob = [ ga | ga <- possibleActions st0 "bob"
+                             , "怀疑" `isInfixOf` gaLabel ga
+                             , "you" `isInfixOf` gaLabel ga ]
+          assertBool "bob（seen）无怀疑 you" (null eyeBob)
       ]
   ]
