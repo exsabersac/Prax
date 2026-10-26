@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、@"regards by "++who@、
--- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"moods of "++who@、@"mooded of "++mood@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
+-- @"salient "++show k@、@"feelings of "++who@、@"felt of "++feeling@、@"mood of "++who@、@"moods of "++who@、@"mooded of "++mood@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
 -- @"arc of "++who@、@"arcs of "++who@、@"arced of "++stage@、@"age of "++who@、@"ages of "++who@、@"aged of "++n@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、@"revokers of "++who@、@"revokees of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"ostracizers of "++who@、@"ostracizees of "++who@、@"exiled of "++who@、
@@ -146,7 +146,7 @@ formatEvent ev rs =
 -- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"chatters of "++who@、@"traits of "++who@、
--- @"bonds of "++who@、@"bonders of "++who@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
+-- @"bonds of "++who@、@"bonders of "++who@、@"bonded of "++label@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
 -- @"kin of "++who@、@"notorious of "++who@、@"notorieties of "++label@、
 -- @"regards toward "++who@、@"what factions"@。
@@ -275,6 +275,18 @@ askChronicle st q
           fs = sort [ s | s <- dbToSentences (readView st), prefix `isPrefixOf` s ]
       in if null fs then [who ++ " has no recorded feelings"]
          else fs
+  | Just feeling <- stripPrefix "felt of " q =
+      -- 对齐 Host feltOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , let parts = splitDots s
+            , length parts >= 3
+            , parts !! 1 == "feels"
+            , intercalate "." (drop 2 parts) == feeling
+            ]
+      in if null rows then ["nobody felt " ++ feeling]
+         else rows
   | Just who <- stripPrefix "moods of " q =
       -- 对齐 Host moodsOf：读闭合视图，返回原始叶。
       let rows = sort
@@ -1328,6 +1340,19 @@ askChronicle st q
          else [ a ++ " bonder of " ++ who
               | s <- rows
               , let a = head (splitDot (drop (length ("bond." :: String)) s)) ]
+  | Just label <- stripPrefix "bonded of " q =
+      -- 对齐 Host bondedOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "bond." `isPrefixOf` s
+            , let rest = drop (length ("bond." :: String)) s
+            , let parts = splitDot rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == label
+            ]
+      in if null rows then ["nobody is bonded " ++ label]
+         else rows
   | Just who <- stripPrefix "esteemed of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

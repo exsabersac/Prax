@@ -3123,8 +3123,19 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`arced of`/`aged of` 返回弧阶段/年龄值侧叶；Spec 钉 Host 与 Chronicle 空集。
+
 ## v568 — Sandbox exile×parade + dual repay 再买 + festival stagger Spec
 
 - **做了什么**：SandboxSpec 追加 exile/banish×parade 仍开；dual repay 双再买；kyle millCry 负例；fran wed×squeeze×parade；flee/return×denounce；silence util 对偶；inquisit 中途×denounce；dual tear revoke 叶；无 seeksHeresy 不 hear；双 brand 叶共存；harvest@t3→market@t4。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（453 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v569 — Host bondedOf / feltOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`bondedOf` 枚举 `bond.*.*.<label>`；`feltOf` 枚举 `<who>.feels.<feeling>`；CLI `prax bonded`/`prax felt`。
+
+## v570 — Chronicle bonded of / felt of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`bonded of`/`felt of` 返回纽带/感受标签侧叶；Spec 钉 Host 与 Chronicle 空集。

@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1152,5 +1152,41 @@ tests = testGroup "Prax.Chronicle"
         ["age.ben.18"]
       askChronicle st "aged of void" @?=
         ["nobody is aged void"]
+
+  , testCase "feltOf / felt of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.feels.afraid"
+            , Insert "ben.feels.happy"
+            , Insert "cass.feels.afraid"
+            , Insert "ana.feels.angry.toward.ben"
+            ]
+      sort (feltOf st "afraid") @?= ["ana.feels.afraid", "cass.feels.afraid"]
+      feltOf st "happy" @?= ["ben.feels.happy"]
+      feltOf st "angry.toward.ben" @?= ["ana.feels.angry.toward.ben"]
+      feltOf st "void" @?= []
+      askChronicle st "felt of afraid" @?=
+        ["ana.feels.afraid", "cass.feels.afraid"]
+      askChronicle st "felt of happy" @?=
+        ["ben.feels.happy"]
+      askChronicle st "felt of void" @?=
+        ["nobody felt void"]
+
+  , testCase "bondedOf / bonded of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "bond.ana.ben.friends"
+            , Insert "bond.cass.dave.rivals"
+            , Insert "bond.eve.fran.friends"
+            , Insert "bond.cass.ben"
+            ]
+      sort (bondedOf st "friends") @?=
+        ["bond.ana.ben.friends", "bond.eve.fran.friends"]
+      bondedOf st "rivals" @?= ["bond.cass.dave.rivals"]
+      bondedOf st "void" @?= []
+      askChronicle st "bonded of friends" @?=
+        ["bond.ana.ben.friends", "bond.eve.fran.friends"]
+      askChronicle st "bonded of rivals" @?=
+        ["bond.cass.dave.rivals"]
+      askChronicle st "bonded of void" @?=
+        ["nobody is bonded void"]
 
   ]

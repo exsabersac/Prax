@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, feltOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -188,6 +188,13 @@ runFeelings (who : ws) =
   in mapM_ putStrLn (feelingsOf st who)
 runFeelings _ = putStrLn "usage: prax feelings <who> <world>"
 
+-- | List feeling leaves for feeling name: @prax felt <feeling> <world>@.
+runFelt :: [String] -> IO ()
+runFelt (feeling : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (feltOf st feeling)
+runFelt _ = putStrLn "usage: prax felt <feeling> <world>"
+
 -- | List lie-mark leaves: @prax lies <who> <world>@.
 
 runLiars :: [String] -> IO ()
@@ -257,6 +264,13 @@ runBonds (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (bondsOf st who)
 runBonds _ = putStrLn "usage: prax bonds <who> <world>"
+
+-- | List bond leaves for label: @prax bonded <label> <world>@.
+runBonded :: [String] -> IO ()
+runBonded (label : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (bondedOf st label)
+runBonded _ = putStrLn "usage: prax bonded <label> <world>"
 
 -- | List kin leaves: @prax kin <who> <world>@.
 runKin :: [String] -> IO ()
@@ -946,6 +960,7 @@ usageText = unlines
   , "  prax obligations <who> <world>         list obligation leaves for who"
   , "  prax breaches <who> <world>            list violation leaves for who"
   , "  prax feelings <who> <world>            list feeling leaves for who"
+  , "  prax felt <feeling> <world>            list <who>.feels.<feeling> leaves"
   , "  prax lies <who> <world>                list lie-mark leaves for who"
   , "  prax liars <who> <world>              list *.lied.<who>.* leaves"
   , "  prax chatted <who> <world>             list chattedWith leaves for who"
@@ -956,6 +971,7 @@ usageText = unlines
   , "  prax mooded <mood> <world>      list mood.*.<mood> leaves"
   , "  prax bonds <who> <world>               list bond leaves for who"
   , "  prax bonders <who> <world>            list bond.*.<who>.* leaves"
+  , "  prax bonded <label> <world>           list bond.*.*.<label> leaves"
   , "  prax kin <who> <world>                 list kin leaves involving who"
   , "  prax notorious <who> <world>           list notoriety leaves for who"
   , "  prax notorieties <label> <world> list notorious.*.<label> leaves"
@@ -1062,6 +1078,7 @@ main = do
     ("obligations" : ws) -> runObligations ws
     ("breaches" : ws)  -> runBreaches ws
     ("feelings" : ws) -> runFeelings ws
+    ("felt" : ws)     -> runFelt ws
     ("lies" : ws)     -> runLies ws
     ("liars" : ws)     -> runLiars ws
     ("chatted" : ws)  -> runChatted ws
@@ -1072,6 +1089,7 @@ main = do
     ("mooded" : ws) -> runMooded ws
     ("bonds" : ws)    -> runBonds ws
     ("bonders" : ws)   -> runBonders ws
+    ("bonded" : ws)    -> runBonded ws
     ("kin" : ws)      -> runKin ws
     ("notorious" : ws) -> runNotorious ws
     ("notorieties" : ws) -> runNotorieties ws

@@ -23,6 +23,7 @@
 -- v553：'traitedOf' 性格标签侧叶（trait.*.<trait>）。
 -- v556：'moodedOf' 心境标签侧叶（mood.*.<mood>）。
 -- v566：'arcedOf'/'agedOf' 弧阶段/年龄值侧叶。
+-- v569：'bondedOf'/'feltOf' 纽带标签/感受标签侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -92,6 +93,7 @@ module Prax.Host
   , obligationsOf
   , breachesOf
   , feelingsOf
+  , feltOf
   , liesOf
   , liarsOf
   , chattedWithOf
@@ -102,6 +104,7 @@ module Prax.Host
   , moodedOf
   , bondsOf
   , bondersOf
+  , bondedOf
   , kinOf
   , siblingsOf
   , parentsOf
@@ -503,6 +506,22 @@ feelingsOf :: PraxState -> String -> [String]
 feelingsOf st who =
   sort [ s | s <- queryView st, (who ++ ".feels.") `isPrefixOf` s ]
 
+-- | 闭合视图中感受为 @feeling@ 的叶（@<who>.feels.<feeling>@）。
+feltOf :: PraxState -> String -> [String]
+feltOf st feeling = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "feels"
+  , intercalate "." (drop 2 parts) == feeling
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的谎言标记叶（@<who>.lied.*@）。
 liesOf :: PraxState -> String -> [String]
 liesOf st who =
@@ -611,6 +630,23 @@ bondersOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中纽带标签为 @label@ 的叶（@bond.<a>.<b>.<label>@）。
+bondedOf :: PraxState -> String -> [String]
+bondedOf st label = sort
+  [ s
+  | s <- queryView st
+  , "bond." `isPrefixOf` s
+  , let rest = drop (length ("bond." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == label
   ]
   where
     splitDots :: String -> [String]
