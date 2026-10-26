@@ -3,11 +3,12 @@ module Prax.DeceitSpec (tests) where
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setDesires, setCharacters)
 import           Prax.Planner (pickAction)
@@ -250,5 +251,22 @@ tests = testGroup "Prax.Deceit"
       neverLied "ada" @?= Absent [ Match "ada.lied.Hearer.Event" ]
   , testCase "everLied aliases hasLied" $
       everLied "ada" @?= hasLied "ada"
+
+  , testCase "liedTo / hasLied / everLied evaluate after whisper" $ do
+      assertBool "neverLied on clean"
+        (satisfies (db world) [neverLied "nia"] Map.empty)
+      assertBool "lacksLied on clean"
+        (satisfies (db world) [lacksLied "nia" "oz" "took.kit.gem"] Map.empty)
+      let st = doAct "nia" "whisper to oz that kit took the gem" world
+      assertBool "liedTo"
+        (satisfies (db st) [liedTo "nia" "oz" "took.kit.gem"] Map.empty)
+      assertBool "hasLied"
+        (satisfies (db st) [hasLied "nia"] Map.empty)
+      assertBool "everLied"
+        (satisfies (db st) [everLied "nia"] Map.empty)
+      assertBool "neverLied fails"
+        (not (satisfies (db st) [neverLied "nia"] Map.empty))
+      assertBool "lacksLied fails"
+        (not (satisfies (db st) [lacksLied "nia" "oz" "took.kit.gem"] Map.empty))
 
   ]

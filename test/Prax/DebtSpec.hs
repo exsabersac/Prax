@@ -286,4 +286,18 @@ tests = testGroup "Prax.Debt"
       assertBool "everOwed fails on empty"
         (not (satisfies (db emptyState) [everOwed "dell"] Map.empty))
 
+  , testCase "settle clears isOwed / everOwed / hasCreditorClaim" $ do
+      let owed = applyAll emptyState (owe "cora" "dell" "favor")
+          settled = applyAll owed (settle "cora" "dell" "favor")
+      assertBool "isOwed fails after settle"
+        (not (satisfies (db settled) [isOwed "dell"] Map.empty))
+      assertBool "everOwed fails after settle"
+        (not (satisfies (db settled) [everOwed "dell"] Map.empty))
+      assertBool "hasCreditorClaim fails after settle"
+        (not (satisfies (db settled) [hasCreditorClaim "cora"] Map.empty))
+      assertBool "lacksCreditorClaim after settle"
+        (satisfies (db settled) [lacksCreditorClaim "cora"] Map.empty)
+      assertBool "neverOwed after settle"
+        (satisfies (db settled) [neverOwed "dell"] Map.empty)
+
   ]

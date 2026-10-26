@@ -1,10 +1,11 @@
 module Prax.WitnessSpec (tests) where
 
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setCharacters)
 import           Prax.Witness
@@ -78,4 +79,22 @@ tests = testGroup "Prax.Witness"
 
   , testCase "hasSaw aliases saw" $
       hasSaw "ada" "theft" @?= saw "ada" "theft"
+
+  , testCase "saw / hasSaw / everSaw evaluate after wave" $ do
+      assertBool "neverSaw on clean"
+        (satisfies (db world) [neverSaw "bea" "waved.ann"] Map.empty)
+      assertBool "lacksSaw on clean"
+        (satisfies (db world) [lacksSaw "bea" "waved.ann"] Map.empty)
+      assertBool "saw"
+        (satisfies (db annActs) [saw "bea" "waved.ann"] Map.empty)
+      assertBool "hasSaw"
+        (satisfies (db annActs) [hasSaw "bea" "waved.ann"] Map.empty)
+      assertBool "everSaw"
+        (satisfies (db annActs) [everSaw "bea" "waved.ann"] Map.empty)
+      assertBool "neverSaw fails"
+        (not (satisfies (db annActs) [neverSaw "bea" "waved.ann"] Map.empty))
+      assertBool "lacksSaw fails"
+        (not (satisfies (db annActs) [lacksSaw "bea" "waved.ann"] Map.empty))
+      assertBool "cal neverSaw"
+        (satisfies (db annActs) [neverSaw "cal" "waved.ann"] Map.empty)
   ]

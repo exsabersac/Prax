@@ -2340,3 +2340,27 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v419 — Debt settle 清偿后 isOwed/everOwed/hasCreditorClaim 世界求值
+
+- **做了什么**：Debt Spec 钉 settle 后 isOwed/everOwed/hasCreditorClaim 失败，以及 lacksCreditorClaim/neverOwed 成立。无新实践 / 无 want 改动。
+- **测**：DebtSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v420 — Deceit liedTo/hasLied/everLied 世界求值
+
+- **做了什么**：Deceit Spec 钉 whisper 后 liedTo/hasLied/everLied 与净世界上 neverLied/lacksLied 的 satisfies 求值。无新实践 / 无 want 改动。
+- **测**：DeceitSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v421 — Witness saw/hasSaw/everSaw 世界求值
+
+- **做了什么**：Witness Spec 钉 wave 后 bea 的 saw/hasSaw/everSaw，以及净世界/缺席 cal 的 neverSaw/lacksSaw。无新实践 / 无 want 改动。
+- **测**：WitnessSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v422 — Emotion hasFeeling/everFeeling/hasMood 世界求值
+
+- **做了什么**：Emotion Spec 钉 feel/feelToward/setMood 世界上 hasFeeling/everFeeling/hasFeelingToward/everFeelingToward/hasInMood/hasMood 与净世界 lacks*/never*。无新实践 / 无 want 改动。
+- **测**：EmotionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

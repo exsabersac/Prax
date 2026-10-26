@@ -9,7 +9,7 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (dbToSentences, exists, insertAll, emptyDb)
-import           Prax.Query (Condition (..), query)
+import           Prax.Query (Condition (..), query, satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, performAction,
                               possibleActions, setCharacters, roundBoundary)
@@ -333,5 +333,42 @@ tests = testGroup "Prax.Emotion"
 
   , testCase "hasInMood aliases inMood" $
       hasInMood "ada" "gloomy" @?= inMood "ada" "gloomy"
+
+  , testCase "hasFeeling / everFeeling / neverFeeling evaluate on feel world" $ do
+      assertBool "neverFeeling on empty"
+        (satisfies (db emptyState) [neverFeeling "ada"] Map.empty)
+      assertBool "lacksFeeling on empty"
+        (satisfies (db emptyState) [lacksFeeling "ada" "angry"] Map.empty)
+      let st = performOutcome (feel "ada" "angry") emptyState
+      assertBool "hasFeeling"
+        (satisfies (db st) [hasFeeling "ada" "angry"] Map.empty)
+      assertBool "feeling"
+        (satisfies (db st) [feeling "ada" "angry"] Map.empty)
+      assertBool "everFeeling"
+        (satisfies (db st) [everFeeling "ada"] Map.empty)
+      assertBool "neverFeeling fails"
+        (not (satisfies (db st) [neverFeeling "ada"] Map.empty))
+      assertBool "lacksFeeling fails"
+        (not (satisfies (db st) [lacksFeeling "ada" "angry"] Map.empty))
+
+  , testCase "hasFeelingToward / everFeelingToward evaluate on feelToward world" $ do
+      assertBool "neverFeelingToward on empty"
+        (satisfies (db emptyState) [neverFeelingToward "ada"] Map.empty)
+      let st = performOutcome (feelToward "ada" "angry" "ben") emptyState
+      assertBool "hasFeelingToward"
+        (satisfies (db st) [hasFeelingToward "ada" "angry" "ben"] Map.empty)
+      assertBool "everFeelingToward"
+        (satisfies (db st) [everFeelingToward "ada"] Map.empty)
+      assertBool "lacksFeelingToward fails"
+        (not (satisfies (db st) [lacksFeelingToward "ada" "angry" "ben"] Map.empty))
+      assertBool "hasInMood fails without mood"
+        (not (satisfies (db st) [hasInMood "ada" "gloomy"] Map.empty))
+      let moody = performOutcome (setMood "ada" "gloomy") emptyState
+      assertBool "hasInMood"
+        (satisfies (db moody) [hasInMood "ada" "gloomy"] Map.empty)
+      assertBool "hasMood"
+        (satisfies (db moody) [hasMood "ada"] Map.empty)
+      assertBool "lacksMood fails"
+        (not (satisfies (db moody) [lacksMood "ada"] Map.empty))
 
   ]
