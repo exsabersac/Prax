@@ -3052,6 +3052,7 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 kyle 挂 fearsBrand 不可 confess；玩家槽无 desire/want。无新实践。
 - **测**：SandboxSpec wants: affiliate kyle with fearsBrand；cast: player slot holds no desires。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+<<<<<<< HEAD
 =======
 ## v540 — Host bondersOf + CLI
 
@@ -3077,6 +3078,7 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 >>>>>>> 2511069 (v540–v543: bondersOf/liarsOf + Chronicle duals + CLI)
+<<<<<<< HEAD
 
 ## v544 — Sandbox Desire Match 叶词汇 + seeksBob / churchParade 权重（钉既有门禁）
 
@@ -3089,3 +3091,30 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉买沉默后无 want 不重买（mill/church）；kyle 挂 exile 不可放逐；activateSqueeze 幂等。无新实践。
 - **测**：SandboxSpec wants: after silence/church buy … does not re-buy；affiliate kyle with exile；activateSqueeze idempotent。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+=======
+=======
+## v540 — Repute standingWith 导出 + Spec 钉
+
+- **做了什么**：导出 standingWith（standing/standingUnless 共用核）；Spec 钉无额外守卫别名与额外守卫入 axiomWhen。无新实践 / 无 want 改动。
+- **测**：ReputeSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v541 — Persist saveState/loadState Spec 钉
+
+- **做了什么**：PersistSpec 钉 saveState/loadState 临时文件往返（相对 serialize/deserialize）。无新实践 / 无 want 改动。
+- **测**：PersistSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v542 — Script beat/quip/goto/ending 结构 Spec 钉
+
+- **做了什么**：ScriptSpec 钉 beat/quip/goto/ending 构造子字段形状。无新实践 / 无 want 改动。
+- **测**：ScriptSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v543 — Schedule sightRule 结构 Spec 钉
+
+- **做了什么**：ScheduleRuleSpec 钉 sightRule 周期-1 体（Neq Seer/Seen、turn!Now、信念戳）。无新实践 / 无 want 改动。
+- **测**：ScheduleRuleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+>>>>>>> 40d76bd (feat(iterate): v536–v539 Repute standingWith + Persist/Script/sightRule Spec nails)
+>>>>>>> a6aecb4 (feat(iterate): v536–v539 Repute standingWith + Persist/Script/sightRule Spec nails)

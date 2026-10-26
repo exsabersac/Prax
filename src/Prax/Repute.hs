@@ -15,6 +15,7 @@
 module Prax.Repute
   ( standing
   , standingUnless
+  , standingWith
   , regardedAs
   , hasRegardedAs
   , lacksRegardedAs

@@ -231,4 +231,17 @@ tests = testGroup "Prax.Repute"
   , testCase "lacksRegardedAs is Not of regards path" $
       lacksRegardedAs "ada" "bex" "thief" @?= Not "regards.ada.bex.thief"
 
+  , testCase "standing aliases standingWith with no extras" $
+      standing "kicked.Brute.dog" "brute"
+        @?= standingWith "kicked.Brute.dog" [] "brute"
+
+  , testCase "standingWith threads extra guards into axiomWhen" $ do
+      let ax = standingWith "kicked.Brute.dog" [ Not "forgiven.Brute" ] "brute"
+      axiomThen ax @?= [ "regards.Regarder.Brute.brute" ]
+      assertBool "extra guard present"
+        (Not "forgiven.Brute" `elem` axiomWhen ax)
+      assertBool "belief match present"
+        (Match "Regarder.believes.kicked.Brute.dog" `elem` axiomWhen ax)
+
+
   ]

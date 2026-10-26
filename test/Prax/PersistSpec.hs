@@ -13,7 +13,9 @@ import           Prax.Types (PraxState, Character (..), Outcome (..), ScheduleRu
                               intentions, rngSeed, schedule, scheduleDues)
 import           Prax.Engine (possibleActions, performAction, performOutcome, seedDie)
 import           Prax.Loop (runNpcTicks, npcAct)
-import           Prax.Persist (serializeState, deserializeState, formatVersion)
+import           Prax.Persist (serializeState, deserializeState, formatVersion, saveState, loadState)
+import           System.IO (hClose, openTempFile)
+import           System.Directory (getTemporaryDirectory, removeFile)
 import           Prax.Worlds.Intrigue (intrigueWorld)
 
 -- A mid-episode state (Cassia has confided; Marcus now knows the plot).
@@ -173,4 +175,15 @@ tests = testGroup "Prax.Persist"
             contReload = performOutcome (Roll 1 2 [] []) reloadedSt
         rngSeed contReload @?= rngSeed contDirect
     ]
+  , testCase "saveState / loadState round-trip via a temp file" $ do
+      dir <- getTemporaryDirectory
+      (path, h) <- openTempFile dir "prax-persist-.save"
+      hClose h
+      saveState path mid
+      got <- loadState path intrigueWorld
+      removeFile path
+      db got     @?= db mid
+      cursor got @?= cursor mid
+
+
   ]

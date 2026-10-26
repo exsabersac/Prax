@@ -397,4 +397,26 @@ tests = testGroup "Prax.Script"
       scriptPlayer sc @?= "envoy"
 
 
+  , testCase "beat / quip / goto / ending build Beat and Junction shapes" $ do
+      let b = beat "wave" [ Match "seen" ] [ Insert "waved" ]
+          q = quip "ada" "[Actor]: hi" [ Match "greet" ] [ Insert "said.hi" ]
+          g = goto "toHall" "hall" [ Match "leave" ]
+          e = ending "done" [ Match "finished" ]
+      beatLabel b @?= "wave"
+      beatSpeaker b @?= Nothing
+      beatConds b @?= [ Match "seen" ]
+      beatEffects b @?= [ Insert "waved" ]
+      beatLabel q @?= "[Actor]: hi"
+      beatSpeaker q @?= Just "ada"
+      beatConds q @?= [ Match "greet" ]
+      beatEffects q @?= [ Insert "said.hi" ]
+      junctionName g @?= "toHall"
+      junctionTo g @?= Just "hall"
+      junctionWhen g @?= [ Match "leave" ]
+      junctionAfter g @?= Nothing
+      junctionName e @?= "done"
+      junctionTo e @?= Nothing
+      junctionWhen e @?= [ Match "finished" ]
+
+
   ]

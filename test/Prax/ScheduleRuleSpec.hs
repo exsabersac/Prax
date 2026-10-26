@@ -6,14 +6,14 @@ import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
 import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
+import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (exists)
 import           Prax.Query (Condition (..))
 import           Prax.Types
 import           Prax.Engine (performOutcome, performAction, setSchedule, registerEngineRules, roundBoundary, definePractices, possibleActions, setAxioms)
 import           Prax.TypeCheck (TypeError (..), typeCheck)
-import           Prax.Schedule (gathering, festival, duringFestival, hasFestival, outsideFestival, lacksFestival, pulse)
+import           Prax.Schedule (gathering, festival, duringFestival, hasFestival, outsideFestival, lacksFestival, pulse, sightRule)
 import           Prax.Deontic (oblige, discharge, isObliged, breach)
 import           Prax.Emotion (setMood, inMood, clearMood)
 import           Prax.Faction (joins, isMember, factionStanding, appointLeader, isLeader)
@@ -801,6 +801,20 @@ tests = testGroup "Prax.ScheduleRule"
     , testCase "pulse rejects a multi-segment name" $ do
         r <- try (evaluate (length (show (pulse "tax.day" 4 [Insert "x"]))))
         assertBool "dotted name" (isLeft (r :: Either ErrorCall Int))
+    ]
+
+  , testGroup "sightRule (period-1 perception template)"
+    [ testCase "sightRule stamps Seer beliefs and turn Now" $ do
+        let ScheduleRule n p body = sightRule [ Match "at.Seer!Spot", Match "at.Seen!Spot" ]
+        n @?= "sight"
+        p @?= 1
+        case body of
+          [(cs, outs)] -> do
+            assertBool "Neq Seer Seen" (Neq "Seer" "Seen" `elem` cs)
+            assertBool "turn Now" (Match "turn!Now" `elem` cs)
+            outs @?= [ Insert "Seer.believes.at.Seen!Spot"
+                     , Insert "Seer.believes.atSince.Seen!Now" ]
+          _ -> assertFailure "expected one body clause"
     ]
 
   , testGroup "engine-rule provenance exempts the reserved-family scan (v53)"
