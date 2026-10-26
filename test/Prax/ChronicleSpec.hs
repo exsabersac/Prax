@@ -25,7 +25,8 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              recantedOf, shortTemperedOf, appetiteOf,
                              resentsOf, alliedOf, demandedOf,
                              notoriousOf, regardsToward, factionsNamed,
-                             membersOf, affiliatesOf, leadersOf, agesOf)
+                             membersOf, affiliatesOf, leadersOf, agesOf,
+                             siblingsOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -666,5 +667,14 @@ tests = testGroup "Prax.Chronicle"
       regardsToward st "dog" @?= ["regards.kai.dog.victim"]
       askChronicle st "regards of eve" @?= ["dave as hero"]
       askChronicle st "regards of dog" @?= ["kai as victim"]
+
+  , testCase "askChronicle siblings dual Host siblingsOf raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "sibling.mia.pat"
+            , Insert "sibling.mia.sam"
+            ]
+      siblingsOf st "mia" @?= ["sibling.mia.pat", "sibling.mia.sam"]
+      askChronicle st "siblings of mia" @?=
+        ["mia sibling pat", "mia sibling sam"]
 
   ]

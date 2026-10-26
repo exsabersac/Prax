@@ -27,6 +27,7 @@
 -- v297：'shortTemperedOf'/'appetiteOf' 暴脾气/胃口叶（Village）。
 -- v299：'resentsOf' 怨恨叶（Feud 派生）。
 -- v301：'alliedOf' 同盟叶（Feud）。
+-- v423：'siblingsOf' 兄弟姐妹叶（对齐 Chronicle siblings of）。
 module Prax.Host
   ( step
   , stepExact
@@ -65,6 +66,7 @@ module Prax.Host
   , moodsOf
   , bondsOf
   , kinOf
+  , siblingsOf
   , notoriousOf
   , esteemedOf
   , scornedOf
@@ -403,6 +405,14 @@ kinOf st who = sort
     splitDots s = case break (== '.') s of
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为主体的兄弟姐妹叶（@sibling.<who>.*@；对齐 Chronicle @"siblings of "@）。
+siblingsOf :: PraxState -> String -> [String]
+siblingsOf st who =
+  sort [ s | s <- queryView st
+           , let pref = "sibling." ++ who ++ "."
+           , pref `isPrefixOf` s
+           , '.' `notElem` drop (length pref) s ]
 
 -- | 闭合视图中 @who@ 的恶名叶（@notorious.<who>.*@）。
 notoriousOf :: PraxState -> String -> [String]

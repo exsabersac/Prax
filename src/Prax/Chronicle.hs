@@ -241,6 +241,7 @@ askChronicle st q
       in if null ages then [who ++ " has no recorded age"]
          else map ((who ++ " age ") ++) ages
   | Just who <- stripPrefix "siblings of " q =
+      -- 对齐 Host siblingsOf：读闭合视图；短语化客体名。
       let prefix = "sibling." ++ who ++ "."
           sibs = sort [ drop (length prefix) s
                       | s <- dbToSentences (readView st), prefix `isPrefixOf` s

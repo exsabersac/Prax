@@ -550,4 +550,17 @@ tests = testGroup "Prax.Host"
         ]
       alliedOf st "void" @?= []
 
+  , testCase "siblingsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "sibling.mia.pat"
+                , Insert "sibling.mia.sam"
+                , Insert "sibling.pat.mia"
+                , Insert "flag.x" ]
+      siblingsOf st "mia" @?=
+        [ "sibling.mia.pat"
+        , "sibling.mia.sam"
+        ]
+      siblingsOf st "pat" @?= ["sibling.pat.mia"]
+      siblingsOf st "void" @?= []
+
   ]

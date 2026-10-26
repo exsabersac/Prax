@@ -2385,4 +2385,17 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave mill squeeze 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill squeeze（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v427 — Host siblingsOf + CLI prax siblings
+
+- **做了什么**：闭合视图枚举 `sibling.<who>.*`（主体侧，对齐 Chronicle `siblings of`）；CLI `prax siblings`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec siblingsOf（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v428 — Chronicle siblings 对偶 Host siblingsOf + CLI explain
+
+- **做了什么**：Spec 钉 siblings of（siblingsOf 原叶 vs 短语）；CLI `prax explain` 薄封 `explainActor`。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
