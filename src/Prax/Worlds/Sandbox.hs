@@ -37,6 +37,15 @@ module Prax.Worlds.Sandbox
   , millBreakSilenceDesireName
   , churchSilenceDesireName
   , churchBreakSilenceDesireName
+  , seeksTheftDesireName
+  , punishesThiefDesireName
+  , exileBobDesireName
+  , seeksHeresyDesireName
+  , punishesHereticDesireName
+  , exileEveDesireName
+  , seeksBobHeresyDesireName
+  , punishesBobHereticDesireName
+  , joinsMillDesireName
   ) where
 
 import           Prax.Query (Condition (..))
@@ -72,19 +81,19 @@ sandboxAxioms =
 -- 教会异端沉默 / 教会胁迫悔罪 / 烙印游街（默认不挂阵容）。
 sandboxDesires :: [Desire]
 sandboxDesires =
-  [ Desire "seeks-theft-truth"
+  [ Desire seeksTheftDesireName
       (Want [ Match "Owner.believes.stole.bob.carol" ] 6)
-  , Desire "punishes-thief"
+  , Desire punishesThiefDesireName
       (Want [ Match "denounced.Owner.bob" ] 8)
-  , Desire "wants-exile-bob"
+  , Desire exileBobDesireName
       (Want [ Match "exiled.bob" ] 12)
-  , Desire "seeks-heresy-truth"
+  , Desire seeksHeresyDesireName
       (Want [ Match "Owner.believes.blasphemed.eve.gale" ] 6)
-  , Desire "punishes-heretic"
+  , Desire punishesHereticDesireName
       (Want [ Match "censured.Owner.eve" ] 8)
-  , Desire "wants-exile-eve"
+  , Desire exileEveDesireName
       (Want [ Match "exiled.eve" ] 12)
-  , Desire "joins-mill"
+  , Desire joinsMillDesireName
       (Want [ Match "member.Owner!mill" ] 10)
   , Desire millSilenceDesireName
       (Want [ Match "debt.ira.bob.favor" ] 14)
@@ -100,9 +109,9 @@ sandboxDesires =
       (Want [ Match "rallied.Owner.bob" ] 9)
   , squeezeDesire
   , fearsBrandDesire
-  , Desire "seeks-bob-heresy"
+  , Desire seeksBobHeresyDesireName
       (Want [ Match "Owner.believes.blasphemed.bob.gale" ] 6)
-  , Desire "punishes-bob-heretic"
+  , Desire punishesBobHereticDesireName
       -- 权重 9 > eve 审查 8 / 磨坊控告 8：双压种子上优先钉 bob 异端轨
       (Want [ Match "censured.Owner.bob" ] 9)
   , Desire churchSilenceDesireName
@@ -120,17 +129,17 @@ sandboxDesires =
   ]
 
 millJustice :: [String]
-millJustice = ["seeks-theft-truth", "punishes-thief", "wants-exile-bob"]
+millJustice = [seeksTheftDesireName, punishesThiefDesireName, exileBobDesireName]
 
 churchJustice :: [String]
-churchJustice = ["seeks-heresy-truth", "punishes-heretic", "wants-exile-eve"]
+churchJustice = [seeksHeresyDesireName, punishesHereticDesireName, exileEveDesireName]
 
 -- | 教会对 bob 的异端正义（复用 wants-exile-bob → 共享 exiled.bob）。
 bobHeresyJustice :: [String]
-bobHeresyJustice = ["seeks-bob-heresy", "punishes-bob-heretic", "wants-exile-bob"]
+bobHeresyJustice = [seeksBobHeresyDesireName, punishesBobHereticDesireName, exileBobDesireName]
 
 iraJustice :: [String]
-iraJustice = millJustice ++ ["breaks-silence-deal"]
+iraJustice = millJustice ++ [millBreakSilenceDesireName]
 
 -- 丰收节窗内控告 / 审查；窗外获知与放逐。周期 3、持续 1。
 harvestFestival :: ScheduleRule
@@ -465,6 +474,33 @@ activateInquisit = performOutcome (Insert "practice.churchInquisit")
 
 
 -- | 磨坊烙印游街 want 名（默认阵容不挂）。
+seeksTheftDesireName :: String
+seeksTheftDesireName = "seeks-theft-truth"
+
+punishesThiefDesireName :: String
+punishesThiefDesireName = "punishes-thief"
+
+exileBobDesireName :: String
+exileBobDesireName = "wants-exile-bob"
+
+seeksHeresyDesireName :: String
+seeksHeresyDesireName = "seeks-heresy-truth"
+
+punishesHereticDesireName :: String
+punishesHereticDesireName = "punishes-heretic"
+
+exileEveDesireName :: String
+exileEveDesireName = "wants-exile-eve"
+
+seeksBobHeresyDesireName :: String
+seeksBobHeresyDesireName = "seeks-bob-heresy"
+
+punishesBobHereticDesireName :: String
+punishesBobHereticDesireName = "punishes-bob-heretic"
+
+joinsMillDesireName :: String
+joinsMillDesireName = "joins-mill"
+
 millSilenceDesireName :: String
 millSilenceDesireName = "buys-ira-silence"
 

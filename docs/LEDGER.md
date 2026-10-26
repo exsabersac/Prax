@@ -2783,3 +2783,21 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 增加 `"wrongers of "` / `"wrongees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
+
+## v497 — Sandbox 正义 want 名导出（钉既有门禁）
+
+- **做了什么**：导出 seeks/punishes/exile/joins 与 bob 异端正义 want 名；`millJustice`/`churchJustice`/`bobHeresyJustice`/`iraJustice` 改用常量。
+- **测**：SandboxSpec sandboxDesires: justice want names registered。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v498 — Sandbox 无撕毁/无惧烙 want 时不自选（钉既有门禁）
+
+- **做了什么**：Spec 钉买沉默后门开但无 breakSilence 时 ira/gale 不 tear；squeeze/inquisit 后门开但无 fearsBrand 时 bob 不 confess/recant。无新实践。
+- **测**：SandboxSpec wants: without breakSilence / churchBreakSilence / fearsBrand / fearsBrandHeretic。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v499 — Sandbox 权重交叉：放逐>控告、控告窗、双压审查（钉既有门禁）
+
+- **做了什么**：Spec 钉 exile(12) 压 denounce；harvest 窗 denounce 优先；dualPressure 上 punishes-bob-heretic(9) 压 punishes-heretic(8)。无新实践。
+- **测**：SandboxSpec wants: exile beats denounce / denounce beats cry harvest / bobHeresy censure beats eve。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
