@@ -811,4 +811,20 @@ tests = testGroup "Prax.Host"
       alliesOf st "void" @?= []
 
 
+
+  , testCase "resentersOf / shunnersOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "resents.bob.ira"
+                , Insert "resents.eve.bob"
+                , Insert "shunned.gale.fran"
+                , Insert "shunned.bob.eve"
+                , Insert "flag.x" ]
+      resentersOf st "ira" @?= ["resents.bob.ira"]
+      resentersOf st "bob" @?= ["resents.eve.bob"]
+      resentersOf st "void" @?= []
+      shunnersOf st "fran" @?= ["shunned.gale.fran"]
+      shunnersOf st "eve" @?= ["shunned.bob.eve"]
+      shunnersOf st "void" @?= []
+
+
   ]

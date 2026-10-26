@@ -2963,3 +2963,27 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 kyle 挂 rally/cry/silence/bobHeresy 时门禁仍关；cast 默认 millCry/churchJustice/silence/kyle 空。无新实践。
 - **测**：SandboxSpec wants: affiliate kyle with rally+cry / silence / bobHeresy；cast: default desire hooks。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v527 — Host resentersOf + CLI
+
+- **做了什么**：闭合视图枚举 `resents.*.<who>`；CLI `prax resenters`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v528 — Chronicle resenters of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"resenters of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v529 — Host shunnersOf + CLI
+
+- **做了什么**：闭合视图枚举 `shunned.*.<who>`；CLI `prax shunners`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v530 — Chronicle shunners of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"shunners of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

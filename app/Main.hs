@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -311,6 +311,13 @@ runCarrying (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (carryingOf st who)
 runCarrying _ = putStrLn "usage: prax carrying <who> <world>"
+
+
+runShunners :: [String] -> IO ()
+runShunners (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (shunnersOf st who)
+runShunners _ = putStrLn "usage: prax shunners <who> <world>"
 
 runShunned :: [String] -> IO ()
 runShunned (who : ws) =
@@ -653,6 +660,13 @@ runAppetite (who : ws) =
   in mapM_ putStrLn (appetiteOf st who)
 runAppetite _ = putStrLn "usage: prax appetite <who> <world>"
 
+
+runResenters :: [String] -> IO ()
+runResenters (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (resentersOf st who)
+runResenters _ = putStrLn "usage: prax resenters <who> <world>"
+
 runResents :: [String] -> IO ()
 runResents (who : ws) =
   let (_, st, _) = worldNamed ws
@@ -941,6 +955,7 @@ main = do
     ("holding" : ws)   -> runHolding ws
     ("carrying" : ws)  -> runCarrying ws
     ("shunned" : ws)   -> runShunned ws
+    ("shunners" : ws)  -> runShunners ws
     ("threatened" : ws) -> runThreatened ws
     ("threateners" : ws) -> runThreateners ws
     ("threatenees" : ws) -> runThreatenees ws
@@ -997,6 +1012,7 @@ main = do
     ("shorttempered" : ws) -> runShortTempered ws
     ("appetite" : ws)  -> runAppetite ws
     ("resents" : ws)   -> runResents ws
+    ("resenters" : ws) -> runResenters ws
     ("allied" : ws)    -> runAllied ws
     ("allies" : ws)    -> runAllies ws
     ("siblings" : ws)  -> runSiblings ws

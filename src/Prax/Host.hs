@@ -40,6 +40,8 @@
 -- v512：'ostracizersOf'..'paradeesOf' 放逐/控告/审查/游街方叶。
 -- v514：'criersOf'/'crieesOf'/'ralliersOf'/'rallieesOf' 喊冤/声援方叶。
 -- v516：'alliesOf' 同盟主体侧叶（对齐 spousesOf）。
+-- v525：'resentersOf' 怨恨目标侧叶（resents.*.<who>）。
+-- v527：'shunnersOf' 排斥目标侧叶（shunned.*.<who>）。
 -- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
@@ -103,6 +105,7 @@ module Prax.Host
   , holdingOf
   , carryingOf
   , shunnedOf
+  , shunnersOf
   , threatenedOf
   , threatenersOf
   , threateneesOf
@@ -157,6 +160,7 @@ module Prax.Host
   , shortTemperedOf
   , appetiteOf
   , resentsOf
+  , resentersOf
   , alliedOf
   , alliesOf
   , stallOf
@@ -682,6 +686,24 @@ carryingOf st who =
 shunnedOf :: PraxState -> String -> [String]
 shunnedOf st who =
   sort [ s | s <- queryView st, ("shunned." ++ who ++ ".") `isPrefixOf` s ]
+
+
+-- | 闭合视图中 @who@ 作为被排斥方的叶（@shunned.<actor>.<who>@）。
+shunnersOf :: PraxState -> String -> [String]
+shunnersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "shunned." `isPrefixOf` s
+  , let rest = drop (length ("shunned." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中与 @who@ 相关的威胁叶（@threatened.<sid>.<extorter>.<victim>@，任一侧）。
 threatenedOf :: PraxState -> String -> [String]
@@ -1530,6 +1552,24 @@ resentsOf st who = sort
 
 
 
+
+
+-- | 闭合视图中 @who@ 作为怨恨目标的叶（@resents.<actor>.<who>@）。
+resentersOf :: PraxState -> String -> [String]
+resentersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "resents." `isPrefixOf` s
+  , let rest = drop (length ("resents." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 作为主体的同盟叶（@allied.<who>.*@；对齐 spousesOf / Chronicle @"allies of "@）。
 alliesOf :: PraxState -> String -> [String]

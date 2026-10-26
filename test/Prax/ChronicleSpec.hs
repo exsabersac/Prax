@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -906,6 +906,24 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "allies of bob" @?= ["bob ally fran"]
       askChronicle st "allies of fran" @?= ["fran ally bob"]
       askChronicle st "allies of void" @?= ["void has no known allies"]
+
+
+
+  , testCase "askChronicle resenters/shunners dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "resents.bob.ira"
+            , Insert "resents.eve.bob"
+            , Insert "shunned.gale.fran"
+            , Insert "shunned.bob.eve"
+            ]
+      resentersOf st "ira" @?= ["resents.bob.ira"]
+      shunnersOf st "fran" @?= ["shunned.gale.fran"]
+      askChronicle st "resenters of ira" @?= ["bob resenter of ira"]
+      askChronicle st "resenters of bob" @?= ["eve resenter of bob"]
+      askChronicle st "shunners of fran" @?= ["gale shunner of fran"]
+      askChronicle st "shunners of eve" @?= ["bob shunner of eve"]
+      askChronicle st "resenters of void" @?= ["void has no known resenters"]
+      askChronicle st "shunners of void" @?= ["void has no known shunners"]
 
 
   ]
