@@ -804,4 +804,64 @@ tests = testGroup "Prax.Coerce"
         assertBool "hasThreatened"
           (satisfies (db st) [hasThreatened "racket" "mob" "vic"] Map.empty)
     ]
+
+  , testCase "lacksAtoned / lacksEyed / lacksFled evaluate as duals on Insert worlds" $ do
+      assertBool "lacksAtoned on empty"
+        (satisfies (db emptyState) [lacksAtoned "bob"] Map.empty)
+      assertBool "lacksEyed on empty"
+        (satisfies (db emptyState) [lacksEyed "ana" "bob"] Map.empty)
+      assertBool "lacksFled on empty"
+        (satisfies (db emptyState) [lacksFled "carol"] Map.empty)
+      assertBool "lacksRecanted on empty"
+        (satisfies (db emptyState) [lacksRecanted "eve"] Map.empty)
+      assertBool "lacksConfronted on empty"
+        (satisfies (db emptyState) [lacksConfronted "ana" "bob"] Map.empty)
+      assertBool "lacksWronged on empty"
+        (satisfies (db emptyState) [lacksWronged "bob" "carol"] Map.empty)
+      assertBool "lacksResents on empty"
+        (satisfies (db emptyState) [lacksResents "carol" "bob"] Map.empty)
+      assertBool "lacksReconciled on empty"
+        (satisfies (db emptyState) [lacksReconciled "carol"] Map.empty)
+      assertBool "lacksHungry on empty"
+        (satisfies (db emptyState) [lacksHungry "bob"] Map.empty)
+      assertBool "lacksOstracized on empty"
+        (satisfies (db emptyState) [lacksOstracized "dana" "bob"] Map.empty)
+      assertBool "lacksShortTempered on empty"
+        (satisfies (db emptyState) [lacksShortTempered "ana"] Map.empty)
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "atoned.bob"
+            , Insert "eyed.ana.bob"
+            , Insert "fled.carol"
+            , Insert "recanted.eve"
+            , Insert "confronted.ana.bob"
+            , Insert "wronged.bob.carol"
+            , Insert "resents.carol.bob"
+            , Insert "reconciled.carol"
+            , Insert "hungry.bob"
+            , Insert "ostracized.dana.bob"
+            , Insert "shortTempered.ana"
+            ]
+      assertBool "lacksAtoned fails"
+        (not (satisfies (db st) [lacksAtoned "bob"] Map.empty))
+      assertBool "lacksEyed fails"
+        (not (satisfies (db st) [lacksEyed "ana" "bob"] Map.empty))
+      assertBool "lacksFled fails"
+        (not (satisfies (db st) [lacksFled "carol"] Map.empty))
+      assertBool "lacksRecanted fails"
+        (not (satisfies (db st) [lacksRecanted "eve"] Map.empty))
+      assertBool "lacksConfronted fails"
+        (not (satisfies (db st) [lacksConfronted "ana" "bob"] Map.empty))
+      assertBool "lacksWronged fails"
+        (not (satisfies (db st) [lacksWronged "bob" "carol"] Map.empty))
+      assertBool "lacksResents fails"
+        (not (satisfies (db st) [lacksResents "carol" "bob"] Map.empty))
+      assertBool "lacksReconciled fails"
+        (not (satisfies (db st) [lacksReconciled "carol"] Map.empty))
+      assertBool "lacksHungry fails"
+        (not (satisfies (db st) [lacksHungry "bob"] Map.empty))
+      assertBool "lacksOstracized fails"
+        (not (satisfies (db st) [lacksOstracized "dana" "bob"] Map.empty))
+      assertBool "lacksShortTempered fails"
+        (not (satisfies (db st) [lacksShortTempered "ana"] Map.empty))
+
   ]

@@ -2576,3 +2576,32 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v460 — Emotion everMood/inMood/feelingToward 世界求值
+
+- **做了什么**：Emotion Spec 钉 setMood/feelToward 世界上 everMood/inMood/feelingToward 与净世界上 neverMood。无新实践 / 无 want 改动。
+- **测**：EmotionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v461 — Reactions reactionActive 世界求值
+
+- **做了什么**：Reactions Spec 钉 spawnReaction/endReaction 世界上 reactionActive。无新实践 / 无 want 改动。
+- **测**：ReactionsSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v462 — Faction hasLeader/everAffiliate/lacks* 世界求值补全
+
+- **做了什么**：Faction Spec 在既有世界求值用例上补 hasLeader/everAffiliate/hasRegardAs 与 lacksLeader/lacksAffiliate/lacksRegard。无新实践 / 无 want 改动。
+- **测**：FactionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v463 — Repute hasRegardedAs 世界求值
+
+- **做了什么**：Repute Spec 钉 Insert regards 世界上 hasRegardedAs。无新实践 / 无 want 改动。
+- **测**：ReputeSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v464 — Coerce lacksAtoned/lacksEyed/lacksFled 等对偶世界求值
+
+- **做了什么**：Coerce Spec 钉净世界与 Insert 社会标记世界上 lacksAtoned/lacksEyed/lacksFled/lacksRecanted/lacksConfronted/lacksWronged/lacksResents/lacksReconciled/lacksHungry/lacksOstracized/lacksShortTempered。无新实践 / 无 want 改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

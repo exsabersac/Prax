@@ -215,6 +215,8 @@ tests = testGroup "Prax.Repute"
         (satisfies (db st) [everScorned "ana"] Map.empty)
       assertBool "regardedAs"
         (satisfies (db st) [regardedAs "ana" "kai" "thief"] Map.empty)
+      assertBool "hasRegardedAs"
+        (satisfies (db st) [hasRegardedAs "ana" "kai" "thief"] Map.empty)
       assertBool "lacksNotorious fails"
         (not (satisfies (db st) [lacksNotorious "kai" "brute"] Map.empty))
       assertBool "lacksEsteemed fails"

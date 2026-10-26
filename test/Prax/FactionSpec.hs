@@ -303,6 +303,18 @@ tests = testGroup "Prax.Faction"
         (satisfies (db emptyState) [neverLeader "ana"] Map.empty)
       assertBool "neverRegards on empty"
         (satisfies (db emptyState) [neverRegards "ana"] Map.empty)
+      assertBool "hasLeader"
+        (satisfies (db st) [hasLeader "ana" "hall"] Map.empty)
+      assertBool "everAffiliate"
+        (satisfies (db st) [everAffiliate "ana"] Map.empty)
+      assertBool "hasRegardAs"
+        (satisfies (db st) [hasRegardAs "ana" "bob" "thief"] Map.empty)
+      assertBool "lacksLeader fails"
+        (not (satisfies (db st) [lacksLeader "ana" "hall"] Map.empty))
+      assertBool "lacksAffiliate fails"
+        (not (satisfies (db st) [lacksAffiliate "ana" "guild"] Map.empty))
+      assertBool "lacksRegard fails"
+        (not (satisfies (db st) [lacksRegard "ana" "bob" "thief"] Map.empty))
 
   -- Village-shaped mill justice arc (Spec-only fixture; Village wired v280):
   -- learn → factionStanding regard → confront gated on regard → defection

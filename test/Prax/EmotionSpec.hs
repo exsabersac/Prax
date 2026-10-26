@@ -371,4 +371,19 @@ tests = testGroup "Prax.Emotion"
       assertBool "lacksMood fails"
         (not (satisfies (db moody) [lacksMood "ada"] Map.empty))
 
+
+  , testCase "everMood / inMood / feelingToward evaluate on setMood and feelToward worlds" $ do
+      assertBool "neverMood on empty"
+        (satisfies (db emptyState) [neverMood "ada"] Map.empty)
+      let moody = performOutcome (setMood "ada" "gloomy") emptyState
+      assertBool "inMood"
+        (satisfies (db moody) [inMood "ada" "gloomy"] Map.empty)
+      assertBool "everMood"
+        (satisfies (db moody) [everMood "ada"] Map.empty)
+      assertBool "neverMood fails"
+        (not (satisfies (db moody) [neverMood "ada"] Map.empty))
+      let st = performOutcome (feelToward "ada" "angry" "ben") emptyState
+      assertBool "feelingToward"
+        (satisfies (db st) [feelingToward "ada" "angry" "ben"] Map.empty)
+
   ]

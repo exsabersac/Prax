@@ -184,4 +184,15 @@ tests = testGroup "Prax.Reactions"
       assertBool "neverViolated fails"
         (not (satisfies (db st) [neverViolated "bex"] Map.empty))
 
+
+  , testCase "reactionActive evaluates on spawnReaction world" $ do
+      assertBool "inactive on empty"
+        (not (satisfies (db emptyState) [reactionActive "disapproval" ["bex", "ada"]] Map.empty))
+      let st = performOutcome (spawnReaction "disapproval" ["bex", "ada"]) emptyState
+      assertBool "active after spawn"
+        (satisfies (db st) [reactionActive "disapproval" ["bex", "ada"]] Map.empty)
+      let gone = performOutcome (endReaction "disapproval" ["bex", "ada"]) st
+      assertBool "inactive after end"
+        (not (satisfies (db gone) [reactionActive "disapproval" ["bex", "ada"]] Map.empty))
+
   ]
