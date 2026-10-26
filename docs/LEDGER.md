@@ -2971,3 +2971,14 @@
 - **做了什么**：SandboxSpec 追加 tear×cry、church tear×mill cry、denounce×squeeze、censure×parade、exile×cry 独立、banish×squeeze、wed×silence buy、kyle millJustice/iraJustice 门禁、parade/churchParade 独拣、flee×ira tear、return×ira debt、squeezeDesire/inquisitDesire 独拣。导入 iraJustice。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（352 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+## v539 — Db valToSym/insertToks/retractNames Spec 钉
+
+- **做了什么**：DbSpec 钉 valToSym、insertToks 与 retractNames 相对 insert/retract 的等价。无新实践 / 无 want 改动。
+- **测**：DbSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v540 — Derive runCooked Spec 钉
+
+- **做了什么**：DeriveSpec 钉 runCooked 对已闭模型上的 delta 与 closureFrom 一致。无新实践 / 无 want 改动。
+- **测**：DeriveSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

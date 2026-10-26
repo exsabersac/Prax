@@ -262,6 +262,24 @@ tests = testGroup "Prax.Db"
         assertBool "empty not excl" (not (dbExcl emptyDb))
         assertBool "empty not asserted" (not (dbAsserted emptyDb))
     ]
+
+  , testGroup "valToSym / insertToks / retractNames"
+    [ testCase "valToSym unwraps VSym; otherwise interns valToString" $ do
+        let s = intern "bob"
+        valToSym (VSym s) @?= s
+        valToSym (VNum 7) @?= intern "7"
+        symName (valToSym (VSet [[intern "a"]])) @?= "<Set(1)>"
+
+    , testCase "insertToks is insert without re-parsing; retractNames mirrors retract" $ do
+        let toks = internTokens "holding.bob.loaf"
+            d1 = insertToks toks emptyDb
+            d2 = insert "holding.bob.loaf" emptyDb
+        dbToSentences d1 @?= dbToSentences d2
+        assertBool "present" (exists "holding.bob.loaf" d1)
+        let d3 = retractNames (map intern ["holding", "bob", "loaf"]) d1
+        assertBool "retracted" (not (exists "holding.bob.loaf" d3))
+        dbToSentences (retract "holding.bob.loaf" d2) @?= dbToSentences d3
+    ]
   ]
 
 -- Deterministic ordering for value lists (Val has no Ord instance).
