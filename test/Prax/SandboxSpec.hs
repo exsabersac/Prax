@@ -2217,4 +2217,23 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stEx = doAct "dave" "exile" stSq
       assertBool "exiled" (exists "exiled.bob" (db stEx))
 
+
+  , testCase "silence × church exile: mill debt blocks ira; priest heresy exile stays" $ do
+      -- ira silence blocks mill denounce; priest hear→censure→banish bob free.
+      let st0 = doAct "ira" "learn" (activateChurchBob sandboxWorld)
+          stHear = doAct "priest" "hear of bob" st0
+          stBuy = doAct "bob" "buy ira's silence" stHear
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      assertBool "ira exile no" (not (hasAct "ira" "exile" stAfter))
+      let stEx = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stEx))
+
   ]

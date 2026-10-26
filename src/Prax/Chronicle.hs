@@ -180,25 +180,26 @@ askChronicle st q
       in if null rows then [who ++ " has no debts on record"]
          else rows
   | Just faction <- stripPrefix "leads of " q =
-      -- dbToSentences 把 ! 展成 .；排他叶 leads.<faction>!<who> 显示为 leads.<faction>.<who>
+      -- 对齐 Host leadersOf：读闭合视图；! 展成 .
       let prefix = "leads." ++ faction ++ "."
           ls = sort [ drop (length prefix) s
-                    | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                    | s <- dbToSentences (readView st), prefix `isPrefixOf` s
                     , '.' `notElem` drop (length prefix) s ]
       in if null ls then ["nobody leads " ++ faction]
          else map (++ (" leads " ++ faction)) ls
   | Just who <- stripPrefix "affiliates of " q =
+      -- 对齐 Host affiliatesOf：读闭合视图。
       let prefix = "affiliate." ++ who ++ "."
           fs = sort [ drop (length prefix) s
-                    | s <- dbToSentences (db st), prefix `isPrefixOf` s ]
+                    | s <- dbToSentences (readView st), prefix `isPrefixOf` s ]
       in if null fs then [who ++ " has no affiliates"]
          else map ((who ++ " affiliates ") ++) fs
   | Just faction <- stripPrefix "members of " q =
-      -- member.<who>!<faction> 展成 member.<who>.<faction>
+      -- 对齐 Host membersOf：读闭合视图；member.<who>!<faction> 展成 .
       let suffix = "." ++ faction
           ms = sort
             [ take (length rest - length suffix) rest
-            | s <- dbToSentences (db st)
+            | s <- dbToSentences (readView st)
             , let pref = "member."
             , pref `isPrefixOf` s
             , let rest = drop (length pref) s

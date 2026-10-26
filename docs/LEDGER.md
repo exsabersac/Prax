@@ -2077,3 +2077,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec exile × inquisit（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v375 — Chronicle members/affiliates/leads 读闭合视图
+
+- **做了什么**：`members of` / `affiliates of` / `leads of` 改为 `readView`（对齐 Host membersOf/affiliatesOf/leadersOf）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec 既有 leads/affiliates/members 用例（针对性；未跑全量）。
+
+## v376 — Sandbox 磨坊沉默×教会放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 ira 沉默债挡 mill denounce/exile，priest 异端 censure→exile 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × church exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
