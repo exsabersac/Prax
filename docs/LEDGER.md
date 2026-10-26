@@ -2432,6 +2432,20 @@ Tier 3 — 宿主游戏边界：
 
 ## v437 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
 
+## v438 — Host parentsOf/childrenOf + CLI
+
+- **做了什么**：闭合视图枚举 `parent.<p>.<who>` / `parent.<who>.<c>`；CLI `prax parents`/`children`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v439 — Chronicle parents/children of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"parents of "` / `"children of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v440 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
+
 - **做了什么**：Spec 钉 gale 债挡 censure，dave brand parade 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
@@ -2454,17 +2468,25 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec dual silence（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+<<<<<<< HEAD
 ## v441 — Host parentsOf/childrenOf + CLI
+=======
+## v445 — Sandbox 烙印游街 want 词汇（磨坊）
+>>>>>>> 6538bc8 (feat(iterate): v445–v446 Sandbox parade wants (mill + church))
 
-- **做了什么**：闭合视图枚举 `parent.<p>.<who>` / `parent.<who>.<c>`；CLI `prax parents`/`children`；help 同步。无实践 / 无 want 改动。
-- **测**：HostSpec（针对性；未跑全量）。
-- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+- **做了什么**：`sandboxDesires` 增 `parades-branded-thief`（Match `paraded.Owner.bob`，权重 10）；导出 `paradeDesireName`。主阵容默认不挂（免搅金轨迹）；Spec 覆盖后 `pickAction` 在 brand 后自选游街。
+- **测**：SandboxSpec wants: paradeSeed dave parades after brand；cast 默认无挂 + 词汇注册。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未默认激活 millBrandParade。
 
+<<<<<<< HEAD
 ## v442 — Chronicle parents/children of + Host 对偶
 
 - **做了什么**：`askChronicle` 增加 `"parents of "` / `"children of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+=======
+## v446 — Sandbox 异端烙印游街 want 词汇（教会）
+>>>>>>> 6538bc8 (feat(iterate): v445–v446 Sandbox parade wants (mill + church))
 
 ## v445 — Host grandparentsOf/grandchildrenOf/inLawsOf + CLI
 
@@ -2478,6 +2500,7 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+<<<<<<< HEAD
 ## v447 — Arc arcIs/hasArc/everArc 世界求值
 
 - **做了什么**：Arc Spec 钉 enterArc/leaveArc 世界上 arcIs/hasArcIs/hasArc/everArc 与净世界上 neverArc/lacksArc。无新实践 / 无 want 改动。
@@ -2531,3 +2554,9 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Kin Spec 钉 weddedWorld readView 上 isInLawOf/hasInLawOf/everInLaw 与净世界上 neverInLaw。无新实践 / 无 want 改动。
 - **测**：KinSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+=======
+- **做了什么**：`sandboxDesires` 增 `parades-branded-heretic`（Match `paraded.Owner.bob`，权重 10，对齐 inquisit 轨）；导出 `churchParadeDesireName`。主阵容默认不挂；Spec 覆盖后 priest 在 heretic brand 后自选游街。
+- **测**：SandboxSpec wants: churchParadeSeed priest parades after heretic brand。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未默认激活 churchBrandParade。
+
+>>>>>>> 6538bc8 (feat(iterate): v445–v446 Sandbox parade wants (mill + church))

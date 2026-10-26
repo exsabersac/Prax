@@ -5,7 +5,7 @@
 -- 教会异端×磨坊正义同场双压（bob 双轨，默认未激活）/
 -- 教会异端×沉默债（审查门禁 lacksOwes）/
 -- 教会胁迫悔罪（Coerce×heretic 站队，默认未激活）/
--- 烙印游街（branded / brandedHeretic 叶门禁，默认未激活）（非 Village）。
+-- 烙印游街（branded / brandedHeretic 叶门禁，默认未激活；want 词汇已备、默认不挂阵容）（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -27,6 +27,8 @@ module Prax.Worlds.Sandbox
   , activateInquisit
   , activateParade
   , activateChurchParade
+  , paradeDesireName
+  , churchParadeDesireName
   ) where
 
 import           Prax.Query (Condition (..))
@@ -59,7 +61,7 @@ sandboxAxioms =
   ] ++ kinAxioms
 
 -- | 命名欲望词汇：磨坊正义 / 教会审查 / bob 异端双压 / 婚入磨坊 / 买沉默与撕毁 /
--- 教会异端沉默 / 教会胁迫悔罪。
+-- 教会异端沉默 / 教会胁迫悔罪 / 烙印游街（默认不挂阵容）。
 sandboxDesires :: [Desire]
 sandboxDesires =
   [ Desire "seeks-theft-truth"
@@ -102,6 +104,11 @@ sandboxDesires =
       (Want [ Match "revoked.Owner.eve" ] 10)
   , inquisitDesire
   , fearsBrandHereticDesire
+  -- 烙印游街 want（默认阵容不挂，免搅金轨迹；paradeSeed / Spec 覆盖）
+  , Desire paradeDesireName
+      (Want [ Match "paraded.Owner.bob" ] 10)
+  , Desire churchParadeDesireName
+      (Want [ Match "paraded.Owner.bob" ] 10)
   ]
 
 millJustice :: [String]
@@ -449,8 +456,17 @@ activateInquisit :: PraxState -> PraxState
 activateInquisit = performOutcome (Insert "practice.churchInquisit")
 
 
+-- | 磨坊烙印游街 want 名（默认阵容不挂）。
+paradeDesireName :: String
+paradeDesireName = "parades-branded-thief"
+
+-- | 教会异端烙印游街 want 名（默认阵容不挂；inquisit 轨钉 bob）。
+churchParadeDesireName :: String
+churchParadeDesireName = "parades-branded-heretic"
+
 -- | 烙印游街：已站队磨坊成员可对已 branded 的贼公开游街（叠 branded 叶，非新原语）。
--- 默认不 Insert practice.millBrandParade；activateParade / Spec 激活。无 want 匹配 paraded.*。
+-- 默认不 Insert practice.millBrandParade；activateParade / Spec 激活。
+-- Want 见 paradeDesireName；主阵容默认不挂（免搅金轨迹）。
 millBrandParadeP :: Practice
 millBrandParadeP = practice
   { practiceId   = "millBrandParade"
@@ -471,7 +487,8 @@ activateParade :: PraxState -> PraxState
 activateParade = performOutcome (Insert "practice.millBrandParade")
 
 -- | 异端烙印游街：已站队教会成员可对已 brandedHeretic 公开游街（叠 paraded 叶）。
--- 默认不 Insert practice.churchBrandParade；activateChurchParade / Spec 激活。无 want 匹配 paraded.*。
+-- 默认不 Insert practice.churchBrandParade；activateChurchParade / Spec 激活。
+-- Want 见 churchParadeDesireName；主阵容默认不挂。
 churchBrandParadeP :: Practice
 churchBrandParadeP = practice
   { practiceId   = "churchBrandParade"

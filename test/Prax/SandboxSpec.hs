@@ -2,7 +2,7 @@
 -- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解、沉默×叛逃×节庆复合门禁、
 -- 臭名+愤怒市集声援、站队胁迫招供（Coerce）、教会异端×磨坊正义同场双压、
 -- 教会异端×沉默债、教会胁迫悔罪（Coerce×heretic）、
--- 沉默×胁迫交叉与烙印游街（默认未激活），
+-- 沉默×胁迫交叉与烙印游街（默认未激活；want 词汇可挂），
 -- 以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
@@ -24,7 +24,8 @@ import           Prax.Worlds.Sandbox
   , churchJustice, bobHeresyJustice, squeezeDesireName, fearsBrandName
   , activateSqueeze, activateChurchBob
   , inquisitDesireName, fearsBrandHereticName, activateInquisit
-  , activateParade, activateChurchParade )
+  , activateParade, activateChurchParade
+  , paradeDesireName, churchParadeDesireName )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -636,6 +637,14 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (any ((== squeezeDesireName) . desireName) sandboxDesires)
       assertBool "fears-brand registered"
         (any ((== fearsBrandName) . desireName) sandboxDesires)
+      assertBool "parade desire registered"
+        (any ((== paradeDesireName) . desireName) sandboxDesires)
+      assertBool "church parade desire registered"
+        (any ((== churchParadeDesireName) . desireName) sandboxDesires)
+      assertBool "dave cast has no parade want by default"
+        (paradeDesireName `notElem` charDesires (actorOf "dave" sandboxWorld))
+      assertBool "priest cast has no church parade want by default"
+        (churchParadeDesireName `notElem` charDesires (actorOf "priest" sandboxWorld))
       assertBool "you mill" (playerName `elem` membersOf sandboxWorld "mill")
       assertBool "ira mill" ("ira" `elem` membersOf sandboxWorld "mill")
       assertBool "kyle guild" ("kyle" `elem` membersOf sandboxWorld "guild")
@@ -2907,5 +2916,44 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
       assertBool "ira debt still" (exists "debt.ira.bob.favor" (db stDen))
       assertBool "gale debt still" (exists "debt.gale.eve.church-favor" (db stDen))
+
+  , testCase "wants: paradeSeed dave parades after brand" $ do
+      -- After squeeze→confess→re-squeeze→brand, hang only parade want; pick parade.
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = activateParade (doAct "dave" "brand bob" stSq2)
+          dave' = (actorOf "dave" stBrand) { charDesires = [paradeDesireName] }
+          bob'  = (actorOf "bob" stBrand) { charDesires = [] }
+          st = stBrand { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stBrand ] }
+      assertBool "branded" (exists "branded.bob" (db st))
+      assertBool "parade open" (hasAct "dave" "parade bob" st)
+      pickLabel "dave" st @?= Just "dave: parade bob as branded thief"
+      let stPar = doAct "dave" "parade bob" st
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+
+  , testCase "wants: churchParadeSeed priest parades after heretic brand" $ do
+      let st0 = inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stDefy = doAct "bob" "defy" stSq
+          stBrand = activateChurchParade (doAct "priest" "brand bob" stDefy)
+          priest' = (actorOf "priest" stBrand)
+                      { charDesires = [churchParadeDesireName] }
+          bob' = (actorOf "bob" stBrand) { charDesires = [] }
+          st = stBrand { characters =
+                  [ if charName c == "priest" then priest'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stBrand ] }
+      assertBool "brandedHeretic" (exists "brandedHeretic.bob" (db st))
+      assertBool "parade open" (hasAct "priest" "parade bob" st)
+      pickLabel "priest" st @?= Just "priest: parade bob as branded heretic"
+      let stPar = doAct "priest" "parade bob" st
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
 
   ]
