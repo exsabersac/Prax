@@ -2989,3 +2989,8 @@
 - **测**：DeriveSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v541 — Sandbox exile 权重拣 + silence 窗/revoke + parade×inquisit Spec
+
+- **做了什么**：SandboxSpec 追加 cry/rally once 后 exile 权重拣；dual brand 双 parade+cry；silence 买禁 harvest；revoke 禁再买；kyle squeezeDesire；无 fearsBrand/Heretic 不拣 confess/recant；mill parade×church squeeze / 反向；joinsMill=10 权重钉；kyle 空欲望；repay 后 ira denounce。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（367 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
