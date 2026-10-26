@@ -2956,4 +2956,47 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stPar = doAct "priest" "parade bob" st
       assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
 
+  , testCase "wants: without paradeDesire dave does not pick parade after brand" $ do
+      -- Practice active + branded, but cast millCry only (no parade want) → not parade.
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = activateParade (doAct "dave" "brand bob" stSq2)
+          dave' = (actorOf "dave" stBrand) { charDesires = millCry }
+          bob'  = (actorOf "bob" stBrand) { charDesires = [] }
+          st = stBrand { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stBrand ] }
+      assertBool "parade open" (hasAct "dave" "parade bob" st)
+      let lab = pickLabel "dave" st
+      assertBool ("not parade, got " ++ show lab)
+        (maybe True (not . ("parade" `isInfixOf`)) lab)
+
+  , testCase "wants: exile weight beats parade when both open" $ do
+      -- After harvest denounce + brand, dave holds exile(12) + parade(10) → picks exile.
+      let st0 = activateParade (activateSqueeze (doAct "dave" "learn" sandboxWorld))
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stH = iterate roundBoundary stBrand !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          dave' = (actorOf "dave" stAfter)
+                     { charDesires = ["wants-exile-bob", paradeDesireName] }
+          bob' = (actorOf "bob" stAfter) { charDesires = [] }
+          st = stAfter { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters stAfter ] }
+      assertBool "exile open" (hasAct "dave" "exile" st)
+      assertBool "parade open" (hasAct "dave" "parade bob" st)
+      pickLabel "dave" st @?= Just "dave: exile the thief"
+
+
   ]
