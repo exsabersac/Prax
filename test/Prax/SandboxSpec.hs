@@ -1940,4 +1940,49 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stCry = doAct "dave" "cry the theft" stM
       assertBool "cried" (exists "cried.dave.bob" (db stCry))
 
+
+  , testCase "defection × exile: flee drops regard/exile; return restores" $ do
+      -- carol flee dissolves dave regard → harvest denounce/exile close;
+      -- return restores regard and exile path.
+      let stLearn = doAct "dave" "learn" sandboxWorld
+          stCarol = doAct "carol" "learn" stLearn
+          stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      let stH = iterate roundBoundary stFlee !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "denounce closed" (not (hasAct "dave" "denounce" stH))
+      let stBack = doAct "carol" "return to the mill" stH
+      assertBool "regard restored"
+        (exists "regards.dave.bob.thief" (readView stBack))
+      assertBool "denounce restored" (hasAct "dave" "denounce" stBack)
+      let stDen = doAct "dave" "denounce" stBack
+          stAfter = roundBoundary stDen
+      assertBool "exile yes" (hasAct "dave" "exile" stAfter)
+      let stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+
+  , testCase "church parade × exile: heretic parade and mill exile stay independent" $ do
+      -- inquisitSeed brand→church parade + dave mill denounce/exile: share no gate.
+      let st0 = doAct "dave" "learn" inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stP)
+      let stH = iterate roundBoundary stP !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "parade at harvest" (hasAct "priest" "parade bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "parade after denounce" (hasAct "priest" "parade bob" stAfter)
+      let stPar = doAct "priest" "parade bob" stAfter
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+      assertBool "exile still" (hasAct "dave" "exile" stPar)
+      let stEx = doAct "dave" "exile" stPar
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+
   ]

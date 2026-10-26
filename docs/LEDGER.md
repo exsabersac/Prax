@@ -1983,3 +1983,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec affiliate × cry（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v359 — Sandbox 叛逃×放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 carol 叛逃溶解 regard → denounce/exile 关闭；回归后恢复并完成放逐。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v360 — Sandbox 教会游街×磨坊放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉异端 brand→church parade 与磨坊 denounce→exile 无共享 once-gate。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church parade × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
