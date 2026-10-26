@@ -272,4 +272,18 @@ tests = testGroup "Prax.Debt"
       assertBool "neverDemanded fails after demand"
         (not (satisfies (db st) [neverDemanded "dell"] Map.empty))
 
+  , testCase "isOwed / hasOwed / hasOwes / hasDemanded evaluate on worlds" $ do
+      assertBool "isOwed fails on empty"
+        (not (satisfies (db emptyState) [isOwed "dell"] Map.empty))
+      let owed = applyAll emptyState (owe "cora" "dell" "favor")
+      assertBool "isOwed" (satisfies (db owed) [isOwed "dell"] Map.empty)
+      assertBool "hasOwed" (satisfies (db owed) [hasOwed "dell"] Map.empty)
+      assertBool "hasOwes"
+        (satisfies (db owed) [hasOwes "cora" "dell" "favor"] Map.empty)
+      let st = doAct "cora" "demand" aloneWorld
+      assertBool "hasDemanded"
+        (satisfies (db st) [hasDemanded "cora" "dell" "favor"] Map.empty)
+      assertBool "everOwed fails on empty"
+        (not (satisfies (db emptyState) [everOwed "dell"] Map.empty))
+
   ]

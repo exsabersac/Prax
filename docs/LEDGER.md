@@ -2292,3 +2292,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v411 — Coerce hasComplied/hasDefied/hasExtorted 世界求值
+
+- **做了什么**：Coerce Spec 钉 hasComplied/lacksComplied、isDefied/hasDefied/lacksDefied 在 favor/defy 动作后，以及 hasExtorted/lacksExtorted/hasThreatened 在 threaten 后的 satisfies 求值。无新实践 / 无 want 改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v412 — Debt isOwed/hasOwed/hasOwes/hasDemanded 世界求值
+
+- **做了什么**：Debt Spec 钉 isOwed/hasOwed/hasOwes 在 owe 世界上、hasDemanded 在 demand 动作后、以及 everOwed 在空世界上的 fails。无新实践 / 无 want 改动。
+- **测**：DebtSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

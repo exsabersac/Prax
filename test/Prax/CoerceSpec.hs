@@ -776,5 +776,32 @@ tests = testGroup "Prax.Coerce"
           (not (satisfies (db st) [lacksBrandedHeretic "eve"] Map.empty))
         assertBool "lacksBranded on empty"
           (satisfies (db emptyState) [lacksBranded "bob"] Map.empty)
+    , testCase "hasComplied / lacksComplied / isDefied / hasDefied evaluate after acts" $ do
+        assertBool "lacksComplied on clean"
+          (satisfies (db racketWorld) [lacksComplied "racket" "mob" "vic"] Map.empty)
+        assertBool "lacksDefied on clean"
+          (satisfies (db racketWorld) [lacksDefied "racket" "vic" "mob"] Map.empty)
+        let complied = doAct "vic" "favor" (doAct "mob" "threaten" racketWorld)
+        assertBool "hasComplied"
+          (satisfies (db complied) [hasComplied "racket" "mob" "vic"] Map.empty)
+        assertBool "lacksComplied fails"
+          (not (satisfies (db complied) [lacksComplied "racket" "mob" "vic"] Map.empty))
+        let defied = doAct "vic" "defy" (doAct "mob" "threaten" racketWorld)
+        assertBool "isDefied"
+          (satisfies (db defied) [isDefied "racket" "vic" "mob"] Map.empty)
+        assertBool "hasDefied"
+          (satisfies (db defied) [hasDefied "racket" "vic" "mob"] Map.empty)
+        assertBool "lacksDefied fails"
+          (not (satisfies (db defied) [lacksDefied "racket" "vic" "mob"] Map.empty))
+    , testCase "hasExtorted / lacksExtorted / hasThreatened evaluate after threaten" $ do
+        assertBool "lacksExtorted on clean"
+          (satisfies (db racketWorld) [lacksExtorted "mob" "vic" "racket"] Map.empty)
+        let st = doAct "mob" "threaten" racketWorld
+        assertBool "hasExtorted"
+          (satisfies (db st) [hasExtorted "mob" "vic" "racket"] Map.empty)
+        assertBool "lacksExtorted fails"
+          (not (satisfies (db st) [lacksExtorted "mob" "vic" "racket"] Map.empty))
+        assertBool "hasThreatened"
+          (satisfies (db st) [hasThreatened "racket" "mob" "vic"] Map.empty)
     ]
   ]
