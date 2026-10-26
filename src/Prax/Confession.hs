@@ -18,8 +18,10 @@ module Prax.Confession
   , neverMarked
   , lacksMark
   , isAbsolved
+  , hasAbsolved
   , everAbsolved
   , lacksAbsolved
+  , neverAbsolved
   ) where
 
 import           Prax.Db (isVariable, pathNames, tokens, tokensToSentence)
@@ -225,6 +227,10 @@ everMarked = hasMark
 isAbsolved :: String -> String -> Condition
 isAbsolved defeater who = Match (defeater ++ "." ++ who)
 
+-- | 条件：@who@ 已获 @defeater@ 赦免叶（@isAbsolved@ 同体；对齐 has* 命名）。
+hasAbsolved :: String -> String -> Condition
+hasAbsolved = isAbsolved
+
 -- | 条件：@who@ 已获 @defeater@ 赦免叶（@isAbsolved@ 同体；对齐 ever* 命名）。
 everAbsolved :: String -> String -> Condition
 everAbsolved = isAbsolved
@@ -232,3 +238,7 @@ everAbsolved = isAbsolved
 -- | 条件：@who@ 无 @defeater@ 赦免叶（@isAbsolved@ 的 Not 对偶）。
 lacksAbsolved :: String -> String -> Condition
 lacksAbsolved defeater who = Not (defeater ++ "." ++ who)
+
+-- | 条件：@who@ 无 @defeater@ 赦免叶（@lacksAbsolved@ 同体；对齐 never* 命名）。
+neverAbsolved :: String -> String -> Condition
+neverAbsolved = lacksAbsolved

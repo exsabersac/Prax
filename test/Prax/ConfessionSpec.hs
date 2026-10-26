@@ -20,7 +20,7 @@ import           Prax.Witness (CoPresence)
 import           Prax.Deceit (conceal)
 import           Prax.Persona (Trait (..), personaVocabulary, cast)
 import           Prax.Blackmail (shakedown)
-import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark, everMarked, isAbsolved, everAbsolved, neverMarked, lacksMark, lacksAbsolved)
+import           Prax.Confession (confess, confessPublic, absolve, incorrigible, penance, atone, liftDeceit, absolveAsLeader, hasMark, everMarked, isAbsolved, hasAbsolved, everAbsolved, neverMarked, lacksMark, lacksAbsolved, neverAbsolved)
 
 together :: CoPresence
 together = [ Match "at.Actor!P", Match "at.Witness!P" ]
@@ -692,11 +692,17 @@ tests = testGroup "Prax.Confession"
   , testCase "everAbsolved aliases isAbsolved" $
       everAbsolved "recanted" "cody" @?= isAbsolved "recanted" "cody"
 
+  , testCase "hasAbsolved / neverAbsolved alias isAbsolved / lacksAbsolved" $ do
+      hasAbsolved "recanted" "cody" @?= isAbsolved "recanted" "cody"
+      neverAbsolved "recanted" "cody" @?= lacksAbsolved "recanted" "cody"
+
   , testCase "hasMark / isAbsolved evaluate on Insert world" $ do
       assertBool "neverMarked on empty"
         (satisfies (db emptyState) [neverMarked "bob" "lied" "eve" "stole.bread"] Map.empty)
       assertBool "lacksAbsolved on empty"
         (satisfies (db emptyState) [lacksAbsolved "recanted" "cody"] Map.empty)
+      assertBool "neverAbsolved on empty"
+        (satisfies (db emptyState) [neverAbsolved "recanted" "cody"] Map.empty)
       let st = foldl (flip performOutcome) emptyState
                  [ Insert "bob.lied.eve.stole.bread"
                  , Insert "recanted.cody" ]
@@ -706,10 +712,14 @@ tests = testGroup "Prax.Confession"
         (satisfies (db st) [everMarked "bob" "lied" "eve" "stole.bread"] Map.empty)
       assertBool "isAbsolved"
         (satisfies (db st) [isAbsolved "recanted" "cody"] Map.empty)
+      assertBool "hasAbsolved"
+        (satisfies (db st) [hasAbsolved "recanted" "cody"] Map.empty)
       assertBool "everAbsolved"
         (satisfies (db st) [everAbsolved "recanted" "cody"] Map.empty)
       assertBool "neverMarked fails"
         (not (satisfies (db st) [neverMarked "bob" "lied" "eve" "stole.bread"] Map.empty))
       assertBool "lacksAbsolved fails"
         (not (satisfies (db st) [lacksAbsolved "recanted" "cody"] Map.empty))
+      assertBool "neverAbsolved fails"
+        (not (satisfies (db st) [neverAbsolved "recanted" "cody"] Map.empty))
   ]

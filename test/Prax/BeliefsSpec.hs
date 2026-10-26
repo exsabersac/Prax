@@ -95,6 +95,8 @@ tests = testGroup "Prax.Beliefs"
         (satisfies (db st) [hasBelief "bex"] Map.empty)
       assertBool "disbelievesThat fails"
         (not (satisfies (db st) [disbelievesThat "bex" "sky" "blue"] Map.empty))
+      assertBool "disbelievesThat other value"
+        (satisfies (db st) [disbelievesThat "bex" "sky" "green"] Map.empty)
       assertBool "doubts fails"
         (not (satisfies (db st) [doubts "bex" "sky"] Map.empty))
 

@@ -221,4 +221,16 @@ tests = testGroup "Prax.Deontic"
       assertBool "neverObliged after discharge"
         (sat gone [neverObliged "bex" "settle.up"])
 
+  , testCase "inBreach / fulfilled evaluate on breach and content worlds" $ do
+      assertBool "no breach on empty"
+        (not (sat emptyState [inBreach "bex" "stiffed"]))
+      let st = performOutcome (breach "bex" "stiffed") emptyState
+      assertBool "inBreach" (sat st [inBreach "bex" "stiffed"])
+      let obligedOnly = applyAll emptyState [ oblige "bex" "tipped.ada" ]
+          met = applyAll emptyState [ oblige "bex" "tipped.ada", Insert "tipped.ada" ]
+      assertBool "unfulfilled"
+        (not (sat obligedOnly (fulfilled "bex" "tipped.ada")))
+      assertBool "fulfilled"
+        (sat met (fulfilled "bex" "tipped.ada"))
+
   ]

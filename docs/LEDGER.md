@@ -2661,3 +2661,21 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 censure 后牧师同挂 `wants-exile-bob`(12) 与 `parades-branded-heretic`(10) 时优先 exile/banish。无新实践 / 无 want 改动。
 - **测**：SandboxSpec wants: bob exile weight beats church parade when both open。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v476 — Confession hasAbsolved/neverAbsolved 对偶
+
+- **做了什么**：Confession 增加 hasAbsolved/neverAbsolved（对齐 has*/never*）；Spec 钉结构别名与 Insert 世界求值。无新实践 / 无 want 改动。
+- **测**：ConfessionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v477 — Beliefs disbelievesThat 异值世界求值
+
+- **做了什么**：Beliefs Spec 在 believe 世界上补钉 disbelievesThat 对异值成立。无新实践 / 无 want 改动。
+- **测**：BeliefsSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v478 — Deontic inBreach/fulfilled 世界求值
+
+- **做了什么**：Deontic Spec 钉 breach/obliged+content 世界上 inBreach/fulfilled。无新实践 / 无 want 改动。
+- **测**：DeonticSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
