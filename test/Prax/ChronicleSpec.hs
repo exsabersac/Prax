@@ -279,4 +279,19 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "shunned of ana" @?= ["shunned.ana.bob"]
       askChronicle st "shunned of void" @?= ["void has shunned no one"]
 
+  , testCase "askChronicle locations-of / demanded-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "at.ana.yard"
+                , Insert "at.ben.market"
+                , Insert "demanded.ana.ben.favor"
+                , Insert "demanded.cai.ana.coin"
+                , Insert "flag.x" ]
+      askChronicle st "locations of ana" @?= ["at.ana.yard"]
+      askChronicle st "locations of void" @?= ["void has no known location"]
+      askChronicle st "demanded of ana" @?=
+        [ "demanded.ana.ben.favor"
+        , "demanded.cai.ana.coin"
+        ]
+      askChronicle st "demanded of void" @?= ["void has no demand marks"]
+
   ]

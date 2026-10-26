@@ -1839,3 +1839,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"threatened of "` / `"shunned of "`（对齐 Host `threatenedOf`/`shunnedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v335 — Sandbox 次级归属×胁迫负例（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 仅 affiliate 磨坊、无 primary member → 无 regard → millSqueeze 对 kyle 关闭，dave（primary）仍可 squeeze。无新实践 / 无 want 改动。
+- **测**：SandboxSpec affiliate × squeeze（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v336 — Chronicle locations of / demanded of
+
+- **做了什么**：`askChronicle` 增加 `"locations of "` / `"demanded of "`（对齐 Host `locationsOf`/`demandedOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

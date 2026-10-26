@@ -1652,4 +1652,16 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
       assertBool "fran regard persists"
         (exists "regards.fran.bob.thief" (readView stRally))
+
+  , testCase "affiliate × squeeze: kyle affiliate-only cannot squeeze" $ do
+      -- factionStanding needs primary member; kyle affiliates mill but
+      -- primary guild → no regard → millSqueeze stays closed for kyle while
+      -- dave (primary mill) can squeeze after learn.
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db st0))
+      assertBool "kyle no regard"
+        (not (exists "regards.kyle.bob.thief" (readView st0)))
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
+      assertBool "kyle squeeze no" (not (hasAct "kyle" "squeeze bob" st0))
   ]
