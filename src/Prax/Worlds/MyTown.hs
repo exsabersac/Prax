@@ -140,9 +140,15 @@ myTownWorld =
               [ Want [ Match "practice.world.world.at.you!square" ] 1 ] }
       , (character "bob")
           { charWants =
-              [ Want [ Match "practice.world.world.at.bob!square" ] 1
-                -- 主弧：亲见帮忙后愿意说破（默认 you→carol）
-              , Want [ Match "spokeUp.bob.Helper.Beneficiary" ] 5 ] }
+              [ -- square 弱留驻；持 .seen 后 mill 权重更高
+                Want [ Match "practice.world.world.at.bob!square" ] 1
+                -- 主弧：亲见帮忙后愿意说破（种子 you→carol）
+              , Want [ Match "spokeUp.bob.you.carol" ] 5
+                -- ① 持 helped.you.carol.seen 后 Want at.mill > at.square
+              , Want [ Match "bob.believes.helped.you.carol.seen"
+                     , Match "practice.world.world.at.bob!mill" ] 3
+                -- ② Village 式转告：想让 dana 从自己听说（≥5）
+              , Want [ Match "dana.believes.helped.you.carol.heard.bob" ] 5 ] }
       , (character "carol")
           { charWants =
               [ Want [ Match "practice.world.world.at.carol!square" ] 1 ] }

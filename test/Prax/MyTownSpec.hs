@@ -558,5 +558,55 @@ tests = testGroup "MyTown"
                              , "怀疑" `isInfixOf` gaLabel ga
                              , "you" `isInfixOf` gaLabel ga ]
           assertBool "bob（seen）无怀疑 you" (null eyeBob)
+
+      , -- 网页 3b：Session/praxWait 推进（不遥控 bob/dana）
+        testCase "B-web praxWait：bob→mill 转告 + dana 怀疑 narrative" $ do
+          s0 <- mustNew
+          (s1, rHelp) <- actByLabel s0 "公开帮助 carol"
+          assertBool ("help narr 说破: " ++ unlines (actNarrative rHelp))
+            (any ("说破" `isInfixOf`) (actNarrative rHelp))
+          let waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goWaits 0 s narrAcc = pure (s, reverse narrAcc)
+              goWaits k s narrAcc = do
+                (s', r) <- waitOnce s
+                let n = actNarrative r
+                    heard = factInfix (sessState s')
+                              "dana.believes.helped.you.carol.heard.bob"
+                    bobMill = factInfix (sessState s') "at.bob.mill"
+                if heard && bobMill
+                  then pure (s', reverse (n : narrAcc))
+                  else goWaits (k - 1) s' (n : narrAcc)
+          (s2, waitNarrs) <- goWaits 8 s1 []
+          assertBool ("bob at mill after waits; narr=" ++ show waitNarrs)
+            (factInfix (sessState s2) "at.bob.mill")
+          assertBool ("dana heard.bob after waits; narr=" ++ show waitNarrs)
+            (factInfix (sessState s2)
+               "dana.believes.helped.you.carol.heard.bob")
+          assertBool "dana ¬seen"
+            (not (factInfix (sessState s2)
+                    "dana.believes.helped.you.carol.seen"))
+          (s3, _) <- actByLabel s2 "前往 mill"
+          let goSuspect 0 _ narrAcc =
+                assertFailure ("no 怀疑 narrative; had: " ++ show (reverse narrAcc))
+              goSuspect k s narrAcc = do
+                (s', r) <- waitOnce s
+                let n = actNarrative r
+                if any (\t -> "怀疑地打量" `isInfixOf` t && "you" `isInfixOf` t) n
+                   || factInfix (sessState s') "eyed.dana.you"
+                  then do
+                    assertBool ("narrative 含怀疑: " ++ unlines n)
+                      (any ("怀疑" `isInfixOf`) n
+                       || factInfix (sessState s') "eyed.dana.you")
+                    assertBool "heardRumor or eyed"
+                      (factInfix (sessState s') "eyed.dana.you"
+                       || factInfix (sessState s')
+                            "dana.relationship.you.trust.reason.heardRumor")
+                  else goSuspect (k - 1) s' (n : narrAcc)
+          -- 共场后可能同回合已怀疑（前往的 runUntilPlayer），先查 s3
+          if factInfix (sessState s3) "eyed.dana.you"
+            then assertBool "eyed after go mill" True
+            else goSuspect 6 s3 []
       ]
   ]
