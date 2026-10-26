@@ -30,6 +30,7 @@
 -- v582：'regardsAsOf' 站队标签侧叶。
 -- v585：'owedOf' 债务内容标签侧叶。
 -- v588：'obligedAsOf'/'violatedAsOf' 义务/违规内容标签侧叶。
+-- v592：'practicedAsOf' 实践动作后缀侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -140,6 +141,7 @@ module Prax.Host
   , agedOf
   , projectsOf
   , practitionersOf
+  , practicedAsOf
   , demandedOf
   , demandersOf
   , demandeesOf
@@ -1019,6 +1021,23 @@ practitionersOf :: PraxState -> String -> [String]
 practitionersOf st pid =
   let pref = "practice." ++ pid ++ "."
   in sort [ s | s <- queryView st, pref `isPrefixOf` s ]
+
+-- | 闭合视图中实践动作后缀为 @suffix@ 的叶（@practice.<pid>.<who>.<suffix>@）。
+practicedAsOf :: PraxState -> String -> [String]
+practicedAsOf st suffix = sort
+  [ s
+  | s <- queryView st
+  , "practice." `isPrefixOf` s
+  , let rest = drop (length ("practice." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == suffix
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中与 @who@ 相关的催收叶（债权人或债务人；@demanded.<creditor>.<debtor>.<content>@）。
 demandedOf :: PraxState -> String -> [String]

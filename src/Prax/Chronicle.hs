@@ -147,7 +147,7 @@ formatEvent ev rs =
 -- @"obligations of "++who@、@"obliged as "++content@、@"breaches of "++who@、@"violated as "++content@、
 -- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"chatters of "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"bonders of "++who@、@"bonded of "++label@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
--- @"beliefs of "++who@、@"projects of "++who@、
+-- @"beliefs of "++who@、@"projects of "++who@、@"practiced as "++suffix@、
 -- @"kin of "++who@、@"notorious of "++who@、@"notorieties of "++label@、
 -- @"regards toward "++who@、@"regards as "++label@、@"what factions"@。
 askChronicle :: PraxState -> String -> [String]
@@ -1514,6 +1514,19 @@ askChronicle st q
           rows = sort
             [ s | s <- dbToSentences (readView st), pref `isPrefixOf` s ]
       in if null rows then ["no one is in practice " ++ pid]
+         else rows
+  | Just suffix <- stripPrefix "practiced as " q =
+      -- 对齐 Host practicedAsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "practice." `isPrefixOf` s
+            , let rest = drop (length ("practice." :: String)) s
+            , let parts = splitDots rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == suffix
+            ]
+      in if null rows then ["nobody practiced as " ++ suffix]
          else rows
   | Just who <- stripPrefix "kin of " q =
       -- 对齐 Host *Of：读闭合视图。

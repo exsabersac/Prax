@@ -378,6 +378,10 @@ tests = testGroup "Prax.Host"
         ]
       practitionersOf st "hunt" @?= ["practice.hunt.ben.did.track"]
       practitionersOf st "void" @?= []
+      practicedAsOf st "did.mix" @?= ["practice.bake.ana.did.mix"]
+      practicedAsOf st "crew.ben" @?= ["practice.bake.ana.crew.ben"]
+      practicedAsOf st "did.track" @?= ["practice.hunt.ben.did.track"]
+      practicedAsOf st "void" @?= []
   
   , testCase "demandedOf / festivalsOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState

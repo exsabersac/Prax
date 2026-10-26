@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, obligedAsOf, breachesOf, violatedAsOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, obligedAsOf, breachesOf, violatedAsOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, practicedAsOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -409,6 +409,13 @@ runPractitioners (pid : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (practitionersOf st pid)
 runPractitioners _ = putStrLn "usage: prax practitioners <pid> <world>"
+
+-- | List practice leaves for action suffix: @prax practiced <suffix> <world>@.
+runPracticed :: [String] -> IO ()
+runPracticed (suffix : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (practicedAsOf st suffix)
+runPracticed _ = putStrLn "usage: prax practiced <suffix> <world>"
 
 runDemanded :: [String] -> IO ()
 runDemanded (who : ws) =
@@ -1158,6 +1165,7 @@ main = do
     ("aged" : ws)     -> runAged ws
     ("projects" : ws) -> runProjects ws
     ("practitioners" : ws) -> runPractitioners ws
+    ("practiced" : ws)  -> runPracticed ws
     ("demanded" : ws) -> runDemanded ws
     ("demanders" : ws) -> runDemanders ws
     ("demandees" : ws) -> runDemandees ws

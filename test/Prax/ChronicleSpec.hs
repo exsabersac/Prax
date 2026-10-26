@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf, owedOf, obligedAsOf, violatedAsOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf, owedOf, obligedAsOf, violatedAsOf, practicedAsOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1327,5 +1327,24 @@ tests = testGroup "Prax.Chronicle"
         ["violated.ben.courtesy"]
       askChronicle st "violated as void" @?=
         ["nobody violated as void"]
+
+  , testCase "practicedAsOf / practiced as dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "practice.bake.ana.did.mix"
+            , Insert "practice.bake.ana.crew.ben"
+            , Insert "practice.hunt.ben.did.track"
+            , Insert "practice.bake.cass.did.mix"
+            ]
+      sort (practicedAsOf st "did.mix") @?=
+        ["practice.bake.ana.did.mix", "practice.bake.cass.did.mix"]
+      practicedAsOf st "crew.ben" @?= ["practice.bake.ana.crew.ben"]
+      practicedAsOf st "did.track" @?= ["practice.hunt.ben.did.track"]
+      practicedAsOf st "void" @?= []
+      askChronicle st "practiced as did.mix" @?=
+        ["practice.bake.ana.did.mix", "practice.bake.cass.did.mix"]
+      askChronicle st "practiced as crew.ben" @?=
+        ["practice.bake.ana.crew.ben"]
+      askChronicle st "practiced as void" @?=
+        ["nobody practiced as void"]
 
   ]

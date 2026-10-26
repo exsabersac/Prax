@@ -3253,3 +3253,13 @@
 - **做了什么**：SandboxSpec 追加 silence×wed/squeeze；church silence×parade；kyle churchParade 负例；dual tear 挡再买；parade once×inquisit；无 return 不回；brand×rally/cry；churchParade once×denounce；break util；dual repay×正义；sandboxDesires 词汇；flee×return×buy/tear。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（563 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v592 — Host practicedAsOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`practicedAsOf` 枚举 `practice.*.*.<suffix>`；CLI `prax practiced <suffix> <world>`。
+
+## v593 — Chronicle practiced as + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`practiced as` 返回实践动作后缀侧叶；Spec 钉 Host 与 Chronicle 空集。
