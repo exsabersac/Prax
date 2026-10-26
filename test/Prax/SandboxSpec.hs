@@ -2096,4 +2096,41 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (exists "threatened.inquisit.priest.bob" (db stSq))
       assertBool "debt still" (exists "debt.ira.bob.favor" (db stSq))
 
+
+  , testCase "wed × inquisit: fran wedding unlocks mill; church squeeze stays" $ do
+      -- fran wed unlocks mill regard/squeeze; priest inquisit squeeze independent.
+      let stBel = performOutcome (Insert "fran.believes.stole.bob.carol") inquisitSeed
+          stSq0 = activateSqueeze stBel
+      assertBool "before: no fran regard"
+        (not (exists "regards.fran.bob.thief" (readView stSq0)))
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" stSq0)
+      let stWed = doAct "fran" "wed into the mill" stSq0
+      assertBool "after: fran regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      assertBool "fran squeeze yes" (hasAct "fran" "squeeze bob" stWed)
+      assertBool "priest squeeze still" (hasAct "priest" "squeeze bob" stWed)
+      let stFran = doAct "fran" "squeeze bob" stWed
+      assertBool "threatened mill"
+        (exists "threatened.squeeze.fran.bob" (db stFran))
+      assertBool "priest squeeze after" (hasAct "priest" "squeeze bob" stFran)
+      let stP = doAct "priest" "squeeze bob" stFran
+      assertBool "threatened church"
+        (exists "threatened.inquisit.priest.bob" (db stP))
+
+  , testCase "cry × inquisit: market cry and church squeeze stay independent" $ do
+      -- dave mill cry at market + priest inquisit squeeze share no once-gate.
+      let st0 = doAct "dave" "learn" inquisitSeed
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "priest squeeze at market" (hasAct "priest" "squeeze bob" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "squeeze after cry" (hasAct "priest" "squeeze bob" stCry)
+      let stSq = doAct "priest" "squeeze bob" stCry
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+      assertBool "cry spent" (not (hasAct "dave" "cry the theft" stSq))
+
   ]

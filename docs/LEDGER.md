@@ -2041,3 +2041,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec silence × inquisit（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v369 — Sandbox 婚入×教会胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 婚入打开磨坊 squeeze，priest inquisit squeeze 并行不互相消耗。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v370 — Sandbox 市集喊冤×教会胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉市集 cry 与 inquisit squeeze 无共享 once-gate。无新实践 / 无 want 改动。
+- **测**：SandboxSpec cry × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
