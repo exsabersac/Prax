@@ -33,6 +33,10 @@ module Prax.Worlds.Sandbox
   , cryDesireName
   , fleeDesireName
   , returnDesireName
+  , millSilenceDesireName
+  , millBreakSilenceDesireName
+  , churchSilenceDesireName
+  , churchBreakSilenceDesireName
   ) where
 
 import           Prax.Query (Condition (..))
@@ -82,9 +86,9 @@ sandboxDesires =
       (Want [ Match "exiled.eve" ] 12)
   , Desire "joins-mill"
       (Want [ Match "member.Owner!mill" ] 10)
-  , Desire "buys-ira-silence"
+  , Desire millSilenceDesireName
       (Want [ Match "debt.ira.bob.favor" ] 14)
-  , Desire "breaks-silence-deal"
+  , Desire millBreakSilenceDesireName
       (Want [ Match "revoked.Owner.bob" ] 10)
   , Desire cryDesireName
       (Want [ Match "cried.Owner.bob" ] 7)
@@ -101,10 +105,10 @@ sandboxDesires =
   , Desire "punishes-bob-heretic"
       -- 权重 9 > eve 审查 8 / 磨坊控告 8：双压种子上优先钉 bob 异端轨
       (Want [ Match "censured.Owner.bob" ] 9)
-  , Desire "buys-church-silence"
+  , Desire churchSilenceDesireName
       -- eve 向已站队教会证人买人情封口（异端轨）
       (Want [ Match "debt.gale.Owner.church-favor" ] 14)
-  , Desire "breaks-church-silence"
+  , Desire churchBreakSilenceDesireName
       (Want [ Match "revoked.Owner.eve" ] 10)
   , inquisitDesire
   , fearsBrandHereticDesire
@@ -461,6 +465,18 @@ activateInquisit = performOutcome (Insert "practice.churchInquisit")
 
 
 -- | 磨坊烙印游街 want 名（默认阵容不挂）。
+millSilenceDesireName :: String
+millSilenceDesireName = "buys-ira-silence"
+
+millBreakSilenceDesireName :: String
+millBreakSilenceDesireName = "breaks-silence-deal"
+
+churchSilenceDesireName :: String
+churchSilenceDesireName = "buys-church-silence"
+
+churchBreakSilenceDesireName :: String
+churchBreakSilenceDesireName = "breaks-church-silence"
+
 fleeDesireName :: String
 fleeDesireName = "flees-mill"
 

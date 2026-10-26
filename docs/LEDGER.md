@@ -2743,3 +2743,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"compliers of "` / `"compliees of "` / `"defiers of "` / `"defiees of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v490 — Sandbox 沉默债 want 名导出（钉既有门禁）
+
+- **做了什么**：导出 `millSilenceDesireName`/`millBreakSilenceDesireName`/`churchSilenceDesireName`/`churchBreakSilenceDesireName`；`sandboxDesires` 改用常量。
+- **测**：SandboxSpec sandboxDesires: silence want names registered。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v491 — Sandbox 无买沉默 want 时不自选（钉既有门禁）
+
+- **做了什么**：Spec 钉 ira 已 learn 后门开但 bob 无 millSilenceDesire 时不买；gale 已 hear 后门开但 eve 无 churchSilenceDesire 时不买。无新实践。
+- **测**：SandboxSpec wants: without millSilenceDesire / without churchSilenceDesire。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。

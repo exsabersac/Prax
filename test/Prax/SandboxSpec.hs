@@ -27,7 +27,9 @@ import           Prax.Worlds.Sandbox
   , activateParade, activateChurchParade
   , paradeDesireName, churchParadeDesireName
   , rallyDesireName, cryDesireName
-  , fleeDesireName, returnDesireName )
+  , fleeDesireName, returnDesireName
+  , millSilenceDesireName, millBreakSilenceDesireName
+  , churchSilenceDesireName, churchBreakSilenceDesireName )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -3149,6 +3151,40 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
   , testCase "sandboxDesires: flee/return names registered" $ do
       assertBool "flee vocab" (any ((== fleeDesireName) . desireName) sandboxDesires)
       assertBool "return vocab" (any ((== returnDesireName) . desireName) sandboxDesires)
+
+
+
+  , testCase "wants: without millSilenceDesire bob does not buy ira silence" $ do
+      let st0 = doAct "ira" "learn" sandboxWorld
+          bob' = (actorOf "bob" st0) { charDesires = [] }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bob' else c
+                  | c <- characters st0 ] }
+      assertBool "buy open" (hasAct "bob" "buy ira" st)
+      let lab = pickLabel "bob" st
+      assertBool ("not buy silence, got " ++ show lab)
+        (case lab of
+           Just l -> not ("buy" `isInfixOf` l || "silence" `isInfixOf` l)
+           Nothing -> True)
+
+  , testCase "wants: without churchSilenceDesire eve does not buy gale silence" $ do
+      let st0 = doAct "gale" "hear" sandboxWorld
+          eve' = (actorOf "eve" st0) { charDesires = [] }
+          st = st0 { characters =
+                  [ if charName c == "eve" then eve' else c
+                  | c <- characters st0 ] }
+      assertBool "buy open" (hasAct "eve" "buy gale" st || hasAct "eve" "church" st)
+      let lab = pickLabel "eve" st
+      assertBool ("not buy church silence, got " ++ show lab)
+        (case lab of
+           Just l -> not ("buy" `isInfixOf` l)
+           Nothing -> True)
+
+  , testCase "sandboxDesires: silence want names registered" $ do
+      assertBool "mill buy" (any ((== millSilenceDesireName) . desireName) sandboxDesires)
+      assertBool "mill break" (any ((== millBreakSilenceDesireName) . desireName) sandboxDesires)
+      assertBool "church buy" (any ((== churchSilenceDesireName) . desireName) sandboxDesires)
+      assertBool "church break" (any ((== churchBreakSilenceDesireName) . desireName) sandboxDesires)
 
 
   ]
