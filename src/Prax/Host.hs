@@ -30,6 +30,7 @@
 -- v423：'siblingsOf' 兄弟姐妹叶（对齐 Chronicle siblings of）。
 -- v429：'parentsOf'/'childrenOf' 亲子叶（parent.<p>.<c>）。
 -- v445：'grandparentsOf'/'grandchildrenOf'/'inLawsOf' 祖孙/姻亲叶。
+-- v442：'spousesOf' 婚偶叶（married.<who>.* 主体侧）。
 module Prax.Host
   ( step
   , stepExact
@@ -74,6 +75,7 @@ module Prax.Host
   , grandparentsOf
   , grandchildrenOf
   , inLawsOf
+  , spousesOf
   , notoriousOf
   , esteemedOf
   , scornedOf
@@ -472,6 +474,14 @@ inLawsOf st who = sort
   , not (null x)
   , drop 1 after == who
   ]
+
+-- | 闭合视图中 @who@ 作为主体的婚偶叶（@married.<who>.*@；对齐 Chronicle @"spouses of "@）。
+spousesOf :: PraxState -> String -> [String]
+spousesOf st who =
+  sort [ s | s <- queryView st
+           , let pref = "married." ++ who ++ "."
+           , pref `isPrefixOf` s
+           , '.' `notElem` drop (length pref) s ]
 
 -- | 闭合视图中 @who@ 的恶名叶（@notorious.<who>.*@）。
 notoriousOf :: PraxState -> String -> [String]

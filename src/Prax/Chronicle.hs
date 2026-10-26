@@ -130,7 +130,7 @@ formatEvent ev rs =
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
--- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、
+-- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
@@ -306,6 +306,14 @@ askChronicle st q
               | s <- rows
               , let rest = drop (length ("inLaw." :: String)) s
               , let (x, _) = break (== '.') rest ]
+  | Just who <- stripPrefix "spouses of " q =
+      -- 对齐 Host spousesOf：读闭合视图；短语化配偶名。
+      let prefix = "married." ++ who ++ "."
+          sps = sort [ drop (length prefix) s
+                     | s <- dbToSentences (readView st), prefix `isPrefixOf` s
+                     , '.' `notElem` drop (length prefix) s ]
+      in if null sps then [who ++ " has no known spouses"]
+         else map ((who ++ " spouse ") ++) sps
   | Just who <- stripPrefix "branded of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

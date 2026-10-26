@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -711,5 +711,17 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "grandchildren of void" @?=
         ["void has no known grandchildren"]
       askChronicle st "in-laws of void" @?= ["void has no known in-laws"]
+
+  , testCase "askChronicle spouses dual Host spousesOf raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "married.fran.carol"
+            , Insert "married.carol.fran"
+            , Insert "married.dave.eve"
+            ]
+      spousesOf st "fran" @?= ["married.fran.carol"]
+      spousesOf st "carol" @?= ["married.carol.fran"]
+      askChronicle st "spouses of fran" @?= ["fran spouse carol"]
+      askChronicle st "spouses of carol" @?= ["carol spouse fran"]
+      askChronicle st "spouses of void" @?= ["void has no known spouses"]
 
   ]

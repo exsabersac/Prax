@@ -590,4 +590,15 @@ tests = testGroup "Prax.Host"
       inLawsOf st "eve" @?= ["inLaw.mia.eve", "inLaw.pat.eve"]
       inLawsOf st "void" @?= []
 
+  , testCase "spousesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "married.fran.carol"
+                , Insert "married.carol.fran"
+                , Insert "married.dave.eve"
+                , Insert "flag.x" ]
+      spousesOf st "fran" @?= ["married.fran.carol"]
+      spousesOf st "carol" @?= ["married.carol.fran"]
+      spousesOf st "dave" @?= ["married.dave.eve"]
+      spousesOf st "void" @?= []
+
   ]
