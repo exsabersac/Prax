@@ -242,7 +242,7 @@ tests = testGroup "Prax.Host"
       regardsToward st "eve" @?= ["regards.dave.eve.hero"]
       factionsNamed st @?= ["choir", "guild", "mill"]
 
-  , testCase "traitsOf / moodsOf / bondsOf / kinOf / notoriousOf from the view" $ do
+  , testCase "traitsOf / moodsOf / bondsOf / kinOf / notoriousOf / notorietiesOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "trait.ana.brave"
                 , Insert "trait.ana.stubborn"
@@ -256,6 +256,7 @@ tests = testGroup "Prax.Host"
                 , Insert "sibling.ben.dave"
                 , Insert "notorious.ana.thief"
                 , Insert "notorious.ben.liar"
+                , Insert "notorious.cass.thief"
                 , Insert "flag.x" ]
       sort (traitsOf st "ana") @?= ["trait.ana.brave", "trait.ana.stubborn"]
       traitsOf st "ben" @?= ["trait.ben.shy"]
@@ -270,6 +271,9 @@ tests = testGroup "Prax.Host"
       notoriousOf st "ana" @?= ["notorious.ana.thief"]
       notoriousOf st "ben" @?= ["notorious.ben.liar"]
       notoriousOf st "void" @?= []
+      sort (notorietiesOf st "thief") @?= ["notorious.ana.thief", "notorious.cass.thief"]
+      notorietiesOf st "liar" @?= ["notorious.ben.liar"]
+      notorietiesOf st "void" @?= []
 
   , testCase "esteemedOf / scornedOf / beliefsOf / believersOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState

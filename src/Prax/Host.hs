@@ -19,6 +19,7 @@
 -- v534：'affiliatorsOf' 派系次级归属人侧（affiliate.*.<faction>）。
 -- v544：'practitionersOf' 实践 id 侧叶（practice.<pid>.*）。
 -- v547：'believersOf' 信念内容侧叶（*.believes.<prop>…）。
+-- v550：'notorietiesOf' 恶名标签侧叶（notorious.*.<label>）。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -105,6 +106,7 @@ module Prax.Host
   , inLawsOf
   , spousesOf
   , notoriousOf
+  , notorietiesOf
   , esteemedOf
   , esteemersOf
   , scornedOf
@@ -660,6 +662,25 @@ spousesOf st who =
 notoriousOf :: PraxState -> String -> [String]
 notoriousOf st who =
   sort [ s | s <- queryView st, ("notorious." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中恶名标签为 @label@ 的叶（@notorious.<who>.<label>@）。
+notorietiesOf :: PraxState -> String -> [String]
+notorietiesOf st label = sort
+  [ s
+  | s <- queryView st
+  , let pref = "notorious."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == label
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
 
 -- | 闭合视图中 @who@ 发出的赞誉叶（@esteemed.<who>.*@）。
 esteemedOf :: PraxState -> String -> [String]

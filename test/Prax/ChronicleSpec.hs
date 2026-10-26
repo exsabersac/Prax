@@ -24,7 +24,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              eyedOf, confrontedOf, wrongedOf,
                              recantedOf, shortTemperedOf, appetiteOf,
                              resentsOf, alliedOf, demandedOf,
-                             notoriousOf, regardsOf, regardsToward, factionsNamed,
+                             notoriousOf, notorietiesOf, regardsOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, affiliatorsOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
                              grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf, bondersOf, liarsOf)
@@ -1071,5 +1071,22 @@ tests = testGroup "Prax.Chronicle"
         ["ana.believes.at.ben.yard"]
       askChronicle st "believers of void" @?=
         ["no one believes void"]
+
+  , testCase "notorietiesOf / notorieties of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "notorious.ana.thief"
+            , Insert "notorious.ben.liar"
+            , Insert "notorious.cass.thief"
+            ]
+      sort (notorietiesOf st "thief") @?=
+        ["notorious.ana.thief", "notorious.cass.thief"]
+      notorietiesOf st "liar" @?= ["notorious.ben.liar"]
+      notorietiesOf st "void" @?= []
+      askChronicle st "notorieties of thief" @?=
+        ["notorious.ana.thief", "notorious.cass.thief"]
+      askChronicle st "notorieties of liar" @?=
+        ["notorious.ben.liar"]
+      askChronicle st "notorieties of void" @?=
+        ["nobody is notorious as void"]
 
   ]

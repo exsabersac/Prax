@@ -3028,3 +3028,13 @@
 - **做了什么**：SandboxSpec 追加 church repay→gale censure；revoke mill/church×对侧 buy 独立与 dual revoke；mill exile×church squeeze；cry once×churchParade；parade once×cry；brand 后 parade 非窗立刻开而 cry 等 market；kyle exileBobDesire；flee 无买→return 再开 buy；tear×对侧 buy；churchParade=parade util；banish×mill cry。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（381 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v550 — Host notorietiesOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`notorietiesOf` 枚举 `notorious.*.<label>`；CLI `prax notorieties <label> <world>`。
+
+## v551 — Chronicle notorieties of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`notorieties of` 返回恶名标签侧叶；Spec 钉 Host 与 Chronicle 空集。

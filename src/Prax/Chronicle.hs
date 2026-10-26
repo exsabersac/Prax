@@ -148,7 +148,7 @@ formatEvent ev rs =
 -- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"chatters of "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"bonders of "++who@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
--- @"kin of "++who@、@"notorious of "++who@、
+-- @"kin of "++who@、@"notorious of "++who@、@"notorieties of "++label@、
 -- @"regards toward "++who@、@"what factions"@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
@@ -1360,6 +1360,21 @@ askChronicle st q
             [ s | s <- dbToSentences (readView st)
                 , ("notorious." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no notoriety marks"]
+         else rows
+  | Just label <- stripPrefix "notorieties of " q =
+      -- 对齐 Host notorietiesOf：读闭合视图。
+      let pref = "notorious."
+          rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , pref `isPrefixOf` s
+            , let rest = drop (length pref) s
+            , let (who, lab) = splitLastDot rest
+            , lab == label
+            , not (null who)
+            , '.' `notElem` who
+            ]
+      in if null rows then ["nobody is notorious as " ++ label]
          else rows
   | Just target <- stripPrefix "regards toward " q =
       -- 对齐 Host regardsToward：闭合视图中指向 target 的 regards.*.target.*。
