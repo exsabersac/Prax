@@ -2430,127 +2430,119 @@ Tier 3 — 宿主游戏边界：
 - **测**：DeonticSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v437 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
-
-## v438 — Host parentsOf/childrenOf + CLI
+## v437 — Host parentsOf/childrenOf + CLI
 
 - **做了什么**：闭合视图枚举 `parent.<p>.<who>` / `parent.<who>.<c>`；CLI `prax parents`/`children`；help 同步。无实践 / 无 want 改动。
 - **测**：HostSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v439 — Chronicle parents/children of + Host 对偶
+## v438 — Chronicle parents/children of + Host 对偶
 
 - **做了什么**：`askChronicle` 增加 `"parents of "` / `"children of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v440 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
+## v439 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave brand parade 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v438 — Sandbox 异端沉默×市集声援交叉（钉既有门禁）
+## v440 — Sandbox 异端沉默×市集声援交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave market rally 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v439 — Sandbox 异端沉默×磨坊放逐交叉（钉既有门禁）
+## v441 — Sandbox 异端沉默×磨坊放逐交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave denounce→exile 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v440 — Sandbox 双沉默轨独立（磨坊×异端）（钉既有门禁）
+## v442 — Sandbox 双沉默轨独立（磨坊×异端）（钉既有门禁）
 
 - **做了什么**：Spec 钉 ira favor 与 gale church-favor 双债并存，dave mill denounce 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec dual silence（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v441 — Host parentsOf/childrenOf + CLI
-
-## v445 — Sandbox 烙印游街 want 词汇（磨坊）
-
-
-- **做了什么**：`sandboxDesires` 增 `parades-branded-thief`（Match `paraded.Owner.bob`，权重 10）；导出 `paradeDesireName`。主阵容默认不挂（免搅金轨迹）；Spec 覆盖后 `pickAction` 在 brand 后自选游街。
-- **测**：SandboxSpec wants: paradeSeed dave parades after brand；cast 默认无挂 + 词汇注册。
-- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未默认激活 millBrandParade。
-
-## v442 — Chronicle parents/children of + Host 对偶
-
-- **做了什么**：`askChronicle` 增加 `"parents of "` / `"children of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
-- **测**：ChronicleSpec（针对性；未跑全量）。
-- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
-
-## v446 — Sandbox 异端烙印游街 want 词汇（教会）
-
-
-## v445 — Host grandparentsOf/grandchildrenOf/inLawsOf + CLI
+## v443 — Host grandparentsOf/grandchildrenOf/inLawsOf + CLI
 
 - **做了什么**：闭合视图枚举 `grandparent.<g>.<who>` / `grandparent.<who>.<c>` / `inLaw.<x>.<who>`；CLI `prax grandparents`/`grandchildren`/`in-laws`；补 siblings/parents/children/explain help。无实践 / 无 want 改动。
 - **测**：HostSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v446 — Chronicle grandparents/grandchildren/in-laws of + Host 对偶
+## v444 — Chronicle grandparents/grandchildren/in-laws of + Host 对偶
 
 - **做了什么**：`askChronicle` 增加 `"grandparents of "` / `"grandchildren of "` / `"in-laws of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v447 — Arc arcIs/hasArc/everArc 世界求值
+## v445 — Arc arcIs/hasArc/everArc 世界求值
 
 - **做了什么**：Arc Spec 钉 enterArc/leaveArc 世界上 arcIs/hasArcIs/hasArc/everArc 与净世界上 neverArc/lacksArc。无新实践 / 无 want 改动。
 - **测**：ArcSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v448 — Beliefs believesThat/holdsBelief/everBelieves 世界求值
+## v446 — Beliefs believesThat/holdsBelief/everBelieves 世界求值
 
 - **做了什么**：Beliefs Spec 钉 believe 世界上 believesThat/holdsBelief/everBelieves/hasBelief 与净世界上 neverBelieves/doubts。无新实践 / 无 want 改动。
 - **测**：BeliefsSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v449 — Project isCrewOf/hasCompletedPart/everCrew 世界求值
+## v447 — Project isCrewOf/hasCompletedPart/everCrew 世界求值
 
 - **做了什么**：Project Spec 钉 Insert crew/did 世界上 isCrewOf/hasCompletedPart/everCrew/everCompletedPart 与净世界上 never*。无新实践 / 无 want 改动。
 - **测**：ProjectSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v450 — Reactions violationOf/everViolated 世界求值
+## v448 — Reactions violationOf/everViolated 世界求值
 
 - **做了什么**：Reactions Spec 钉 markViolation 世界上 violationOf/hasViolation/everViolated/everBreach 与净世界上 neverViolated/noViolation。无新实践 / 无 want 改动。
 - **测**：ReactionsSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v451 — Schedule duringFestival/hasFestival 世界求值
+## v449 — Schedule duringFestival/hasFestival 世界求值
 
 - **做了什么**：Schedule Spec 钉 Insert festival 叶后 duringFestival/hasFestival 与净世界上 outsideFestival/lacksFestival。无新实践 / 无 want 改动。
 - **测**：ScheduleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v452 — Sight lastKnownAt/knownWhere 世界求值
+## v450 — Sight lastKnownAt/knownWhere 世界求值
 
 - **做了什么**：Sight Spec 钉 believes.at Insert 世界上 lastKnownAt/knownWhere/hasKnownWhere 与净世界上 unknownWhere/lacksKnownWhere。无新实践 / 无 want 改动。
 - **测**：SightSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v453 — Core hasBond/everBond 世界求值
+## v451 — Core hasBond/everBond 世界求值
 
 - **做了什么**：Core Spec 钉 setBond 世界上 hasBond/everBond（含对称叶）与净世界上 neverBond/lacksBond。无新实践 / 无 want 改动。
 - **测**：CoreSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v454 — Conversation talkingWith 世界求值
+## v452 — Conversation talkingWith 世界求值
 
 - **做了什么**：Conversation Spec 钉 beginConversation 世界上 talkingWith（规范化序路径）。无新实践 / 无 want 改动。
 - **测**：ConversationSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v455 — Kin everInLaw/isInLawOf 世界求值
+## v453 — Kin everInLaw/isInLawOf 世界求值
 
 - **做了什么**：Kin Spec 钉 weddedWorld readView 上 isInLawOf/hasInLawOf/everInLaw 与净世界上 neverInLaw。无新实践 / 无 want 改动。
 - **测**：KinSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v454 — Sandbox 烙印游街 want 词汇（磨坊）
+
+- **做了什么**：`sandboxDesires` 增 `parades-branded-thief`（Match `paraded.Owner.bob`，权重 10）；导出 `paradeDesireName`。主阵容默认不挂（免搅金轨迹）；Spec 覆盖后 `pickAction` 在 brand 后自选游街。
+- **测**：SandboxSpec wants: paradeSeed dave parades after brand；cast 默认无挂 + 词汇注册。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未默认激活 millBrandParade。
+
+## v455 — Sandbox 异端烙印游街 want 词汇（教会）
+
+- **做了什么**：`sandboxDesires` 增 `parades-branded-heretic`（Match `paraded.Owner.bob`，权重 10，对齐 inquisit 轨）；导出 `churchParadeDesireName`。主阵容默认不挂；Spec 覆盖后 priest 在 heretic brand 后自选游街。
+- **测**：SandboxSpec wants: churchParadeSeed priest parades after heretic brand。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未默认激活 churchBrandParade。
 
 ## v456 — Host spousesOf + CLI
 
