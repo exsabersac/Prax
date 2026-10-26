@@ -152,13 +152,15 @@ tests = testGroup "Prax.Derive (m(X) closure)"
       assertBool "body not a head" (not (hasPath "parent.X.Y"))
 
   , testCase "runCooked closes a delta exactly as closureFrom on the same base" $ do
+      -- closureFrom enters as run (model ∪ facts, delta = facts); mirror that entry.
       let axs = [ axiom [ Match "parent.X.Y" ] [ "elder.X" ] ]
           rules = cookAxioms axs
           base = insertAll [ "parent.ada.bea" ] emptyDb
           closed = either (error . show) id (closure axs base)
-          -- fresh fact as delta db
-          delta = insert "parent.cal.dun" emptyDb
-          cont = either (error . show) id (runCooked rules closed delta)
-          viaFrom = either (error . show) id (closureFrom axs closed [ "parent.cal.dun" ])
+          facts = [ "parent.cal.dun" ]
+          model = insertAll facts closed
+          delta = insertAll facts emptyDb
+          cont = either (error . show) id (runCooked rules model delta)
+          viaFrom = either (error . show) id (closureFrom axs closed facts)
       dbToLabeledSentences cont @?= dbToLabeledSentences viaFrom
   ]

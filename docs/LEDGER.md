@@ -2982,3 +2982,10 @@
 - **做了什么**：DeriveSpec 钉 runCooked 对已闭模型上的 delta 与 closureFrom 一致。无新实践 / 无 want 改动。
 - **测**：DeriveSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v541 — Derive runCooked Spec 入口形修正
+
+- **做了什么**：runCooked 钉改为与 closureFrom 同入口（model ∪ facts, delta = facts）。无新实践 / 无 want 改动。
+- **测**：DeriveSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
