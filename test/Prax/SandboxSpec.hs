@@ -3436,4 +3436,51 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (millSilenceDesireName `elem` bob)
 
 
+
+  , testCase "wants: squeeze weight beats millCry when squeeze open" $ do
+      -- coerce weight 10 > cry 7 / denounce 8: dave with squeeze+millCry squeezes outside harvest.
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+          dave' = (actorOf "dave" st0)
+                    { charDesires = [squeezeDesireName] ++ millCry }
+          bob' = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters st0 ] }
+      assertBool "outside" (not (exists "festival.harvest" (db st)))
+      assertBool "squeeze open" (hasAct "dave" "squeeze bob" st)
+      pickLabel "dave" st @?= Just "dave: squeeze bob for a confession"
+
+  , testCase "wants: inquisit weight beats bobHeresyJustice when squeeze open" $ do
+      let st0 = inquisitSeed
+          priest' = (actorOf "priest" st0)
+                      { charDesires = [inquisitDesireName] ++ bobHeresyJustice }
+          st = st0 { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters st0 ] }
+      assertBool "squeeze open" (hasAct "priest" "squeeze bob" st)
+      pickLabel "priest" st @?= Just "priest: squeeze bob for a recantation"
+
+  , testCase "wants: flee weight beats millCry when abandon open" $ do
+      -- flee(9) > cry(7)/denounce(8) outside harvest after learn.
+      let st0 = doAct "carol" "learn" sandboxWorld
+          carol' = (actorOf "carol" st0)
+                     { charDesires = [fleeDesireName] ++ millCry }
+          st = st0 { characters =
+                  [ if charName c == "carol" then carol' else c
+                  | c <- characters st0 ] }
+      assertBool "abandon open" (hasAct "carol" "abandon" st)
+      assertBool "outside harvest" (not (exists "festival.harvest" (db st)))
+      pickLabel "carol" st @?= Just "carol: abandon the mill for the guild"
+
+  , testCase "wants: affiliate kyle never picks mill justice acts" $ do
+      -- kyle affiliate-only, empty wants → Wait; gates stay closed for denounce.
+      let st = sandboxWorld
+      assertBool "kyle no denounce" (not (hasAct "kyle" "denounce" st))
+      assertBool "kyle no learn theft path"
+        (not (hasAct "kyle" "learn of the theft" st))
+      pickLabel "kyle" st @?= Just "kyle: Wait a moment"
+
+
   ]

@@ -2838,3 +2838,9 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：阵容 bob 与 Spec 种子/断言改用沉默/正义/声援/放逐常量；Spec 钉 tear(10) 压 millJustice、church tear 压 churchJustice；无 seeksBobHeresy 不 hear of bob；默认阵容不挂 coerce/parade/fearsBrand。
 - **测**：SandboxSpec wants: breakSilence weight / church breakSilence weight / without seeksBobHeresy；cast default unhooks。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v506 — Sandbox 权重交叉：胁迫/叛逃压正义 + affiliate 空转（钉既有门禁）
+
+- **做了什么**：Spec 钉 squeeze/inquisit 权重压 millCry/bobHeresyJustice；flee(9) 窗外压 millCry；kyle affiliate 空 want 只 Wait。无新实践。
+- **测**：SandboxSpec wants: squeeze/inquisit/flee weight；affiliate kyle never picks mill justice。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
