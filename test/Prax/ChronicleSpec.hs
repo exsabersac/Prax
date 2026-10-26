@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1188,5 +1188,41 @@ tests = testGroup "Prax.Chronicle"
         ["bond.cass.dave.rivals"]
       askChronicle st "bonded of void" @?=
         ["nobody is bonded void"]
+
+  , testCase "esteemsOf / esteems of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "esteemed.ana.ben.hero"
+            , Insert "esteemed.ana.cass.sage"
+            , Insert "esteemed.dave.ben.hero"
+            , Insert "esteemed.cass.ben"
+            ]
+      sort (esteemsOf st "hero") @?=
+        ["esteemed.ana.ben.hero", "esteemed.dave.ben.hero"]
+      esteemsOf st "sage" @?= ["esteemed.ana.cass.sage"]
+      esteemsOf st "void" @?= []
+      askChronicle st "esteems of hero" @?=
+        ["esteemed.ana.ben.hero", "esteemed.dave.ben.hero"]
+      askChronicle st "esteems of sage" @?=
+        ["esteemed.ana.cass.sage"]
+      askChronicle st "esteems of void" @?=
+        ["nobody esteems as void"]
+
+  , testCase "scornsOf / scorns of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "scorned.ana.dave.thief"
+            , Insert "scorned.ben.dave.thief"
+            , Insert "scorned.cass.eve.liar"
+            , Insert "scorned.ben.dave"
+            ]
+      sort (scornsOf st "thief") @?=
+        ["scorned.ana.dave.thief", "scorned.ben.dave.thief"]
+      scornsOf st "liar" @?= ["scorned.cass.eve.liar"]
+      scornsOf st "void" @?= []
+      askChronicle st "scorns of thief" @?=
+        ["scorned.ana.dave.thief", "scorned.ben.dave.thief"]
+      askChronicle st "scorns of liar" @?=
+        ["scorned.cass.eve.liar"]
+      askChronicle st "scorns of void" @?=
+        ["nobody scorns as void"]
 
   ]

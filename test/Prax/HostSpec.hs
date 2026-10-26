@@ -310,8 +310,13 @@ tests = testGroup "Prax.Host"
                 , Insert "flag.x" ]
       sort (esteemedOf st "ana") @?= ["esteemed.ana.ben.hero", "esteemed.ana.cass.sage"]
       esteemedOf st "void" @?= []
+      esteemsOf st "hero" @?= ["esteemed.ana.ben.hero"]
+      esteemsOf st "sage" @?= ["esteemed.ana.cass.sage"]
+      esteemsOf st "void" @?= []
       scornedOf st "ana" @?= ["scorned.ana.dave.thief"]
       scornedOf st "ben" @?= ["scorned.ben.dave.thief"]
+      sort (scornsOf st "thief") @?= ["scorned.ana.dave.thief", "scorned.ben.dave.thief"]
+      scornsOf st "void" @?= []
       sort (beliefsOf st "ana") @?=
         ["ana.believes.at.ben.yard", "ana.believes.stole.loaf.seen"]
       beliefsOf st "ben" @?= ["ben.believes.flag.x"]

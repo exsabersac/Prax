@@ -3145,3 +3145,13 @@
 - **做了什么**：SandboxSpec 追加 mill/church silence debt×对侧 cry/squeeze；kyle iraCry 负买/撕；双 parade once×squeeze 仍关；return×parade/cry 恢复；punishesBobHeretic util；dual brand×dual parade once×cry；mill denounce×church hear bob；church censure×mill learn 出窗；cast priest/gale；flee×fran wed；无 iraJustice 不 denounce。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（465 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v572 — Host esteemsOf / scornsOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`esteemsOf` 枚举 `esteemed.*.*.<label>`；`scornsOf` 枚举 `scorned.*.*.<label>`；CLI `prax esteems`/`prax scorns`。
+
+## v573 — Chronicle esteems of / scorns of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`esteems of`/`scorns of` 返回赞誉/蔑视标签侧叶；Spec 钉 Host 与 Chronicle 空集。

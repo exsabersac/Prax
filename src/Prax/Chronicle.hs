@@ -1373,6 +1373,19 @@ askChronicle st q
          else [ a ++ " esteemer of " ++ who
               | s <- rows
               , let a = head (splitDot (drop (length ("esteemed." :: String)) s)) ]
+  | Just label <- stripPrefix "esteems of " q =
+      -- 对齐 Host esteemsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "esteemed." `isPrefixOf` s
+            , let rest = drop (length ("esteemed." :: String)) s
+            , let parts = splitDot rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == label
+            ]
+      in if null rows then ["nobody esteems as " ++ label]
+         else rows
   | Just who <- stripPrefix "scorned of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
@@ -1393,6 +1406,19 @@ askChronicle st q
          else [ a ++ " scorner of " ++ who
               | s <- rows
               , let a = head (splitDot (drop (length ("scorned." :: String)) s)) ]
+  | Just label <- stripPrefix "scorns of " q =
+      -- 对齐 Host scornsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "scorned." `isPrefixOf` s
+            , let rest = drop (length ("scorned." :: String)) s
+            , let parts = splitDot rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == label
+            ]
+      in if null rows then ["nobody scorns as " ++ label]
+         else rows
   | Just who <- stripPrefix "beliefs of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
