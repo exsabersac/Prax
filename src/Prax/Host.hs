@@ -25,6 +25,7 @@
 -- v295：'wrongedOf'/'hungryOf' 冤屈/饥饿叶（Feud / Village）。
 -- v297：'shortTemperedOf'/'appetiteOf' 暴脾气/胃口叶（Village）。
 -- v299：'resentsOf' 怨恨叶（Feud 派生）。
+-- v301：'alliedOf' 同盟叶（Feud）。
 module Prax.Host
   ( step
   , stepExact
@@ -102,6 +103,7 @@ module Prax.Host
   , shortTemperedOf
   , appetiteOf
   , resentsOf
+  , alliedOf
   , checkpoint
   , restore
   ) where
@@ -845,6 +847,25 @@ resentsOf st who = sort
   | s <- queryView st
   , ("resents." ++ who ++ ".") `isPrefixOf` s
   ]
+
+
+
+-- | 闭合视图中与 @who@ 相关的同盟叶（@allied.<a>.<b>@ 任一侧；Feud）。
+alliedOf :: PraxState -> String -> [String]
+alliedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "allied." `isPrefixOf` s
+  , let rest = drop (length ("allied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

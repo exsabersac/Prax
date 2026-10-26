@@ -531,4 +531,15 @@ tests = testGroup "Prax.Host"
         ]
       resentsOf st "void" @?= []
 
+  , testCase "alliedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "allied.bob.carol"
+                , Insert "allied.dave.bob"
+                , Insert "flag.x" ]
+      alliedOf st "bob" @?=
+        [ "allied.bob.carol"
+        , "allied.dave.bob"
+        ]
+      alliedOf st "void" @?= []
+
   ]

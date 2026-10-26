@@ -1649,3 +1649,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec defection × parade。Village / GoldenDrive 金标准未动。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village/Feud 金标准。
 
+## v301 — Host alliedOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举同盟叶（`allied.<a>.<b>` 任一侧；Feud）；CLI `prax allied`；`askChronicle "allied of "`；help 同步。
+- **测**：HostSpec / ChronicleSpec（针对性；未跑全量）。
+
+## v302 — Sandbox 沉默×烙印游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 brand→activateParade 后 bob 买 ira 沉默债：harvest 下 ira denounce 被 `lacksOwes` 堵住，dave parade 仍开（游街不读 owes）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

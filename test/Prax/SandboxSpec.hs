@@ -1365,4 +1365,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "regard restored"
         (exists "regards.dave.bob.thief" (readView stBack))
       assertBool "parade restored" (hasAct "dave" "parade bob" stBack)
+
+  , testCase "silence × parade: debt blocks ira denounce; dave parade still open" $ do
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+          stIra = doAct "ira" "learn" stP
+          stBuy = doAct "bob" "buy ira's silence" stIra
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stBuy)
+      let stOpen = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stOpen))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stOpen))
+      assertBool "dave parade at harvest" (hasAct "dave" "parade bob" stOpen)
   ]

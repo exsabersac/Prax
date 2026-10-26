@@ -231,4 +231,11 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "resents of bob" @?= ["resents.bob.alice"]
       askChronicle st "resents of void" @?= ["void has no resentment marks"]
 
+  , testCase "askChronicle allied-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "allied.bob.carol"
+                , Insert "allied.dave.eve" ]
+      askChronicle st "allied of bob" @?= ["allied.bob.carol"]
+      askChronicle st "allied of void" @?= ["void has no alliance marks"]
+
   ]

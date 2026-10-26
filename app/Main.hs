@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -445,6 +445,12 @@ runResents (who : ws) =
   in mapM_ putStrLn (resentsOf st who)
 runResents _ = putStrLn "usage: prax resents <who> <world>"
 
+runAllied :: [String] -> IO ()
+runAllied (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (alliedOf st who)
+runAllied _ = putStrLn "usage: prax allied <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -565,6 +571,7 @@ usageText = unlines
   , "  prax short-tempered <who> <world>      list shortTempered leaves for who"
   , "  prax appetite <who> <world>            list appetite leaves for who"
   , "  prax resents <who> <world>             list resents leaves for who"
+  , "  prax allied <who> <world>              list allied leaves involving who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -642,6 +649,7 @@ main = do
     ("short-tempered" : ws) -> runShortTempered ws
     ("appetite" : ws)  -> runAppetite ws
     ("resents" : ws)   -> runResents ws
+    ("allied" : ws)    -> runAllied ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file
