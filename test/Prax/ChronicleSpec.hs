@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf, owedOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1280,5 +1280,22 @@ tests = testGroup "Prax.Chronicle"
         ["regards.dave.eve.hero"]
       askChronicle st "regards as void" @?=
         ["nobody regards as void"]
+
+  , testCase "owedOf / owed of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "debt.ana.ben.favor"
+            , Insert "debt.cass.ana.coin"
+            , Insert "debt.dave.eve.favor"
+            ]
+      sort (owedOf st "favor") @?=
+        ["debt.ana.ben.favor", "debt.dave.eve.favor"]
+      owedOf st "coin" @?= ["debt.cass.ana.coin"]
+      owedOf st "void" @?= []
+      askChronicle st "owed of favor" @?=
+        ["debt.ana.ben.favor", "debt.dave.eve.favor"]
+      askChronicle st "owed of coin" @?=
+        ["debt.cass.ana.coin"]
+      askChronicle st "owed of void" @?=
+        ["nobody owes void"]
 
   ]

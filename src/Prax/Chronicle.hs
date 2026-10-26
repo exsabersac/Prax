@@ -216,6 +216,19 @@ askChronicle st q
               , let rest = drop (length ("debt." :: String)) s
               , let parts = splitDot rest
               , let d = parts !! 1 ]
+  | Just content <- stripPrefix "owed of " q =
+      -- 对齐 Host owedOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "debt." `isPrefixOf` s
+            , let rest = drop (length ("debt." :: String)) s
+            , let parts = splitDots rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == content
+            ]
+      in if null rows then ["nobody owes " ++ content]
+         else rows
   | Just faction <- stripPrefix "leaders of " q =
       -- 对齐 Host leadersOf / CLI leaders：与 leads of 同义。
       let prefix = "leads." ++ faction ++ "."

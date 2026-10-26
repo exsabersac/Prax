@@ -28,6 +28,7 @@
 -- v575：'demandsOf' 催收内容标签侧叶。
 -- v578：'liedOf' 谎言内容标签侧叶。
 -- v582：'regardsAsOf' 站队标签侧叶。
+-- v585：'owedOf' 债务内容标签侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -95,6 +96,7 @@ module Prax.Host
   , debtsOf
   , creditorsOf
   , debtorsOf
+  , owedOf
   , obligationsOf
   , breachesOf
   , feelingsOf
@@ -509,6 +511,23 @@ debtorsOf st who = sort
   , let parts = splitDots rest
   , length parts >= 3
   , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中债务内容为 @content@ 的叶（@debt.<creditor>.<debtor>.<content>@）。
+owedOf :: PraxState -> String -> [String]
+owedOf st content = sort
+  [ s
+  | s <- queryView st
+  , "debt." `isPrefixOf` s
+  , let rest = drop (length ("debt." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == content
   ]
   where
     splitDots :: String -> [String]

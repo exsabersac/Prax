@@ -194,7 +194,7 @@ tests = testGroup "Prax.Host"
       leadersOf st "yard" @?= ["ben"]
       leadersOf st "void" @?= []
 
-  , testCase "debtsOf lists debt leaves involving who" $ do
+  , testCase "debtsOf / owedOf lists debt leaves" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "debt.ana.ben.favor"
                 , Insert "debt.cass.ana.coin"
@@ -202,6 +202,10 @@ tests = testGroup "Prax.Host"
       sort (debtsOf st "ana") @?= ["debt.ana.ben.favor", "debt.cass.ana.coin"]
       debtsOf st "dave" @?= ["debt.dave.eve.secret"]
       debtsOf st "void" @?= []
+      owedOf st "favor" @?= ["debt.ana.ben.favor"]
+      owedOf st "coin" @?= ["debt.cass.ana.coin"]
+      owedOf st "secret" @?= ["debt.dave.eve.secret"]
+      owedOf st "void" @?= []
 
   , testCase "obligationsOf lists obliged.<who>.* from the closed view" $ do
       let st = foldl (flip performOutcome) emptyState
