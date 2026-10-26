@@ -25,6 +25,7 @@ import           Prax.Blackmail (shakedown)
 import           Prax.Confession (confess, absolve, incorrigible)
 import           Prax.Rng (draw)
 import           Prax.Emotion (feelTowardFor, unfeelToward, angry, feelingToward)
+import           Prax.Faction (joins, factionStanding, comrades)
 
 -- | 你是村民——众代理之一。
 playerName :: String
@@ -263,7 +264,11 @@ villageP = practice
   , roles = ["Scene"]
   , actions =
       [ -- Anyone at the stall can steal — bob is merely the one who wants to.
+        -- Dual appearance (v280): loaf economy / village-wide standingUnless keeps
+        -- "stole.Actor.loaf"; person-victim "stole.Actor.carol" feeds factionStanding
+        -- (carol tends the stall — fixture-shaped Victim).
         observable together "stole.Actor.loaf" $
+        observable together "stole.Actor.carol" $
         action "[Actor]: steal the loaf from the stall"
           [ Match "practice.world.world.at.Actor!square"
           , Match "stall.loaf" ]
@@ -385,6 +390,11 @@ villageAxioms :: [Axiom]
 villageAxioms =
   [ standingUnless "stole.Culprit.loaf" "atoned.Culprit" "thief"
   , notoriety "thief" 3
+    -- v280: faction-gated solidarity. Label "oathbreaker" (not "thief") so
+    -- atonement still dissolves village-wide thief standing via standingUnless
+    -- while mill co-members keep the faction grievance — Feud's feudbreaker idiom.
+  , comrades
+  , factionStanding "stole.Culprit.Victim" "oathbreaker"
     -- Watching him work teaches you his purpose: a witnessed sweep is enough
     -- to presume the pursuit (v21's inference pattern, aimed at a mind).
   , axiom [ Match "Regarder.believes.swept.bob" ]
@@ -511,4 +521,13 @@ villageWorld =
         -- a conduct-desire) — like every disposition it never fades, unlike
         -- the episodic feeling it primes.
       , Insert "shortTempered.carol"
+        -- v280: primary memberships (geography + stall-warden fiction).
+        -- mill stands with carol (Victim of stole.Culprit.Victim); bob/eve
+        -- outside that solidarity; you shares the square with the warden's mill.
+      , joins "carol" "mill"
+      , joins "dana" "mill"
+      , joins "gale" "mill"
+      , joins "you" "mill"
+      , joins "bob" "guild"
+      , joins "eve" "outsiders"
       ]

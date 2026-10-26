@@ -186,6 +186,54 @@ tests = testGroup "Prax.Worlds.Village"
       assertBool "bob may return the loaf"
         (any (("return the loaf" `isInfixOf`) . gaLabel) (possibleActions st "bob"))
 
+  , testCase "v280 factionStanding: mill eyewitnesses regard bob as oathbreaker" $ do
+      -- Dual-observed steal: square co-present (you, carol) believe stole.bob.carol;
+      -- mill membership → factionStanding. eve (outsiders) gets the belief only if
+      -- seeded — without it, no regard; bob (guild offender) never self-regards.
+      let st = doAct "bob" "steal the loaf" villageWorld
+          v  = readView st
+      assertBool "carol (victim, mill) regards bob oathbreaker"
+        (exists "regards.carol.bob.oathbreaker" v)
+      assertBool "you (mill eyewitness) regards bob oathbreaker"
+        (exists "regards.you.bob.oathbreaker" v)
+      assertBool "dana (mill, at mill — no witness) derives nothing yet"
+        (not (exists "regards.dana.bob.oathbreaker" v))
+      assertBool "bob no self-regard" (not (exists "regards.bob.bob.oathbreaker" v))
+      assertBool "person-victim belief landed for carol"
+        (exists "carol.believes.stole.bob.carol.seen" (db st))
+      assertBool "loaf belief still lands (standingUnless spine)"
+        (exists "carol.believes.stole.bob.loaf.seen" (db st))
+      assertBool "seeded mill membership" (exists "member.carol!mill" (db st))
+      assertBool "bob is guild" (exists "member.bob!guild" (db st))
+      assertBool "comrades: carol allied dana" (exists "allied.carol.dana" v)
+
+  , testCase "v280 factionStanding: outsider belief derives no oathbreaker regard" $ do
+      let st0 = doAct "bob" "steal the loaf" villageWorld
+          -- plant the person-victim belief on eve (outsiders) and on dana (mill)
+          st  = foldl (flip performOutcome) st0
+                  [ Insert "eve.believes.stole.bob.carol"
+                  , Insert "dana.believes.stole.bob.carol" ]
+          v   = readView st
+      assertBool "dana (mill co-member) regards"
+        (exists "regards.dana.bob.oathbreaker" v)
+      assertBool "eve (outsiders) derives nothing despite belief"
+        (not (exists "regards.eve.bob.oathbreaker" v))
+
+  , testCase "v280 atonement clears thief standing but mill oathbreaker persists" $ do
+      -- Distinct labels: standingUnless/atoned dissolves "thief"; factionStanding
+      -- "oathbreaker" has no defeater — faction grievance survives amends (Feud idiom).
+      let st0 = doAct "bob" "steal the loaf" villageWorld
+          st1 = doAct "carol" "shun bob" st0
+          st2 = doAct "bob" "return the loaf" st1
+          v   = readView st2
+      assertBool "thief regard gone" (not (exists "regards.carol.bob.thief" v))
+      assertBool "oathbreaker regard remains"
+        (exists "regards.carol.bob.oathbreaker" v)
+      assertBool "loaf memory persists"
+        (exists "carol.believes.stole.bob.loaf.seen" (db st2))
+      assertBool "person-victim memory persists"
+        (exists "carol.believes.stole.bob.carol.seen" (db st2))
+
   , testCase "amends is only offered under someone's regard" $ do
       let st = performOutcome (Insert "holding.bob.loaf") villageWorld
       assertBool "no regard, no apology affordance"

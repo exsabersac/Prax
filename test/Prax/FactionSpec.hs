@@ -188,8 +188,8 @@ tests = testGroup "Prax.Faction"
       assertBool "ben leads" (exists "leads.hall!ben" (db st1))
       assertBool "ana gone" (not (exists "leads.hall!ana" (db st1)))
 
-  -- Village golden still deferred for in-world factionStanding wiring; this
-  -- fixture proves the village-shaped pattern without touching Village.
+  -- v280: Village now wires factionStanding in-world; this fixture remains
+  -- the Spec-only guild/mill shape proof (independent of Village goldens).
   , testCase "village-shaped guild fixture: co-members of victim regard thief" $ do
       let world = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
                     (foldl (flip performOutcome) emptyState
@@ -221,7 +221,7 @@ tests = testGroup "Prax.Faction"
       neverRegards "eve" @?= Absent [ Match "regards.eve.Target.Label" ]
 
   -- Village-shaped mill fixture: mill co-members regard the thief when they
-  -- believe the theft (still Spec-only; Village golden untouched).
+  -- believe the theft (Spec-only mill shape; Village wired v280).
   , testCase "village-shaped mill fixture: mill co-members regard thief" $ do
       let world = setAxioms [factionStanding "stole.Culprit.Victim" "thief"]
                     (foldl (flip performOutcome) emptyState
@@ -268,7 +268,7 @@ tests = testGroup "Prax.Faction"
       hasAffiliate "ada" "church" @?= affiliates "ada" "church"
       hasRegardAs "ada" "bex" "thief" @?= regardsAs "ada" "bex" "thief"
 
-  -- Village-shaped mill justice arc (Spec-only; Village golden untouched):
+  -- Village-shaped mill justice arc (Spec-only fixture; Village wired v280):
   -- learn → factionStanding regard → confront gated on regard → defection
   -- dissolves the gate while the belief base fact persists.
   , testCase "village-shaped mill justice arc: belief→regard→gate→defection" $ do

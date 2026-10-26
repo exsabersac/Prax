@@ -1533,3 +1533,10 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：自定义 `Coercion`「inquisit」——触发为已 `factionStanding` 站队的**教会**成员；威胁要悔罪（`recanted`），违抗/站立威胁可烙异端印（`brandedHeretic`）。实践默认**未激活**；`activateInquisit` / `inquisitSeed` 与 `churchBobHeresy` 同开，牧师挂 `punishes-inquisit`，bob 挂 `fears-brand-heretic`。与异端轨真正交错：窗外胁→悔→再胁→烙印，harvest 仍可审查，窗外领袖放逐。
 - **测**：SandboxSpec 逐步（胁→悔→再胁→烙→审查→放逐仍开）；wants pick；43 步 `sandboxInquisitGolden`。既有金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+
+## v280 — Village 接线 factionStanding（动金标准）
+
+- **做了什么**：`Prax.Worlds.Village` 真接线 `factionStanding`（yu 拍板动金标准）。面包偷窃双重可观察：保留 `stole.Actor.loaf`（`standingUnless`/`notoriety` 村级脊骨）并加 `stole.Actor.carol`（摊位看守 = 人受害方，两变量模式喂 `factionStanding`）。公理加 `comrades` + `factionStanding "stole.Culprit.Victim" "oathbreaker"`——标签用 `oathbreaker` 而非 `thief`，使赎罪仍经 `standingUnless`/`atoned` 溶解村级贼站队，而磨坊共成员的派系冤屈不随补赎消失（Feud `feudbreaker` 习语）。种子主成员：carol/dana/gale/you → mill，bob → guild，eve → outsiders；t=0 不预植偷窃信念，免无意义搅动早期自由跑。
+- **金标准**：`AnalysisTableSpec` `villagePin` 刷新 footprint/axiomHead（`member`/`allied`/`regards…oathbreaker`）；`VillageSpec` 新增三案钉磨坊目击站队、局外信念不派生、赎罪清 thief 留 oathbreaker。`GoldenDrive` 村庄轨迹**未改**（早期自由跑不发生偷窃，行为与旁白不变）。FactionSpec 村庄形夹具保留为 Spec-only 对照，注释改为「Village 已接线」。
+- **测**：全量 `stack test --fast` **987/987** 绿（1828.11s）；`Worlds.Village` 52/52（含 v280 三案）；`AnalysisTable`/`GoldenDrive` village 绿。
+- **明确未做**：不合 main；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名；Sandbox 未改。
