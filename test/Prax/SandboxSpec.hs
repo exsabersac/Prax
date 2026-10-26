@@ -2178,4 +2178,43 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "fran regard persists"
         (exists "regards.fran.bob.thief" (readView stPar))
 
+
+  , testCase "denounce × parade: harvest denounce and brand parade stay independent" $ do
+      -- brand→activateParade; harvest denounce and parade share no once-gate.
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stH = iterate roundBoundary stP !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "parade at harvest" (hasAct "dave" "parade bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      assertBool "parade after denounce" (hasAct "dave" "parade bob" stDen)
+      let stPar = doAct "dave" "parade bob" stDen
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+
+  , testCase "exile × inquisit: mill exile and church squeeze stay independent" $ do
+      -- dave mill denounce→exile while priest inquisit squeeze remains open
+      -- through the exile window (no shared once-gate).
+      let st0 = doAct "dave" "learn" inquisitSeed
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      let stH = iterate roundBoundary st0 !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "priest squeeze after denounce" (hasAct "priest" "squeeze bob" stAfter)
+      let stSq = doAct "priest" "squeeze bob" stAfter
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+      assertBool "exile still" (hasAct "dave" "exile" stSq)
+      let stEx = doAct "dave" "exile" stSq
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+
   ]

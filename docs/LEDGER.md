@@ -2065,3 +2065,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec wed × church parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v373 — Sandbox 控告×游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 harvest denounce 与 brand parade 无共享 once-gate。无新实践 / 无 want 改动。
+- **测**：SandboxSpec denounce × parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v374 — Sandbox 放逐×教会胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 mill exile 窗内 inquisit squeeze 仍开，互不消耗。无新实践 / 无 want 改动。
+- **测**：SandboxSpec exile × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
