@@ -2605,3 +2605,9 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Coerce Spec 钉净世界与 Insert 社会标记世界上 lacksAtoned/lacksEyed/lacksFled/lacksRecanted/lacksConfronted/lacksWronged/lacksResents/lacksReconciled/lacksHungry/lacksOstracized/lacksShortTempered。无新实践 / 无 want 改动。
 - **测**：CoerceSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v465 — CLI view/facts/available/living matching surfaces
+
+- **做了什么**：CLI `prax view`/`facts`/`available`/`living` 薄封 `queryViewMatching`/`queryMatching`/`availableMatching`/`livingMatching`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -516,6 +516,30 @@ runExplain (actor : needle : ws) =
   in mapM_ putStrLn (explainActor st actor needle)
 runExplain _ = putStrLn "usage: prax explain <actor> <needle> <world>"
 
+runView :: [String] -> IO ()
+runView (needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (queryViewMatching st needle)
+runView _ = putStrLn "usage: prax view <needle> <world>"
+
+runFacts :: [String] -> IO ()
+runFacts (needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (queryMatching st needle)
+runFacts _ = putStrLn "usage: prax facts <needle> <world>"
+
+runAvailable :: [String] -> IO ()
+runAvailable (who : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (availableMatching st who needle)
+runAvailable _ = putStrLn "usage: prax available <who> <needle> <world>"
+
+runLivingMatch :: [String] -> IO ()
+runLivingMatch (needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (livingMatching st needle)
+runLivingMatch _ = putStrLn "usage: prax living <needle> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -726,6 +750,10 @@ main = do
     ("grandchildren" : ws) -> runGrandchildren ws
     ("in-laws" : ws)   -> runInLaws ws
     ("spouses" : ws)   -> runSpouses ws
+    ("view" : ws)      -> runView ws
+    ("facts" : ws)     -> runFacts ws
+    ("available" : ws) -> runAvailable ws
+    ("living" : ws)    -> runLivingMatch ws
     ("explain" : ws)   -> runExplain ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)

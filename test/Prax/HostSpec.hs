@@ -613,4 +613,18 @@ tests = testGroup "Prax.Host"
       debtorsOf st "ira" @?= ["debt.ira.bob.favor", "debt.ira.dave.favor"]
       debtorsOf st "void" @?= []
 
+  , testCase "matching CLI surfaces view/facts/available/living" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "practice.wave"
+                , Insert "character.ana"
+                , Insert "character.ben"
+                , Insert "dead.ben"
+                ]
+          st2 = setCharacters (map character ["ana", "ben"]) st
+      queryViewMatching st2 "practice.wave" @?= ["practice.wave"]
+      queryMatching st2 "character.ana" @?= ["character.ana"]
+      livingMatching st2 "a" @?= ["ana"]
+      -- availableMatching covered elsewhere; empty menu OK
+      availableMatching st2 "ana" "wave" @?= []
+
   ]
