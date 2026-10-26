@@ -1,9 +1,10 @@
--- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h+M6i+M6j 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
 -- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
 -- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）；
 -- M6h 亲见后带回转告（H01–H04；mill 亲见 gale→dana → square 转告 carol；零改世界）；
--- M6i 亲往 mill·当场挨疑（I01–I04；eve 主针；bob 转告→you 赴 mill→怀疑；零改世界）。
+-- M6i 亲往 mill·当场挨疑（I01–I04；eve 主针；bob 转告→you 赴 mill→怀疑；零改世界）；
+-- M6j 存档后再见·eyed（J01–J04；M6i 后 save/load 续存 eyed+heardRumor；零改世界）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -55,6 +56,59 @@ doAct who needle st =
 
 factInfix :: PraxState -> String -> Bool
 factInfix st needle = any (needle `isInfixOf`) (dbToSentences (db st))
+
+-- | M6i 最短 Session 路径：帮 carol → wait（eve.heard）→ 赴 mill → 点/自发怀疑 → eyed。
+reachEyedAfterM6i :: IO Session
+reachEyedAfterM6i = do
+  s0 <- mustNew
+  (s1, _) <- actByLabel s0 "公开帮助 carol"
+  let waitOnce s = case praxWait s of
+        Left e -> assertFailure e >> error "unreachable"
+        Right r -> pure r
+      goHeard 0 s = pure s
+      goHeard k s = do
+        (s', _) <- waitOnce s
+        let heard = factInfix (sessState s')
+                      "eve.believes.helped.you.carol.heard.bob"
+                    || factInfix (sessState s')
+                         "dana.believes.helped.you.carol.heard.bob"
+        if heard then pure s' else goHeard (k - 1) s'
+  s2 <- goHeard 12 s1
+  (s3, _) <- actByLabel s2 "前往 mill"
+  let eyedOk s =
+        factInfix (sessState s) "eyed.eve.you"
+        || factInfix (sessState s) "eyed.dana.you"
+      rumorOk s =
+        factInfix (sessState s)
+          "eve.relationship.you.trust.reason.heardRumor"
+        || factInfix (sessState s)
+             "dana.relationship.you.trust.reason.heardRumor"
+      done s = eyedOk s || rumorOk s
+      tryClick s =
+        let st = sessState s
+            pick who =
+              [ ga | ga <- possibleActions st who
+                   , "怀疑地打量" `isInfixOf` gaLabel ga
+                   , "you" `isInfixOf` gaLabel ga ]
+        in case pick "eve" ++ pick "dana" of
+          (ga : _) ->
+            let st' = ensurePlayerTurn (sessPlayer s) (performAction st ga)
+            in Just (s { sessState = st' })
+          [] -> Nothing
+      goEye 0 _ =
+        assertFailure "reachEyedAfterM6i: no eyed" >> error "unreachable"
+      goEye k s =
+        case tryClick s of
+          Just s' | done s' -> pure s'
+          _ -> do
+            (s', _) <- waitOnce s
+            if done s' then pure s' else goEye (k - 1) s'
+  if done s3
+    then pure s3
+    else case tryClick s3 of
+      Just s' | done s' -> pure s'
+      _ -> goEye 8 s3
+
 
 --------------------------------------------------------------------------------
 -- Suite
@@ -1104,6 +1158,87 @@ tests = testGroup "MyTown"
             ("eve" `isInfixOf` gaLabel ga0
              && "怀疑地打量" `isInfixOf` gaLabel ga0
              && "you" `isInfixOf` gaLabel ga0)
+
+      , -- M6j：存档后再见·eyed（硬卡 J01–J04；Session 冻；零改世界；对称 M6d spokeUp 续存）
+        -- 「后再见」= 事实续存 + 可续玩；不硬卡 narrative 全文；主针 eyed.eve.you + heardRumor
+        testCase "M6j-J01 M6i 最短 → eyed + heardRumor（eve∨dana）" $ do
+          sEyed <- reachEyedAfterM6i
+          assertBool "J01 eyed"
+            (factInfix (sessState sEyed) "eyed.eve.you"
+             || factInfix (sessState sEyed) "eyed.dana.you")
+          assertBool "J01 heardRumor"
+            (factInfix (sessState sEyed)
+               "eve.relationship.you.trust.reason.heardRumor"
+             || factInfix (sessState sEyed)
+                  "dana.relationship.you.trust.reason.heardRumor")
+
+      , testCase "M6j-J02 save→load 后 eyed + heardRumor 仍在（非冷开局）" $ do
+          sEyed <- reachEyedAfterM6i
+          let raw = praxSave sEyed
+          assertBool "format prax-state-v4" ("prax-state-v4" `isInfixOf` raw)
+          assertBool "worldId my-town" ("my-town" `isInfixOf` raw)
+          case praxLoad raw of
+            Left e -> assertFailure e
+            Right sLoad -> do
+              sessWorldId sLoad @?= "my-town"
+              assertBool "load eyed"
+                (factInfix (sessState sLoad) "eyed.eve.you"
+                 || factInfix (sessState sLoad) "eyed.dana.you")
+              assertBool "load heardRumor"
+                (factInfix (sessState sLoad)
+                   "eve.relationship.you.trust.reason.heardRumor"
+                 || factInfix (sessState sLoad)
+                      "dana.relationship.you.trust.reason.heardRumor")
+              -- 冷开局无 eyed → 证明不是 praxNew
+              sCold <- mustNew
+              assertBool "cold has no eyed.eve"
+                (not (factInfix (sessState sCold) "eyed.eve.you"))
+              assertBool "cold has no eyed.dana"
+                (not (factInfix (sessState sCold) "eyed.dana.you"))
+
+      , testCase "M6j-J03 load 后可续玩（Menu/Act 不炸；怀疑后果仍在）" $ do
+          sEyed <- reachEyedAfterM6i
+          case praxLoad (praxSave sEyed) of
+            Left e -> assertFailure e
+            Right sLoad -> do
+              sessPlayer sLoad @?= "you"
+              assertBool "menu non-empty after load"
+                (not (null (praxMenu sLoad)))
+              viewLocationId (praxView sLoad) @?= Just "mill"
+              assertBool "eyed still after load"
+                (factInfix (sessState sLoad) "eyed.eve.you"
+                 || factInfix (sessState sLoad) "eyed.dana.you")
+              -- 续玩：稍候一轮不炸，且仍在 you
+              case praxWait sLoad of
+                Left e -> assertFailure ("praxWait after load: " ++ e)
+                Right (s2, _) -> do
+                  let i = cursor (sessState s2)
+                      cs = characters (sessState s2)
+                  assertBool "still on you after wait"
+                    (charName (cs !! i) == "you")
+                  assertBool "eyed persists across wait"
+                    (factInfix (sessState s2) "eyed.eve.you"
+                     || factInfix (sessState s2) "eyed.dana.you")
+
+      , testCase "M6j-J04 花名册未扩；脚本 eyed 路径；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 eve" st2
+              st4 = doAct "you" "前往 mill" st3
+              eyeActs = [ ga | ga <- possibleActions st4 "eve"
+                             , "怀疑地打量" `isInfixOf` gaLabel ga
+                             , "you" `isInfixOf` gaLabel ga ]
+          assertBool "脚本 eve 怀疑地打量 you" (not (null eyeActs))
+          let st5 = performAction st4 (head eyeActs)
+          assertBool "脚本 eyed.eve.you" (factInfix st5 "eyed.eve.you")
+          assertBool "脚本 heardRumor"
+            (factInfix st5 "eve.relationship.you.trust.reason.heardRumor")
+          length (characters st5) @?= 6
+          -- Session 冻：本刀仅 Spec；save/load 续存由 J02 盖（prax-state-v4 零改）。
 
       ]
   ]
