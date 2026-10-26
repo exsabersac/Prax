@@ -1617,4 +1617,18 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stCry = doAct "dave" "cry the theft" stM
       assertBool "cried" (exists "cried.dave.bob" (db stCry))
       assertBool "squeeze after cry" (hasAct "priest" "squeeze bob" stCry)
+
+  , testCase "inquisit × rally: church squeeze and market rally stay independent" $ do
+      -- inquisitSeed + dave/carol learn → notorious; market rally vs priest squeeze
+      -- share no gate (mill repute track vs church coerce).
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" inquisitSeed)
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      assertBool "notorious" (exists "notorious.bob.thief" (readView st0))
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      assertBool "squeeze still" (hasAct "priest" "squeeze bob" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "squeeze after rally" (hasAct "priest" "squeeze bob" stRally)
   ]

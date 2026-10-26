@@ -1815,3 +1815,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"what festivals"`，列出 `festival.*` 基事实（对齐 Host `festivalsOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v331 — Sandbox 教会胁迫×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisitSeed + 双人 learn 臭名路径下 priest squeeze 与 dave market rally 互不阻挡。无新实践 / 无 want 改动。
+- **测**：SandboxSpec inquisit × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v332 — Chronicle holding of / carrying of
+
+- **做了什么**：`askChronicle` 增加 `"holding of "` / `"carrying of "`，列出 `holding.<who>.*` / `carrying.<who>.*`（对齐 Host `holdingOf`/`carryingOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

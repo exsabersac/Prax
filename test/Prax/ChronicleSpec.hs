@@ -254,4 +254,15 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "what festivals" @?= ["festival.harvest", "festival.market"]
       askChronicle emptyState "what festivals" @?= ["no festivals are open"]
 
+  , testCase "askChronicle holding-of / carrying-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "holding.ana.loaf"
+                , Insert "holding.ben.coin"
+                , Insert "carrying.ana.bag"
+                , Insert "flag.x" ]
+      askChronicle st "holding of ana" @?= ["holding.ana.loaf"]
+      askChronicle st "holding of void" @?= ["void holds nothing"]
+      askChronicle st "carrying of ana" @?= ["carrying.ana.bag"]
+      askChronicle st "carrying of void" @?= ["void carries nothing"]
+
   ]
