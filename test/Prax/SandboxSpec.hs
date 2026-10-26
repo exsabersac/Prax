@@ -1664,4 +1664,24 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (not (exists "regards.kyle.bob.thief" (readView st0)))
       assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
       assertBool "kyle squeeze no" (not (hasAct "kyle" "squeeze bob" st0))
+
+  , testCase "squeeze × exile: mill squeeze and denounce/exile stay independent" $ do
+      -- activateSqueeze + learn: harvest denounce/exile shares no gate with
+      -- millSqueeze; squeeze then exile both fire in the post-harvest window.
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
+      let stH = iterate roundBoundary st0 !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "squeeze at harvest" (hasAct "dave" "squeeze bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "squeeze after denounce" (hasAct "dave" "squeeze bob" stAfter)
+      let stSq = doAct "dave" "squeeze bob" stAfter
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+      assertBool "exile still after squeeze" (hasAct "dave" "exile" stSq)
+      let stEx = doAct "dave" "exile" stSq
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
   ]

@@ -1851,3 +1851,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"locations of "` / `"demanded of "`（对齐 Host `locationsOf`/`demandedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v337 — Sandbox 胁迫×放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 activateSqueeze 后 harvest denounce→exile 与 millSqueeze 互不阻挡（先 squeeze 仍可 exile）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec squeeze × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v338 — Chronicle extorted of / complied of / defied of
+
+- **做了什么**：`askChronicle` 增加 `"extorted of "` / `"complied of "` / `"defied of "`（对齐 Host `extortedOf`/`compliedOf`/`defiedOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

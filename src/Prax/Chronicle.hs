@@ -142,7 +142,8 @@ formatEvent ev rs =
 -- @"what is on the stall"@、@"what festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"shunned of "++who@、
--- @"locations of "++who@、@"demanded of "++who@。
+-- @"locations of "++who@、@"demanded of "++who@、
+-- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -487,6 +488,35 @@ askChronicle st q
                 , length parts >= 3
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no demand marks"]
+         else rows
+  | Just who <- stripPrefix "extorted of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , let parts = splitDot s
+                , length parts >= 4
+                , parts !! 1 == "extorted"
+                , head parts == who || (parts !! 2) == who ]
+      in if null rows then [who ++ " has no extortion marks"]
+         else rows
+  | Just who <- stripPrefix "complied of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , "complied." `isPrefixOf` s
+                , let rest = drop (length ("complied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , (parts !! 1) == who || (parts !! 2) == who ]
+      in if null rows then [who ++ " has no compliance marks"]
+         else rows
+  | Just who <- stripPrefix "defied of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , "defied." `isPrefixOf` s
+                , let rest = drop (length ("defied." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , (parts !! 1) == who || (parts !! 2) == who ]
+      in if null rows then [who ++ " has no defiance marks"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

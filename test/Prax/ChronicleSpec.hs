@@ -294,4 +294,21 @@ tests = testGroup "Prax.Chronicle"
         ]
       askChronicle st "demanded of void" @?= ["void has no demand marks"]
 
+  , testCase "askChronicle extorted-of / complied-of / defied-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "ana.extorted.ben.sid1"
+                , Insert "cai.extorted.ana.sid2"
+                , Insert "complied.sid1.ana.ben"
+                , Insert "defied.sid2.ben.ana"
+                , Insert "flag.x" ]
+      askChronicle st "extorted of ana" @?=
+        [ "ana.extorted.ben.sid1"
+        , "cai.extorted.ana.sid2"
+        ]
+      askChronicle st "extorted of void" @?= ["void has no extortion marks"]
+      askChronicle st "complied of ana" @?= ["complied.sid1.ana.ben"]
+      askChronicle st "complied of void" @?= ["void has no compliance marks"]
+      askChronicle st "defied of ana" @?= ["defied.sid2.ben.ana"]
+      askChronicle st "defied of void" @?= ["void has no defiance marks"]
+
   ]
