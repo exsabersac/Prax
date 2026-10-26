@@ -34,6 +34,7 @@ module Prax.Faction
   , hasLeader
   , hasAffiliate
   , hasRegardAs
+  , lacksRegardAs
   ) where
 
 import           Prax.Query (Condition (..))
@@ -229,4 +230,8 @@ hasAffiliate = affiliates
 -- | 条件：@who@ 将 @other@ 视为 @label@（@regardsAs@ 同体；对齐 has* 命名）。
 hasRegardAs :: String -> String -> String -> Condition
 hasRegardAs = regardsAs
+
+-- | 条件：无该站队叶（@lacksRegard@ 同体；对齐 hasRegardAs / lacks*As 命名）。
+lacksRegardAs :: String -> String -> String -> Condition
+lacksRegardAs = lacksRegard
 

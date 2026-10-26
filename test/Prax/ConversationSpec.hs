@@ -100,8 +100,9 @@ tests = testGroup "Prax.Conversation"
       everChatted "ada" @?= Exists [ Match "ada.chattedWith.Other" ]
       neverChatted "ada" @?= Absent [ Match "ada.chattedWith.Other" ]
 
-  , testCase "offTopic / hasChattedWith / neverChattedWith duals" $ do
+  , testCase "offTopic / lacksTopic / hasChattedWith / neverChattedWith duals" $ do
       offTopic "greetings" @?= Not "practice.converse.A.B.topic!greetings"
+      lacksTopic "greetings" @?= offTopic "greetings"
       hasChattedWith "ada" "bex" @?= Match "ada.chattedWith.bex"
       neverChattedWith "ada" "bex" @?= Not "ada.chattedWith.bex"
 
@@ -160,6 +161,10 @@ tests = testGroup "Prax.Conversation"
         (satisfies (db start) [hasListener] bListen)
       assertBool "offTopic weather"
         (satisfies (db start) [offTopic "weather"] b)
+      assertBool "lacksTopic weather"
+        (satisfies (db start) [lacksTopic "weather"] b)
+      assertBool "lacksTopic greetings fails"
+        (not (satisfies (db start) [lacksTopic "greetings"] b))
       assertBool "lacksSpeaker fails for speaker"
         (not (satisfies (db start) [lacksSpeaker] b))
       assertBool "lacksListener fails for listener"

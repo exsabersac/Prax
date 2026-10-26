@@ -268,6 +268,8 @@ tests = testGroup "Prax.Faction"
       hasLeader "ana" "guild" @?= isLeader "ana" "guild"
       hasAffiliate "ada" "church" @?= affiliates "ada" "church"
       hasRegardAs "ada" "bex" "thief" @?= regardsAs "ada" "bex" "thief"
+  , testCase "lacksRegardAs aliases lacksRegard" $
+      lacksRegardAs "ada" "bex" "thief" @?= lacksRegard "ada" "bex" "thief"
 
   , testCase "isMember / affiliates / isLeader / regardsAs evaluate on worlds" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -315,6 +317,10 @@ tests = testGroup "Prax.Faction"
         (not (satisfies (db st) [lacksAffiliate "ana" "guild"] Map.empty))
       assertBool "lacksRegard fails"
         (not (satisfies (db st) [lacksRegard "ana" "bob" "thief"] Map.empty))
+      assertBool "lacksRegardAs fails"
+        (not (satisfies (db st) [lacksRegardAs "ana" "bob" "thief"] Map.empty))
+      assertBool "lacksRegardAs on empty"
+        (satisfies (db emptyState) [lacksRegardAs "ana" "bob" "thief"] Map.empty)
 
   -- Village-shaped mill justice arc (Spec-only fixture; Village wired v280):
   -- learn → factionStanding regard → confront gated on regard → defection

@@ -23,6 +23,7 @@ module Prax.Conversation
   , lacksSpeaker
   , lacksListener
   , hasTopic
+  , lacksTopic
   , hasChattedWith
   , everChattedWith
   , neverChattedWith
@@ -133,6 +134,10 @@ lacksListener = Not (convP ++ ".listener!Actor")
 -- | 条件：当前对话话题不是 @topic@（@onTopic@ 的 Not 对偶）。
 offTopic :: String -> Condition
 offTopic topic = Not (convP ++ ".topic!" ++ topic)
+
+-- | 条件：当前对话话题不是 @topic@（@offTopic@ 同体；对齐 lacks* 命名）。
+lacksTopic :: String -> Condition
+lacksTopic = offTopic
 
 -- | 条件：@who@ 曾与 @other@ 聊过（@chattedWith@ 叶）。
 hasChattedWith :: String -> String -> Condition

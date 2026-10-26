@@ -186,6 +186,8 @@ tests = testGroup "Prax.Debt"
 
   , testCase "neverOwed is Absent of any creditor/content debt leaf" $
       neverOwed "dell" @?= Absent [ Match "debt.Creditor.dell.Content" ]
+  , testCase "lacksOwed aliases neverOwed" $
+      lacksOwed "dell" @?= neverOwed "dell"
   , testCase "everOwed aliases isOwed" $
       everOwed "dell" @?= isOwed "dell"
 
@@ -299,5 +301,9 @@ tests = testGroup "Prax.Debt"
         (satisfies (db settled) [lacksCreditorClaim "cora"] Map.empty)
       assertBool "neverOwed after settle"
         (satisfies (db settled) [neverOwed "dell"] Map.empty)
+      assertBool "lacksOwed after settle"
+        (satisfies (db settled) [lacksOwed "dell"] Map.empty)
+      assertBool "lacksOwed fails while owed"
+        (not (satisfies (db owed) [lacksOwed "dell"] Map.empty))
 
   ]

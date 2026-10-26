@@ -71,6 +71,8 @@ tests = testGroup "Prax.Beliefs"
   , testCase "hasBelievesThat / hasHoldsBelief aliases" $ do
       hasBelievesThat "ada" "weather" "rain" @?= believesThat "ada" "weather" "rain"
       hasHoldsBelief "ada" "weather" @?= holdsBelief "ada" "weather"
+  , testCase "lacksHoldsBelief aliases doubts" $
+      lacksHoldsBelief "ada" "weather" @?= doubts "ada" "weather"
 
 
   , testCase "believesThat / holdsBelief / everBelieves evaluate on believe world" $ do
@@ -80,6 +82,8 @@ tests = testGroup "Prax.Beliefs"
         (satisfies (db emptyState) [lacksBelief "bex"] Map.empty)
       assertBool "doubts on empty"
         (satisfies (db emptyState) [doubts "bex" "sky"] Map.empty)
+      assertBool "lacksHoldsBelief on empty"
+        (satisfies (db emptyState) [lacksHoldsBelief "bex" "sky"] Map.empty)
       let st = performOutcome (believe "bex" "sky" "blue") emptyState
       assertBool "believesThat"
         (satisfies (db st) [believesThat "bex" "sky" "blue"] Map.empty)
@@ -99,5 +103,7 @@ tests = testGroup "Prax.Beliefs"
         (satisfies (db st) [disbelievesThat "bex" "sky" "green"] Map.empty)
       assertBool "doubts fails"
         (not (satisfies (db st) [doubts "bex" "sky"] Map.empty))
+      assertBool "lacksHoldsBelief fails"
+        (not (satisfies (db st) [lacksHoldsBelief "bex" "sky"] Map.empty))
 
   ]

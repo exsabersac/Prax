@@ -29,6 +29,7 @@ module Prax.Kin
   , lacksSiblingOf
   , lacksMarriedTo
   , lacksInLawOf
+  , lacksParentOf
   , everInLaw
   , neverInLaw
   , everSibling
@@ -234,4 +235,8 @@ hasParentOf = isParentOf
 -- | 条件：@a@ 与 @b@ 为姻亲（@isInLawOf@ 同体；对齐 has* 命名）。
 hasInLawOf :: String -> String -> Condition
 hasInLawOf = isInLawOf
+
+-- | 条件：@parent@ 不是 @child@ 的亲代（@isParentOf@ 的 Not 对偶；= lacksChildOf 对调）。
+lacksParentOf :: String -> String -> Condition
+lacksParentOf parent child = lacksChildOf child parent
 

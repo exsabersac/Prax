@@ -313,11 +313,12 @@ tests = testGroup "Prax.Kin"
       neverParent "ada" @?= Absent [ Match "parent.ada" ]
 
 
-  , testCase "lacksChildOf / lacksSiblingOf / lacksMarriedTo / lacksInLawOf duals" $ do
+  , testCase "lacksChildOf / lacksSiblingOf / lacksMarriedTo / lacksInLawOf / lacksParentOf duals" $ do
       lacksChildOf "ana" "pat" @?= Not "parent.pat.ana"
       lacksSiblingOf "ana" "ben" @?= Not "sibling.ana.ben"
       lacksMarriedTo "ana" "chris" @?= Not "married.ana.chris"
       lacksInLawOf "pat" "sam" @?= Not "inLaw.pat.sam"
+      lacksParentOf "pat" "ana" @?= lacksChildOf "ana" "pat"
 
   , testCase "everInLaw / neverInLaw are Exists/Absent over inLaw.<who>.*" $ do
       everInLaw "pat" @?= Exists [ Match "inLaw.pat.Other" ]
@@ -390,6 +391,10 @@ tests = testGroup "Prax.Kin"
         (satisfies v [hasSiblingOf "ana" "ben"] Map.empty)
       assertBool "hasParentOf"
         (satisfies v [hasParentOf "pat" "ana"] Map.empty)
+      assertBool "lacksParentOf on empty"
+        (satisfies (db emptyState) [lacksParentOf "pat" "ana"] Map.empty)
+      assertBool "lacksParentOf fails"
+        (not (satisfies v [lacksParentOf "pat" "ana"] Map.empty))
 
   , testCase "ageAtLeast evaluates on setAge world" $ do
       assertBool "no age fails"

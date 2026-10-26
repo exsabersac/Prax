@@ -21,6 +21,7 @@ module Prax.Beliefs
   , doubts
   , holdsBelief
   , hasHoldsBelief
+  , lacksHoldsBelief
   , disbelievesThat
   , everBelieves
   , hasBelief
@@ -66,6 +67,10 @@ holdsBelief who issue = Match (beliefAbout who issue)
 -- | 条件：@who@ 对 @issue@ 持有某一值（@holdsBelief@ 同体；对齐 has* 命名）。
 hasHoldsBelief :: String -> String -> Condition
 hasHoldsBelief = holdsBelief
+
+-- | 条件：@who@ 对 @issue@ 无任何信念（@doubts@ 同体；对齐 lacks* 命名）。
+lacksHoldsBelief :: String -> String -> Condition
+lacksHoldsBelief = doubts
 
 -- | 条件：@who@ 不相信 @issue@ 为 @value@（@believesThat@ 的 Not 对偶）。
 disbelievesThat :: String -> String -> String -> Condition
