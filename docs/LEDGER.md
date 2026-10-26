@@ -3193,3 +3193,9 @@
 - **做了什么**：SandboxSpec 追加 mill/church silence×对侧 parade；kyle flee 负例；dual revoke 正义恢复；parade once×hear；无 joinsMill 不 wed；denounce×cry；censure×squeeze；flee/return util；repay×exile；cast dave/carol；brand×flee×return×parade。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（503 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v581 — Sandbox silence×hear/learn + churchParade×squeeze + dual parade Spec
+
+- **做了什么**：SandboxSpec 追加 mill silence×hear；church silence×learn；kyle return 负例；dual silence×repay×cry/censure；churchParade once×mill squeeze；无 squeeze want 负例；flee×return×cry；brand×church buy；fearsBrand util；inquisit×cry；cast eve/gale；dual parade once 跨市。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（515 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
