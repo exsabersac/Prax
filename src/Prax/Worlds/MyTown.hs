@@ -19,7 +19,7 @@ import           Prax.Engine (definePractices, defineFunctions, performOutcome,
                               setCharacters, setSchedule, seedDie)
 import           Prax.Core (coreFns, adjustScore)
 import           Prax.Witness (CoPresence, observable, saw)
-import           Prax.Rumor (gossip, heard)
+import           Prax.Rumor (gossip)
 import           Prax.Schedule (sightRule)
 import           Prax.Sight (sightedWithin)
 
@@ -116,12 +116,15 @@ townP = practice
           "[Actor]: 转告 [Hearer]：[Helper] 帮助了 [Beneficiary]"
 
         -- 怀疑：共场 ∧ heard∧¬seen ∧ 未打量过；trust(-) heardRumor。
+        -- M6l：heard 与 ¬seen 同绑 Beneficiary（Exists 内）；裸 Absent 在 Target 另有
+        -- .seen（NPC Helper 常见）时会误杀「听闻未亲见」的那条命题。
       , action "[Actor]: 怀疑地打量 [Target]"
           [ Match "practice.world.world.at.Actor!P"
           , Match "practice.world.world.at.Target!P"
           , Neq "Target" "Actor"
-          , heard "Actor" "helped.Target.Beneficiary"
-          , Absent [ Match "Actor.believes.helped.Target.Beneficiary.seen" ]
+          , Exists
+              [ Match "Actor.believes.helped.Target.Beneficiary.heard.Src"
+              , Absent [ Match "Actor.believes.helped.Target.Beneficiary.seen" ] ]
           , Not "eyed.Actor.Target" ]
           [ Insert "eyed.Actor.Target"
           , adjustScore "Actor" "Target" "trust" trustHeardRumor "heardRumor" ]
@@ -155,7 +158,11 @@ myTownWorld =
               , Want [ Match "eve.believes.helped.you.carol.heard.bob" ] 5 ] }
       , (character "carol")
           { charWants =
-              [ Want [ Match "practice.world.world.at.carol!square" ] 1 ] }
+              [ Want [ Match "practice.world.world.at.carol!square" ] 1
+                -- M6l：持 heard.you（gale→dana）后赴 mill + eyed.carol.gale（对称 M6c）
+              , Want [ Match "carol.believes.helped.gale.dana.heard.you"
+                     , Match "practice.world.world.at.carol!mill" ] 3
+              , Want [ Match "eyed.carol.gale" ] 5 ] }
       , (character "dana")
           { charWants =
               [ Want [ Match "practice.world.world.at.dana!mill" ] 1
