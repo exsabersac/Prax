@@ -32,3 +32,6 @@ rust/target/
 
 # Web build output (rebuild before deploy; do not hand-edit)
 web/dist/
+
+__pycache__/
+*.pyc
