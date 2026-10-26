@@ -11,7 +11,9 @@ import           Prax.Chronicle
 import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              carryingOf, shunnedOf, locationsOf,
                              obligationsOf, breachesOf, debtsOf,
-                             threatenedOf, stallOf, kinOf)
+                             threatenedOf, stallOf, kinOf,
+                             brandedOf, exiledOf, denouncedOf,
+                             moodsOf, arcsOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -461,5 +463,27 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "threatened of vic" @?= threatenedOf st "vic"
       askChronicle st "what is on the stall" @?= stallOf st
       askChronicle st "kin of mia" @?= kinOf st "mia"
+
+
+  , testCase "askChronicle branded/exiled/denounced dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "branded.bob"
+            , Insert "exiled.eve"
+            , Insert "denounced.dave.bob"
+            ]
+      askChronicle st "branded of bob" @?= brandedOf st "bob"
+      askChronicle st "exiled of eve" @?= exiledOf st "eve"
+      askChronicle st "denounced of bob" @?= denouncedOf st "bob"
+
+  , testCase "askChronicle mood/arc dual Host moodsOf/arcsOf raw leaves" $ do
+      -- Host moodsOf/arcsOf return full leaves; Chronicle phrases them.
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "mood.ana.cheerful"
+            , Insert "mia.arc.hopeful"
+            ]
+      moodsOf st "ana" @?= ["mood.ana.cheerful"]
+      arcsOf st "mia" @?= ["mia.arc.hopeful"]
+      askChronicle st "mood of ana" @?= ["ana mood cheerful"]
+      askChronicle st "arc of mia" @?= ["mia arc hopeful"]
 
   ]

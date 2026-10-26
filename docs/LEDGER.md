@@ -2148,3 +2148,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec、DebtSpec、CoerceSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v387 — Sandbox 婚入×教会沉默 + 叛逃×教会沉默交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 婚入打开磨坊 denounce 而 priest 债挡 censure；钉 carol flee 关磨坊、priest 债挡 censure，return 只恢复磨坊。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × church silence、defection × church silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v388 — Chronicle branded/exiled/denounced 对偶 + Coerce denounce/censure 世界求值
+
+- **做了什么**：Spec 钉 branded/exiled/denounced 与 Host 对偶、mood/arc 短语形；Coerce Spec 钉 isDenounced/isCensured 世界求值。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec、CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

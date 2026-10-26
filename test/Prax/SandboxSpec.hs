@@ -2428,4 +2428,42 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "kyle censure no" (not (hasAct "kyle" "censure bob" stH))
       assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
 
+
+  , testCase "wed × church silence: fran wedding unlocks mill; priest debt blocks censure" $ do
+      -- fran wed → mill regard/denounce; bob buys priest church-silence → censure closed.
+      let st0 = inquisitSeed
+          stBel = performOutcome (Insert "fran.believes.stole.bob.carol") st0
+          stWed = doAct "fran" "wed into the mill" stBel
+      assertBool "fran regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      let stBuy = doAct "bob" "buy priest" stWed
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "fran denounce yes" (hasAct "fran" "denounce" stH)
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      let stDen = doAct "fran" "denounce" stH
+      assertBool "denounced" (exists "denounced.fran.bob" (db stDen)
+        || exists "denounced.fran.bob" (readView stDen))
+
+  , testCase "defection × church silence: flee closes mill; priest debt blocks censure" $ do
+      -- carol abandon closes dave mill gates; bob buys priest silence closes censure;
+      -- return restores mill while church debt still blocks.
+      let st0 = inquisitSeed
+          stDave = doAct "dave" "learn" st0
+          stCarol = doAct "carol" "learn" stDave
+          stFlee = doAct "carol" "abandon the mill" stCarol
+          stBuy = doAct "bob" "buy priest" stFlee
+      assertBool "dave regard gone"
+        (not (exists "regards.dave.bob.thief" (readView stBuy)))
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce no" (not (hasAct "dave" "denounce" stH))
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      let stBack = doAct "carol" "return to the mill" stH
+      assertBool "dave denounce restored" (hasAct "dave" "denounce" stBack)
+      assertBool "priest censure still blocked"
+        (not (hasAct "priest" "censure bob" stBack))
+
   ]
