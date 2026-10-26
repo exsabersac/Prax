@@ -7,7 +7,7 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import qualified Data.Map.Strict as Map
-import           Prax.Query (query, Condition (..))
+import           Prax.Query (query, Condition (..), satisfies)
 import           Prax.Db (exists, dbToSentences)
 import           Prax.Types
 import           Prax.Engine
@@ -332,5 +332,32 @@ tests = testGroup "Prax.Kin"
       hasMarriedTo "ana" "chris" @?= isMarriedTo "ana" "chris"
       hasParentOf "pat" "ana" @?= isParentOf "pat" "ana"
       hasInLawOf "pat" "sam" @?= isInLawOf "pat" "sam"
+
+  , testCase "isChildOf / isMarriedTo / ever* evaluate on kinWorld" $ do
+      let v = readView kinWorld
+      assertBool "isChildOf"
+        (satisfies v [isChildOf "ana" "pat"] Map.empty)
+      assertBool "hasChildOf"
+        (satisfies v [hasChildOf "ana" "pat"] Map.empty)
+      assertBool "isParentOf"
+        (satisfies v [isParentOf "pat" "ana"] Map.empty)
+      assertBool "isSiblingOf"
+        (satisfies v [isSiblingOf "ana" "ben"] Map.empty)
+      assertBool "isMarriedTo"
+        (satisfies v [isMarriedTo "ana" "chris"] Map.empty)
+      assertBool "everMarried"
+        (satisfies v [everMarried "ana"] Map.empty)
+      assertBool "everParent"
+        (satisfies v [everParent "pat"] Map.empty)
+      assertBool "everSibling"
+        (satisfies v [everSibling "ana"] Map.empty)
+      assertBool "neverMarried on empty"
+        (satisfies (db emptyState) [neverMarried "ada"] Map.empty)
+      assertBool "neverParent on empty"
+        (satisfies (db emptyState) [neverParent "ada"] Map.empty)
+      assertBool "neverSibling on empty"
+        (satisfies (db emptyState) [neverSibling "ada"] Map.empty)
+      assertBool "lacksMarriedTo fails"
+        (not (satisfies v [lacksMarriedTo "ana" "chris"] Map.empty))
 
   ]

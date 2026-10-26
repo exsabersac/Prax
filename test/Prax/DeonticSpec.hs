@@ -203,4 +203,22 @@ tests = testGroup "Prax.Deontic"
   , testCase "hasObliged aliases isObliged" $
       hasObliged "ada" "pay.tax" @?= isObliged "ada" "pay.tax"
 
+  , testCase "hasObliged / hasObligations / everObliged evaluate after oblige" $ do
+      assertBool "lacksObligations on empty"
+        (sat emptyState [lacksObligations "bex"])
+      assertBool "neverObliged on empty"
+        (sat emptyState [neverObliged "bex" "settle.up"])
+      let st = performOutcome (oblige "bex" "settle.up") emptyState
+      assertBool "isObliged" (sat st [isObliged "bex" "settle.up"])
+      assertBool "hasObliged" (sat st [hasObliged "bex" "settle.up"])
+      assertBool "hasObligations" (sat st [hasObligations "bex"])
+      assertBool "everObliged" (sat st [everObliged "bex"])
+      assertBool "lacksObliged fails" (not (sat st [lacksObliged "bex" "settle.up"]))
+      assertBool "lacksObligations fails" (not (sat st [lacksObligations "bex"]))
+      let gone = performOutcome (discharge "bex" "settle.up") st
+      assertBool "lacksObligations after discharge"
+        (sat gone [lacksObligations "bex"])
+      assertBool "neverObliged after discharge"
+        (sat gone [neverObliged "bex" "settle.up"])
+
   ]

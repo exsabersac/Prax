@@ -2399,3 +2399,51 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v427 — Rumor heard/hasHeard/everHeard 世界求值
+
+- **做了什么**：Rumor Spec 钉 tell 后 heard/hasHeard/heardFrom/hasHeardFrom/everHeard 与净世界上 neverHeard/lacksHeard。无新实践 / 无 want 改动。
+- **测**：RumorSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v428 — Persona hasTrait/everTrait 世界求值
+
+- **做了什么**：Persona Spec 钉 Insert trait 后 hasTrait/everTrait 与净世界上 neverTrait/lacksTrait。无新实践 / 无 want 改动。
+- **测**：PersonaSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v429 — Faction isMember/affiliates/isLeader/regardsAs 世界求值
+
+- **做了什么**：Faction Spec 钉 joins/affiliate/appointLeader/regards Insert 世界上 isMember/affiliates/isLeader/regardsAs 及 ever*/never*/lacks*。无新实践 / 无 want 改动。
+- **测**：FactionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v430 — Repute isNotorious/hasEsteemed/hasScorned 世界求值
+
+- **做了什么**：Repute Spec 钉 Insert notorious/esteemed/scorned/regards 世界上 isNotorious/hasEsteemed/hasScorned/regardedAs 及 ever*/lacks*。无新实践 / 无 want 改动。
+- **测**：ReputeSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v431 — Kin isChildOf/isMarriedTo/ever* 世界求值
+
+- **做了什么**：Kin Spec 钉 kinWorld 上 isChildOf/isParentOf/isSiblingOf/isMarriedTo 与 everMarried/everParent/everSibling，以及空世界上 never*。无新实践 / 无 want 改动。
+- **测**：KinSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v432 — Confession hasMark/isAbsolved 世界求值
+
+- **做了什么**：Confession Spec 钉 Insert mark/defeater 后 hasMark/everMarked/isAbsolved/everAbsolved 与净世界上 neverMarked/lacksAbsolved。无新实践 / 无 want 改动。
+- **测**：ConfessionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v433 — Conversation hasChattedWith/everChatted 世界求值
+
+- **做了什么**：Conversation Spec 钉 Insert chattedWith 后 hasChattedWith/everChattedWith/everChatted 与净世界上 neverChatted/lacksChattedWith。无新实践 / 无 want 改动。
+- **测**：ConversationSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v434 — Deontic hasObliged/hasObligations 世界求值
+
+- **做了什么**：Deontic Spec 钉 oblige 后 isObliged/hasObliged/hasObligations/everObliged，以及 discharge 后 lacksObligations/neverObliged。无新实践 / 无 want 改动。
+- **测**：DeonticSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

@@ -3,11 +3,12 @@ module Prax.ReputeSpec (tests) where
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, defineFunctions, performOutcome, possibleActions, performAction, setAxioms, setCharacters)
 import           Prax.Core (coreFns)
@@ -185,5 +186,40 @@ tests = testGroup "Prax.Repute"
 
   , testCase "hasRegardedAs aliases regardedAs" $
       hasRegardedAs "ada" "bex" "thief" @?= regardedAs "ada" "bex" "thief"
+
+  , testCase "isNotorious / hasEsteemed / hasScorned evaluate on Insert world" $ do
+      assertBool "neverNotorious on empty"
+        (satisfies (db emptyState) [neverNotorious "kai"] Map.empty)
+      assertBool "neverEsteemed on empty"
+        (satisfies (db emptyState) [neverEsteemed "ana"] Map.empty)
+      assertBool "neverScorned on empty"
+        (satisfies (db emptyState) [neverScorned "ana"] Map.empty)
+      let st = foldl (flip performOutcome) emptyState
+                 [ Insert "notorious.kai.brute"
+                 , Insert "esteemed.ana.kai.hero"
+                 , Insert "scorned.ana.kai.brute"
+                 , Insert "regards.ana.kai.thief" ]
+      assertBool "isNotorious"
+        (satisfies (db st) [isNotorious "kai" "brute"] Map.empty)
+      assertBool "hasNotorious"
+        (satisfies (db st) [hasNotorious "kai" "brute"] Map.empty)
+      assertBool "everNotorious"
+        (satisfies (db st) [everNotorious "kai"] Map.empty)
+      assertBool "hasEsteemed"
+        (satisfies (db st) [hasEsteemed "ana" "kai" "hero"] Map.empty)
+      assertBool "everEsteemed"
+        (satisfies (db st) [everEsteemed "ana"] Map.empty)
+      assertBool "hasScorned"
+        (satisfies (db st) [hasScorned "ana" "kai" "brute"] Map.empty)
+      assertBool "everScorned"
+        (satisfies (db st) [everScorned "ana"] Map.empty)
+      assertBool "regardedAs"
+        (satisfies (db st) [regardedAs "ana" "kai" "thief"] Map.empty)
+      assertBool "lacksNotorious fails"
+        (not (satisfies (db st) [lacksNotorious "kai" "brute"] Map.empty))
+      assertBool "lacksEsteemed fails"
+        (not (satisfies (db st) [lacksEsteemed "ana" "kai" "hero"] Map.empty))
+      assertBool "lacksScorned fails"
+        (not (satisfies (db st) [lacksScorned "ana" "kai" "brute"] Map.empty))
 
   ]

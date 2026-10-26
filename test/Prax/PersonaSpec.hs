@@ -2,11 +2,12 @@ module Prax.PersonaSpec (tests) where
 
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, setAxioms, setDesires, setCharacters)
 import qualified Prax.Planner as Planner
@@ -153,4 +154,19 @@ tests = testGroup "Prax.Persona"
   , testCase "everTrait / neverTrait are Exists/Absent over trait.*" $ do
       everTrait "gale" @?= Exists [ Match "trait.gale.Trait" ]
       neverTrait "gale" @?= Absent [ Match "trait.gale.Trait" ]
+
+  , testCase "hasTrait / everTrait / neverTrait evaluate on Insert world" $ do
+      assertBool "neverTrait on empty"
+        (satisfies (db emptyState) [neverTrait "gale"] Map.empty)
+      assertBool "lacksTrait on empty"
+        (satisfies (db emptyState) [lacksTrait "gale" "honest"] Map.empty)
+      let st = performOutcome (Insert "trait.gale.honest") emptyState
+      assertBool "hasTrait"
+        (satisfies (db st) [hasTrait "gale" "honest"] Map.empty)
+      assertBool "everTrait"
+        (satisfies (db st) [everTrait "gale"] Map.empty)
+      assertBool "neverTrait fails"
+        (not (satisfies (db st) [neverTrait "gale"] Map.empty))
+      assertBool "lacksTrait fails"
+        (not (satisfies (db st) [lacksTrait "gale" "honest"] Map.empty))
   ]

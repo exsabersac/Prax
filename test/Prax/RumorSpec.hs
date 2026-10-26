@@ -3,11 +3,12 @@ module Prax.RumorSpec (tests) where
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setCharacters)
 import           Prax.Witness (CoPresence)
@@ -169,5 +170,26 @@ tests = testGroup "Prax.Rumor"
   , testCase "hasHeard / hasHeardFrom alias heard*" $ do
       hasHeard "ada" "stole.bread" @?= heard "ada" "stole.bread"
       hasHeardFrom "ada" "bex" "waved.ann" @?= heardFrom "ada" "bex" "waved.ann"
+
+  , testCase "heard / hasHeard / everHeard evaluate after tell" $ do
+      assertBool "neverHeard on clean"
+        (satisfies (db world) [neverHeard "hana" "tripped.tess"] Map.empty)
+      assertBool "lacksHeard on clean"
+        (satisfies (db world) [lacksHeard "hana" "tripped.tess"] Map.empty)
+      let st = tellTo "sam" "hana" world
+      assertBool "heard"
+        (satisfies (db st) [heard "hana" "tripped.tess"] Map.empty)
+      assertBool "hasHeard"
+        (satisfies (db st) [hasHeard "hana" "tripped.tess"] Map.empty)
+      assertBool "heardFrom"
+        (satisfies (db st) [heardFrom "hana" "sam" "tripped.tess"] Map.empty)
+      assertBool "hasHeardFrom"
+        (satisfies (db st) [hasHeardFrom "hana" "sam" "tripped.tess"] Map.empty)
+      assertBool "everHeard"
+        (satisfies (db st) [everHeard "hana" "tripped.tess"] Map.empty)
+      assertBool "neverHeard fails"
+        (not (satisfies (db st) [neverHeard "hana" "tripped.tess"] Map.empty))
+      assertBool "lacksHeardFrom fails"
+        (not (satisfies (db st) [lacksHeardFrom "hana" "sam" "tripped.tess"] Map.empty))
 
   ]

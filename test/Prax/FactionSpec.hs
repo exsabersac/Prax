@@ -3,10 +3,11 @@ module Prax.FactionSpec (tests) where
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Db (exists)
 import           Prax.Types
 import           Prax.Engine (performOutcome, setAxioms, definePractices,
@@ -267,6 +268,41 @@ tests = testGroup "Prax.Faction"
       hasLeader "ana" "guild" @?= isLeader "ana" "guild"
       hasAffiliate "ada" "church" @?= affiliates "ada" "church"
       hasRegardAs "ada" "bex" "thief" @?= regardsAs "ada" "bex" "thief"
+
+  , testCase "isMember / affiliates / isLeader / regardsAs evaluate on worlds" $ do
+      let st = foldl (flip performOutcome) emptyState
+                 [ joins "ana" "hall"
+                 , affiliate "ana" "guild"
+                 , appointLeader "ana" "hall"
+                 , Insert "regards.ana.bob.thief" ]
+      assertBool "isMember"
+        (satisfies (db st) [isMember "ana" "hall"] Map.empty)
+      assertBool "hasMember"
+        (satisfies (db st) [hasMember "ana" "hall"] Map.empty)
+      assertBool "everMember"
+        (satisfies (db st) [everMember "ana"] Map.empty)
+      assertBool "affiliates"
+        (satisfies (db st) [affiliates "ana" "guild"] Map.empty)
+      assertBool "hasAffiliate"
+        (satisfies (db st) [hasAffiliate "ana" "guild"] Map.empty)
+      assertBool "isLeader"
+        (satisfies (db st) [isLeader "ana" "hall"] Map.empty)
+      assertBool "everLeader"
+        (satisfies (db st) [everLeader "ana"] Map.empty)
+      assertBool "regardsAs"
+        (satisfies (db st) [regardsAs "ana" "bob" "thief"] Map.empty)
+      assertBool "everRegards"
+        (satisfies (db st) [everRegards "ana"] Map.empty)
+      assertBool "lacksMember on empty"
+        (satisfies (db emptyState) [lacksMember "ana" "hall"] Map.empty)
+      assertBool "neverMember on empty"
+        (satisfies (db emptyState) [neverMember "ana"] Map.empty)
+      assertBool "neverAffiliate on empty"
+        (satisfies (db emptyState) [neverAffiliate "ana"] Map.empty)
+      assertBool "neverLeader on empty"
+        (satisfies (db emptyState) [neverLeader "ana"] Map.empty)
+      assertBool "neverRegards on empty"
+        (satisfies (db emptyState) [neverRegards "ana"] Map.empty)
 
   -- Village-shaped mill justice arc (Spec-only fixture; Village wired v280):
   -- learn → factionStanding regard → confront gated on regard → defection

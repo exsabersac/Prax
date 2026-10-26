@@ -3,11 +3,12 @@ module Prax.ConfessionSpec (tests) where
 import           Control.Exception (ErrorCall, evaluate, try)
 import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction,
                               setAxioms, setDesires, setCharacters)
@@ -690,4 +691,25 @@ tests = testGroup "Prax.Confession"
 
   , testCase "everAbsolved aliases isAbsolved" $
       everAbsolved "recanted" "cody" @?= isAbsolved "recanted" "cody"
+
+  , testCase "hasMark / isAbsolved evaluate on Insert world" $ do
+      assertBool "neverMarked on empty"
+        (satisfies (db emptyState) [neverMarked "bob" "lied" "eve" "stole.bread"] Map.empty)
+      assertBool "lacksAbsolved on empty"
+        (satisfies (db emptyState) [lacksAbsolved "recanted" "cody"] Map.empty)
+      let st = foldl (flip performOutcome) emptyState
+                 [ Insert "bob.lied.eve.stole.bread"
+                 , Insert "recanted.cody" ]
+      assertBool "hasMark"
+        (satisfies (db st) [hasMark "bob" "lied" "eve" "stole.bread"] Map.empty)
+      assertBool "everMarked"
+        (satisfies (db st) [everMarked "bob" "lied" "eve" "stole.bread"] Map.empty)
+      assertBool "isAbsolved"
+        (satisfies (db st) [isAbsolved "recanted" "cody"] Map.empty)
+      assertBool "everAbsolved"
+        (satisfies (db st) [everAbsolved "recanted" "cody"] Map.empty)
+      assertBool "neverMarked fails"
+        (not (satisfies (db st) [neverMarked "bob" "lied" "eve" "stole.bread"] Map.empty))
+      assertBool "lacksAbsolved fails"
+        (not (satisfies (db st) [lacksAbsolved "recanted" "cody"] Map.empty))
   ]

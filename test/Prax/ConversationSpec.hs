@@ -1,11 +1,12 @@
 module Prax.ConversationSpec (tests) where
 
 import           Data.List (isInfixOf)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractice, performOutcome, possibleActions, performAction)
 import           Prax.Conversation
@@ -110,6 +111,23 @@ tests = testGroup "Prax.Conversation"
       hasSpeaker @?= isSpeaker
       hasListener @?= isListener
       hasTopic "greetings" @?= onTopic "greetings"
+
+  , testCase "hasChattedWith / everChatted evaluate on Insert world" $ do
+      assertBool "neverChatted on empty"
+        (satisfies (db emptyState) [neverChatted "ada"] Map.empty)
+      assertBool "lacksChattedWith on empty"
+        (satisfies (db emptyState) [lacksChattedWith "ada" "bex"] Map.empty)
+      let st = performOutcome (Insert "ada.chattedWith.bex") emptyState
+      assertBool "hasChattedWith"
+        (satisfies (db st) [hasChattedWith "ada" "bex"] Map.empty)
+      assertBool "everChattedWith"
+        (satisfies (db st) [everChattedWith "ada" "bex"] Map.empty)
+      assertBool "everChatted"
+        (satisfies (db st) [everChatted "ada"] Map.empty)
+      assertBool "neverChatted fails"
+        (not (satisfies (db st) [neverChatted "ada"] Map.empty))
+      assertBool "neverChattedWith fails"
+        (not (satisfies (db st) [neverChattedWith "ada" "bex"] Map.empty))
 
   ]
 
