@@ -2679,3 +2679,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Deontic Spec 钉 breach/obliged+content 世界上 inBreach/fulfilled。无新实践 / 无 want 改动。
 - **测**：DeonticSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v479 — Sandbox 市集声援/喊冤 want 名导出（钉既有门禁）
+
+- **做了什么**：导出 `rallyDesireName`/`cryDesireName`；`sandboxDesires`/`millCry`/`iraCry` 改用常量。主阵容默认仍不挂 rally（免搅 cry 金轨迹）。
+- **测**：SandboxSpec wants: rallyDesire weight beats cry；vocab 断言。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v480 — Sandbox 无声援/无喊冤 want 时不自选（钉既有门禁）
+
+- **做了什么**：Spec 钉 market 门开时仅 millCry（无 rally）不选 rally 而选 cry；仅 millJustice（无 cry）不选 cry。无新实践。
+- **测**：SandboxSpec wants: without rallyDesire / without cryDesire。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。

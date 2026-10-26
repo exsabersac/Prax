@@ -29,6 +29,8 @@ module Prax.Worlds.Sandbox
   , activateChurchParade
   , paradeDesireName
   , churchParadeDesireName
+  , rallyDesireName
+  , cryDesireName
   ) where
 
 import           Prax.Query (Condition (..))
@@ -82,13 +84,13 @@ sandboxDesires =
       (Want [ Match "debt.ira.bob.favor" ] 14)
   , Desire "breaks-silence-deal"
       (Want [ Match "revoked.Owner.bob" ] 10)
-  , Desire "cries-theft-at-market"
+  , Desire cryDesireName
       (Want [ Match "cried.Owner.bob" ] 7)
   , Desire "flees-mill"
       (Want [ Match "fled.Owner" ] 9)
   , Desire "returns-to-mill"
       (Want [ Match "reconciled.Owner" ] 11)
-  , Desire "rallies-against-thief"
+  , Desire rallyDesireName
       (Want [ Match "rallied.Owner.bob" ] 9)
   , squeezeDesire
   , fearsBrandDesire
@@ -457,6 +459,12 @@ activateInquisit = performOutcome (Insert "practice.churchInquisit")
 
 
 -- | 磨坊烙印游街 want 名（默认阵容不挂）。
+cryDesireName :: String
+cryDesireName = "cries-theft-at-market"
+
+rallyDesireName :: String
+rallyDesireName = "rallies-against-thief"
+
 paradeDesireName :: String
 paradeDesireName = "parades-branded-thief"
 
@@ -513,10 +521,10 @@ activateChurchParade = performOutcome (Insert "practice.churchBrandParade")
 -- ira is the mill witness bob tries to buy silence from (parallel to carol/dave justice).
 -- mill 证人另挂市集喊冤 want（权重 7 < 控告 8：harvest 窗优先控告，market 窗才喊）。
 millCry :: [String]
-millCry = millJustice ++ ["cries-theft-at-market"]
+millCry = millJustice ++ [cryDesireName]
 
 iraCry :: [String]
-iraCry = iraJustice ++ ["cries-theft-at-market"]
+iraCry = iraJustice ++ [cryDesireName]
 
 cast :: [Character]
 cast =

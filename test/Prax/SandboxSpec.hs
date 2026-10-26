@@ -25,7 +25,8 @@ import           Prax.Worlds.Sandbox
   , activateSqueeze, activateChurchBob
   , inquisitDesireName, fearsBrandHereticName, activateInquisit
   , activateParade, activateChurchParade
-  , paradeDesireName, churchParadeDesireName )
+  , paradeDesireName, churchParadeDesireName
+  , rallyDesireName, cryDesireName )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -233,7 +234,7 @@ reputeSeed :: PraxState
 reputeSeed =
   let st0 = sandboxWorld
       dave' = (actorOf "dave" st0)
-                 { charDesires = ["rallies-against-thief"] ++ millCry }
+                 { charDesires = [rallyDesireName] ++ millCry }
   in st0 { characters =
               [ if charName c == "dave" then dave' else c
               | c <- characters st0 ] }
@@ -3043,6 +3044,47 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
                      && not ("parade" `isInfixOf` l)
            Nothing -> False)
 
+  , testCase "wants: without rallyDesire dave does not pick rally at market" $ do
+      -- Gates open (notorious+angry+market) but dave only holds millCry — cry wins / no rally pick.
+      let st0 = sandboxWorld
+          dave' = (actorOf "dave" st0) { charDesires = millCry }
+          stR = st0 { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters st0 ] }
+          st2 = doAct "carol" "learn" (doAct "dave" "learn" stR)
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+      assertBool "market open" (exists "festival.market" (db stM))
+      assertBool "rally open" (hasAct "dave" "rally" stM)
+      assertBool "cry open" (hasAct "dave" "cry the theft" stM)
+      let lab = pickLabel "dave" stM
+      assertBool ("not rally, got " ++ show lab)
+        (maybe True (not . ("rally" `isInfixOf`)) lab)
+      pickLabel "dave" stM @?= Just "dave: cry the theft at market"
+
+  , testCase "wants: without cryDesire dave does not pick cry at market" $ do
+      -- Market cry gate open; dave holds only millJustice (no cries-theft-at-market).
+      let st0 = sandboxWorld
+          dave' = (actorOf "dave" st0) { charDesires = millJustice }
+          stR = st0 { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters st0 ] }
+          st2 = doAct "carol" "learn" (doAct "dave" "learn" stR)
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+      assertBool "market open" (exists "festival.market" (db stM))
+      assertBool "cry open" (hasAct "dave" "cry the theft" stM)
+      let lab = pickLabel "dave" stM
+      assertBool ("not cry, got " ++ show lab)
+        (maybe True (not . ("cry" `isInfixOf`)) lab)
+
+  , testCase "wants: rallyDesire weight beats cry when both open" $ do
+      -- Explicit name-pin: rally(9) > cry(7) at market under reputeSeed.
+      assertBool "vocab" (any ((== rallyDesireName) . desireName) sandboxDesires)
+      assertBool "vocab cry" (any ((== cryDesireName) . desireName) sandboxDesires)
+      let st2 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+      assertBool "rally open" (hasAct "dave" "rally" stM)
+      assertBool "cry open" (hasAct "dave" "cry the theft" stM)
+      pickLabel "dave" stM @?= Just "dave: rally the square against the thief"
 
 
   ]
