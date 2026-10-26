@@ -3171,3 +3171,9 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`demands of` 返回催收内容标签侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v577 — Sandbox revoke×cross-buy + affiliate silence/break + dual brand Spec
+
+- **做了什么**：SandboxSpec 追加 mill/church revoke×对侧 buy；kyle millSilence/millBreak 负例；dual brand×双 squeeze 关双 parade 开；rally once×cry；无 millBreak 不撕；flee×church buy；return×buy/tear；squeeze=parade util；brand 非市 parade 开 cry 等市；cast fran/kyle。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（491 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
