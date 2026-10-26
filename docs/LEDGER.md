@@ -1671,3 +1671,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec church silence × parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v305 — Coerce isCried / lacksCried 条件对偶
+
+- **做了什么**：`isCried`/`lacksCried` 钉 `cried.<actor>.<target>` Match/Not 对偶（对齐 marketCry）。无实践改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v306 — Sandbox 叛逃×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉受害方 carol 叛逃溶解 dave 的 `regards…thief` 后 market cry 关闭；和解回磨坊后站队与 cry 恢复。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × market cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

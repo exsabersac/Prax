@@ -1397,4 +1397,22 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "harvest" (exists "festival.harvest" (db stOpen))
       assertBool "censure blocked" (not (hasAct "priest" "censure bob" stOpen))
       assertBool "parade at harvest" (hasAct "priest" "parade bob" stOpen)
+
+  , testCase "defection × market cry: flee drops regard/cry; return restores" $ do
+      let stLearn = doAct "dave" "learn" sandboxWorld
+          stCarol = doAct "carol" "learn" stLearn
+          stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      let stM = iterate roundBoundary stFlee !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "cry closed" (not (hasAct "dave" "cry the theft" stM))
+      -- advance to a harvest so return is offered, then back to market after restore
+      let stH = iterate roundBoundary stFlee !! 3
+          stBack = doAct "carol" "return to the mill" stH
+      assertBool "regard restored"
+        (exists "regards.dave.bob.thief" (readView stBack))
+      let stM2 = iterate roundBoundary stBack !! 1
+      assertBool "market again" (exists "festival.market" (db stM2))
+      assertBool "cry restored" (hasAct "dave" "cry the theft" stM2)
   ]

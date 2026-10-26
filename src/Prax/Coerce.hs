@@ -46,6 +46,7 @@ module Prax.Coerce
   , isBranded, lacksBranded
   , isBrandedHeretic, lacksBrandedHeretic
   , isParaded, lacksParaded
+  , isCried, lacksCried
   ) where
 
 import           Data.List (nub)
@@ -389,4 +390,17 @@ lacksParaded :: String -> String -> Condition
 lacksParaded actor target =
   Not ("paraded." ++ guardSeg "lacksParaded" actor
        ++ "." ++ guardSeg "lacksParaded" target)
+
+
+-- | 条件：@actor@ 已对 @target@ 市集喊冤（@cried.<actor>.<target>@；Sandbox marketCry）。
+isCried :: String -> String -> Condition
+isCried actor target =
+  Match ("cried." ++ guardSeg "isCried" actor
+         ++ "." ++ guardSeg "isCried" target)
+
+-- | 条件：无该喊冤叶（@isCried@ 的 Not 对偶）。
+lacksCried :: String -> String -> Condition
+lacksCried actor target =
+  Not ("cried." ++ guardSeg "lacksCried" actor
+       ++ "." ++ guardSeg "lacksCried" target)
 
