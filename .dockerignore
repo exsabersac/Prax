@@ -1,0 +1,13 @@
+.git
+.stack-work
+**/__pycache__
+**/*.pyc
+dist-newstyle
+conformance
+oracle
+rust
+docs
+*.md
+!web/DEPLOY.md
+!web/README.md
+!web/hs/README.md

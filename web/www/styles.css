@@ -103,3 +103,33 @@ body {
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
 }
+
+.guide {
+  margin-top: 0.75rem;
+  background: var(--accent-soft);
+  border: 1px solid #b7d4c4;
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.guide[hidden] { display: none !important; }
+.guide h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  color: var(--accent);
+}
+.guide ul { margin: 0.35rem 0 0.6rem; padding-left: 1.2rem; }
+.guide .guide-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.guide button, .error-actions button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
+.guide button:hover, .error-actions button:hover { border-color: var(--accent); }
+.error-actions { margin-top: 0.5rem; }
+.toolbar { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }

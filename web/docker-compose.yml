@@ -1,0 +1,25 @@
+# 我的小镇 M5a：本机/近端一键起容器（Session 契约不动）
+# 用法（在 web/ 下）：docker compose up --build
+services:
+  my-town:
+    build:
+      context: ..
+      dockerfile: web/Dockerfile
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      PRAX_WEB_SESSION: /usr/local/bin/prax-web-session
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health').read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

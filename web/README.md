@@ -30,3 +30,7 @@ python3 web/serve.py          # http://127.0.0.1:8080
 ## 后置
 
 wasm / WebMain / `build.sh → dist`
+
+## 部署（M5a）
+
+见 [DEPLOY.md](./DEPLOY.md)：Docker / `/health` / `0.0.0.0:$PORT`。

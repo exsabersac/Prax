@@ -8,16 +8,56 @@ const ACTOR_LABEL = {
   you: "你", bob: "Bob", carol: "Carol", dana: "Dana", eve: "Eve", gale: "Gale",
 };
 
+/** 已知 error 码 → 中文默认（仍优先用服务端 message） */
+const ERROR_ZH = {
+  network: "网络连接失败，请检查服务是否在运行。",
+  bad_response: "服务返回无法解析，请稍后重试。",
+  bad_request: "请求无效。",
+  no_bridge: "会话桥未就绪，请确认 prax-web-session 已启动。",
+  bridge_dead: "会话桥已断开，请刷新或新开一局。",
+  bridge_eof: "会话桥无响应，请刷新或新开一局。",
+  bad_json: "数据格式错误。",
+  no_session: "还没有会话，请先新开一局。",
+  bad_save: "存档无效或已损坏。",
+  load_failed: "读档失败，存档可能已损坏。",
+  rejected: "行动未被接受。",
+};
+
+export function formatError(res, fallback = "出错了，请稍后重试。") {
+  if (!res) return fallback;
+  const msg = (res.message && String(res.message).trim()) || "";
+  if (msg) return msg;
+  const code = res.error && String(res.error);
+  if (code && ERROR_ZH[code]) return ERROR_ZH[code];
+  if (code) return `出错了（${code}）。`;
+  return fallback;
+}
+
 async function rpc(payload) {
-  const res = await fetch("/api/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  let res;
+  try {
+    res = await fetch("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    return {
+      ok: false,
+      error: "network",
+      message: ERROR_ZH.network,
+      detail: String(e),
+    };
+  }
   try {
     return await res.json();
   } catch (e) {
-    return { ok: false, error: "bad_response", message: String(e) };
+    return {
+      ok: false,
+      error: "bad_response",
+      message: ERROR_ZH.bad_response,
+      detail: String(e),
+    };
   }
 }
 
@@ -100,6 +140,8 @@ export async function praxAct(actionId, prevView) {
   return {
     ok: true,
     accepted: data.accepted !== false,
+    message: data.message,
+    error: data.error,
     narrative: data.narrative || [],
     view,
     menu: { actorId: view.playerId, actions: normalizeMenu(data.menu) },
@@ -128,7 +170,6 @@ export async function praxWait(prevView) {
 export async function praxSave() {
   const data = await rpc({ op: "save" });
   if (!data.ok) return data;
-  // 扁平 SaveMeta：format / worldId / blob（与 praxSave JSON 互操作）
   const save =
     data.save != null
       ? data.save

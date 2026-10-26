@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Static www/ + POST /api/session -> prax-web-session (JSON-lines)."""
+"""Static www/ + POST /api/session -> prax-web-session (JSON-lines).
+
+Also GET /health: bridge process alive only (no Session new/probe).
+Listens on 0.0.0.0:$PORT for container deploy.
+"""
 from __future__ import annotations
 
 import json
@@ -14,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 WWW = ROOT / "www"
-HOST = "127.0.0.1"
+HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", "8080"))
 REPO = ROOT.parent
 
@@ -39,6 +43,7 @@ def find_bridge() -> Path | None:
 
 class SessionBridge:
     def __init__(self, binary: Path) -> None:
+        self.binary = binary
         self._lock = threading.Lock()
         self._proc = subprocess.Popen(
             [str(binary)],
@@ -48,6 +53,10 @@ class SessionBridge:
             text=True,
             bufsize=1,
         )
+
+    def alive(self) -> bool:
+        """Process still running — used by /health (no Session op)."""
+        return self._proc.poll() is None
 
     def call(self, payload: dict) -> dict:
         line = json.dumps(payload, ensure_ascii=False)
@@ -76,6 +85,39 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, bridge: SessionBridge | None = None, **kwargs):
         self.bridge = bridge
         super().__init__(*args, directory=str(WWW), **kwargs)
+
+    def do_GET(self) -> None:  # noqa: N802
+        path = self.path.split("?", 1)[0]
+        if path == "/health":
+            self._health()
+            return
+        super().do_GET()
+
+    def _health(self) -> None:
+        # M5a：只查桥进程存活，不用 new/view 探活，不动 Session。
+        if self.bridge is None:
+            self._json(
+                503,
+                {
+                    "ok": False,
+                    "status": "no_bridge",
+                    "error": "no_bridge",
+                    "message": "prax-web-session not running",
+                },
+            )
+            return
+        if not self.bridge.alive():
+            self._json(
+                503,
+                {
+                    "ok": False,
+                    "status": "bridge_dead",
+                    "error": "bridge_dead",
+                    "message": "prax-web-session exited",
+                },
+            )
+            return
+        self._json(200, {"ok": True, "status": "ok"})
 
     def do_POST(self) -> None:  # noqa: N802
         if self.path.split("?", 1)[0] != "/api/session":
