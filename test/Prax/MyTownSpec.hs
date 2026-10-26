@@ -1,7 +1,8 @@
--- | MyTown M1+M3+M4+M6c+M6f+M6g 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g+M6h 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
 -- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
--- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）。
+-- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）；
+-- M6h 亲见后带回转告（H01–H04；mill 亲见 gale→dana → square 转告 carol；零改世界）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -830,6 +831,115 @@ tests = testGroup "MyTown"
           assertBool ("硬卡 label: " ++ gaLabel ga0)
             ("you" `isInfixOf` gaLabel ga0
              && "转告 dana：you 帮助了 carol" `isInfixOf` gaLabel ga0)
+
+      , -- M6h：亲见后带回转告 gale→dana → carol（硬卡 H01–H04；Session 冻；零改世界）
+        testCase "M6h-H01 you 前往 mill 亲见 gale 帮 dana" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "前往 mill"
+          viewLocationId (praxView s1) @?= Just "mill"
+          let hasSpeak s =
+                any (\m -> "说破看见 gale 帮助了 dana" `isInfixOf` menuLabel m)
+                    (praxMenu s)
+              waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goWait 0 s = pure s
+              goWait k s
+                | hasSpeak s
+                  || factInfix (sessState s) "you.believes.helped.gale.dana.seen" = pure s
+                | otherwise = do
+                    (s', _) <- waitOnce s
+                    goWait (k - 1) s'
+          s2 <- if hasSpeak s1
+                   || factInfix (sessState s1) "you.believes.helped.gale.dana.seen"
+                then pure s1 else goWait 12 s1
+          assertBool "you at mill"
+            (factInfix (sessState s2) "at.you.mill")
+          assertBool "didHelp.gale.dana"
+            (factInfix (sessState s2) "didHelp.gale.dana")
+          assertBool "you.seen helped.gale.dana"
+            (factInfix (sessState s2) "you.believes.helped.gale.dana.seen")
+
+      , testCase "M6h-H02 回 square 后 Menu 有转告 carol：gale 帮助了 dana" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "前往 mill"
+          let hasSpeak s =
+                any (\m -> "说破看见 gale 帮助了 dana" `isInfixOf` menuLabel m)
+                    (praxMenu s)
+              waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goWait 0 s = pure s
+              goWait k s
+                | hasSpeak s
+                  || factInfix (sessState s) "you.believes.helped.gale.dana.seen" = pure s
+                | otherwise = do
+                    (s', _) <- waitOnce s
+                    goWait (k - 1) s'
+          s2 <- if hasSpeak s1
+                   || factInfix (sessState s1) "you.believes.helped.gale.dana.seen"
+                then pure s1 else goWait 12 s1
+          (s3, _) <- actByLabel s2 "前往 square"
+          viewLocationId (praxView s3) @?= Just "square"
+          let needle = "转告 carol：gale 帮助了 dana"
+              hits = [ m | m <- praxMenu s3, needle `isInfixOf` menuLabel m ]
+          assertBool ("Menu 含 " ++ needle ++ "; had=" ++ show (map menuLabel (praxMenu s3)))
+            (not (null hits))
+
+      , testCase "M6h-H03 点转告 → narrative 含转告 + carol heard.you" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "前往 mill"
+          let hasSpeak s =
+                any (\m -> "说破看见 gale 帮助了 dana" `isInfixOf` menuLabel m)
+                    (praxMenu s)
+              waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goWait 0 s = pure s
+              goWait k s
+                | hasSpeak s
+                  || factInfix (sessState s) "you.believes.helped.gale.dana.seen" = pure s
+                | otherwise = do
+                    (s', _) <- waitOnce s
+                    goWait (k - 1) s'
+          s2 <- if hasSpeak s1
+                   || factInfix (sessState s1) "you.believes.helped.gale.dana.seen"
+                then pure s1 else goWait 12 s1
+          (s3, _) <- actByLabel s2 "前往 square"
+          let needle = "转告 carol：gale 帮助了 dana"
+          (s4, r) <- actByLabel s3 needle
+          let narr = unlines (actNarrative r)
+          assertBool ("narrative 含转告: " ++ narr)
+            ("转告" `isInfixOf` narr)
+          assertBool ("narrative 含 carol/gale/dana: " ++ narr)
+            ("carol" `isInfixOf` narr
+             && "gale" `isInfixOf` narr
+             && "dana" `isInfixOf` narr)
+          assertBool "carol.heard.you"
+            (factInfix (sessState s4) "carol.believes.helped.gale.dana.heard.you")
+          assertBool "carol ¬seen（转告不写 seen）"
+            (not (factInfix (sessState s4) "carol.believes.helped.gale.dana.seen"))
+
+      , testCase "M6h-H04 花名册未扩；脚本路径亲见→带回转告；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "前往 mill" MyTown.myTownWorld
+              st1 = doAct "gale" "公开帮助 dana" st0
+          assertBool "脚本 you.seen"
+            (factInfix st1 "you.believes.helped.gale.dana.seen")
+          let st2 = doAct "you" "前往 square" st1
+              needle = "转告 carol：gale 帮助了 dana"
+              gossipActs = [ ga | ga <- possibleActions st2 "you"
+                                , needle `isInfixOf` gaLabel ga ]
+          assertBool "脚本 Menu 有带回转告 carol" (not (null gossipActs))
+          let ga0 = head gossipActs
+              st3 = performAction st2 ga0
+          assertBool "脚本 carol.heard.you"
+            (factInfix st3 "carol.believes.helped.gale.dana.heard.you")
+          assertBool ("硬卡 label: " ++ gaLabel ga0)
+            ("you" `isInfixOf` gaLabel ga0
+             && needle `isInfixOf` gaLabel ga0)
 
       ]
   ]
