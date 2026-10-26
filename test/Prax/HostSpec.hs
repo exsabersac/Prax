@@ -575,4 +575,19 @@ tests = testGroup "Prax.Host"
       childrenOf st "pat" @?= ["parent.pat.ana"]
       childrenOf st "void" @?= []
 
+  , testCase "grandparentsOf / grandchildrenOf / inLawsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "grandparent.gran.ana"
+                , Insert "grandparent.gran.ben"
+                , Insert "grandparent.mia.cara"
+                , Insert "inLaw.pat.eve"
+                , Insert "inLaw.mia.eve"
+                , Insert "flag.x" ]
+      grandparentsOf st "ana" @?= ["grandparent.gran.ana"]
+      grandparentsOf st "void" @?= []
+      grandchildrenOf st "gran" @?= ["grandparent.gran.ana", "grandparent.gran.ben"]
+      grandchildrenOf st "void" @?= []
+      inLawsOf st "eve" @?= ["inLaw.mia.eve", "inLaw.pat.eve"]
+      inLawsOf st "void" @?= []
+
   ]

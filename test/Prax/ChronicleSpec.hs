@@ -26,7 +26,8 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              resentsOf, alliedOf, demandedOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
-                             siblingsOf, parentsOf, childrenOf)
+                             siblingsOf, parentsOf, childrenOf,
+                             grandparentsOf, grandchildrenOf, inLawsOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -690,5 +691,25 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "children of ana" @?= ["ana parent of cara"]
       askChronicle st "parents of void" @?= ["void has no known parents"]
       askChronicle st "children of void" @?= ["void has no known children"]
+
+  , testCase "askChronicle grandparents/grandchildren/in-laws dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "grandparent.gran.ana"
+            , Insert "grandparent.mia.cara"
+            , Insert "inLaw.pat.eve"
+            , Insert "inLaw.mia.eve"
+            ]
+      grandparentsOf st "ana" @?= ["grandparent.gran.ana"]
+      grandchildrenOf st "mia" @?= ["grandparent.mia.cara"]
+      inLawsOf st "eve" @?= ["inLaw.mia.eve", "inLaw.pat.eve"]
+      askChronicle st "grandparents of ana" @?= ["gran grandparent of ana"]
+      askChronicle st "grandchildren of mia" @?= ["mia grandparent of cara"]
+      askChronicle st "in-laws of eve" @?=
+        ["mia in-law of eve", "pat in-law of eve"]
+      askChronicle st "grandparents of void" @?=
+        ["void has no known grandparents"]
+      askChronicle st "grandchildren of void" @?=
+        ["void has no known grandchildren"]
+      askChronicle st "in-laws of void" @?= ["void has no known in-laws"]
 
   ]

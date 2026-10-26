@@ -29,6 +29,7 @@
 -- v301：'alliedOf' 同盟叶（Feud）。
 -- v423：'siblingsOf' 兄弟姐妹叶（对齐 Chronicle siblings of）。
 -- v429：'parentsOf'/'childrenOf' 亲子叶（parent.<p>.<c>）。
+-- v441：'grandparentsOf'/'grandchildrenOf'/'inLawsOf' 祖孙/姻亲叶。
 module Prax.Host
   ( step
   , stepExact
@@ -70,6 +71,9 @@ module Prax.Host
   , siblingsOf
   , parentsOf
   , childrenOf
+  , grandparentsOf
+  , grandchildrenOf
+  , inLawsOf
   , notoriousOf
   , esteemedOf
   , scornedOf
@@ -436,6 +440,38 @@ childrenOf st who =
            , let pref = "parent." ++ who ++ "."
            , pref `isPrefixOf` s
            , '.' `notElem` drop (length pref) s ]
+
+-- | 闭合视图中 @who@ 的祖父母叶（@grandparent.<g>.<who>@）。
+grandparentsOf :: PraxState -> String -> [String]
+grandparentsOf st who = sort
+  [ s
+  | s <- queryView st
+  , "grandparent." `isPrefixOf` s
+  , let rest = drop (length ("grandparent." :: String)) s
+  , let (g, after) = break (== '.') rest
+  , not (null g)
+  , drop 1 after == who
+  ]
+
+-- | 闭合视图中 @who@ 的孙子女叶（@grandparent.<who>.<c>@）。
+grandchildrenOf :: PraxState -> String -> [String]
+grandchildrenOf st who =
+  sort [ s | s <- queryView st
+           , let pref = "grandparent." ++ who ++ "."
+           , pref `isPrefixOf` s
+           , '.' `notElem` drop (length pref) s ]
+
+-- | 闭合视图中作为 @who@ 姻亲的叶（@inLaw.<x>.<who>@）。
+inLawsOf :: PraxState -> String -> [String]
+inLawsOf st who = sort
+  [ s
+  | s <- queryView st
+  , "inLaw." `isPrefixOf` s
+  , let rest = drop (length ("inLaw." :: String)) s
+  , let (x, after) = break (== '.') rest
+  , not (null x)
+  , drop 1 after == who
+  ]
 
 -- | 闭合视图中 @who@ 的恶名叶（@notorious.<who>.*@）。
 notoriousOf :: PraxState -> String -> [String]

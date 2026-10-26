@@ -130,7 +130,7 @@ formatEvent ev rs =
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
--- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、
+-- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
@@ -270,6 +270,42 @@ askChronicle st q
                       , '.' `notElem` drop (length prefix) s ]
       in if null kids then [who ++ " has no known children"]
          else map ((who ++ " parent of ") ++) kids
+  | Just who <- stripPrefix "grandparents of " q =
+      -- 对齐 Host grandparentsOf：读闭合视图；短语化祖父母名。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "grandparent." `isPrefixOf` s
+                , let rest = drop (length ("grandparent." :: String)) s
+                , let (g, after) = break (== '.') rest
+                , not (null g)
+                , drop 1 after == who ]
+      in if null rows then [who ++ " has no known grandparents"]
+         else [ g ++ " grandparent of " ++ who
+              | s <- rows
+              , let rest = drop (length ("grandparent." :: String)) s
+              , let (g, _) = break (== '.') rest ]
+  | Just who <- stripPrefix "grandchildren of " q =
+      -- 对齐 Host grandchildrenOf：读闭合视图；短语化孙子女名。
+      let prefix = "grandparent." ++ who ++ "."
+          kids = sort [ drop (length prefix) s
+                      | s <- dbToSentences (readView st), prefix `isPrefixOf` s
+                      , '.' `notElem` drop (length prefix) s ]
+      in if null kids then [who ++ " has no known grandchildren"]
+         else map ((who ++ " grandparent of ") ++) kids
+  | Just who <- stripPrefix "in-laws of " q =
+      -- 对齐 Host inLawsOf：读闭合视图；短语化姻亲名。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "inLaw." `isPrefixOf` s
+                , let rest = drop (length ("inLaw." :: String)) s
+                , let (x, after) = break (== '.') rest
+                , not (null x)
+                , drop 1 after == who ]
+      in if null rows then [who ++ " has no known in-laws"]
+         else [ x ++ " in-law of " ++ who
+              | s <- rows
+              , let rest = drop (length ("inLaw." :: String)) s
+              , let (x, _) = break (== '.') rest ]
   | Just who <- stripPrefix "branded of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
