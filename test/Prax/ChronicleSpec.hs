@@ -13,7 +13,8 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf)
+                             moodsOf, arcsOf, liesOf, traitsOf,
+                             chattedWithOf, esteemedOf, scornedOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -485,5 +486,24 @@ tests = testGroup "Prax.Chronicle"
       arcsOf st "mia" @?= ["mia.arc.hopeful"]
       askChronicle st "mood of ana" @?= ["ana mood cheerful"]
       askChronicle st "arc of mia" @?= ["mia arc hopeful"]
+
+
+  , testCase "askChronicle lies/traits/chatted dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.lied.about.bob"
+            , Insert "trait.ana.brave"
+            , Insert "ana.chattedWith.ben"
+            ]
+      askChronicle st "lies of ana" @?= liesOf st "ana"
+      askChronicle st "traits of ana" @?= traitsOf st "ana"
+      askChronicle st "chatted with ana" @?= chattedWithOf st "ana"
+
+  , testCase "askChronicle esteemed/scorned dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "esteemed.ana.ben"
+            , Insert "scorned.ben.carol"
+            ]
+      askChronicle st "esteemed of ana" @?= esteemedOf st "ana"
+      askChronicle st "scorned of ben" @?= scornedOf st "ben"
 
   ]

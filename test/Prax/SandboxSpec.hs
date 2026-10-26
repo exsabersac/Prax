@@ -2508,4 +2508,33 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "dave denounced mark stays"
         (exists "denounced.dave.bob" (db stEx))
 
+
+  , testCase "cry × church silence: market cry open; priest debt blocks censure" $ do
+      -- dave market cry stays while bob buys priest church-silence.
+      let st0 = inquisitSeed
+          stDave = doAct "dave" "learn" st0
+          stBuy = doAct "bob" "buy priest" stDave
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      let stM = iterate roundBoundary stBuy !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stM))
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "debt still" (exists "debt.priest.bob.church-favor" (db stCry))
+
+  , testCase "rally × church silence: market rally open; priest debt blocks censure" $ do
+      -- notorious+angry market rally stays while bob buys priest church-silence.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stHear = doAct "priest" "hear of bob" (activateChurchBob st0)
+          stBuy = doAct "bob" "buy priest" stHear
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stBuy))
+      let stM = iterate roundBoundary stBuy !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stM))
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+
   ]

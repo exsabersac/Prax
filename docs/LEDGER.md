@@ -2172,3 +2172,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：CoerceSpec、DebtSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v391 — Sandbox 市集喊冤/声援×教会沉默交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 market cry/rally 与 priest 债挡 censure 并行。无新实践 / 无 want 改动。
+- **测**：SandboxSpec cry × church silence、rally × church silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v392 — Chronicle lies/traits/chatted/esteemed/scorned 与 Host 对偶
+
+- **做了什么**：Spec 钉 lies/traits/chatted/esteemed/scorned 与 Host *Of 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
