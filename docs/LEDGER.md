@@ -2915,3 +2915,8 @@
 - **做了什么**：DeriveSpec 钉 axiomHeadPatterns 收集煮熟头路径。无新实践 / 无 want 改动。
 - **测**：DeriveSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v529 — Sandbox dual parade 闭合 + cry/rally×exile + affiliate justice Spec
+
+- **做了什么**：SandboxSpec 追加 parade/churchParade once 后 squeeze 闭；kyle 默认 Wait；silence 权重钉；dual parade 双闭；cry/rally once 后 exile 路径仍开；kyle 挂 bobHeresy/churchJustice 仍无门；defy-brand×cry；权重链；return×church debt。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（337 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
