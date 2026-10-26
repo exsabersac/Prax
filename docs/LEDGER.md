@@ -2987,3 +2987,32 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"shunners of "`；Spec 钉对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v531 — Schedule lasts Spec 钉
+
+- **做了什么**：ScheduleSpec 钉 lasts（Insert→InsertFor；非 Insert 响亮报错）。无新实践 / 无 want 改动。
+- **测**：ScheduleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v532 — Arc arcOf Spec 钉
+
+- **做了什么**：ArcSpec 钉 arcOf 路径辅助（who.arc）。无新实践 / 无 want 改动。
+- **测**：ArcSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v533 — Minds believedDesires/cooked* Spec 钉
+
+- **做了什么**：MindsSpec 钉 believedDesires（believedWants 背后 Desire 列表）与 cookedDesiresFor/cookedSelfWants（Owner 落地与自 want 合并）。无新实践 / 无 want 改动。
+- **测**：MindsSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v534 — Planner evaluateCooked Spec 钉
+
+- **做了什么**：PlannerSpec 钉 evaluateCooked 与 evaluate/cookedSelfWants 同效用。无新实践 / 无 want 改动。
+- **测**：PlannerSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v535 — Script 保留族头 + scriptPlayer Spec 钉 + pulse 名校验
+
+- **做了什么**：ScriptSpec 钉 scenePatienceFamily/currentScenePath 常量与 scriptPlayer；ScheduleRuleSpec 补 pulse 多段名拒绝。无新实践 / 无 want 改动。
+- **测**：ScriptSpec / ScheduleRuleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

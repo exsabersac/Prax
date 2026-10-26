@@ -385,4 +385,16 @@ tests = testGroup "Prax.Script"
                                                 (exists "dukeSpoke" (db driven))
       assertBool "and the one-shot held: no flatter left on the Duke's menu"
         (not (any (("flatter" `isInfixOf`) . gaLabel) (possibleActions driven "duke")))
+  , testCase "scenePatienceFamily / currentScenePath are reserved family heads" $ do
+      scenePatienceFamily @?= "scenePatience"
+      currentScenePath @?= "currentScene"
+
+  , testCase "scriptPlayer picks the playable cast member" $ do
+      let sc = Script
+            { scriptStart = "s"
+            , scriptCast = [ member "a", player "envoy", member "b" ]
+            , scriptScenes = [ scene "s" ] }
+      scriptPlayer sc @?= "envoy"
+
+
   ]

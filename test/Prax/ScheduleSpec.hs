@@ -5,6 +5,8 @@
 -- Task 2 wires 'roundBoundary' into the rotation).
 module Prax.ScheduleSpec (tests) where
 
+import           Control.Exception (ErrorCall, evaluate, try)
+import           Data.Either (isLeft)
 import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
@@ -13,7 +15,7 @@ import           Prax.Cooked (cookScheduleRule)
 import           Prax.Db (exists)
 import           Prax.Engine (currentTurn, performOutcome, roundBoundary)
 import           Prax.Query (Condition (..), satisfies)
-import           Prax.Schedule (duringFestival, hasFestival, outsideFestival, lacksFestival)
+import           Prax.Schedule (duringFestival, hasFestival, outsideFestival, lacksFestival, lasts)
 import           Prax.Types
 
 -- A bare fixture: 'emptyState' already carries the seeded clock (turn!0).
@@ -165,5 +167,10 @@ tests = testGroup "Prax.Schedule"
         (not (satisfies (db st) [outsideFestival "harvest"] Map.empty))
       assertBool "lacksFestival fails"
         (not (satisfies (db st) [lacksFestival "harvest"] Map.empty))
+
+  , testCase "lasts wraps Insert as InsertFor; rejects non-Insert" $ do
+      lasts 3 (Insert "mood!a") @?= InsertFor 3 "mood!a"
+      r <- try (evaluate (length (show (lasts 2 (Delete "mood!a")))))
+      assertBool "lasts on Delete errors" (isLeft (r :: Either ErrorCall Int))
 
   ]

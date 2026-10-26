@@ -16,8 +16,9 @@ run outs = dbToSentences (db (foldl (flip performOutcome) emptyState outs))
 
 tests :: TestTree
 tests = testGroup "Prax.Arc"
-  [ testCase "arcSentence / arcIs build the expected fact" $ do
+  [ testCase "arcSentence / arcIs / arcOf build the expected fact" $ do
       arcSentence "bex" "hopeful" @?= "bex.arc!hopeful"
+      arcOf "bex" @?= "bex.arc"
       arcIs "bex" "hopeful" @?= Match "bex.arc!hopeful"
       hasArc "bex" @?= Match "bex.arc"
       lacksArc "bex" @?= Not "bex.arc"

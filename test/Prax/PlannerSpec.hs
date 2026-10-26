@@ -7,6 +7,7 @@ import           Prax.Query
 import           Prax.Types
 import           Prax.Engine
 import           Prax.Planner
+import           Prax.Minds (cookedSelfWants)
 import           Prax.Derive (axiom)
 import           Prax.Relevance (moverReadAnchors)
 import           Prax.Db (pathNames)
@@ -58,6 +59,14 @@ tests = testGroup "Prax.Planner"
       let ordered = performOutcome
             (Insert "practice.tendBar.ada.customer.beth!order!cider") walkedUp
       evaluate ordered (charWants bethWantsCider) @?= 10
+
+  , testCase "evaluateCooked matches evaluate on cookedSelfWants" $ do
+      evaluateCooked walkedUp (cookedSelfWants walkedUp bethWantsCider) @?= 0
+      let ordered = performOutcome
+            (Insert "practice.tendBar.ada.customer.beth!order!cider") walkedUp
+      evaluateCooked ordered (cookedSelfWants ordered bethWantsCider) @?= 10
+      evaluateCooked ordered (cookedSelfWants ordered bethWantsCider)
+        @?= evaluate ordered (charWants bethWantsCider)
 
   , testCase "pickAction chooses the want-satisfying order over the alternatives" $ do
       -- beth can order beer, cider, or soda; only cider satisfies her want.

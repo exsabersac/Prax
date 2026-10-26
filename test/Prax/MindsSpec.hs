@@ -117,4 +117,26 @@ tests = testGroup "Prax.Minds"
       predictMove st0 (character "nia") rex' @?= Nothing
       fmap gaLabel (predictMove told (character "nia") rex')
         @?= Just "rex: seek petty revenge"
+  , testCase "believedDesires is the Desire list behind believedWants" $ do
+      believedDesires world (character "ida") (character "rex") @?= []
+      let w' = performOutcome
+                 (Insert "ida.believes.desires.rex.grudge-rex.heard.sam") world
+      map desireName (believedDesires w' (character "ida") (character "rex"))
+        @?= ["grudge-rex"]
+      -- presumption provenance also counts:
+      map desireName (believedDesires world (character "rex") (character "ida"))
+        @?= ["sweet-tooth"]
+
+  , testCase "cookedDesiresFor grounds Owner; cookedSelfWants merges char wants" $ do
+      let rex = (character "rex") { charWants   = [ Want [ Match "x" ] 1 ]
+                                  , charDesires = ["grudge-rex"] }
+          st  = setCharacters [ character "ida", rex ] world
+          grounded = cookedDesiresFor st "rex"
+                       [ d | d <- desires st, desireName d == "grudge-rex" ]
+      grounded @?= [ ([ CMatch (map intern ["shamed", "rex"]) ], 7) ]
+      cookedSelfWants st rex
+        @?= [ ([ CMatch [intern "x"] ], 1)
+            , ([ CMatch (map intern ["shamed", "rex"]) ], 7) ]
+
+
   ]

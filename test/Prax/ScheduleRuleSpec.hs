@@ -798,6 +798,9 @@ tests = testGroup "Prax.ScheduleRule"
     , testCase "pulse rejects period < 1" $ do
         r <- try (evaluate (length (show (pulse "tax" 0 [Insert "x"]))))
         assertBool "bad period" (isLeft (r :: Either ErrorCall Int))
+    , testCase "pulse rejects a multi-segment name" $ do
+        r <- try (evaluate (length (show (pulse "tax.day" 4 [Insert "x"]))))
+        assertBool "dotted name" (isLeft (r :: Either ErrorCall Int))
     ]
 
   , testGroup "engine-rule provenance exempts the reserved-family scan (v53)"
