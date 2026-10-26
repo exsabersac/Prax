@@ -2680,3 +2680,28 @@
 - **做了什么**：Spec 钉受害方 flee 溶解 mill regard（dave 无 denounce）；return 后 carol 可控告；bobHeresy(9)>denounce(8) 数值；仅 paradeDesire 选游街；kyle 挂 churchBreak 不可 tear；sandboxDesires 注册全导出名。无新实践。
 - **测**：SandboxSpec wants: after victim flee / after return denounce / bobHeresy weight 9 / paradeDesire alone / affiliate churchBreakSilence / sandboxDesires registers。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
+
+## v488 — Planner candidateActions Spec 钉
+
+- **做了什么**：PlannerSpec 钉 candidateActions（死者空；未绑定=possibleActions；boundTo 过滤）。无新实践 / 无 want 改动。
+- **测**：PlannerSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v489 — Script wanting 结构 Spec 钉
+
+- **做了什么**：ScriptSpec 钉 wanting 追加 castDesires 字段形状。无新实践 / 无 want 改动。
+- **测**：ScriptSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v490 — Minds professed/conventional 公理 Spec 钉
+
+- **做了什么**：MindsSpec 钉 professed/conventional 的 axiomWhen/axiomThen 形状。无新实践 / 无 want 改动。
+- **测**：MindsSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v491 — Repute scorn/esteem 构造响亮段错误 Spec 钉
+
+- **做了什么**：ReputeSpec 钉 scornStanding/esteemStanding/scornDesire/esteemDesire 点号段响亮报错。无新实践 / 无 want 改动。
+- **测**：ReputeSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

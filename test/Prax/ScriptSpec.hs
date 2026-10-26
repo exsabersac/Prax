@@ -400,6 +400,13 @@ tests = testGroup "Prax.Script"
       scriptPlayer sc @?= "envoy"
 
 
+  , testCase "wanting appends FOL wants onto castDesires" $ do
+      let cm = member "ada" `wanting` [ Want [ Match "holding.ada.cake" ] 3 ]
+      castName cm @?= "ada"
+      castPlayable cm @?= False
+      castDesires cm @?= [ Want [ Match "holding.ada.cake" ] 3 ]
+      castTraits cm @?= []
+
   , testCase "beat / quip / goto / ending build Beat and Junction shapes" $ do
       let b = beat "wave" [ Match "seen" ] [ Insert "waved" ]
           q = quip "ada" "[Actor]: hi" [ Match "greet" ] [ Insert "said.hi" ]
