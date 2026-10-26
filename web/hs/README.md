@@ -1,5 +1,5 @@
-# web/hs（预留）
+# web/hs
 
-日后对齐 match3：`PraxWeb/Api.hs`（纯会话 → JSON）+ `PraxWeb/Json.hs` + `WebMain.hs`（JSFFI）。
+`SessionMain.hs` → `prax-web-session`：stdin/stdout JSON-lines，封装 `Prax.Session`。
 
-MVP 先吃稳定 JSON / 假数据；本目录暂不落实现。会话真源在 `Prax.Session`（Haskell 侧 M1）。
+日后可再加 JSFFI / wasm；本桥是 M2 前传输层。
