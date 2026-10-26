@@ -143,7 +143,8 @@ formatEvent ev rs =
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"shunned of "++who@、
 -- @"locations of "++who@、@"demanded of "++who@、
--- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@。
+-- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@、
+-- @"obligations of "++who@、@"breaches of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -517,6 +518,18 @@ askChronicle st q
                 , length parts >= 3
                 , (parts !! 1) == who || (parts !! 2) == who ]
       in if null rows then [who ++ " has no defiance marks"]
+         else rows
+  | Just who <- stripPrefix "obligations of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , ("obliged." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no obligations"]
+         else rows
+  | Just who <- stripPrefix "breaches of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , ("violated." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no breaches"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

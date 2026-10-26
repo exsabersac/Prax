@@ -1863,3 +1863,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"extorted of "` / `"complied of "` / `"defied of "`（对齐 Host `extortedOf`/`compliedOf`/`defiedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v339 — Sandbox 婚入×胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 已信但公会无站队时 squeeze 关闭；婚入磨坊后 regard 派生，activateSqueeze 下 fran 可 squeeze。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × squeeze（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v340 — Chronicle obligations of / breaches of
+
+- **做了什么**：`askChronicle` 增加 `"obligations of "` / `"breaches of "`（对齐 Host `obligationsOf`/`breachesOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

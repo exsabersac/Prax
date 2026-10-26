@@ -1684,4 +1684,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "exile still after squeeze" (hasAct "dave" "exile" stSq)
       let stEx = doAct "dave" "exile" stSq
       assertBool "exiled" (exists "exiled.bob" (db stEx))
+
+  , testCase "wed × squeeze: fran wedding unlocks mill regard then squeeze" $ do
+      -- fran believes (guild) → no regard → no squeeze; wed into mill → regard
+      -- → activateSqueeze opens fran squeeze (independent of dave learn path).
+      let stBel = performOutcome (Insert "fran.believes.stole.bob.carol") sandboxWorld
+          stSq0 = activateSqueeze stBel
+      assertBool "before: no regard"
+        (not (exists "regards.fran.bob.thief" (readView stSq0)))
+      assertBool "before: no squeeze" (not (hasAct "fran" "squeeze bob" stSq0))
+      let stWed = doAct "fran" "wed into the mill" stSq0
+      assertBool "after: regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      assertBool "fran squeeze yes" (hasAct "fran" "squeeze bob" stWed)
+      let stSq = doAct "fran" "squeeze bob" stWed
+      assertBool "threatened"
+        (exists "threatened.squeeze.fran.bob" (db stSq))
   ]

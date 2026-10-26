@@ -311,4 +311,15 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "defied of ana" @?= ["defied.sid2.ben.ana"]
       askChronicle st "defied of void" @?= ["void has no defiance marks"]
 
+  , testCase "askChronicle obligations-of / breaches-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "obliged.ana.truth"
+                , Insert "obliged.ben.silence"
+                , Insert "violated.ana.truth"
+                , Insert "flag.x" ]
+      askChronicle st "obligations of ana" @?= ["obliged.ana.truth"]
+      askChronicle st "obligations of void" @?= ["void has no obligations"]
+      askChronicle st "breaches of ana" @?= ["violated.ana.truth"]
+      askChronicle st "breaches of void" @?= ["void has no breaches"]
+
   ]
