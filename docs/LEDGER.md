@@ -3108,3 +3108,9 @@
 - **做了什么**：SandboxSpec 追加 mill exile×church buy；banish×mill buy；rally once×churchParade；cry once×mill parade；kyle inquisitDesire；dual brand 非窗双 parade；return×squeeze/buy；silence>exile>denounce util；parade once×次 harvest denounce；churchParade once×次 harvest censure；无 silence want 不买。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（429 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v565 — Sandbox once-gate 跨窗关闭 + repay 可再买 + kyle wed Spec
+
+- **做了什么**：SandboxSpec 追加 carol flee×dave cry/ira tear；mill/heretic brand×对侧 silence buy；kyle joinsMill wed；cry/rally/parade once 跨下一窗仍关；seek<cry<denounce util；repay 后可再买（无 revoke）；cast bob/eve；squeeze 中途仍可买沉默。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（441 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
