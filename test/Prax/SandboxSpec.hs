@@ -2765,4 +2765,72 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
 
+
+  , testCase "censure × mill exile: priest censure then dave denounce/exile stay independent" $ do
+      -- take church censure first at harvest; mill denounce→exile still completes.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stDave = doAct "dave" "learn" stHear
+          stH = iterate roundBoundary stDave !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stCen = doAct "priest" "censure bob" stH
+      assertBool "censured" (exists "censured.priest.bob" (db stCen))
+      assertBool "dave denounce after censure" (hasAct "dave" "denounce" stCen)
+      let stDen = doAct "dave" "denounce" stCen
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      let stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "censured mark stays" (exists "censured.priest.bob" (db stEx))
+
+  , testCase "heresy silence × mill denounce: gale debt blocks eve track; dave mill open" $ do
+      -- eve buys gale church-silence; mill bob theft track unconstrained.
+      let st0 = doAct "gale" "hear the blasphemy" sandboxWorld
+          stDave = doAct "dave" "learn" st0
+          stBuy = doAct "eve" "buy gale" stDave
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stDen = doAct "dave" "denounce" stH
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stDen))
+      assertBool "gale still blocked" (not (hasAct "gale" "censure" stDen))
+
+  , testCase "heresy silence × mill cry: gale debt blocks; dave market cry open" $ do
+      -- eve/gale church-silence debt; mill market cry unconstrained.
+      let st0 = doAct "gale" "hear the blasphemy" sandboxWorld
+          stDave = doAct "dave" "learn" st0
+          stBuy = doAct "eve" "buy gale" stDave
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      let stM = roundBoundary stH
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+      assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stCry))
+
+  , testCase "heresy silence × mill squeeze: gale debt blocks; dave squeeze open" $ do
+      -- eve/gale church-silence; mill coerce squeeze unconstrained.
+      let st0 = doAct "gale" "hear the blasphemy" (activateSqueeze sandboxWorld)
+          stDave = doAct "dave" "learn" st0
+          stBuy = doAct "eve" "buy gale" stDave
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      assertBool "squeeze at harvest" (hasAct "dave" "squeeze bob" stH)
+      let stSq = doAct "dave" "squeeze bob" stH
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+      assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stSq))
+
   ]

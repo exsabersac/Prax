@@ -2362,5 +2362,27 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：Emotion Spec 钉 feel/feelToward/setMood 世界上 hasFeeling/everFeeling/hasFeelingToward/everFeelingToward/hasInMood/hasMood 与净世界 lacks*/never*。无新实践 / 无 want 改动。
 - **测**：EmotionSpec（针对性；未跑全量）。
+
+## v423 — Sandbox 检举×磨坊放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉先 censure 后 mill denounce→exile，与 priest banish 并行开口。无新实践 / 无 want 改动。
+- **测**：SandboxSpec censure × mill exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v424 — Sandbox 异端沉默×磨坊控告交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 gale church-favor 债挡 censure，dave mill denounce 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec heresy silence × mill denounce（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v425 — Sandbox 异端沉默×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 gale 债挡 censure，dave market cry 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec heresy silence × mill cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v426 — Sandbox 异端沉默×磨坊胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 gale 债挡 censure，dave mill squeeze 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec heresy silence × mill squeeze（针对性；未跑全量）。
 
