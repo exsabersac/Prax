@@ -14,7 +14,7 @@ import           Prax.Engine (definePractices, performOutcome, setCharacters,
                                setSchedule, roundBoundary)
 import           Prax.TypeCheck (typeCheck)
 import           Prax.Schedule (sightRule)
-import           Prax.Sight (sightedWithin, lastKnownAt, unknownWhere, lacksKnownWhere, knownWhere, hasKnownWhere)
+import           Prax.Sight (sightedWithin, lastKnownAt, hasLastKnownAt, lacksLastKnownAt, unknownWhere, lacksKnownWhere, knownWhere, hasKnownWhere)
 
 -- Two rooms; ute and vic share one, wes is alone in the other.
 sighting :: [Condition]
@@ -111,6 +111,10 @@ tests = testGroup "Prax.Sight"
 
   , testCase "hasKnownWhere aliases knownWhere" $
       hasKnownWhere "ada" "bex" @?= knownWhere "ada" "bex"
+  , testCase "hasLastKnownAt aliases lastKnownAt" $
+      hasLastKnownAt "ute" "vic" "hall" @?= lastKnownAt "ute" "vic" "hall"
+  , testCase "lacksLastKnownAt is Not of exact place leaf" $
+      lacksLastKnownAt "ute" "vic" "hall" @?= Not "ute.believes.at.vic!hall"
 
 
   , testCase "lastKnownAt / knownWhere evaluate on believes.at Insert world" $ do
@@ -121,6 +125,14 @@ tests = testGroup "Prax.Sight"
       let st = performOutcome (Insert "ute.believes.at.vic!hall") emptyState
       assertBool "lastKnownAt"
         (satisfies (db st) [lastKnownAt "ute" "vic" "hall"] Map.empty)
+      assertBool "hasLastKnownAt"
+        (satisfies (db st) [hasLastKnownAt "ute" "vic" "hall"] Map.empty)
+      assertBool "lacksLastKnownAt fails"
+        (not (satisfies (db st) [lacksLastKnownAt "ute" "vic" "hall"] Map.empty))
+      assertBool "lacksLastKnownAt other place"
+        (satisfies (db st) [lacksLastKnownAt "ute" "vic" "yard"] Map.empty)
+      assertBool "lacksLastKnownAt on empty"
+        (satisfies (db emptyState) [lacksLastKnownAt "ute" "vic" "hall"] Map.empty)
       assertBool "knownWhere"
         (satisfies (db st) [knownWhere "ute" "vic"] Map.empty)
       assertBool "hasKnownWhere"

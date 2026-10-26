@@ -18,6 +18,7 @@ module Prax.Deceit
   , lie
   , liePublic
   , liedTo
+  , hasLiedTo
   , hasLied
   , lacksLied
   , neverLied
@@ -103,6 +104,10 @@ liePublic copresence gate fabrication pat label
 -- | 条件：@liar@ 曾对 @hearer@ 就 @event@ 留下谎言标记。
 liedTo :: String -> String -> String -> Condition
 liedTo liar hearer event = Match (liar ++ ".lied." ++ hearer ++ "." ++ event)
+
+-- | 条件：@liar@ 曾对 @hearer@ 就 @event@ 留下谎言标记（@liedTo@ 同体；对齐 has* 命名）。
+hasLiedTo :: String -> String -> String -> Condition
+hasLiedTo = liedTo
 
 -- | 条件：@liar@ 曾对任何人留下任一谎言标记。
 hasLied :: String -> Condition

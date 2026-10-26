@@ -242,8 +242,9 @@ tests = testGroup "Prax.Deceit"
         (exists "mia.believes.took.sid.gem.heard.oz" (db st2))
       assertBool "an honest telling marks nothing"
         (not (exists "oz.lied" (db st2)))
-  , testCase "liedTo / hasLied pin the lie-mark path" $ do
+  , testCase "liedTo / hasLied / hasLiedTo pin the lie-mark path" $ do
       liedTo "nia" "oz" "took.kit.gem" @?= Match "nia.lied.oz.took.kit.gem"
+      hasLiedTo "nia" "oz" "took.kit.gem" @?= liedTo "nia" "oz" "took.kit.gem"
       hasLied "nia" @?= Exists [ Match "nia.lied.Hearer.Event" ]
 
   , testCase "lacksLied / neverLied duals" $ do
@@ -260,6 +261,8 @@ tests = testGroup "Prax.Deceit"
       let st = doAct "nia" "whisper to oz that kit took the gem" world
       assertBool "liedTo"
         (satisfies (db st) [liedTo "nia" "oz" "took.kit.gem"] Map.empty)
+      assertBool "hasLiedTo"
+        (satisfies (db st) [hasLiedTo "nia" "oz" "took.kit.gem"] Map.empty)
       assertBool "hasLied"
         (satisfies (db st) [hasLied "nia"] Map.empty)
       assertBool "everLied"

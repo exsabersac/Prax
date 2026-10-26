@@ -12,6 +12,8 @@
 module Prax.Sight
   ( sightedWithin
   , lastKnownAt
+  , hasLastKnownAt
+  , lacksLastKnownAt
   , unknownWhere
   , lacksKnownWhere
   , knownWhere
@@ -33,6 +35,15 @@ sightedWithin h =
 lastKnownAt :: String -> String -> String -> Condition
 lastKnownAt seer seen place =
   Match (seer ++ ".believes.at." ++ seen ++ "!" ++ place)
+
+-- | 条件：@seer@ 相信 @seen@ 在 @place@（@lastKnownAt@ 同体；对齐 has* 命名）。
+hasLastKnownAt :: String -> String -> String -> Condition
+hasLastKnownAt = lastKnownAt
+
+-- | 条件：@seer@ 不相信 @seen@ 在 @place@（精确叶 Not；与 @unknownWhere@ 的任意地点 Absent 不同）。
+lacksLastKnownAt :: String -> String -> String -> Condition
+lacksLastKnownAt seer seen place =
+  Not (seer ++ ".believes.at." ++ seen ++ "!" ++ place)
 
 -- | 条件：@seer@ 对 @seen@ 无任何最后已知位置（无 @believes.at.<seen>!<Place>@ 叶）。
 unknownWhere :: String -> String -> Condition

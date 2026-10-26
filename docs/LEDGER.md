@@ -2892,3 +2892,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ReactionsSpec / CoerceSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v515 — Deceit hasLiedTo 对偶
+
+- **做了什么**：Deceit 增加 hasLiedTo（= liedTo）；Spec 钉结构与 whisper 世界求值。无新实践 / 无 want 改动。
+- **测**：DeceitSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v516 — Sight hasLastKnownAt/lacksLastKnownAt 对偶
+
+- **做了什么**：Sight 增加 hasLastKnownAt（= lastKnownAt）与 lacksLastKnownAt（精确叶 Not）；Spec 钉结构与 Insert 世界求值。无新实践 / 无 want 改动。
+- **测**：SightSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
