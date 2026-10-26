@@ -138,6 +138,12 @@ tests = testGroup "Prax.Rumor"
         assertBool "the legal shape is not rejected" (not (isLeft (r :: Either ErrorCall Int)))
     ]
 
+  , testCase "gossipPublic on a subject-less pattern is an error" $ do
+      r <- try (evaluate (length (show (gossipPublic together [] "somethinghappened"
+                                         "[Actor]: shout"))))
+      assertBool "gossipPublic on a subject-less pattern is an error"
+        (isLeft (r :: Either ErrorCall Int))
+
   , testCase "gossipPublic deposits heard for every co-present hearer" $ do
       let shout = gossipPublic together [] "tripped.Klutz"
                     "[Actor]: announce that [Klutz] tripped"

@@ -175,6 +175,9 @@ tests = testGroup "Prax.Persist"
             contReload = performOutcome (Roll 1 2 [] []) reloadedSt
         rngSeed contReload @?= rngSeed contDirect
     ]
+  , testCase "formatVersion is the prax-state v4 tag" $
+      formatVersion @?= "prax-state v4"
+
   , testCase "saveState / loadState round-trip via a temp file" $ do
       dir <- getTemporaryDirectory
       (path, h) <- openTempFile dir "prax-persist-.save"

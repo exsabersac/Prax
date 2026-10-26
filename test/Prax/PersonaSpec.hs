@@ -14,6 +14,7 @@ import qualified Prax.Planner as Planner
 import           Prax.Minds (selfWants)
 import           Prax.Witness (CoPresence)
 import           Prax.Deceit (lie)
+import           Prax.Derive (Axiom (..))
 import           Prax.Persona
 
 together :: CoPresence
@@ -139,6 +140,14 @@ tests = testGroup "Prax.Persona"
   , testCase "hasTrait / lacksTrait gate on trait facts" $ do
       hasTrait "gale" "honest" @?= Match "trait.gale.honest"
       lacksTrait "gale" "honest" @?= Not "trait.gale.honest"
+
+  , testCase "transparent / bearFromRegard axiom shapes" $ do
+      axiomWhen transparent @?=
+        [ Match "trait.M.T", Match "traitDesire.T.D", Match "character.P" ]
+      axiomThen transparent @?= [ "P.believes.desires.M.D.presumed" ]
+      let ax = bearFromRegard "thief" "hardened"
+      axiomWhen ax @?= [ Match "regards.W.O.thief" ]
+      axiomThen ax @?= [ "trait.O.hardened" ]
 
   , testCase "bearFromRegard derives trait from standing label" $ do
       let st = setAxioms [bearFromRegard "thief" "hardened"]

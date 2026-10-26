@@ -2705,3 +2705,33 @@
 - **测**：ReputeSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v492 — Persona transparent/bearFromRegard 公理 Spec 钉
+
+- **做了什么**：PersonaSpec 钉 transparent/bearFromRegard 的 axiomWhen/axiomThen 形状。无新实践 / 无 want 改动。
+- **测**：PersonaSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v493 — Script member/player/after/timeout + scriptPlayer 空阵容 Spec 钉
+
+- **做了什么**：ScriptSpec 钉 member/player 与 after/timeout 字段形状；无 playable 时 scriptPlayer 响亮报错。无新实践 / 无 want 改动。
+- **测**：ScriptSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v494 — Persist formatVersion Spec 钉
+
+- **做了什么**：PersistSpec 钉 formatVersion = prax-state v4。无新实践 / 无 want 改动。
+- **测**：PersistSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v495 — Arc adoptArc Action 形状 + 点号段错误 Spec 钉
+
+- **做了什么**：ArcSpec 钉 adoptArc 的 Not/Insert Action 形状与点号 stage 响亮报错。无新实践 / 无 want 改动。
+- **测**：ArcSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v496 — Rumor gossipPublic 无主体模式错误 Spec 钉
+
+- **做了什么**：RumorSpec 钉 gossipPublic 无变量事迹模式响亮报错（对偶 gossip）。无新实践 / 无 want 改动。
+- **测**：RumorSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

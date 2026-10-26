@@ -400,6 +400,29 @@ tests = testGroup "Prax.Script"
       scriptPlayer sc @?= "envoy"
 
 
+  , testCase "member / player set castPlayable; after / timeout set junctionAfter" $ do
+      let m = member "ada"
+          pl = player "envoy"
+          a = after "linger" 3 "hall"
+          tmo = timeout "dismissed" 5
+      castName m @?= "ada"
+      castPlayable m @?= False
+      castName pl @?= "envoy"
+      castPlayable pl @?= True
+      junctionName a @?= "linger"
+      junctionTo a @?= Just "hall"
+      junctionWhen a @?= []
+      junctionAfter a @?= Just 3
+      junctionName tmo @?= "dismissed"
+      junctionTo tmo @?= Nothing
+      junctionAfter tmo @?= Just 5
+
+  , testCase "scriptPlayer errors when no cast member is playable" $ do
+      let sc = Script { scriptStart = "s", scriptCast = [ member "a" ]
+                      , scriptScenes = [ scene "s" ] }
+      r <- try (evaluate (length (scriptPlayer sc)))
+      assertBool "no playable" (isLeft (r :: Either ErrorCall Int))
+
   , testCase "wanting appends FOL wants onto castDesires" $ do
       let cm = member "ada" `wanting` [ Want [ Match "holding.ada.cake" ] 3 ]
       castName cm @?= "ada"
