@@ -1,8 +1,12 @@
-# 我的小镇 M5a：单容器 = prax-web-session + www + serve.py
+# 我的小镇 · 全量容器内 stack 构建（后置可选）
+# 默认请用 web/Dockerfile.runtime（宿主 stack build → COPY web/bin/prax-web-session）。
+# 本文件在 Docker 内拉 Stackage，易超时；仅在需要纯容器复现时使用：
+#   docker build -f web/Dockerfile -t prax-my-town:full .
+# Session / JSON-lines 桥协议不动；构建上下文为仓库根目录。
+#
 # 二进制入口（与 web/hs/README、serve.py 一致）：
 #   stack build prax:exe:prax-web-session
 #   → $(stack path --local-install-root)/bin/prax-web-session
-# Session / JSON-lines 桥协议不动；构建上下文为仓库根目录。
 
 FROM fpco/stack-build:lts-21.25 AS build
 WORKDIR /src

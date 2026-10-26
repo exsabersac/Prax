@@ -1,0 +1,26 @@
+# 我的小镇 M5f F01（方案②）：默认运行时镜像 — 不跑 stack，只 COPY 宿主二进制
+# Session / SaveMeta / JSON-lines 契约不动。
+#
+# 宿主先：
+#   stack build prax:exe:prax-web-session
+#   mkdir -p web/bin && cp "$(stack path --local-install-root)/bin/prax-web-session" web/bin/
+# 再：
+#   cd web && docker compose up --build
+#
+# 构建上下文 = 仓库根；二进制 = web/bin/prax-web-session
+# 全量容器内 stack 构建见 web/Dockerfile（后置可选，易遇 Stackage 超时）。
+
+FROM python:3.12-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libgmp10 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY web/bin/prax-web-session /usr/local/bin/prax-web-session
+RUN chmod +x /usr/local/bin/prax-web-session
+COPY web/www /app/www
+COPY web/serve.py /app/serve.py
+ENV PRAX_WEB_SESSION=/usr/local/bin/prax-web-session \
+    HOST=0.0.0.0 \
+    PORT=8080
+EXPOSE 8080
+CMD ["python3", "/app/serve.py"]

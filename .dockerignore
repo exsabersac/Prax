@@ -11,3 +11,6 @@ docs
 !web/DEPLOY.md
 !web/README.md
 !web/hs/README.md
+# host-built runtime binary must stay in context for Dockerfile.runtime
+!web/bin/
+!web/bin/prax-web-session

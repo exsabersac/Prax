@@ -1,4 +1,4 @@
-# 我的小镇 · 近端部署（M5a）
+# 我的小镇 · 近端部署（M5a / M5f F01）
 
 单容器跑通可玩页：**`prax-web-session` + `web/www` + `web/serve.py`**。  
 Session JSON-lines 契约（v0.1.2）**不动**；wasm 非本切片门禁。
@@ -13,7 +13,8 @@ stack build prax:exe:prax-web-session
 $(stack path --local-install-root)/bin/prax-web-session
 ```
 
-容器镜像在 build 阶段按上述命令编译，并把该二进制拷进 `/usr/local/bin/prax-web-session`（`PRAX_WEB_SESSION`）。
+**默认镜像（方案② / F01）不在 Docker 内跑 stack**：宿主编好后拷到 `web/bin/prax-web-session`，由 `web/Dockerfile.runtime` COPY 进 `/usr/local/bin/prax-web-session`（`PRAX_WEB_SESSION`）。  
+全量容器内 stack 见 `web/Dockerfile`（后置可选，易遇 Stackage 超时）。
 
 ## 健康检查
 
@@ -32,22 +33,40 @@ curl -s http://127.0.0.1:8080/health
 
 环境变量：`PORT`（默认 8080）、`HOST`（默认 `0.0.0.0`）、`PRAX_WEB_SESSION`（可选，显式指定桥二进制）。
 
-## Docker Compose
+## Docker Compose（F01 默认 · 必须三步）
 
-在 `web/` 目录：
+**禁止只写一句 `docker compose up`。** 在仓库根按顺序：
 
 ```sh
-docker compose up --build
-# 映射 http://127.0.0.1:8080/
-curl -s http://127.0.0.1:8080/health
+# 1) 宿主编译
+stack build prax:exe:prax-web-session
+
+# 2) 拷进 compose 构建上下文
+mkdir -p web/bin
+cp "$(stack path --local-install-root)/bin/prax-web-session" web/bin/prax-web-session
+
+# 3) 起容器（默认 Dockerfile.runtime，不再拉 Stackage）
+cd web && docker compose up --build
 ```
 
-或在仓库根：
+探活与打开：
 
 ```sh
-docker build -f web/Dockerfile -t prax-my-town .
+curl -s http://127.0.0.1:8080/health
+# 浏览器：http://127.0.0.1:8080/
+```
+
+停：`cd web && docker compose down`。
+
+等价手搓（同三步前置）：
+
+```sh
+# 完成 1)+2) 后：
+docker build -f web/Dockerfile.runtime -t prax-my-town .
 docker run --rm -p 8080:8080 prax-my-town
 ```
+
+后置可选（容器内 stack，非 F01 门禁）：`docker build -f web/Dockerfile -t prax-my-town:full .`
 
 ## 可分享（M5e）
 
@@ -62,8 +81,8 @@ http://127.0.0.1:8080/
 
 形如 `http://127.0.0.1:${PORT:-8080}/`（默认 **8080**，与 `docker-compose` 的 `${PORT:-8080}:8080`、容器内 `PORT=8080`、`serve.py` 一致）。改主机侧 `PORT` 时，改 URL 端口即可。
 
-1. **前置**：Docker（推荐），或本机 `stack` + `python3`
-2. **一键起桥**：`cd web && docker compose up --build`
+1. **前置**：Docker + 本机 `stack`（默认路径需宿主编二进制）；或本机 `stack` + `python3`（非容器）
+2. **起桥（三步，勿省略）**：`stack build prax:exe:prax-web-session` → `mkdir -p web/bin && cp "$(stack path --local-install-root)/bin/prax-web-session" web/bin/` → `cd web && docker compose up --build`
 3. **复制打开**：浏览器粘贴 `http://127.0.0.1:8080/`（非 `file://`）
 4. **探活**：`curl -s http://127.0.0.1:8080/health` → **200**（只探桥存活；**勿用** `new` / `praxNew`）
 5. **可玩**：真浏览器冷开 ≤30s 出 Menu（对齐已签 M5a/b）
@@ -73,9 +92,9 @@ http://127.0.0.1:8080/
 ## 外人可玩最短路径（M5f）
 
 在上文「可分享」起桥并打开固定 URL 之后，按下列点法走通主路径中的 **3b**（亲见帮忙 → bob 自转告 → dana 怀疑）。  
-Session / SaveMeta / compose / serve **零改**；只按菜单点，**不要**点「怀疑地打量」（怀疑者是 dana，由引擎在 narrative 里给出）。
+Session / SaveMeta / serve **零改**（compose 默认 Dockerfile.runtime，见上）；只按菜单点，**不要**点「怀疑地打量」（怀疑者是 dana，由引擎在 narrative 里给出）。
 
-1. **起桥**：同「可分享」— `cd web && docker compose up --build`，探活 `curl -s http://127.0.0.1:8080/health` → 200
+1. **起桥**：同「可分享」三步 — build → cp → `compose up --build`；探活 `curl -s http://127.0.0.1:8080/health` → 200
 2. **打开**：浏览器粘贴 `http://127.0.0.1:8080/`（非 `file://`）；冷开出 Menu 后点 **新开一局**（或已在局中则直接用菜单）
 3. **主路径 · 3b（最短可玩）**
    1. 菜单点 **`you: 公开帮助 bob`**（对 bob 的公开帮助；亲见）

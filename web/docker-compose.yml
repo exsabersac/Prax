@@ -1,10 +1,14 @@
-# 我的小镇 M5a：本机/近端一键起容器（Session 契约不动）
-# 用法（在 web/ 下）：docker compose up --build
+# 我的小镇 M5f F01：默认 Dockerfile.runtime（宿主二进制 → web/bin/）
+# 用法：
+#   stack build prax:exe:prax-web-session
+#   mkdir -p web/bin && cp "$(stack path --local-install-root)/bin/prax-web-session" web/bin/
+#   cd web && docker compose up --build
+# Session 契约不动。全量 stack 镜像见 web/Dockerfile（后置可选）。
 services:
   my-town:
     build:
       context: ..
-      dockerfile: web/Dockerfile
+      dockerfile: web/Dockerfile.runtime
     ports:
       - "${PORT:-8080}:8080"
     environment:

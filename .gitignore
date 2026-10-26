@@ -35,3 +35,6 @@ web/dist/
 
 __pycache__/
 *.pyc
+
+# Host-built binary for Dockerfile.runtime (do not commit the exe)
+web/bin/prax-web-session
