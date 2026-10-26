@@ -26,7 +26,8 @@ import           Prax.Worlds.Sandbox
   , inquisitDesireName, fearsBrandHereticName, activateInquisit
   , activateParade, activateChurchParade
   , paradeDesireName, churchParadeDesireName
-  , rallyDesireName, cryDesireName )
+  , rallyDesireName, cryDesireName
+  , fleeDesireName, returnDesireName )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -170,7 +171,7 @@ defectionSeed :: PraxState
 defectionSeed =
   let st0 = doAct "dave" "learn" sandboxWorld
       carol' = (actorOf "carol" st0)
-                 { charDesires = ["flees-mill", "returns-to-mill"]
+                 { charDesires = [fleeDesireName, returnDesireName]
                                   ++ millJustice ++ [cryDesireName] }
   in st0 { characters =
               [ if charName c == "carol" then carol' else c
@@ -223,7 +224,7 @@ compositeSeed :: PraxState
 compositeSeed =
   let st0 = doAct "ira" "learn" sandboxWorld
       carol' = (actorOf "carol" st0)
-                  { charDesires = ["flees-mill", "returns-to-mill"] ++ millCry }
+                  { charDesires = [fleeDesireName, returnDesireName] ++ millCry }
   in st0 { characters =
               [ if charName c == "carol" then carol' else c
               | c <- characters st0 ] }
@@ -3116,6 +3117,38 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let lab = pickLabel "priest" st
       assertBool ("not squeeze, got " ++ show lab)
         (maybe True (not . ("squeeze" `isInfixOf`)) lab)
+
+
+
+  , testCase "wants: without fleeDesire carol does not abandon mill" $ do
+      -- After learn, abandon gate open; carol holds only millJustice — no flee pick.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" sandboxWorld)
+          carol' = (actorOf "carol" st0) { charDesires = millJustice }
+          st = st0 { characters =
+                  [ if charName c == "carol" then carol' else c
+                  | c <- characters st0 ] }
+      assertBool "flee open" (hasAct "carol" "abandon" st)
+      let lab = pickLabel "carol" st
+      assertBool ("not abandon, got " ++ show lab)
+        (maybe True (not . ("abandon" `isInfixOf`)) lab)
+
+  , testCase "wants: without returnDesire carol does not reconcile after flee" $ do
+      let st0 = defectionSeed
+          stFlee = doAct "carol" "abandon" (doAct "carol" "learn" st0)
+          carol' = (actorOf "carol" stFlee) { charDesires = millJustice }
+          st = stFlee { characters =
+                  [ if charName c == "carol" then carol' else c
+                  | c <- characters stFlee ] }
+      assertBool "return open" (hasAct "carol" "return" st || hasAct "carol" "reconcil" st)
+      let lab = pickLabel "carol" st
+      assertBool ("not return, got " ++ show lab)
+        (case lab of
+           Just l -> not ("return" `isInfixOf` l || "reconcil" `isInfixOf` l)
+           Nothing -> True)
+
+  , testCase "sandboxDesires: flee/return names registered" $ do
+      assertBool "flee vocab" (any ((== fleeDesireName) . desireName) sandboxDesires)
+      assertBool "return vocab" (any ((== returnDesireName) . desireName) sandboxDesires)
 
 
   ]

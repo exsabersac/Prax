@@ -31,6 +31,8 @@ module Prax.Worlds.Sandbox
   , churchParadeDesireName
   , rallyDesireName
   , cryDesireName
+  , fleeDesireName
+  , returnDesireName
   ) where
 
 import           Prax.Query (Condition (..))
@@ -86,9 +88,9 @@ sandboxDesires =
       (Want [ Match "revoked.Owner.bob" ] 10)
   , Desire cryDesireName
       (Want [ Match "cried.Owner.bob" ] 7)
-  , Desire "flees-mill"
+  , Desire fleeDesireName
       (Want [ Match "fled.Owner" ] 9)
-  , Desire "returns-to-mill"
+  , Desire returnDesireName
       (Want [ Match "reconciled.Owner" ] 11)
   , Desire rallyDesireName
       (Want [ Match "rallied.Owner.bob" ] 9)
@@ -459,6 +461,12 @@ activateInquisit = performOutcome (Insert "practice.churchInquisit")
 
 
 -- | 磨坊烙印游街 want 名（默认阵容不挂）。
+fleeDesireName :: String
+fleeDesireName = "flees-mill"
+
+returnDesireName :: String
+returnDesireName = "returns-to-mill"
+
 cryDesireName :: String
 cryDesireName = "cries-theft-at-market"
 

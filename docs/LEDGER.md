@@ -2720,3 +2720,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Repute 增加 lacksRegardedAs（regardedAs 的 Not 对偶）；Spec 钉结构与 Insert/净世界求值。无新实践 / 无 want 改动。
 - **测**：ReputeSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v486 — Sandbox 叛逃/和解 want 名导出（钉既有门禁）
+
+- **做了什么**：导出 `fleeDesireName`/`returnDesireName`；`sandboxDesires` 与 Spec 种子改用常量。
+- **测**：SandboxSpec sandboxDesires: flee/return names registered。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v487 — Sandbox 无叛逃/无和解 want 时不自选（钉既有门禁）
+
+- **做了什么**：Spec 钉 abandon 门开但 carol 仅 millJustice 时不选 abandon；flee 后 return 门开但无 returnDesire 时不选和解。无新实践。
+- **测**：SandboxSpec wants: without fleeDesire / without returnDesire。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
