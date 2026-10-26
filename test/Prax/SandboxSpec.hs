@@ -1431,4 +1431,22 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stCry = doAct "dave" "cry the theft" stM
       assertBool "cried" (exists "cried.dave.bob" (db stCry))
       assertBool "parade after cry" (hasAct "priest" "parade bob" stCry)
+
+  , testCase "silence × rally: debt blocks ira denounce; dave rally still open" $ do
+      -- reputeSeed path to notorious+angry; bob buys ira silence. Harvest
+      -- denounce gated by lacksOwes; market rally ignores owes.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stIra = doAct "ira" "learn" st0
+          stBuy = doAct "bob" "buy ira's silence" stIra
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stBuy))
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      let stM = roundBoundary stH
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes under debt" (hasAct "dave" "rally" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stRally))
   ]

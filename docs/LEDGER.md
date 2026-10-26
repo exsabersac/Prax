@@ -1693,3 +1693,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec church parade × market cry（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v309 — Coerce isCensured / isExiled 条件对偶
+
+- **做了什么**：`isCensured`/`lacksCensured`（`censured.<a>.<t>`）、`isExiled`/`lacksExiled`（`exiled.<who>`）Match/Not 对偶。无实践改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v310 — Sandbox 沉默×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 reputeSeed 臭名+愤怒路径下 bob 买 ira 沉默债：harvest ira denounce 被 `lacksOwes` 堵住，market dave rally 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

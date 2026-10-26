@@ -49,6 +49,8 @@ module Prax.Coerce
   , isCried, lacksCried
   , isDenounced, lacksDenounced
   , isRallied, lacksRallied
+  , isCensured, lacksCensured
+  , isExiled, lacksExiled
   ) where
 
 import           Data.List (nub)
@@ -430,4 +432,27 @@ lacksRallied :: String -> String -> Condition
 lacksRallied actor target =
   Not ("rallied." ++ guardSeg "lacksRallied" actor
        ++ "." ++ guardSeg "lacksRallied" target)
+
+
+-- | 条件：@actor@ 已审查 @target@（@censured.<actor>.<target>@；Sandbox churchHeresy）。
+isCensured :: String -> String -> Condition
+isCensured actor target =
+  Match ("censured." ++ guardSeg "isCensured" actor
+         ++ "." ++ guardSeg "isCensured" target)
+
+-- | 条件：无该审查叶。
+lacksCensured :: String -> String -> Condition
+lacksCensured actor target =
+  Not ("censured." ++ guardSeg "lacksCensured" actor
+       ++ "." ++ guardSeg "lacksCensured" target)
+
+-- | 条件：@who@ 已被放逐（@exiled.<who>@；Sandbox mill/church exile）。
+isExiled :: String -> Condition
+isExiled who =
+  Match ("exiled." ++ guardSeg "isExiled" who)
+
+-- | 条件：无放逐叶。
+lacksExiled :: String -> Condition
+lacksExiled who =
+  Not ("exiled." ++ guardSeg "lacksExiled" who)
 
