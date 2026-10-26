@@ -2898,6 +2898,7 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`holders of`/`carriers of` 短语化持有/携带人；Spec 钉 Host 叶与 Chronicle 短语及空集。
+
 ## v526 — Cooked cookPractice/Functions/ScheduleRule Spec 钉
 
 - **做了什么**：CookedSpec 钉 cookPractice 实例路径与动作/init 煮熟，以及 cookFunctions/cookScheduleRule 键控与体。无新实践 / 无 want 改动。
@@ -2943,3 +2944,13 @@
 - **做了什么**：EngineSpec 钉 currentTurn 读种子时钟，以及缺槽/多子时响亮报错。无新实践 / 无 want 改动。
 - **测**：EngineSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v534 — Host affiliatorsOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`affiliatorsOf` 枚举 `affiliate.*.<faction>` 的 who；CLI `prax affiliators <faction> <world>`。
+
+## v535 — Chronicle affiliators of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`affiliators of` 短语化次级归属人；Spec 钉 Host 名与 Chronicle 短语及空集。

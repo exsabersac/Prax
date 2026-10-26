@@ -239,6 +239,21 @@ askChronicle st q
                     | s <- dbToSentences (readView st), prefix `isPrefixOf` s ]
       in if null fs then [who ++ " has no affiliates"]
          else map ((who ++ " affiliates ") ++) fs
+  | Just faction <- stripPrefix "affiliators of " q =
+      -- 对齐 Host affiliatorsOf：读闭合视图。
+      let pref = "affiliate."
+          whos = sort
+            [ who
+            | s <- dbToSentences (readView st)
+            , pref `isPrefixOf` s
+            , let rest = drop (length pref) s
+            , let (who, fac) = splitLastDot rest
+            , fac == faction
+            , not (null who)
+            , '.' `notElem` who
+            ]
+      in if null whos then ["no one affiliates with " ++ faction]
+         else map (\w -> w ++ " affiliates " ++ faction) whos
   | Just faction <- stripPrefix "members of " q =
       -- 对齐 Host membersOf：读闭合视图；member.<who>!<faction> 展成 .
       let suffix = "." ++ faction

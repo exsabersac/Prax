@@ -16,6 +16,7 @@
 -- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
 -- v523：'holdersOf'/'carriersOf' 持有/携带物品侧叶。
 -- v515：'occupantsOf' 位置目标侧叶（at.*.<place>）。
+-- v534：'affiliatorsOf' 派系次级归属人侧（affiliate.*.<faction>）。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -75,6 +76,7 @@ module Prax.Host
   , regardsOf
   , membersOf
   , affiliatesOf
+  , affiliatorsOf
   , leadersOf
   , regardsToward
   , factionsNamed
@@ -336,6 +338,25 @@ affiliatesOf st who =
        [ drop (length pref) s
        | s <- queryView st, pref `isPrefixOf` s
        , '.' `notElem` drop (length pref) s ]
+
+-- | 闭合视图中次级归属 @faction@ 的角色名（@affiliate.<who>.<faction>@）。
+affiliatorsOf :: PraxState -> String -> [String]
+affiliatorsOf st faction = sort
+  [ who
+  | s <- queryView st
+  , let pref = "affiliate."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, fac) = splitLastDot rest
+  , fac == faction
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
 
 -- | 闭合视图中领导 @faction@ 的角色名（@leads.<faction>.<who>@；
 -- 排他 @!@ 在视图句子中展成 @.@）。

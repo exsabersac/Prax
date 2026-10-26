@@ -1,6 +1,6 @@
 module Prax.ChronicleSpec (tests) where
 
-import           Data.List (isInfixOf, isPrefixOf)
+import           Data.List (isInfixOf, isPrefixOf, sort)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
@@ -25,7 +25,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              recantedOf, shortTemperedOf, appetiteOf,
                              resentsOf, alliedOf, demandedOf,
                              notoriousOf, regardsOf, regardsToward, factionsNamed,
-                             membersOf, affiliatesOf, leadersOf, agesOf,
+                             membersOf, affiliatesOf, affiliatorsOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
                              grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf, bondersOf, liarsOf)
 
@@ -1017,5 +1017,20 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "holders of void" @?= ["nobody holds void"]
       askChronicle st "carriers of void" @?= ["nobody carries void"]
 
+  , testCase "affiliatorsOf / affiliators of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "affiliate.ana.guild"
+            , Insert "affiliate.ben.guild"
+            , Insert "affiliate.ana.choir"
+            ]
+      sort (affiliatorsOf st "guild") @?= ["ana", "ben"]
+      affiliatorsOf st "choir" @?= ["ana"]
+      affiliatorsOf st "void" @?= []
+      askChronicle st "affiliators of guild" @?=
+        ["ana affiliates guild", "ben affiliates guild"]
+      askChronicle st "affiliators of choir" @?=
+        ["ana affiliates choir"]
+      askChronicle st "affiliators of void" @?=
+        ["no one affiliates with void"]
 
   ]

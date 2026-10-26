@@ -160,16 +160,20 @@ tests = testGroup "Prax.Host"
       assertBool "flag excluded" ("flag.x" `notElem` hits)
 
 
-  , testCase "membersOf / affiliatesOf list faction membership from the view" $ do
+  , testCase "membersOf / affiliatesOf / affiliatorsOf list faction membership from the view" $ do
       let st = inject world
                  [ Insert "member.ana!hall"
                  , Insert "member.ben!hall"
                  , Insert "member.cass!yard"
                  , Insert "affiliate.ana.guild"
-                 , Insert "affiliate.ana.choir" ]
+                 , Insert "affiliate.ana.choir"
+                 , Insert "affiliate.ben.guild" ]
       sort (membersOf st "hall") @?= ["ana", "ben"]
       membersOf st "yard" @?= ["cass"]
       sort (affiliatesOf st "ana") @?= ["choir", "guild"]
+      sort (affiliatorsOf st "guild") @?= ["ana", "ben"]
+      affiliatorsOf st "choir" @?= ["ana"]
+      affiliatorsOf st "void" @?= []
 
 
   , testCase "leadersOf lists leads.<faction>.<who> from the view" $ do
