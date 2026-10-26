@@ -2644,3 +2644,15 @@
 - **做了什么**：Spec 钉 activateParade/inquisit/churchBob/churchParade 幂等；kyle 挂 breakSilence 不可 tear；仅 returnDesire 选归队；brand 后 bob 不再 confess。无新实践。
 - **测**：SandboxSpec wants: activate* idempotent / affiliate millBreakSilence / after flee returnDesire / after brand no re-confess。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
+
+## v482 — Sandbox 欲望名字符串词汇 + flee/tear once + defy→brand（钉既有门禁）
+
+- **做了什么**：Spec 钉全表 desire 名字符串；仅 fleeDesire 选 abandon；tear 后 breakSilence 满足不重撕；defy 后 brand 自选（mill/church）；kyle 挂 inquisit 不可 squeeze。无新实践。
+- **测**：SandboxSpec wants: desire name string / fleeDesire alone / after mill|church tear no re-tear / brand after defy / affiliate inquisit。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
+
+## v483 — Sandbox cast Host 查询钉（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle∈guild∉mill、priest∈church leaders、fran∉mill。无新实践。
+- **测**：SandboxSpec cast: guild kyle and church leaders。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
