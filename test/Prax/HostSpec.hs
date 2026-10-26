@@ -99,6 +99,9 @@ tests = testGroup "Prax.Host"
       queryMatching st "" @?= queryFacts st
       queryViewMatching st "" @?= queryView st
       livingMatching st "" @?= livingCast st
+      castMatching st "" @?= castNames st
+      deadMatching st "" @?= deadCast st
+      practiceNamesMatching world "" @?= practiceNames world
       availableMatching world "ada" "" @?= available world "ada"
       let (a0, r0) = factDeltaMatching "" st st
           (a1, r1) = factDelta st st
@@ -117,9 +120,17 @@ tests = testGroup "Prax.Host"
       assertBool "wave" (any ("wave" `isInfixOf`) hits)
       availableMatching world "ada" "nonexistent" @?= []
 
-  , testCase "livingMatching filters living cast by needle" $ do
-      let st = setCharacters (map character ["ana", "cara", "bob"]) emptyState
+  , testCase "livingMatching / castMatching / deadMatching / practiceNamesMatching filter by needle" $ do
+      let st0 = setCharacters (map character ["ana", "cara", "bob"]) emptyState
+          st = inject st0 [ Insert "dead.bob" ]
       livingMatching st "a" @?= ["ana", "cara"]
+      castMatching st "a" @?= ["ana", "cara"]
+      castMatching st "b" @?= ["bob"]
+      deadMatching st "b" @?= ["bob"]
+      deadMatching st "a" @?= []
+      deadMatching st "" @?= ["bob"]
+      practiceNamesMatching world "wa" @?= ["wave"]
+      practiceNamesMatching world "zzz" @?= []
 
   , testCase "factDeltaMatching filters delta by needle" $ do
       let before = inject world [ Insert "flag.ada", Insert "keep.x" ]

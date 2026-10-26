@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, obligedAsOf, breachesOf, violatedAsOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, practicedAsOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, practiceNamesMatching, castNames, castMatching, livingCast, deadCast, deadMatching, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, obligedAsOf, breachesOf, violatedAsOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, practicedAsOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -84,21 +84,31 @@ runChronicle args = do
 -- @prax worlds@ — enumerate built-in storyworld names (documented CLI surface).
 -- | List top-level practice ids for a named built-in world.
 runPractices :: [String] -> IO ()
+runPractices ("matching" : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (practiceNamesMatching st needle)
 runPractices ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (practiceNames st)
 
--- | List cast names for a named built-in world (@living@ = survivors only).
+-- | List cast names for a named built-in world (@living@ = survivors only;
+-- @matching <needle>@ filters full cast).
 runCast :: [String] -> IO ()
 runCast ("living" : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (livingCast st)
+runCast ("matching" : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (castMatching st needle)
 runCast ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (castNames st)
 
--- | List dead cast names for a named built-in world.
+-- | List dead cast names (@matching <needle>@ filters).
 runDead :: [String] -> IO ()
+runDead ("matching" : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (deadMatching st needle)
 runDead ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (deadCast st)
@@ -1000,9 +1010,9 @@ usageText = unlines
   , "  prax chronicle [world] [query…]    read-only salience / events"
   , "  prax worlds                        list built-in storyworlds"
   , "  prax version                       persist format / build label"
-  , "  prax practices <world>             list top-level practice ids"
-  , "  prax cast [living] <world>         list cast (or living only)"
-  , "  prax dead <world>                  list dead cast names"
+  , "  prax practices [matching n] <world> list practice ids (optional filter)"
+  , "  prax cast [living|matching n] <world>  list cast / living / filtered"
+  , "  prax dead [matching n] <world>     list dead cast (optional filter)"
   , "  prax members <faction> <world>     list faction members"
   , "  prax affiliates <who> <world>      list character affiliates"
   , "  prax affiliators <faction> <world>   list who affiliate with faction"

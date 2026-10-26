@@ -3275,3 +3275,9 @@
 - **做了什么**：SandboxSpec 追加 mill/church silence×对侧 parade once×squeeze 关；kyle punishesThief 负例；dual silence×revoke 正义恢复；repay 再买+正义；无 punishesHeretic 不 censure；flee×church buy；return×cry/denounce；joins/flee util；brand×parade×buy；cast iraCry。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（587 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v596 — Host castMatching/deadMatching/practiceNamesMatching + CLI
+
+- **做了什么**：Host 增加全阵容/死者/实践 id 的 needle 过滤侧叶；CLI `practices|cast|dead matching <n>`；empty needle = 全集。
+- **测**：HostSpec matching 过滤 + 空针回归。
+

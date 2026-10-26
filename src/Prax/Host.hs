@@ -31,6 +31,7 @@
 -- v585：'owedOf' 债务内容标签侧叶。
 -- v588：'obligedAsOf'/'violatedAsOf' 义务/违规内容标签侧叶。
 -- v592：'practicedAsOf' 实践动作后缀侧叶。
+-- v596：'castMatching'/'deadMatching'/'practiceNamesMatching' 阵容/实践名过滤。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -86,6 +87,9 @@ module Prax.Host
   , livingCast
   , deadCast
   , livingMatching
+  , castMatching
+  , deadMatching
+  , practiceNamesMatching
   , practiceNames
   , regardsOf
   , membersOf
@@ -336,6 +340,18 @@ deadCast st =
 -- | 过滤存活阵容：名含 @needle@ 的角色。
 livingMatching :: PraxState -> String -> [String]
 livingMatching st needle = filter (needle `isInfixOf`) (livingCast st)
+
+-- | 过滤全阵容：名含 @needle@ 的角色（含死者）。
+castMatching :: PraxState -> String -> [String]
+castMatching st needle = filter (needle `isInfixOf`) (castNames st)
+
+-- | 过滤死者阵容：名含 @needle@ 的角色。
+deadMatching :: PraxState -> String -> [String]
+deadMatching st needle = filter (needle `isInfixOf`) (deadCast st)
+
+-- | 过滤已定义实践 id：名含 @needle@ 的子集。
+practiceNamesMatching :: PraxState -> String -> [String]
+practiceNamesMatching st needle = filter (needle `isInfixOf`) (practiceNames st)
 
 -- | 闭合视图中 @who@ 发出的站队叶（@regards.<who>.*@）。
 regardsOf :: PraxState -> String -> [String]
