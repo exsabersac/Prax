@@ -377,4 +377,13 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "kin of cara" @?= ["parent.ana.cara"]
       askChronicle st "kin of void" @?= ["void has no kin marks"]
 
+  , testCase "askChronicle notorious-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "notorious.ana.thief"
+                , Insert "notorious.ben.liar"
+                , Insert "flag.x" ]
+      askChronicle st "notorious of ana" @?= ["notorious.ana.thief"]
+      askChronicle st "notorious of ben" @?= ["notorious.ben.liar"]
+      askChronicle st "notorious of void" @?= ["void has no notoriety marks"]
+
   ]

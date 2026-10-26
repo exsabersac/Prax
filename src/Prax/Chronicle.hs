@@ -148,7 +148,7 @@ formatEvent ev rs =
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
--- @"kin of "++who@。
+-- @"kin of "++who@、@"notorious of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -596,6 +596,13 @@ askChronicle st q
                 , head parts `elem` kinHeads
                 , who `elem` drop 1 parts ]
       in if null rows then [who ++ " has no kin marks"]
+         else rows
+  | Just who <- stripPrefix "notorious of " q =
+      -- 对齐 Host notoriousOf：读闭合视图（臭名多为派生叶）。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , ("notorious." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no notoriety marks"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 
