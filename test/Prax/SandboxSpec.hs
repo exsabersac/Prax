@@ -1908,4 +1908,36 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "squeeze spent"
         (not (hasAct "priest" "squeeze bob" stPar)
          || exists "threatened.inquisit.priest.bob" (db stPar))
+
+  , testCase "church silence × squeeze: debt blocks censure; mill squeeze still open" $ do
+      -- bob buys priest silence → harvest censure blocked; dave mill squeeze
+      -- (activateSqueeze + learn) ignores church owes.
+      let st0 = activateSqueeze (doAct "dave" "learn" inquisitSeed)
+          stBuy = doAct "bob" "buy priest" st0
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      assertBool "dave squeeze still" (hasAct "dave" "squeeze bob" stH)
+      let stSq = doAct "dave" "squeeze bob" stH
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+      assertBool "debt still" (exists "debt.priest.bob.church-favor" (db stSq))
+
+  , testCase "affiliate × cry: kyle affiliate-only cannot cry at market" $ do
+      -- factionStanding needs primary member; kyle affiliates mill but primary
+      -- guild → no regard → market cry closed for kyle while dave can cry.
+      let st0 = doAct "dave" "learn" sandboxWorld
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db st0))
+      assertBool "kyle no regard"
+        (not (exists "regards.kyle.bob.thief" (readView st0)))
+      let stM = iterate roundBoundary st0 !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      assertBool "kyle cry no" (not (hasAct "kyle" "cry the theft" stM))
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+
   ]
