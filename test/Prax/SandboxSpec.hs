@@ -1346,4 +1346,23 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stPar = doAct "dave" "parade bob" stCry
       assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
       assertBool "cry spent" (not (hasAct "dave" "cry the theft" stPar))
+
+  , testCase "defection × parade: flee drops regard/parade; return restores" $ do
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stCarol = doAct "carol" "learn" stP
+          stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      assertBool "parade closed" (not (hasAct "dave" "parade bob" stFlee))
+      let stH = iterate roundBoundary stFlee !! 3
+          stBack = doAct "carol" "return to the mill" stH
+      assertBool "regard restored"
+        (exists "regards.dave.bob.thief" (readView stBack))
+      assertBool "parade restored" (hasAct "dave" "parade bob" stBack)
   ]

@@ -24,6 +24,7 @@
 -- v293：'eyedOf'/'confrontedOf'/'atonedOf' 目击/对质/赎罪叶（Village）。
 -- v295：'wrongedOf'/'hungryOf' 冤屈/饥饿叶（Feud / Village）。
 -- v297：'shortTemperedOf'/'appetiteOf' 暴脾气/胃口叶（Village）。
+-- v299：'resentsOf' 怨恨叶（Feud 派生）。
 module Prax.Host
   ( step
   , stepExact
@@ -100,6 +101,7 @@ module Prax.Host
   , hungryOf
   , shortTemperedOf
   , appetiteOf
+  , resentsOf
   , checkpoint
   , restore
   ) where
@@ -833,6 +835,16 @@ appetiteOf :: PraxState -> String -> [String]
 appetiteOf st who =
   sort [ s | s <- queryView st, s == ("appetite." ++ who)
               || ("appetite." ++ who ++ ".") `isPrefixOf` s ]
+
+
+
+-- | 闭合视图中 @who@ 作为怨恨主体的叶（@resents.<who>.<target>@；Feud）。
+resentsOf :: PraxState -> String -> [String]
+resentsOf st who = sort
+  [ s
+  | s <- queryView st
+  , ("resents." ++ who ++ ".") `isPrefixOf` s
+  ]
 
 checkpoint :: FilePath -> PraxState -> IO ()
 checkpoint = saveState

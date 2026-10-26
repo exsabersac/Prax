@@ -224,4 +224,11 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "appetite of bob" @?= ["appetite.bob"]
       askChronicle st "appetite of void" @?= ["void has no appetite mark"]
 
+  , testCase "askChronicle resents-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "resents.bob.alice"
+                , Insert "resents.carol.alice" ]
+      askChronicle st "resents of bob" @?= ["resents.bob.alice"]
+      askChronicle st "resents of void" @?= ["void has no resentment marks"]
+
   ]

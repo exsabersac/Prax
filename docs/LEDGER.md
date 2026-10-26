@@ -1638,3 +1638,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec parade × market cry。Village / GoldenDrive 金标准未动。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v299 — Host resentsOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举怨恨主体叶（`resents.<who>.<target>`；Feud 派生）；CLI `prax resents`；`askChronicle "resents of "`；help 同步。
+- **测**：HostSpec / ChronicleSpec。
+
+## v300 — Sandbox 叛逃×烙印游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 brand→activateParade 后受害方 carol 叛逃溶解 dave 的 `regards…thief`，parade 关闭；和解回磨坊后站队与 parade 恢复。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × parade。Village / GoldenDrive 金标准未动。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village/Feud 金标准。
+
