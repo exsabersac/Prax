@@ -14,6 +14,7 @@
 -- v225：'arcsOf'/'agesOf'/'projectsOf' 枚举弧阶段/年龄/事业叶。
 -- v231：'demandedOf'/'festivalsOf' 催收叶与节庆叶。
 -- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
+-- v515：'occupantsOf' 位置目标侧叶（at.*.<place>）。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -112,6 +113,7 @@ module Prax.Host
   , demandeesOf
   , festivalsOf
   , locationsOf
+  , occupantsOf
   , holdingOf
   , carryingOf
   , shunnedOf
@@ -769,6 +771,23 @@ festivalsOf st =
 locationsOf :: PraxState -> String -> [String]
 locationsOf st who =
   sort [ s | s <- queryView st, ("at." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中位于 @place@ 的角色叶（@at.<who>.<place>@；! 展成 .）。
+occupantsOf :: PraxState -> String -> [String]
+occupantsOf st place = sort
+  [ s
+  | s <- queryView st
+  , "at." `isPrefixOf` s
+  , let rest = drop (length ("at." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == place
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的持有叶（@holding.<who>.*@）。
 holdingOf :: PraxState -> String -> [String]

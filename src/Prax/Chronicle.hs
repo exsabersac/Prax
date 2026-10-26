@@ -142,7 +142,7 @@ formatEvent ev rs =
 -- @"what is on the stall"@、@"what festivals"@、
 -- @"holding of "++who@、@"carrying of "++who@、
 -- @"threatened of "++who@、@"threateners of "++who@、@"threatenees of "++who@、@"shunned of "++who@、@"shunners of "++who@、
--- @"locations of "++who@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
+-- @"locations of "++who@、@"occupants of "++place@、@"demanded of "++who@、@"demanders of "++who@、@"demandees of "++who@、
 -- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"liars of "++who@、@"chatted with "++who@、@"chatters of "++who@、@"traits of "++who@、
@@ -986,6 +986,19 @@ askChronicle st q
                 , ("at." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no known location"]
          else rows
+  | Just place <- stripPrefix "occupants of " q =
+      -- 对齐 Host occupantsOf：读闭合视图；短语化在场角色。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "at." `isPrefixOf` s
+                , let rest = drop (length ("at." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == place ]
+      in if null rows then ["nobody is at " ++ place]
+         else [ a ++ " at " ++ place
+              | s <- rows
+              , let a = head (splitDot (drop (length ("at." :: String)) s)) ]
   | Just who <- stripPrefix "demanded of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

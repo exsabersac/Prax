@@ -9,7 +9,7 @@ import           Prax.Engine (definePractices, performOutcome, setAxioms, setCha
 import           Prax.Repute (standingUnless, notoriety)
 import           Prax.Chronicle
 import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
-                             carryingOf, shunnedOf, locationsOf,
+                             carryingOf, shunnedOf, locationsOf, occupantsOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
@@ -988,6 +988,18 @@ tests = testGroup "Prax.Chronicle"
         ["ana chatter of ben", "cass chatter of ben"]
       askChronicle st "chatters of eve" @?= ["dave chatter of eve"]
       askChronicle st "chatters of void" @?= ["void has no known chatters"]
+
+  , testCase "askChronicle occupants dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "at.ana!yard"
+            , Insert "at.ben!yard"
+            , Insert "at.cass!market"
+            ]
+      occupantsOf st "yard" @?= ["at.ana.yard", "at.ben.yard"]
+      askChronicle st "occupants of yard" @?=
+        ["ana at yard", "ben at yard"]
+      askChronicle st "occupants of market" @?= ["cass at market"]
+      askChronicle st "occupants of void" @?= ["nobody is at void"]
 
 
   ]

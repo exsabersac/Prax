@@ -865,4 +865,14 @@ tests = testGroup "Prax.Host"
       chattersOf st "eve" @?= ["dave.chattedWith.eve"]
       chattersOf st "void" @?= []
 
+  , testCase "occupantsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "at.ana!yard"
+            , Insert "at.ben!yard"
+            , Insert "at.cass!market"
+            ]
+      occupantsOf st "yard" @?= ["at.ana.yard", "at.ben.yard"]
+      occupantsOf st "market" @?= ["at.cass.market"]
+      occupantsOf st "void" @?= []
+
   ]
