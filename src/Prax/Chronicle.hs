@@ -1292,6 +1292,18 @@ askChronicle st q
                 , parts !! 2 == who ]
       in if null rows then [who ++ " has no known liars"]
          else [ head (splitDot s) ++ " liar of " ++ who | s <- rows ]
+  | Just content <- stripPrefix "lied of " q =
+      -- 对齐 Host liedOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , let parts = splitDots s
+            , length parts >= 4
+            , parts !! 1 == "lied"
+            , intercalate "." (drop 3 parts) == content
+            ]
+      in if null rows then ["nobody lied " ++ content]
+         else rows
   | Just who <- stripPrefix "chatted with " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

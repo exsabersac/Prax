@@ -26,6 +26,7 @@
 -- v569：'bondedOf'/'feltOf' 纽带标签/感受标签侧叶。
 -- v572：'esteemsOf'/'scornsOf' 赞誉/蔑视标签侧叶。
 -- v575：'demandsOf' 催收内容标签侧叶。
+-- v578：'liedOf' 谎言内容标签侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -98,6 +99,7 @@ module Prax.Host
   , feltOf
   , liesOf
   , liarsOf
+  , liedOf
   , chattedWithOf
   , chattersOf
   , traitsOf
@@ -542,6 +544,22 @@ liarsOf st who = sort
   , length parts >= 3
   , parts !! 1 == "lied"
   , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中谎言内容为 @content@ 的叶（@<liar>.lied.<listener>.<content>@）。
+liedOf :: PraxState -> String -> [String]
+liedOf st content = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 4
+  , parts !! 1 == "lied"
+  , intercalate "." (drop 3 parts) == content
   ]
   where
     splitDots :: String -> [String]

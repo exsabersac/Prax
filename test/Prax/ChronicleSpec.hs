@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1241,5 +1241,22 @@ tests = testGroup "Prax.Chronicle"
         ["demanded.cai.ana.coin"]
       askChronicle st "demands of void" @?=
         ["nobody demands void"]
+
+  , testCase "liedOf / lied of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.lied.ben.stole.loaf"
+            , Insert "cass.lied.dave.stole.loaf"
+            , Insert "ben.lied.ana.saw.nothing"
+            ]
+      sort (liedOf st "stole.loaf") @?=
+        ["ana.lied.ben.stole.loaf", "cass.lied.dave.stole.loaf"]
+      liedOf st "saw.nothing" @?= ["ben.lied.ana.saw.nothing"]
+      liedOf st "void" @?= []
+      askChronicle st "lied of stole.loaf" @?=
+        ["ana.lied.ben.stole.loaf", "cass.lied.dave.stole.loaf"]
+      askChronicle st "lied of saw.nothing" @?=
+        ["ben.lied.ana.saw.nothing"]
+      askChronicle st "lied of void" @?=
+        ["nobody lied void"]
 
   ]

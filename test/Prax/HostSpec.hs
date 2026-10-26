@@ -241,6 +241,8 @@ tests = testGroup "Prax.Host"
       feltOf st "void" @?= []
       liesOf st "ana" @?= ["ana.lied.ben.stole.loaf"]
       liesOf st "void" @?= []
+      liedOf st "stole.loaf" @?= ["ana.lied.ben.stole.loaf"]
+      liedOf st "void" @?= []
       chattedWithOf st "ana" @?= ["ana.chattedWith.ben"]
       chattedWithOf st "cass" @?= ["cass.chattedWith.ana"]
 

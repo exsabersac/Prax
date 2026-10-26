@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, feltOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -208,6 +208,13 @@ runLies (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (liesOf st who)
 runLies _ = putStrLn "usage: prax lies <who> <world>"
+
+-- | List lie leaves for content: @prax lied <content> <world>@.
+runLied :: [String] -> IO ()
+runLied (content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (liedOf st content)
+runLied _ = putStrLn "usage: prax lied <content> <world>"
 
 -- | List chattedWith leaves: @prax chatted <who> <world>@.
 runChatted :: [String] -> IO ()
@@ -1103,6 +1110,7 @@ main = do
     ("felt" : ws)     -> runFelt ws
     ("lies" : ws)     -> runLies ws
     ("liars" : ws)     -> runLiars ws
+    ("lied" : ws)      -> runLied ws
     ("chatted" : ws)  -> runChatted ws
     ("chatters" : ws) -> runChatters ws
     ("traits" : ws)   -> runTraits ws
