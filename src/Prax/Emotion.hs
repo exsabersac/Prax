@@ -30,7 +30,7 @@ module Prax.Emotion
     -- * Default lifetimes per emotion token
   , defaultLifetime, feelDefault, feelTowardDefault
     -- * Baseline mood (exclusive; display / gating, not episodic)
-  , setMood, clearMood, inMood, hasInMood
+  , setMood, clearMood, inMood, hasInMood, lacksInMood
   , moodFromFeeling
   , hasMood
   , everMood
@@ -249,6 +249,10 @@ inMood who emotion = Match ("mood." ++ who ++ "!" ++ emotion)
 -- | 条件：@who@ 当前心境为 @emotion@（@inMood@ 同体；对齐 has* 命名）。
 hasInMood :: String -> String -> Condition
 hasInMood = inMood
+
+-- | 条件：@who@ 当前心境不是 @emotion@（@inMood@ 的 Not 对偶）。
+lacksInMood :: String -> String -> Condition
+lacksInMood who emotion = Not ("mood." ++ who ++ "!" ++ emotion)
 
 -- | 公理：任何人感到 @emotion@ 时派生 @mood.W!<emotion>@（覆盖先前心境叶）。
 -- 供「心境跟踪当前主导感受」的创作世界；不强制——世界可选安装。

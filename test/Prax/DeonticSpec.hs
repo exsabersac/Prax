@@ -233,4 +233,19 @@ tests = testGroup "Prax.Deontic"
       assertBool "fulfilled"
         (sat met (fulfilled "bex" "tipped.ada"))
 
+  , testCase "hasObligedWhenAt aliases isObligedWhenAt" $
+      hasObligedWhenAt "bob" "chapel" "said.prayer"
+        @?= isObligedWhenAt "bob" "chapel" "said.prayer"
+
+  , testCase "hasObligedWhenAt evaluates on whenAt world" $ do
+      let st0 = applyAll emptyState
+            [ Insert "at.bob!chapel"
+            , obligeWhenAt "bob" "chapel" "said.prayer" ]
+      assertBool "hasObligedWhenAt"
+        (satisfies (db st0) (hasObligedWhenAt "bob" "chapel" "said.prayer") Map.empty)
+      let st1 = performOutcome (Insert "at.bob!yard") st0
+      assertBool "hasObligedWhenAt fails off-place"
+        (not (satisfies (db st1) (hasObligedWhenAt "bob" "chapel" "said.prayer") Map.empty))
+
+
   ]

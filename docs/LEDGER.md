@@ -2755,3 +2755,21 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 ira 已 learn 后门开但 bob 无 millSilenceDesire 时不买；gale 已 hear 后门开但 eve 无 churchSilenceDesire 时不买。无新实践。
 - **测**：SandboxSpec wants: without millSilenceDesire / without churchSilenceDesire。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v492 — Deontic hasObligedWhenAt 对偶
+
+- **做了什么**：Deontic 增加 hasObligedWhenAt（= isObligedWhenAt）；Spec 钉结构别名与 whenAt 世界求值。无新实践 / 无 want 改动。
+- **测**：DeonticSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v493 — Emotion lacksInMood 对偶
+
+- **做了什么**：Emotion 增加 lacksInMood（inMood 的 Not 对偶）；Spec 钉结构与 setMood 世界求值。无新实践 / 无 want 改动。
+- **测**：EmotionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v494 — Kin/Confession/Witness Spec 补钉
+
+- **做了什么**：Kin Spec 补 hasMarriedTo 世界求值；Confession Spec 补 lacksMark 世界求值；Witness Spec 钉 asRole 重定向。无新实践 / 无 want 改动。
+- **测**：KinSpec / ConfessionSpec / WitnessSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

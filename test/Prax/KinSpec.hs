@@ -345,6 +345,8 @@ tests = testGroup "Prax.Kin"
         (satisfies v [isSiblingOf "ana" "ben"] Map.empty)
       assertBool "isMarriedTo"
         (satisfies v [isMarriedTo "ana" "chris"] Map.empty)
+      assertBool "hasMarriedTo"
+        (satisfies v [hasMarriedTo "ana" "chris"] Map.empty)
       assertBool "everMarried"
         (satisfies v [everMarried "ana"] Map.empty)
       assertBool "everParent"

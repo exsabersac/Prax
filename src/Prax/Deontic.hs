@@ -66,6 +66,7 @@ module Prax.Deontic
   , obligeWhenAt
   , dischargeWhenAt
   , isObligedWhenAt
+  , hasObligedWhenAt
   ) where
 
 import           Data.List (isPrefixOf, tails)
@@ -214,3 +215,7 @@ isObligedWhenAt :: String -> String -> String -> [Condition]
 isObligedWhenAt who place content =
   [ Match ("at." ++ who ++ "!" ++ place)
   , Match (whenAtPath who place content) ]
+
+-- | 条件：@who@ 有 whenAt 义务且当前在 @place@（@isObligedWhenAt@ 同体；对齐 has* 命名）。
+hasObligedWhenAt :: String -> String -> String -> [Condition]
+hasObligedWhenAt = isObligedWhenAt

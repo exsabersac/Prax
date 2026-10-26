@@ -401,4 +401,14 @@ tests = testGroup "Prax.Emotion"
       assertBool "intensityTowardAtLeast 5 fails"
         (not (satisfies (db st2) (intensityTowardAtLeast "ada" angry "carol" 5) Map.empty))
 
+  , testCase "lacksInMood is Not of mood path and evaluates" $ do
+      lacksInMood "ada" "gloomy" @?= Not "mood.ada!gloomy"
+      assertBool "lacksInMood on empty"
+        (satisfies (db emptyState) [lacksInMood "ada" "gloomy"] Map.empty)
+      let moody = performOutcome (setMood "ada" "gloomy") emptyState
+      assertBool "lacksInMood fails when in mood"
+        (not (satisfies (db moody) [lacksInMood "ada" "gloomy"] Map.empty))
+      assertBool "lacksInMood other emotion"
+        (satisfies (db moody) [lacksInMood "ada" "cheerful"] Map.empty)
+
   ]

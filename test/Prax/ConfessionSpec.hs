@@ -699,6 +699,8 @@ tests = testGroup "Prax.Confession"
   , testCase "hasMark / isAbsolved evaluate on Insert world" $ do
       assertBool "neverMarked on empty"
         (satisfies (db emptyState) [neverMarked "bob" "lied" "eve" "stole.bread"] Map.empty)
+      assertBool "lacksMark on empty"
+        (satisfies (db emptyState) [lacksMark "bob" "lied" "eve" "stole.bread"] Map.empty)
       assertBool "lacksAbsolved on empty"
         (satisfies (db emptyState) [lacksAbsolved "recanted" "cody"] Map.empty)
       assertBool "neverAbsolved on empty"
@@ -708,6 +710,8 @@ tests = testGroup "Prax.Confession"
                  , Insert "recanted.cody" ]
       assertBool "hasMark"
         (satisfies (db st) [hasMark "bob" "lied" "eve" "stole.bread"] Map.empty)
+      assertBool "lacksMark fails"
+        (not (satisfies (db st) [lacksMark "bob" "lied" "eve" "stole.bread"] Map.empty))
       assertBool "everMarked"
         (satisfies (db st) [everMarked "bob" "lied" "eve" "stole.bread"] Map.empty)
       assertBool "isAbsolved"

@@ -97,4 +97,11 @@ tests = testGroup "Prax.Witness"
         (not (satisfies (db annActs) [lacksSaw "bea" "waved.ann"] Map.empty))
       assertBool "cal neverSaw"
         (satisfies (db annActs) [neverSaw "cal" "waved.ann"] Map.empty)
+
+  , testCase "asRole redirects Witness variable in co-presence template" $ do
+      asRole "Hearer" together
+        @?= [ Match "at.Actor!P", Match "at.Hearer!P" ]
+      asRole "Victim" [ Match "at.Witness!Spot", Neq "Witness" "Actor" ]
+        @?= [ Match "at.Victim!Spot", Neq "Victim" "Actor" ]
+
   ]
