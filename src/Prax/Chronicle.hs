@@ -144,7 +144,8 @@ formatEvent ev rs =
 -- @"threatened of "++who@、@"shunned of "++who@、
 -- @"locations of "++who@、@"demanded of "++who@、
 -- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@、
--- @"obligations of "++who@、@"breaches of "++who@。
+-- @"obligations of "++who@、@"breaches of "++who@、
+-- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -530,6 +531,24 @@ askChronicle st q
             [ s | s <- dbToSentences (db st)
                 , ("violated." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no breaches"]
+         else rows
+  | Just who <- stripPrefix "lies of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , (who ++ ".lied.") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no lie marks"]
+         else rows
+  | Just who <- stripPrefix "chatted with " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , (who ++ ".chattedWith.") `isPrefixOf` s ]
+      in if null rows then [who ++ " has chatted with no one"]
+         else rows
+  | Just who <- stripPrefix "traits of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , ("trait." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no traits on record"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

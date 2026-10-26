@@ -1875,3 +1875,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"obligations of "` / `"breaches of "`（对齐 Host `obligationsOf`/`breachesOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v341 — Sandbox 教会胁迫×磨坊放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisitSeed 下 priest squeeze 与 dave denounce→exile 互不阻挡（先 squeeze 仍可 exile）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec inquisit × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v342 — Chronicle lies of / chatted with / traits of
+
+- **做了什么**：`askChronicle` 增加 `"lies of "` / `"chatted with "` / `"traits of "`（对齐 Host `liesOf`/`chattedWithOf`/`traitsOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

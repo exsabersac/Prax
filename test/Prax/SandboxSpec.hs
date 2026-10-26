@@ -1700,4 +1700,24 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stSq = doAct "fran" "squeeze bob" stWed
       assertBool "threatened"
         (exists "threatened.squeeze.fran.bob" (db stSq))
+
+  , testCase "inquisit × exile: church squeeze and mill exile stay independent" $ do
+      -- inquisitSeed priest squeeze + dave mill learn/denounce/exile: church
+      -- coerce and mill tribunal share no gate (exile race is mill vs banish).
+      let st0 = doAct "dave" "learn" inquisitSeed
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      let stH = iterate roundBoundary st0 !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "squeeze at harvest" (hasAct "priest" "squeeze bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "squeeze after denounce" (hasAct "priest" "squeeze bob" stAfter)
+      let stSq = doAct "priest" "squeeze bob" stAfter
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+      assertBool "exile still" (hasAct "dave" "exile" stSq)
+      let stEx = doAct "dave" "exile" stSq
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
   ]

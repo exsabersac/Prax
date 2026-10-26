@@ -322,4 +322,17 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "breaches of ana" @?= ["violated.ana.truth"]
       askChronicle st "breaches of void" @?= ["void has no breaches"]
 
+  , testCase "askChronicle lies-of / chatted-with / traits-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "ana.lied.about.theft"
+                , Insert "ana.chattedWith.ben"
+                , Insert "trait.ana.brave"
+                , Insert "flag.x" ]
+      askChronicle st "lies of ana" @?= ["ana.lied.about.theft"]
+      askChronicle st "lies of void" @?= ["void has no lie marks"]
+      askChronicle st "chatted with ana" @?= ["ana.chattedWith.ben"]
+      askChronicle st "chatted with void" @?= ["void has chatted with no one"]
+      askChronicle st "traits of ana" @?= ["trait.ana.brave"]
+      askChronicle st "traits of void" @?= ["void has no traits on record"]
+
   ]
