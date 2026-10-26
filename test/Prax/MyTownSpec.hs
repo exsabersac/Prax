@@ -1,6 +1,7 @@
--- | MyTown M1+M3+M4+M6c+M6f 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f+M6g 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
--- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）。
+-- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）；
+-- M6g 亲往 mill·当场转告（G01–G04；Actor 自证喂 gossip）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -770,5 +771,65 @@ tests = testGroup "MyTown"
           assertBool ("硬卡 label: " ++ gaLabel ga0)
             ("you" `isInfixOf` gaLabel ga0
              && "说破看见 gale 帮助了 dana" `isInfixOf` gaLabel ga0)
+
+      , -- M6g：亲往 mill·当场转告 you→dana（硬卡 G01–G04；Session 冻；复用 gossip）
+        testCase "M6g-G01 公开帮助 carol → didHelp + Actor 自证 believes（无 .seen）" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          assertBool "didHelp.you.carol"
+            (factInfix (sessState s1) "didHelp.you.carol")
+          assertBool "you 自证 believes.helped.you.carol"
+            (factInfix (sessState s1) "you.believes.helped.you.carol")
+          assertBool "自证不是 .seen（不开自说破）"
+            (not (factInfix (sessState s1) "you.believes.helped.you.carol.seen"))
+          assertBool "共场 bob 仍有 .seen"
+            (factInfix (sessState s1) "bob.believes.helped.you.carol.seen")
+
+      , testCase "M6g-G02 前往 mill 后 Menu 有 you 转告 dana：you 帮助了 carol" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          (s2, _) <- actByLabel s1 "前往 mill"
+          viewLocationId (praxView s2) @?= Just "mill"
+          let needle = "转告 dana：you 帮助了 carol"
+              hits = [ m | m <- praxMenu s2, needle `isInfixOf` menuLabel m ]
+          assertBool ("Menu 含 " ++ needle ++ "; had=" ++ show (map menuLabel (praxMenu s2)))
+            (not (null hits))
+
+      , testCase "M6g-G03 点转告 → narrative 含转告 + dana heard.you" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          (s2, _) <- actByLabel s1 "前往 mill"
+          (s3, r) <- actByLabel s2 "转告 dana：you 帮助了 carol"
+          let narr = unlines (actNarrative r)
+          assertBool ("narrative 含转告: " ++ narr)
+            ("转告" `isInfixOf` narr)
+          assertBool ("narrative 含 dana/you/carol: " ++ narr)
+            ("dana" `isInfixOf` narr
+             && "you" `isInfixOf` narr
+             && "carol" `isInfixOf` narr)
+          assertBool "dana.heard.you"
+            (factInfix (sessState s3) "dana.believes.helped.you.carol.heard.you")
+          assertBool "dana ¬seen（转告不写 seen）"
+            (not (factInfix (sessState s3) "dana.believes.helped.you.carol.seen"))
+
+      , testCase "M6g-G04 花名册未扩；脚本路径自证→转告；Session 冻" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+          assertBool "脚本自证"
+            (factInfix st0 "you.believes.helped.you.carol")
+          let st1 = doAct "you" "前往 mill" st0
+              gossipActs = [ ga | ga <- possibleActions st1 "you"
+                                , "转告 dana：you 帮助了 carol" `isInfixOf` gaLabel ga ]
+          assertBool "脚本 Menu 有 you 转告 dana" (not (null gossipActs))
+          let ga0 = head gossipActs
+              st2 = performAction st1 ga0
+          assertBool "脚本 heard.you"
+            (factInfix st2 "dana.believes.helped.you.carol.heard.you")
+          assertBool ("硬卡 label: " ++ gaLabel ga0)
+            ("you" `isInfixOf` gaLabel ga0
+             && "转告 dana：you 帮助了 carol" `isInfixOf` gaLabel ga0)
+
       ]
   ]

@@ -88,6 +88,7 @@ townP = practice
   , actions =
       [ -- 公开帮忙：共场；外观 helped.Actor.Beneficiary（亲见仅同场）；
         -- 受益人对帮忙者 trust(+) helpedMe。默认弧 you→carol。
+        -- M6g：Actor 自证 believes.helped.Actor.Beneficiary（无 .seen；可喂 gossip）。
         observable together "helped.Actor.Beneficiary" $
         action "[Actor]: 公开帮助 [Beneficiary]"
           [ Match "practice.world.world.at.Actor!P"
@@ -95,6 +96,7 @@ townP = practice
           , Neq "Beneficiary" "Actor"
           , Not "didHelp.Actor.Beneficiary" ]
           [ Insert "didHelp.Actor.Beneficiary"
+          , Insert "Actor.believes.helped.Actor.Beneficiary"
           , adjustScore "Beneficiary" "Actor" "trust" trustHelpedMe "helpedMe" ]
 
         -- 说破：须亲见帮忙，且与 Helper 共场；trust(+) sawHelp。默认证人 bob。
