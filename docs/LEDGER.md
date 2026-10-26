@@ -2965,3 +2965,9 @@
 - **做了什么**：StressSpec 钉 runRandom 在预置 ending/family 世界上的 endingReached 与 visit。无新实践 / 无 want 改动。
 - **测**：StressSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v538 — Sandbox tear×cry + denounce×squeeze + affiliate mill/ira Spec
+
+- **做了什么**：SandboxSpec 追加 tear×cry、church tear×mill cry、denounce×squeeze、censure×parade、exile×cry 独立、banish×squeeze、wed×silence buy、kyle millJustice/iraJustice 门禁、parade/churchParade 独拣、flee×ira tear、return×ira debt、squeezeDesire/inquisitDesire 独拣。导入 iraJustice。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（352 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
