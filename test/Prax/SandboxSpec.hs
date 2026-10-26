@@ -3802,5 +3802,167 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
 
 
 
+  , testCase "wants: coerce desire names are punishes-squeeze / punishes-inquisit" $ do
+      squeezeDesireName @?= "punishes-squeeze"
+      inquisitDesireName @?= "punishes-inquisit"
+      assertBool "in sandboxDesires"
+        (any ((== squeezeDesireName) . desireName) sandboxDesires)
+      assertBool "inquisit in sandboxDesires"
+        (any ((== inquisitDesireName) . desireName) sandboxDesires)
+
+  , testCase "wants: without punishesThief dave does not denounce at harvest" $ do
+      let st0 = doAct "dave" "learn" sandboxWorld
+          dave' = (actorOf "dave" st0)
+                    { charDesires = [seeksTheftDesireName, exileBobDesireName] }
+          stBase = st0 { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters st0 ] }
+          stH = iterate roundBoundary stBase !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "denounce open" (hasAct "dave" "denounce" stH)
+      let lab = pickLabel "dave" stH
+      assertBool ("not denounce, got " ++ show lab)
+        (maybe True (not . ("denounce" `isInfixOf`)) lab)
+
+  , testCase "wants: without exileBob dave does not exile after denounce" $ do
+      let st0 = doAct "dave" "learn" sandboxWorld
+          stH = iterate roundBoundary st0 !! 3
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          dave' = (actorOf "dave" stAfter)
+                    { charDesires = [seeksTheftDesireName, punishesThiefDesireName] }
+          st = stAfter { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters stAfter ] }
+      assertBool "exile open" (hasAct "dave" "exile" st)
+      let lab = pickLabel "dave" st
+      assertBool ("not exile, got " ++ show lab)
+        (maybe True (not . ("exile" `isInfixOf`)) lab)
+
+  , testCase "wants: without punishesHeretic priest does not censure at harvest" $ do
+      let st0 = doAct "priest" "hear the blasphemy" sandboxWorld
+          priest' = (actorOf "priest" st0)
+                      { charDesires = [seeksHeresyDesireName, exileEveDesireName] }
+          stBase = st0 { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters st0 ] }
+          stH = iterate roundBoundary stBase !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "censure open" (hasAct "priest" "censure" stH)
+      let lab = pickLabel "priest" stH
+      assertBool ("not censure, got " ++ show lab)
+        (maybe True (not . ("censure" `isInfixOf`)) lab)
+
+  , testCase "wants: without exileEve priest does not exile after censure" $ do
+      let st0 = doAct "priest" "hear the blasphemy" sandboxWorld
+          stH = iterate roundBoundary st0 !! 3
+          stCen = doAct "priest" "censure" stH
+          stAfter = roundBoundary stCen
+          priest' = (actorOf "priest" stAfter)
+                      { charDesires = [seeksHeresyDesireName, punishesHereticDesireName] }
+          st = stAfter { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters stAfter ] }
+      assertBool "exile open" (hasAct "priest" "exile" st)
+      let lab = pickLabel "priest" st
+      assertBool ("not exile, got " ++ show lab)
+        (maybe True (not . ("exile" `isInfixOf`)) lab)
+
+  , testCase "wants: after denounce exile weight picks exile outside harvest" $ do
+      let st0 = doAct "dave" "learn" sandboxWorld
+          stH = iterate roundBoundary st0 !! 3
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          dave' = (actorOf "dave" stAfter) { charDesires = millJustice }
+          st = stAfter { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters stAfter ] }
+      assertBool "exile open" (hasAct "dave" "exile" st)
+      pickLabel "dave" st @?= Just "dave: exile the thief"
+
+  , testCase "wants: seeksTheft weight picks learn when open" $ do
+      let dave' = (actorOf "dave" sandboxWorld)
+                    { charDesires = [seeksTheftDesireName] }
+          st = sandboxWorld { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters sandboxWorld ] }
+      assertBool "learn open" (hasAct "dave" "learn" st)
+      pickLabel "dave" st @?= Just "dave: learn of the theft"
+
+  , testCase "wants: seeksHeresy weight picks hear when open" $ do
+      let priest' = (actorOf "priest" sandboxWorld)
+                      { charDesires = [seeksHeresyDesireName] }
+          st = sandboxWorld { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters sandboxWorld ] }
+      assertBool "hear open" (hasAct "priest" "hear the blasphemy" st)
+      pickLabel "priest" st @?= Just "priest: hear the blasphemy"
+
+  , testCase "wants: parade weight beats millCry when parade open after brand" $ do
+      let st0 = activateParade (activateSqueeze (doAct "dave" "learn" sandboxWorld))
+          bobF = (actorOf "bob" st0) { charDesires = [fearsBrandName] }
+          dave' = (actorOf "dave" st0)
+                    { charDesires = [paradeDesireName] ++ millCry }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "bob" then bobF
+                    else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+          stConf = doAct "bob" "confess" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+      assertBool "parade open" (hasAct "dave" "parade bob" stBrand)
+      pickLabel "dave" stBrand @?= Just "dave: parade bob as branded thief"
+
+  , testCase "wants: after cry once-gate dave does not re-cry at market" $ do
+      let st0 = sandboxWorld
+          dave' = (actorOf "dave" st0) { charDesires = millCry }
+          stR = st0 { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters st0 ] }
+          st2 = doAct "carol" "learn" (doAct "dave" "learn" stR)
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+          stCry = doAct "dave" "cry the theft" stM
+      assertBool "cry closed" (not (hasAct "dave" "cry the theft" stCry))
+      let lab = pickLabel "dave" stCry
+      assertBool ("not cry, got " ++ show lab)
+        (maybe True (not . ("cry" `isInfixOf`)) lab)
+
+  , testCase "wants: after rally once-gate dave does not re-rally" $ do
+      let st2 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stM = roundBoundary (iterate roundBoundary st2 !! 3)
+          stRally = doAct "dave" "rally" stM
+      assertBool "rally closed" (not (hasAct "dave" "rally" stRally))
+      let lab = pickLabel "dave" stRally
+      assertBool ("not rally, got " ++ show lab)
+        (maybe True (not . ("rally" `isInfixOf`)) lab)
+
+  , testCase "wants: affiliate kyle with fearsBrand never confesses" $ do
+      let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+          dave' = (actorOf "dave" st0) { charDesires = [squeezeDesireName] }
+          kyle' = (actorOf "kyle" st0) { charDesires = [fearsBrandName] }
+          bob' = (actorOf "bob" st0) { charDesires = [] }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave'
+                    else if charName c == "kyle" then kyle'
+                    else if charName c == "bob" then bob'
+                    else c
+                  | c <- characters st0 ] }
+          stSq = doAct "dave" "squeeze bob" st
+      assertBool "kyle no confess" (not (hasAct "kyle" "confess" stSq))
+      assertBool "kyle no squeeze" (not (hasAct "kyle" "squeeze" stSq))
+      let lab = pickLabel "kyle" stSq
+      assertBool ("not confess, got " ++ show lab)
+        (maybe True (not . ("confess" `isInfixOf`)) lab)
+
+  , testCase "cast: player slot holds no desires" $ do
+      assertBool "player empty desires"
+        (null (charDesires (actorOf playerName sandboxWorld)))
+      assertBool "player empty wants"
+        (null (charWants (actorOf playerName sandboxWorld)))
+
+
+
 
   ]
