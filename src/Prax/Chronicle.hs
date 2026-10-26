@@ -139,7 +139,7 @@ formatEvent ev rs =
 -- @"wronged of "++who@、@"hungry of "++who@、
 -- @"shortTempered of "++who@、@"appetite of "++who@、
 -- @"resents of "++who@、@"allied of "++who@、
--- @"what is on the stall"@。
+-- @"what is on the stall"@、@"what festivals"@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -435,6 +435,11 @@ askChronicle st q
       let rows = sort
             [ s | s <- dbToSentences (db st), "stall." `isPrefixOf` s ]
       in if null rows then ["the stall is empty"]
+         else rows
+  | q == "what festivals" =
+      let rows = sort
+            [ s | s <- dbToSentences (db st), "festival." `isPrefixOf` s ]
+      in if null rows then ["no festivals are open"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

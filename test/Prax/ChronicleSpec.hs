@@ -246,4 +246,12 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "what is on the stall" @?= ["stall.loaf", "stall.pie"]
       askChronicle emptyState "what is on the stall" @?= ["the stall is empty"]
 
+  , testCase "askChronicle what-festivals" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "festival.harvest"
+                , Insert "festival.market"
+                , Insert "flag.x" ]
+      askChronicle st "what festivals" @?= ["festival.harvest", "festival.market"]
+      askChronicle emptyState "what festivals" @?= ["no festivals are open"]
+
   ]

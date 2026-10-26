@@ -1803,3 +1803,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec squeeze × cry（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+
+## v329 — Sandbox 教会胁迫×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisitSeed 下 priest squeeze 与 dave market cry 互不阻挡（教会 coerce 与磨坊市集轨独立）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec inquisit × cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v330 — Chronicle what festivals
+
+- **做了什么**：`askChronicle` 增加 `"what festivals"`，列出 `festival.*` 基事实（对齐 Host `festivalsOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+
