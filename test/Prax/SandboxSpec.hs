@@ -2368,4 +2368,38 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stEx = doAct "priest" "banish bob" stAfter
       assertBool "exiled" (exists "exiled.bob" (db stEx))
 
+
+  , testCase "defection × church exile: flee drops mill; priest banish stays" $ do
+      -- carol abandon dissolves dave mill regard/exile; church bob heresy
+      -- censure→banish ignores mill standing and stays open.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stDave = doAct "dave" "learn" stHear
+          stCarol = doAct "carol" "learn" stDave
+      assertBool "before: dave regard"
+        (exists "regards.dave.bob.thief" (readView stCarol))
+      let stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "after flee: no dave regard"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      let stH = iterate roundBoundary stFlee !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce no" (not (hasAct "dave" "denounce" stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      let stEx = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+
+  , testCase "affiliate × inquisit: kyle affiliate-only cannot squeeze church" $ do
+      -- kyle affiliates mill / primary guild → no church standing; priest squeeze open.
+      let st0 = inquisitSeed
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db st0))
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      assertBool "kyle squeeze no" (not (hasAct "kyle" "squeeze bob" st0))
+      let stSq = doAct "priest" "squeeze bob" st0
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+
   ]

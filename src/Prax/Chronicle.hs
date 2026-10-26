@@ -210,28 +210,32 @@ askChronicle st q
       in if null ms then ["nobody is a member of " ++ faction]
          else map (++ (" is a member of " ++ faction)) ms
   | Just who <- stripPrefix "feelings of " q =
+      -- 对齐 Host feelingsOf：读闭合视图。
       let prefix = who ++ ".feels."
-          fs = sort [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s ]
+          fs = sort [ s | s <- dbToSentences (readView st), prefix `isPrefixOf` s ]
       in if null fs then [who ++ " has no recorded feelings"]
          else fs
   | Just who <- stripPrefix "mood of " q =
+      -- 对齐 Host moodOf：读闭合视图。
       let prefix = "mood." ++ who ++ "."
           ms = sort [ drop (length prefix) s
-                    | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                    | s <- dbToSentences (readView st), prefix `isPrefixOf` s
                     , '.' `notElem` drop (length prefix) s ]
       in if null ms then [who ++ " has no baseline mood"]
          else map ((who ++ " mood ") ++) ms
   | Just who <- stripPrefix "arc of " q =
+      -- 对齐 Host arcOf：读闭合视图。
       let prefix = who ++ ".arc."
           stages = sort [ drop (length prefix) s
-                        | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                        | s <- dbToSentences (readView st), prefix `isPrefixOf` s
                         , '.' `notElem` drop (length prefix) s ]
       in if null stages then [who ++ " has no arc stage"]
          else map ((who ++ " arc ") ++) stages
   | Just who <- stripPrefix "age of " q =
+      -- 对齐 Host ageOf：读闭合视图。
       let prefix = "age." ++ who ++ "."
           ages = sort [ drop (length prefix) s
-                      | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                      | s <- dbToSentences (readView st), prefix `isPrefixOf` s
                       , '.' `notElem` drop (length prefix) s ]
       in if null ages then [who ++ " has no recorded age"]
          else map ((who ++ " age ") ++) ages
@@ -448,19 +452,22 @@ askChronicle st q
       in if null rows then ["the stall is empty"]
          else rows
   | q == "what festivals" =
+      -- 对齐 Host festivalsNamed：读闭合视图。
       let rows = sort
-            [ s | s <- dbToSentences (db st), "festival." `isPrefixOf` s ]
+            [ s | s <- dbToSentences (readView st), "festival." `isPrefixOf` s ]
       in if null rows then ["no festivals are open"]
          else rows
   | Just who <- stripPrefix "holding of " q =
+      -- 对齐 Host holdingsOf：读闭合视图。
       let rows = sort
-            [ s | s <- dbToSentences (db st)
+            [ s | s <- dbToSentences (readView st)
                 , ("holding." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " holds nothing"]
          else rows
   | Just who <- stripPrefix "carrying of " q =
+      -- 对齐 Host carryingsOf：读闭合视图。
       let rows = sort
-            [ s | s <- dbToSentences (db st)
+            [ s | s <- dbToSentences (readView st)
                 , ("carrying." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " carries nothing"]
          else rows
@@ -475,14 +482,16 @@ askChronicle st q
       in if null rows then [who ++ " has no threat marks"]
          else rows
   | Just who <- stripPrefix "shunned of " q =
+      -- 对齐 Host shunnedOf：读闭合视图。
       let rows = sort
-            [ s | s <- dbToSentences (db st)
+            [ s | s <- dbToSentences (readView st)
                 , ("shunned." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has shunned no one"]
          else rows
   | Just who <- stripPrefix "locations of " q =
+      -- 对齐 Host locationsOf：读闭合视图。
       let rows = sort
-            [ s | s <- dbToSentences (db st)
+            [ s | s <- dbToSentences (readView st)
                 , ("at." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no known location"]
          else rows

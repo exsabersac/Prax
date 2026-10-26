@@ -2124,3 +2124,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec affiliate × church（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v383 — Chronicle 读视图对齐 feelings/mood/arc/age/festivals/holding/carrying/shunned/locations
+
+- **做了什么**：九条 askChronicle 臂改读 `readView`，对齐 Host *Of；Spec 钉 festivals/holding/carrying/shunned/locations/feelings 与 Host 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v384 — Sandbox 叛逃×教会放逐 + 附属×审讯负例（钉既有门禁）
+
+- **做了什么**：Spec 钉 carol flee 溶磨坊 regard 而 priest banish 并行；钉 kyle 仅 affiliate 无教会 squeeze。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × church exile、affiliate × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

@@ -8,6 +8,8 @@ import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, setAxioms, setCharacters)
 import           Prax.Repute (standingUnless, notoriety)
 import           Prax.Chronicle
+import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
+                             carryingOf, shunnedOf, locationsOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -405,5 +407,35 @@ tests = testGroup "Prax.Chronicle"
                 , Insert "flag.x" ]
       askChronicle st "what factions" @?= ["choir", "guild", "mill"]
       askChronicle emptyState "what factions" @?= ["no factions are named"]
+
+
+  , testCase "askChronicle festivals/holding/carrying dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "festival.market"
+            , Insert "holding.ana.purse"
+            , Insert "carrying.ben.loaf"
+            ]
+      askChronicle st "what festivals" @?= festivalsOf st
+      askChronicle st "holding of ana" @?= holdingOf st "ana"
+      askChronicle st "carrying of ben" @?= carryingOf st "ben"
+      askChronicle st "holding of void" @?= ["void holds nothing"]
+      askChronicle st "carrying of void" @?= ["void carries nothing"]
+
+  , testCase "askChronicle shunned/locations dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "shunned.ana.bob"
+            , Insert "at.carol.square"
+            ]
+      askChronicle st "shunned of ana" @?= shunnedOf st "ana"
+      askChronicle st "locations of carol" @?= locationsOf st "carol"
+      askChronicle st "shunned of void" @?= ["void has shunned no one"]
+      askChronicle st "locations of void" @?= ["void has no known location"]
+
+  , testCase "askChronicle feelings-of dual Host feelingsOf" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.feels.guilt.about.bob"
+            , Insert "ana.feels.pride"
+            ]
+      askChronicle st "feelings of ana" @?= feelingsOf st "ana"
 
   ]
