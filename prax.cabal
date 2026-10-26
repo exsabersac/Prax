@@ -156,6 +156,7 @@ test-suite prax-test
                       Prax.ScriptSpec
                       Prax.Script.JsonSpec
                       Prax.DirectorSpec
+                      Prax.PlaySpec
                       Prax.VillageSpec
                       Prax.SandboxSpec
                       Prax.AnalysisTableSpec

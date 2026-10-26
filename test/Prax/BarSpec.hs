@@ -3,7 +3,7 @@ module Prax.BarSpec (tests) where
 import           Control.Monad (foldM)
 import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool, assertFailure)
+import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences, exists)
 import           Prax.Types
@@ -13,7 +13,7 @@ import           Prax.Core (adjustScore, warmth)
 import           Prax.Emotion (feelToward, unfeelToward, annoyed)
 import           Prax.Beliefs (believe)
 import           Prax.Conversation (beginConversation)
-import           Prax.Worlds.Bar (barWorld)
+import           Prax.Worlds.Bar (barWorld, barDirectorWorld, playerName, directorName)
 
 -- One round boundary: the engine advances the clock and fires every due
 -- schedule rule (sight every boundary; metabolism every 2). The bar's schedule
@@ -347,4 +347,19 @@ tests = testGroup "Prax.Worlds.Bar (feature integration)"
                    []      -> assertFailure "bex not found in barWorld"
       assertBool "bex never resigns to solitude on its own"
         (maybe True (not . ("give up" `isInfixOf`) . gaLabel) (pickAction 2 barWorld bexChar))
+  
+  , testCase "playerName is you; directorName is director" $ do
+      playerName @?= "you"
+      directorName @?= "director"
+
+  , testCase "barDirectorWorld binds the DM to the direct practice only" $ do
+      let dm = head [ c | c <- characters barDirectorWorld, charName c == directorName ]
+      charBoundTo dm @?= Just "direct"
+      assertBool "DM is present in the director cast"
+        (directorName `elem` map charName (characters barDirectorWorld))
+      -- placid barWorld hosts a director bound to the (inactive) dm practice
+      let placid = head [ c | c <- characters barWorld, charName c == directorName ]
+      charBoundTo placid @?= Just "dm"
+      assertBool "placid director has no affordances in a quiet room"
+        (null (possibleActions barWorld directorName))
   ]

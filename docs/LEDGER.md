@@ -3068,3 +3068,27 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`mooded of` 返回心境标签侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v558 — Play Spec 剧本作者钉
+
+- **做了什么**：新增 PlaySpec：playerName、scriptStart/cast/playable、cassia Want、双场景 opening/beat 计数、junction/ending 名、playWorld=compile 形。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern Play'`（针对性）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v559 — Director cast-a-pall + Bar 导出名钉
+
+- **做了什么**：DirectorSpec 钉 pall→sad.toward.here 与一击；BarSpec 钉 playerName/directorName 与 barDirectorWorld charBoundTo=direct（placid 为 dm）。无新实践 / 无 want 改动。
+- **测**：Director / Bar 针对性。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v560 — Feud/Intrigue 导出名与公理/欲望钉
+
+- **做了什么**：FeudSpec 钉 playerName 与 feudAxioms 全五条形；IntrigueSpec 钉 playerName、cassia charDesires、desireWant 与阵容序。无新实践 / 无 want 改动。
+- **测**：Feud / Intrigue 针对性。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village/Feud 金标准。
+
+## v561 — ViewInvariant Play/DM + Gate 世界清单
+
+- **做了什么**：ViewInvariantSpec 钉 playWorld（idle marcus）与 barDirectorWorld；GateSpec 钉 Worlds/ 下七个演示世界文件清单。无新实践 / 无 want 改动。
+- **测**：ViewInvariant / Gate 针对性。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

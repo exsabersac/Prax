@@ -78,6 +78,13 @@ tests = testGroup "Prax.Gate"
       assertBool ("Prax-namespaced variable(s) found in authored world source: " ++ show violations)
         (null violations)
 
+  , testCase "world file inventory: gate scans every demo world under Worlds/" $ do
+      names <- listDirectory worldsDir
+      let hsFiles = sort [ n | n <- names, ".hs" `isSuffixOf` n ]
+      hsFiles @?=
+        [ "Audience.hs", "Bar.hs", "Feud.hs", "Intrigue.hs"
+        , "Play.hs", "Sandbox.hs", "Village.hs" ]
+
   , testGroup "the shared guard (Prax.Types.authoredVarClash), pinned through a real combinator"
     [ testCase "sanity: an ordinary fragment (no Prax namespace) is accepted" $ do
         r <- try (evaluate (length (draw 1 2 [ Match "flag.X" ] [ Insert "marked.X" ])))

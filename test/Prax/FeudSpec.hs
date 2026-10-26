@@ -5,14 +5,17 @@ module Prax.FeudSpec (tests) where
 
 import           Data.List (isInfixOf, isPrefixOf)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.HUnit (testCase, assertBool, assertFailure)
+import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences, exists)
 import           Prax.Types
 import           Prax.Engine (possibleActions, performAction, performOutcome)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Kin (wed)
-import           Prax.Worlds.Feud (feudWorld, bigFeud)
+import           Prax.Faction (comrades, factionStanding)
+import           Prax.Derive (Axiom (..))
+import           Prax.Query (Condition (..))
+import           Prax.Worlds.Feud (feudWorld, bigFeud, feudAxioms, playerName)
 
 -- Run with `idle` (the player, Alice) never acting and everyone else planner-driven.
 runWithPassive :: String -> Int -> PraxState -> PraxState
@@ -115,4 +118,18 @@ tests = testGroup "Prax.Worlds.Feud (emergent sandbox)"
       let driven = runWithPassive "alice" 12 weddedWorld
           vs = dbToSentences (db driven)
       assertBool "esme shunned alice" ("shunned.esme.alice" `elem` vs)
+  
+  , testCase "playerName is alice (the offender)" $
+      playerName @?= "alice"
+
+  , testCase "feudAxioms: allied symmetry, wronged→resents, ally-of-enemy, comrades, factionStanding" $ do
+      length feudAxioms @?= 5
+      axiomWhen (feudAxioms !! 0) @?= [Match "allied.X.Y"]
+      axiomThen (feudAxioms !! 0) @?= ["allied.Y.X"]
+      axiomWhen (feudAxioms !! 1) @?= [Match "wronged.X.Y"]
+      axiomThen (feudAxioms !! 1) @?= ["resents.Y.X"]
+      axiomWhen (feudAxioms !! 2) @?= [Match "resents.A.B", Match "allied.A.C"]
+      axiomThen (feudAxioms !! 2) @?= ["resents.C.B"]
+      feudAxioms !! 3 @?= comrades
+      feudAxioms !! 4 @?= factionStanding "wronged.Offender.Victim" "feudbreaker"
   ]
