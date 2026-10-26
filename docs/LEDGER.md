@@ -3161,3 +3161,13 @@
 - **做了什么**：SandboxSpec 追加 mill/church revoke×对侧 cry/squeeze；kyle churchJustice/parade/squeeze 负例；双沉默债挡正义；parade once×squeeze 跨市；无 cry/parade want 负例；cry once×squeeze；dual repay 双再买+正义恢复；break>cry util；cast ira/bob；flee×hear bob。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（479 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v575 — Host demandsOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`demandsOf` 枚举 `demanded.*.*.<content>`；CLI `prax demands <content> <world>`。
+
+## v576 — Chronicle demands of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`demands of` 返回催收内容标签侧叶；Spec 钉 Host 与 Chronicle 空集。

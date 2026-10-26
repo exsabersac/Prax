@@ -25,6 +25,7 @@
 -- v566：'arcedOf'/'agedOf' 弧阶段/年龄值侧叶。
 -- v569：'bondedOf'/'feltOf' 纽带标签/感受标签侧叶。
 -- v572：'esteemsOf'/'scornsOf' 赞誉/蔑视标签侧叶。
+-- v575：'demandsOf' 催收内容标签侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -133,6 +134,7 @@ module Prax.Host
   , demandedOf
   , demandersOf
   , demandeesOf
+  , demandsOf
   , festivalsOf
   , locationsOf
   , occupantsOf
@@ -969,6 +971,23 @@ demandeesOf st who = sort
   , let parts = splitDots rest
   , length parts >= 3
   , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中催收内容为 @content@ 的叶（@demanded.<a>.<b>.<content>@）。
+demandsOf :: PraxState -> String -> [String]
+demandsOf st content = sort
+  [ s
+  | s <- queryView st
+  , "demanded." `isPrefixOf` s
+  , let rest = drop (length ("demanded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == content
   ]
   where
     splitDots :: String -> [String]

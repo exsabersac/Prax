@@ -1134,6 +1134,19 @@ askChronicle st q
               , let rest = drop (length ("demanded." :: String)) s
               , let parts = splitDot rest
               , let d = parts !! 1 ]
+  | Just content <- stripPrefix "demands of " q =
+      -- 对齐 Host demandsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "demanded." `isPrefixOf` s
+            , let rest = drop (length ("demanded." :: String)) s
+            , let parts = splitDot rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == content
+            ]
+      in if null rows then ["nobody demands " ++ content]
+         else rows
   | Just who <- stripPrefix "extorted of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

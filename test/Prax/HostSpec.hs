@@ -375,6 +375,9 @@ tests = testGroup "Prax.Host"
         ]
       demandedOf st "ben" @?= ["demanded.ana.ben.favor"]
       demandedOf st "void" @?= []
+      demandsOf st "favor" @?= ["demanded.ana.ben.favor"]
+      demandsOf st "coin" @?= ["demanded.cai.ana.coin"]
+      demandsOf st "void" @?= []
       festivalsOf st @?= ["festival.harvest", "festival.midwinter"]
       festivalsOf emptyState @?= []
 
