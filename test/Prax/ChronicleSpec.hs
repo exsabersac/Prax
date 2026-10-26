@@ -386,4 +386,24 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "notorious of ben" @?= ["notorious.ben.liar"]
       askChronicle st "notorious of void" @?= ["void has no notoriety marks"]
 
+  , testCase "askChronicle regards-toward" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "regards.dave.bob.thief"
+                , Insert "regards.fran.bob.thief"
+                , Insert "regards.dave.eve.hero"
+                , Insert "flag.x" ]
+      askChronicle st "regards toward bob"
+        @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      askChronicle st "regards toward eve" @?= ["regards.dave.eve.hero"]
+      askChronicle st "regards toward void" @?= ["nobody regards void"]
+
+  , testCase "askChronicle what-factions" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "member.dave.mill"
+                , Insert "affiliate.fran.choir"
+                , Insert "leads.guild!ana"
+                , Insert "flag.x" ]
+      askChronicle st "what factions" @?= ["choir", "guild", "mill"]
+      askChronicle emptyState "what factions" @?= ["no factions are named"]
+
   ]

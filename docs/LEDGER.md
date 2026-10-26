@@ -2019,3 +2019,13 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec defection × church parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v365 — Chronicle regards toward
+
+- **做了什么**：`askChronicle` 增加 `"regards toward "`，列出指向目标的 `regards.*.target.*`（对齐 Host `regardsToward`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+
+## v366 — Chronicle what factions
+
+- **做了什么**：`askChronicle` 增加 `"what factions"`，列出 member/affiliate/leads 上的派系名（对齐 Host `factionsNamed`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

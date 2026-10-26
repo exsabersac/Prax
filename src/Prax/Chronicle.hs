@@ -148,7 +148,8 @@ formatEvent ev rs =
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
 -- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
--- @"kin of "++who@、@"notorious of "++who@。
+-- @"kin of "++who@、@"notorious of "++who@、
+-- @"regards toward "++who@、@"what factions"@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -604,9 +605,60 @@ askChronicle st q
                 , ("notorious." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no notoriety marks"]
          else rows
+  | Just target <- stripPrefix "regards toward " q =
+      -- 对齐 Host regardsToward：闭合视图中指向 target 的 regards.*.target.*。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , let pref = "regards."
+                , pref `isPrefixOf` s
+                , let rest = drop (length pref) s
+                , let (who, afterWho) = break (== '.') rest
+                , not (null who)
+                , let after = drop 1 afterWho
+                , let (tgt, afterTgt) = break (== '.') after
+                , tgt == target
+                , not (null (drop 1 afterTgt)) ]
+      in if null rows then ["nobody regards " ++ target]
+         else rows
+  | q == "what factions" =
+      -- 对齐 Host factionsNamed：member/affiliate/leads 上出现的派系名。
+      let vs = dbToSentences (readView st)
+          fromMember =
+            [ fac
+            | s <- vs
+            , "member." `isPrefixOf` s
+            , let rest = drop (length ("member." :: String)) s
+            , let (who, fac) = splitLastDot rest
+            , not (null who), not (null fac)
+            , '.' `notElem` who, '.' `notElem` fac ]
+          fromAffiliate =
+            [ fac
+            | s <- vs
+            , "affiliate." `isPrefixOf` s
+            , let rest = drop (length ("affiliate." :: String)) s
+            , let (who, fac) = splitLastDot rest
+            , not (null who), not (null fac)
+            , '.' `notElem` who, '.' `notElem` fac ]
+          fromLeads =
+            [ fac
+            | s <- vs
+            , "leads." `isPrefixOf` s
+            , let rest = drop (length ("leads." :: String)) s
+            , let (fac, who) = break (== '.') rest
+            , not (null fac), not (null (drop 1 who))
+            , '.' `notElem` fac ]
+          fs = sort (nub (fromMember ++ fromAffiliate ++ fromLeads))
+      in if null fs then ["no factions are named"]
+         else fs
   | otherwise = ["chronicle: unknown query " ++ show q]
 
 -- helpers ----------------------------------------------------------------------
+
+splitLastDot :: String -> (String, String)
+splitLastDot s =
+  case break (== '.') (reverse s) of
+    (revFac, '.' : revWho) -> (reverse revWho, reverse revFac)
+    _ -> (s, "")
 
 splitDot :: String -> [String]
 splitDot = filter (not . null) . go
