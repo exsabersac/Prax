@@ -3015,4 +3015,27 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：ScriptSpec 钉 scenePatienceFamily/currentScenePath 常量与 scriptPlayer；ScheduleRuleSpec 补 pulse 多段名拒绝。无新实践 / 无 want 改动。
 - **测**：ScriptSpec / ScheduleRuleSpec（针对性；未跑全量）。
+
+## v536 — Host esteemersOf + CLI
+
+- **做了什么**：闭合视图枚举 `esteemed.*.<who>.*`；CLI `prax esteemers`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v537 — Chronicle esteemers of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"esteemers of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v538 — Host scornersOf + CLI
+
+- **做了什么**：闭合视图枚举 `scorned.*.<who>.*`；CLI `prax scorners`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v539 — Chronicle scorners of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"scorners of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -230,11 +230,25 @@ runNotorious (who : ws) =
   in mapM_ putStrLn (notoriousOf st who)
 runNotorious _ = putStrLn "usage: prax notorious <who> <world>"
 
+
+runEsteemers :: [String] -> IO ()
+runEsteemers (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (esteemersOf st who)
+runEsteemers _ = putStrLn "usage: prax esteemers <who> <world>"
+
 runEsteemed :: [String] -> IO ()
 runEsteemed (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (esteemedOf st who)
 runEsteemed _ = putStrLn "usage: prax esteemed <who> <world>"
+
+
+runScorners :: [String] -> IO ()
+runScorners (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (scornersOf st who)
+runScorners _ = putStrLn "usage: prax scorners <who> <world>"
 
 runScorned :: [String] -> IO ()
 runScorned (who : ws) =
@@ -841,7 +855,9 @@ usageText = unlines
   , "  prax kin <who> <world>                 list kin leaves involving who"
   , "  prax notorious <who> <world>           list notoriety leaves for who"
   , "  prax esteemed <who> <world>            list esteemed leaves for who"
+  , "  prax esteemers <who> <world>          list esteemed.*.<who>.* leaves"
   , "  prax scorned <who> <world>             list scorned leaves for who"
+  , "  prax scorners <who> <world>           list scorned.*.<who>.* leaves"
   , "  prax beliefs <who> <world>             list belief leaves for who"
   , "  prax arcs <who> <world>                list arc stage leaves for who"
   , "  prax ages <who> <world>                list age leaves for who"
@@ -941,7 +957,9 @@ main = do
     ("kin" : ws)      -> runKin ws
     ("notorious" : ws) -> runNotorious ws
     ("esteemed" : ws) -> runEsteemed ws
+    ("esteemers" : ws) -> runEsteemers ws
     ("scorned" : ws)  -> runScorned ws
+    ("scorners" : ws)  -> runScorners ws
     ("beliefs" : ws)  -> runBeliefs ws
     ("arcs" : ws)     -> runArcs ws
     ("ages" : ws)     -> runAges ws

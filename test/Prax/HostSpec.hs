@@ -827,4 +827,18 @@ tests = testGroup "Prax.Host"
       shunnersOf st "void" @?= []
 
 
+
+  , testCase "esteemersOf / scornersOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "esteemed.ana.ben.hero"
+                , Insert "esteemed.cass.ben"
+                , Insert "scorned.ana.dave.thief"
+                , Insert "scorned.ben.dave"
+                , Insert "flag.x" ]
+      esteemersOf st "ben" @?= ["esteemed.ana.ben.hero", "esteemed.cass.ben"]
+      esteemersOf st "void" @?= []
+      scornersOf st "dave" @?= ["scorned.ana.dave.thief", "scorned.ben.dave"]
+      scornersOf st "void" @?= []
+
+
   ]

@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -924,6 +924,24 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "shunners of eve" @?= ["bob shunner of eve"]
       askChronicle st "resenters of void" @?= ["void has no known resenters"]
       askChronicle st "shunners of void" @?= ["void has no known shunners"]
+
+
+
+  , testCase "askChronicle esteemers/scorners dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "esteemed.ana.ben.hero"
+            , Insert "esteemed.cass.ben"
+            , Insert "scorned.ana.dave.thief"
+            , Insert "scorned.ben.dave"
+            ]
+      esteemersOf st "ben" @?= ["esteemed.ana.ben.hero", "esteemed.cass.ben"]
+      scornersOf st "dave" @?= ["scorned.ana.dave.thief", "scorned.ben.dave"]
+      askChronicle st "esteemers of ben" @?=
+        ["ana esteemer of ben", "cass esteemer of ben"]
+      askChronicle st "scorners of dave" @?=
+        ["ana scorner of dave", "ben scorner of dave"]
+      askChronicle st "esteemers of void" @?= ["void has no known esteemers"]
+      askChronicle st "scorners of void" @?= ["void has no known scorners"]
 
 
   ]

@@ -42,6 +42,8 @@
 -- v516：'alliesOf' 同盟主体侧叶（对齐 spousesOf）。
 -- v525：'resentersOf' 怨恨目标侧叶（resents.*.<who>）。
 -- v527：'shunnersOf' 排斥目标侧叶（shunned.*.<who>）。
+-- v531：'esteemersOf' 被赞誉侧叶（esteemed.*.<who>.*）。
+-- v533：'scornersOf' 被蔑视侧叶（scorned.*.<who>.*）。
 -- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
@@ -92,7 +94,9 @@ module Prax.Host
   , spousesOf
   , notoriousOf
   , esteemedOf
+  , esteemersOf
   , scornedOf
+  , scornersOf
   , beliefsOf
   , arcsOf
   , agesOf
@@ -574,10 +578,46 @@ esteemedOf :: PraxState -> String -> [String]
 esteemedOf st who =
   sort [ s | s <- queryView st, ("esteemed." ++ who ++ ".") `isPrefixOf` s ]
 
+
+-- | 闭合视图中 @who@ 作为被赞誉方的叶（@esteemed.<observer>.<who>[.<label>]@）。
+esteemersOf :: PraxState -> String -> [String]
+esteemersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "esteemed." `isPrefixOf` s
+  , let rest = drop (length ("esteemed." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 发出的蔑视叶（@scorned.<who>.*@）。
 scornedOf :: PraxState -> String -> [String]
 scornedOf st who =
   sort [ s | s <- queryView st, ("scorned." ++ who ++ ".") `isPrefixOf` s ]
+
+
+-- | 闭合视图中 @who@ 作为被蔑视方的叶（@scorned.<observer>.<who>[.<label>]@）。
+scornersOf :: PraxState -> String -> [String]
+scornersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "scorned." `isPrefixOf` s
+  , let rest = drop (length ("scorned." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的信念叶（@<who>.believes.*@）。
 beliefsOf :: PraxState -> String -> [String]

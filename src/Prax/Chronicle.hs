@@ -146,7 +146,7 @@ formatEvent ev rs =
 -- @"extorted of "++who@、@"extorters of "++who@、@"extortees of "++who@、@"complied of "++who@、@"compliers of "++who@、@"compliees of "++who@、@"defied of "++who@、@"defiers of "++who@、@"defiees of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
--- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
+-- @"bonds of "++who@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
 -- @"kin of "++who@、@"notorious of "++who@、
 -- @"regards toward "++who@、@"what factions"@。
@@ -1145,6 +1145,19 @@ askChronicle st q
                 , ("esteemed." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has esteemed no one"]
          else rows
+  | Just who <- stripPrefix "esteemers of " q =
+      -- 对齐 Host esteemersOf：读闭合视图；短语化赞誉人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "esteemed." `isPrefixOf` s
+                , let rest = drop (length ("esteemed." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known esteemers"]
+         else [ a ++ " esteemer of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("esteemed." :: String)) s)) ]
   | Just who <- stripPrefix "scorned of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
@@ -1152,6 +1165,19 @@ askChronicle st q
                 , ("scorned." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has scorned no one"]
          else rows
+  | Just who <- stripPrefix "scorners of " q =
+      -- 对齐 Host scornersOf：读闭合视图；短语化蔑视人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "scorned." `isPrefixOf` s
+                , let rest = drop (length ("scorned." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known scorners"]
+         else [ a ++ " scorner of " ++ who
+              | s <- rows
+              , let a = head (splitDot (drop (length ("scorned." :: String)) s)) ]
   | Just who <- stripPrefix "beliefs of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort
