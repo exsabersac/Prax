@@ -2020,4 +2020,45 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "inquisit mark persists"
         (exists "threatened.inquisit.priest.bob" (db stM))
 
+
+  , testCase "defection × inquisit: flee drops mill regard; church squeeze stays" $ do
+      -- carol flee dissolves dave mill regard/squeeze; priest inquisit squeeze
+      -- ignores mill standing and stays open.
+      let st0 = activateSqueeze (doAct "dave" "learn" inquisitSeed)
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" st0)
+      assertBool "priest squeeze yes" (hasAct "priest" "squeeze bob" st0)
+      let stCarol = doAct "carol" "learn" st0
+          stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "mill regard gone"
+        (not (exists "regards.dave.bob.thief" (readView stFlee)))
+      assertBool "dave squeeze closed" (not (hasAct "dave" "squeeze bob" stFlee))
+      assertBool "priest squeeze stays" (hasAct "priest" "squeeze bob" stFlee)
+      let stSq = doAct "priest" "squeeze bob" stFlee
+      assertBool "threatened"
+        (exists "threatened.inquisit.priest.bob" (db stSq))
+
+  , testCase "defection × church parade: flee drops mill gates; heretic parade stays" $ do
+      -- mill brand parade needs mill regard; carol flee closes dave parade while
+      -- church heretic parade (priest regard) stays open.
+      let st0 = doAct "dave" "learn" inquisitSeed
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+          -- also mill parade path for contrast
+          stSqM = doAct "dave" "squeeze bob" (activateSqueeze stP)
+          stConf = doAct "bob" "confess the theft" stSqM
+          stSqM2 = doAct "dave" "squeeze bob" stConf
+          stBrandM = doAct "dave" "brand bob" stSqM2
+          stBoth = activateParade stBrandM
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stBoth)
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stBoth)
+      let stCarol = doAct "carol" "learn" stBoth
+          stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "dave parade closed" (not (hasAct "dave" "parade bob" stFlee))
+      assertBool "priest parade stays" (hasAct "priest" "parade bob" stFlee)
+      let stPar = doAct "priest" "parade bob" stFlee
+      assertBool "paraded" (exists "paraded.priest.bob" (db stPar))
+
   ]

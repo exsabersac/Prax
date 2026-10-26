@@ -2007,3 +2007,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec inquisit × squeeze（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v363 — Sandbox 叛逃×教会胁迫交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 carol 叛逃关闭磨坊 squeeze，教会 inquisit squeeze 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × inquisit（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v364 — Sandbox 叛逃×教会游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 carol 叛逃关闭磨坊 parade，异端 church parade 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec defection × church parade（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
