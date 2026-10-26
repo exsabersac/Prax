@@ -13,6 +13,8 @@ module Prax.Reactions
   , spawnReaction
   , endReaction
   , reactionActive
+  , hasReactionActive
+  , lacksReactionActive
     -- * Norm violations
   , markViolation
   , violationOf
@@ -47,6 +49,14 @@ endReaction pid parts = Delete (reactionPath pid parts)
 -- | 条件：此反应实例当前挂起。
 reactionActive :: String -> [String] -> Condition
 reactionActive pid parts = Match (reactionPath pid parts)
+
+-- | 条件：反应实例活跃（@reactionActive@ 同体；对齐 has* 命名）。
+hasReactionActive :: String -> [String] -> Condition
+hasReactionActive = reactionActive
+
+-- | 条件：反应实例未活跃（@reactionActive@ 的 Not 对偶）。
+lacksReactionActive :: String -> [String] -> Condition
+lacksReactionActive pid parts = Not (reactionPath pid parts)
 
 -- Norms ------------------------------------------------------------------------
 

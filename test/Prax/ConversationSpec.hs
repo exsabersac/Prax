@@ -132,9 +132,20 @@ tests = testGroup "Prax.Conversation"
         (not (satisfies (db st) [neverChattedWith "ada" "bex"] Map.empty))
 
 
+  , testCase "hasTalkingWith aliases talkingWith" $
+      hasTalkingWith "ada" "bex" @?= talkingWith "ada" "bex"
+  , testCase "lacksTalkingWith is Not of talkPath" $
+      lacksTalkingWith "ada" "bex" @?= Not "practice.converse.ada.bex"
+
   , testCase "talkingWith evaluates on beginConversation world" $ do
       assertBool "talkingWith"
         (satisfies (db start) [talkingWith "ada" "bex"] Map.empty)
+      assertBool "hasTalkingWith"
+        (satisfies (db start) [hasTalkingWith "ada" "bex"] Map.empty)
+      assertBool "lacksTalkingWith fails"
+        (not (satisfies (db start) [lacksTalkingWith "ada" "bex"] Map.empty))
+      assertBool "lacksTalkingWith on empty"
+        (satisfies (db emptyState) [lacksTalkingWith "ada" "bex"] Map.empty)
       assertBool "talkingWith reverse order absent as different path"
         (not (satisfies (db start) [talkingWith "bex" "ada"] Map.empty))
 

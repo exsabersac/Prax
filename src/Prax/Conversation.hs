@@ -10,6 +10,8 @@
 module Prax.Conversation
   ( talkPath
   , talkingWith
+  , hasTalkingWith
+  , lacksTalkingWith
   , beginConversation
   , quip
   , changeSubject
@@ -42,6 +44,14 @@ talkPath x y = "practice.converse." ++ x ++ "." ++ y
 -- | 条件：@x@ 与 @y@ 正在交谈（此序）。
 talkingWith :: String -> String -> Condition
 talkingWith x y = Match (talkPath x y)
+
+-- | 条件：@x@ 与 @y@ 正在交谈（@talkingWith@ 同体；对齐 has* 命名）。
+hasTalkingWith :: String -> String -> Condition
+hasTalkingWith = talkingWith
+
+-- | 条件：@x@ 与 @y@ 未在交谈（此序；@talkingWith@ 的 Not 对偶）。
+lacksTalkingWith :: String -> String -> Condition
+lacksTalkingWith x y = Not (talkPath x y)
 
 -- | 打开对话的结果：@opener@ 成为说话者，话题设为所给主题。
 beginConversation :: String -> String -> String -> [Outcome]

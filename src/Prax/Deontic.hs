@@ -54,7 +54,10 @@ module Prax.Deontic
   , everObliged
   , lacksObligations
   , fulfilled
+  , hasFulfilled
   , inBreach
+  , hasInBreach
+  , lacksInBreach
     -- * Norm-conflict detection (pure)
   , conflicts
   , incompatiblePairs
@@ -76,7 +79,7 @@ import           Prax.Db (Db, insertAll, emptyDb, exists, dbToSentences)
 import           Prax.Query (Condition (..))
 import           Prax.Types (Outcome (..), Want (..))
 import           Prax.Derive (Axiom (..))
-import           Prax.Reactions (markViolation, violationOf)
+import           Prax.Reactions (markViolation, violationOf, lacksViolation)
 
 -- Fact convention --------------------------------------------------------------
 
@@ -162,9 +165,21 @@ lacksObligations who = Absent [ Match (obligedHead ++ "." ++ who ++ ".Content") 
 fulfilled :: String -> String -> [Condition]
 fulfilled who content = [ isObliged who content, Match content ]
 
+-- | 已履行义务的条件（@fulfilled@ 同体；对齐 has* 命名）。
+hasFulfilled :: String -> String -> [Condition]
+hasFulfilled = fulfilled
+
 -- | 条件：@who@ 违约于职责 @content@。
 inBreach :: String -> String -> Condition
 inBreach = violationOf
+
+-- | 条件：@who@ 违约于职责 @content@（@inBreach@ 同体；对齐 has* 命名）。
+hasInBreach :: String -> String -> Condition
+hasInBreach = inBreach
+
+-- | 条件：@who@ 未违约于职责 @content@（@inBreach@ 的 Not 对偶；= lacksViolation）。
+lacksInBreach :: String -> String -> Condition
+lacksInBreach = lacksViolation
 
 -- Norm-conflict detection ------------------------------------------------------
 

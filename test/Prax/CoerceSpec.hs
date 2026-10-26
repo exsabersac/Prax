@@ -915,4 +915,38 @@ tests = testGroup "Prax.Coerce"
       assertBool "hasExiled" (satisfies (db st) [hasExiled "dana"] Map.empty)
       assertBool "hasAppetite" (satisfies (db st) [hasAppetite "bob"] Map.empty)
 
+  , testCase "remaining has* leaf gates evaluate on Insert worlds" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "cried.dave.bob"
+            , Insert "denounced.dave.bob"
+            , Insert "rallied.dave.bob"
+            , Insert "censured.priest.eve"
+            , Insert "reconciled.carol"
+            , Insert "confessed.bob"
+            , Insert "recanted.eve"
+            , Insert "married.fran.dave"
+            , Insert "ostracized.dana.bob"
+            , Insert "hungry.bob"
+            , Insert "confronted.ana.bob"
+            , Insert "wronged.bob.carol"
+            , Insert "allied.dave.carol"
+            , Insert "resents.carol.bob"
+            , Insert "shortTempered.ana"
+            ]
+      assertBool "hasCried" (satisfies (db st) [hasCried "dave" "bob"] Map.empty)
+      assertBool "hasDenounced" (satisfies (db st) [hasDenounced "dave" "bob"] Map.empty)
+      assertBool "hasRallied" (satisfies (db st) [hasRallied "dave" "bob"] Map.empty)
+      assertBool "hasCensured" (satisfies (db st) [hasCensured "priest" "eve"] Map.empty)
+      assertBool "hasReconciled" (satisfies (db st) [hasReconciled "carol"] Map.empty)
+      assertBool "hasConfessed" (satisfies (db st) [hasConfessed "bob"] Map.empty)
+      assertBool "hasRecanted" (satisfies (db st) [hasRecanted "eve"] Map.empty)
+      assertBool "hasMarried" (satisfies (db st) [hasMarried "fran" "dave"] Map.empty)
+      assertBool "hasOstracized" (satisfies (db st) [hasOstracized "dana" "bob"] Map.empty)
+      assertBool "hasHungry" (satisfies (db st) [hasHungry "bob"] Map.empty)
+      assertBool "hasConfronted" (satisfies (db st) [hasConfronted "ana" "bob"] Map.empty)
+      assertBool "hasWronged" (satisfies (db st) [hasWronged "bob" "carol"] Map.empty)
+      assertBool "hasAllied" (satisfies (db st) [hasAllied "dave" "carol"] Map.empty)
+      assertBool "hasResents" (satisfies (db st) [hasResents "carol" "bob"] Map.empty)
+      assertBool "hasShortTempered" (satisfies (db st) [hasShortTempered "ana"] Map.empty)
+
   ]

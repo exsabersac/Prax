@@ -2873,3 +2873,22 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：dispatch 接受 `inlaws` 与 `shortTempered`/`shorttempered`；help 注明别名。无实践 / 无 want 改动。
 - **测**：编译；未跑全量。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v512 — Conversation hasTalkingWith/lacksTalkingWith 对偶
+
+- **做了什么**：Conversation 增加 hasTalkingWith（= talkingWith）与 lacksTalkingWith（Not）；Spec 钉结构与 beginConversation 世界求值。无新实践 / 无 want 改动。
+- **测**：ConversationSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v513 — Deontic hasInBreach/lacksInBreach/hasFulfilled 对偶
+
+- **做了什么**：Deontic 增加 hasInBreach（= inBreach）、lacksInBreach（= lacksViolation）、hasFulfilled（= fulfilled）；Spec 钉结构与 breach/内容世界求值。无新实践 / 无 want 改动。
+- **测**：DeonticSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v514 — Reactions hasReactionActive/lacksReactionActive + Coerce has* Spec 补钉
+
+- **做了什么**：Reactions 增加 hasReactionActive / lacksReactionActive；Coerce Spec 补剩余 has* 叶门禁世界求值。无新实践 / 无 want 改动。
+- **测**：ReactionsSpec / CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

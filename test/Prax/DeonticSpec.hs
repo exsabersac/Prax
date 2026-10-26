@@ -221,17 +221,28 @@ tests = testGroup "Prax.Deontic"
       assertBool "neverObliged after discharge"
         (sat gone [neverObliged "bex" "settle.up"])
 
+  , testCase "hasInBreach / lacksInBreach / hasFulfilled duals" $ do
+      hasInBreach "bex" "stiffed" @?= inBreach "bex" "stiffed"
+      lacksInBreach "bex" "stiffed" @?= Not "violated.bex.stiffed"
+      hasFulfilled "bex" "tipped.ada" @?= fulfilled "bex" "tipped.ada"
+
   , testCase "inBreach / fulfilled evaluate on breach and content worlds" $ do
       assertBool "no breach on empty"
         (not (sat emptyState [inBreach "bex" "stiffed"]))
+      assertBool "lacksInBreach on empty"
+        (sat emptyState [lacksInBreach "bex" "stiffed"])
       let st = performOutcome (breach "bex" "stiffed") emptyState
       assertBool "inBreach" (sat st [inBreach "bex" "stiffed"])
+      assertBool "hasInBreach" (sat st [hasInBreach "bex" "stiffed"])
+      assertBool "lacksInBreach fails" (not (sat st [lacksInBreach "bex" "stiffed"]))
       let obligedOnly = applyAll emptyState [ oblige "bex" "tipped.ada" ]
           met = applyAll emptyState [ oblige "bex" "tipped.ada", Insert "tipped.ada" ]
       assertBool "unfulfilled"
         (not (sat obligedOnly (fulfilled "bex" "tipped.ada")))
       assertBool "fulfilled"
         (sat met (fulfilled "bex" "tipped.ada"))
+      assertBool "hasFulfilled"
+        (sat met (hasFulfilled "bex" "tipped.ada"))
 
   , testCase "hasObligedWhenAt aliases isObligedWhenAt" $
       hasObligedWhenAt "bob" "chapel" "said.prayer"

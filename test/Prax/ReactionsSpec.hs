@@ -185,14 +185,28 @@ tests = testGroup "Prax.Reactions"
         (not (satisfies (db st) [neverViolated "bex"] Map.empty))
 
 
+  , testCase "hasReactionActive / lacksReactionActive duals" $ do
+      hasReactionActive "disapproval" ["bex", "ada"]
+        @?= reactionActive "disapproval" ["bex", "ada"]
+      lacksReactionActive "disapproval" ["bex", "ada"]
+        @?= Not "practice.disapproval.bex.ada"
+
   , testCase "reactionActive evaluates on spawnReaction world" $ do
       assertBool "inactive on empty"
         (not (satisfies (db emptyState) [reactionActive "disapproval" ["bex", "ada"]] Map.empty))
+      assertBool "lacksReactionActive on empty"
+        (satisfies (db emptyState) [lacksReactionActive "disapproval" ["bex", "ada"]] Map.empty)
       let st = performOutcome (spawnReaction "disapproval" ["bex", "ada"]) emptyState
       assertBool "active after spawn"
         (satisfies (db st) [reactionActive "disapproval" ["bex", "ada"]] Map.empty)
+      assertBool "hasReactionActive"
+        (satisfies (db st) [hasReactionActive "disapproval" ["bex", "ada"]] Map.empty)
+      assertBool "lacksReactionActive fails"
+        (not (satisfies (db st) [lacksReactionActive "disapproval" ["bex", "ada"]] Map.empty))
       let gone = performOutcome (endReaction "disapproval" ["bex", "ada"]) st
       assertBool "inactive after end"
         (not (satisfies (db gone) [reactionActive "disapproval" ["bex", "ada"]] Map.empty))
+      assertBool "lacksReactionActive after end"
+        (satisfies (db gone) [lacksReactionActive "disapproval" ["bex", "ada"]] Map.empty)
 
   ]
