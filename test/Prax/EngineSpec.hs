@@ -7,7 +7,7 @@ import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, (@?=), assertBool, assertFailure)
 
-import           Prax.Db (dbToSentences, exists, pathNames)
+import           Prax.Db (dbToSentences, exists, pathNames, Val (..))
 import           Prax.Query
 import           Prax.Types
 import           Prax.Engine
@@ -409,5 +409,17 @@ tests = testGroup "Prax.Engine"
                        [ Insert "turn.0", Insert "turn.1" ]
         r <- try (evaluate (currentTurn st))
         assertBool "ambiguous clock" (isLeft (r :: Either ErrorCall Int))
+    ]
+
+  , testGroup "renderText"
+    [ testCase "renderText substitutes [Name] bindings; leaves unknowns bracketed" $ do
+        let b = Map.fromList
+              [ (intern "Actor", VSym (intern "ada"))
+              , (intern "R", VSym (intern "bea"))
+              ]
+        renderText "[Actor]: wave at [R]" b @?= "ada: wave at bea"
+        renderText "[Actor]: wait" Map.empty @?= "[Actor]: wait"
+        renderText "plain" b @?= "plain"
+        renderText "unterminated [Actor" b @?= "unterminated [Actor"
     ]
   ]
