@@ -322,7 +322,7 @@ runWorlds = mapM_ putStrLn
   , "intrigue   — Intrigue (Rome)"
   , "play       — the conspiracy (a play)"
   , "audience   — the royal audience"
-  , "sandbox    — harvest festival + factionStanding sandbox"
+  , "sandbox    — harvest festival + factionStanding + silence-debt sandbox"
   ]
 
 -- @prax check [world]@ — static well-formedness report for a world.

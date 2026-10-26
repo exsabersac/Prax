@@ -1474,4 +1474,11 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec pickAction 种子/节庆窗内/窗外断言；35 步 NPC 自由跑金轨迹至双放逐；原有三条逐步弧与 typeCheck 仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置。
 
+## v271 — Sandbox 债务买沉默 × 磨坊正义弧
+
+- **做了什么**：`Prax.Worlds.Sandbox` 新实践 `millSilence`：贼（bob）在窗外向已 `factionStanding` 站队的证人买人情封口（`Prax.Debt.owe`）；控告门禁叠加 `lacksOwes`，未结清沉默债不可控告；债权人可撕毁协议（`settle` + `revoked` 叶）后恢复控告，债务人亦可偿还。新磨坊证人 `ira` 带 `breaks-silence-deal` want；bob 带 `buys-ira-silence`。主金轨迹扩展纳入买沉默→撕毁→控告；另增 `sandboxSilenceGolden` 从 ira 已获知种子起的独立短轨迹。
+- **测**：SandboxSpec 逐步沉默债（买封控告 / 撕毁恢复 / 偿还无 revoked）；pickAction 买/撕；39 步主金 + 32 步沉默金；原磨坊/教会/婚入弧仍绿。
+- **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
+
+
 

@@ -1,6 +1,6 @@
 -- | 轻量可玩沙盒世界：把节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
--- 婚入磨坊弧收成独立世界（非 Village）。Village / GoldenDrive 金标准不动；
--- 本模块演示已有 API 的可跑闭环，并以轻量 wants 驱动 NPC 自选节拍。
+-- 婚入磨坊 / 债务买沉默弧收成独立世界（非 Village）。Village / GoldenDrive
+-- 金标准不动；本模块演示已有 API 的可跑闭环，并以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
   ( sandboxWorld
@@ -18,8 +18,9 @@ import           Prax.Faction
   ( joins, factionStanding, appointLeader, isMember, isLeader, lacksMember )
 import           Prax.Kin (kinAxioms)
 import           Prax.Schedule (festival, duringFestival, outsideFestival)
+import           Prax.Debt (owe, settle, lacksOwes, owes)
 
--- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧。玩家槽无 want。
+-- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧与沉默债。玩家槽无 want。
 playerName :: String
 playerName = "you"
 
@@ -30,7 +31,7 @@ sandboxAxioms =
   , factionStanding "blasphemed.Culprit.Victim" "heretic"
   ] ++ kinAxioms
 
--- | 命名欲望词汇：磨坊正义 / 教会审查 / 婚入磨坊。
+-- | 命名欲望词汇：磨坊正义 / 教会审查 / 婚入磨坊 / 买沉默与撕毁协议。
 sandboxDesires :: [Desire]
 sandboxDesires =
   [ Desire "seeks-theft-truth"
@@ -47,6 +48,10 @@ sandboxDesires =
       (Want [ Match "exiled.eve" ] 12)
   , Desire "joins-mill"
       (Want [ Match "member.Owner!mill" ] 10)
+  , Desire "buys-ira-silence"
+      (Want [ Match "debt.ira.bob.favor" ] 14)
+  , Desire "breaks-silence-deal"
+      (Want [ Match "revoked.Owner.bob" ] 10)
   ]
 
 millJustice :: [String]
@@ -54,6 +59,9 @@ millJustice = ["seeks-theft-truth", "punishes-thief", "wants-exile-bob"]
 
 churchJustice :: [String]
 churchJustice = ["seeks-heresy-truth", "punishes-heretic", "wants-exile-eve"]
+
+iraJustice :: [String]
+iraJustice = millJustice ++ ["breaks-silence-deal"]
 
 -- 丰收节窗内控告 / 审查；窗外获知与放逐。
 harvestFestival :: ScheduleRule
@@ -69,7 +77,7 @@ presenceP = practice
       [ action "[Actor]: Wait a moment" [] [] ]
   }
 
--- | 磨坊审判：窗外获知 → 窗内控告（门禁于 regard）→ 窗外放逐。
+-- | 磨坊审判：窗外获知 → 窗内控告（门禁于 regard，且无未结清沉默债）→ 窗外放逐。
 millTribunalP :: Practice
 millTribunalP = practice
   { practiceId   = "millTribunal"
@@ -84,6 +92,7 @@ millTribunalP = practice
       , action "[Actor]: denounce the thief"
           [ duringFestival "harvest"
           , Match "regards.Actor.bob.thief"
+          , lacksOwes "Actor" "bob" "favor"
           , Not "denounced.Actor.bob" ]
           [ Insert "denounced.Actor.bob" ]
       , action "[Actor]: exile the thief"
@@ -137,18 +146,48 @@ millWedP = practice
       ]
   }
 
+-- | 债务买沉默 × 磨坊正义：贼在窗外向已站队证人买人情封口；
+-- 债权人可撕毁协议（settle + revoked 叶），之后窗内可再控告。
+millSilenceP :: Practice
+millSilenceP = practice
+  { practiceId   = "millSilence"
+  , practiceName = "buying silence about the mill theft"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: buy [Creditor]'s silence about the theft"
+          [ outsideFestival "harvest"
+          , Match "regards.Creditor.Actor.thief"
+          , lacksOwes "Creditor" "Actor" "favor"
+          , Not "denounced.Creditor.Actor"
+          , Not "revoked.Creditor.Actor"
+          , Neq "Actor" "Creditor" ]
+          (owe "Creditor" "Actor" "favor")
+      , action "[Actor]: tear up [Debtor]'s silence deal"
+          [ owes "Actor" "Debtor" "favor"
+          , Not "revoked.Actor.Debtor" ]
+          (settle "Actor" "Debtor" "favor"
+            ++ [ Insert "revoked.Actor.Debtor" ])
+      , action "[Actor]: repay [Creditor] for keeping silent"
+          [ owes "Creditor" "Actor" "favor"
+          , Not "revoked.Creditor.Actor" ]
+          (settle "Creditor" "Actor" "favor")
+      ]
+  }
+
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
 -- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
+-- ira is the mill witness bob tries to buy silence from (parallel to carol/dave justice).
 cast :: [Character]
 cast =
   [ character playerName
-  , character "bob"
+  , (character "bob")   { charDesires = ["buys-ira-silence"] }
   , (character "carol") { charDesires = millJustice }
   , (character "dave")  { charDesires = millJustice }
   , (character "fran")  { charDesires = "joins-mill" : millJustice }
   , character "eve"
   , (character "gale")  { charDesires = churchJustice }
   , (character "priest") { charDesires = churchJustice }
+  , (character "ira")   { charDesires = iraJustice }
   ]
 
 setup :: [Outcome]
@@ -161,11 +200,13 @@ setup =
   , joins "eve" "outsiders"
   , joins "gale" "church"
   , joins "priest" "church"
+  , joins "ira" "mill"
   , appointLeader "priest" "church"
   , Insert "practice.presence"
   , Insert "practice.millTribunal"
   , Insert "practice.churchHeresy"
   , Insert "practice.millWed"
+  , Insert "practice.millSilence"
   -- Outsider negatives already hold belief without regard (demo seeds).
   , Insert "eve.believes.stole.bob.carol"
   , Insert "bob.believes.blasphemed.eve.gale"
@@ -180,5 +221,6 @@ sandboxWorld =
     withPractices =
       setDesires sandboxDesires
         (setCharacters cast
-          (definePractices [presenceP, millTribunalP, churchHeresyP, millWedP]
+          (definePractices
+             [presenceP, millTribunalP, churchHeresyP, millWedP, millSilenceP]
              (setSchedule [harvestFestival] emptyState)))
