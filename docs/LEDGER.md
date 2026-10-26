@@ -2773,3 +2773,22 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`leaders of` 与 `leads of` / Host `leadersOf` / CLI `leaders` 同义；Spec 钉别名与空派系文案。
+
+## v504 — Persist 畸形存档行响亮错误 Spec 钉
+
+- **做了什么**：PersistSpec 钉 deserializeState 对畸形 intention/due/expiry/rngseed 行响亮报错。无新实践 / 无 want 改动。
+- **测**：PersistSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v505 — Project endeavorCrew 其余构造守卫 Spec 钉
+
+- **做了什么**：ProjectSpec 钉 endeavorCrew 对偶 endeavor 的部件名段/重名/悬边/自环/Prax 保留名响亮报错。无新实践 / 无 want 改动。
+- **测**：ProjectSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v506 — Persona cast 重复特质名 Spec 钉
+
+- **做了什么**：PersonaSpec 钉 cast 对重复特质名响亮报错。无新实践 / 无 want 改动。
+- **测**：PersonaSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

@@ -328,6 +328,24 @@ tests = testGroup "Prax.Project"
       errored (endeavorCrew "my.oven" 1 "[Actor]: x" [] chainParts)
         >>= assertBool "crew id must be a single path segment"
 
+  , testCase "endeavorCrew mirrors endeavor loud guards (part/dup/edge/cycle/Prax)" $ do
+      errored (endeavorCrew "oven" 1 "[Actor]: x" []
+                 [ Part "sw.eep" "[Actor]: sweep" [] [] [] ])
+        >>= assertBool "crew part name segment"
+      errored (endeavorCrew "oven" 1 "[Actor]: x" []
+                 [ Part "dup" "[Actor]: one" [] [] []
+                 , Part "dup" "[Actor]: two" [] [] [] ])
+        >>= assertBool "crew dup parts"
+      errored (endeavorCrew "oven" 1 "[Actor]: x" []
+                 [ Part "real" "[Actor]: real" ["ghost"] [] [] ])
+        >>= assertBool "crew dangling edge"
+      erroredWith "unreachable" (endeavorCrew "oven" 1 "[Actor]: x" []
+                 [ Part "a" "[Actor]: a" ["a"] [] [] ])
+        >>= assertBool "crew self-edge unreachable"
+      errored (endeavorCrew "oven" 1 "[Actor]: x" []
+                 [ Part "x" "[Actor]: x" [] [ Match "PraxFoo.bar" ] [] ])
+        >>= assertBool "crew Prax reserved"
+
   , testCase "endeavorCrew + enlist: partner advances owner ledger" $ do
       let parts = [ Part "sweep" "[Actor]: sweep the hearth" [] [] []
                   , Part "fire"  "[Actor]: fire it" ["sweep"] [] [ Insert "oven.standing" ]

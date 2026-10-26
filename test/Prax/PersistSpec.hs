@@ -175,6 +175,34 @@ tests = testGroup "Prax.Persist"
             contReload = performOutcome (Roll 1 2 [] []) reloadedSt
         rngSeed contReload @?= rngSeed contDirect
     ]
+  , testCase "malformed intention / due / expiry / rngseed lines error loudly" $ do
+      let hdr = formatVersion ++ "\ncursor 0\n"
+      r1 <- try (evaluate (length (show (intentions
+             (deserializeState (hdr ++ "intention bob not-a-repr\n") intrigueWorld)))))
+      case r1 :: Either ErrorCall Int of
+        Left (ErrorCall msg) -> assertBool ("intention msg: " ++ msg)
+                                  ("malformed intention line" `isInfixOf` msg)
+        Right _ -> assertFailure "expected malformed intention"
+      r2 <- try (evaluate (length (show (scheduleDues
+             (deserializeState (hdr ++ "due beat notanum\n")
+                (intrigueWorld { schedule = [ScheduleRule "beat" 3 []] }))))))
+      case r2 :: Either ErrorCall Int of
+        Left (ErrorCall msg) -> assertBool ("due msg: " ++ msg)
+                                  ("malformed due line" `isInfixOf` msg)
+        Right _ -> assertFailure "expected malformed due"
+      r3 <- try (evaluate (length (show (expiries
+             (deserializeState (hdr ++ "expiry nope mood!a\n") intrigueWorld)))))
+      case r3 :: Either ErrorCall Int of
+        Left (ErrorCall msg) -> assertBool ("expiry msg: " ++ msg)
+                                  ("malformed expiry line" `isInfixOf` msg)
+        Right _ -> assertFailure "expected malformed expiry"
+      r4 <- try (evaluate (length (show (rngSeed
+             (deserializeState (hdr ++ "rngseed nope\n") intrigueWorld)))))
+      case r4 :: Either ErrorCall Int of
+        Left (ErrorCall msg) -> assertBool ("rngseed msg: " ++ msg)
+                                  ("malformed rngseed line" `isInfixOf` msg)
+        Right _ -> assertFailure "expected malformed rngseed"
+
   , testCase "formatVersion is the prax-state v4 tag" $
       formatVersion @?= "prax-state v4"
 

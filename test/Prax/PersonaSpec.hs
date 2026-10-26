@@ -89,6 +89,12 @@ tests = testGroup "Prax.Persona"
       assertBool "a trait name is a single path segment"
         (isLeft (r :: Either ErrorCall Int))
 
+  , testCase "cast rejects a duplicate trait name loudly" $ do
+      r <- try (evaluate (length (show (snd
+             (cast [ Trait "same" [], Trait "same" [] ] [])))))
+      assertBool "duplicate trait names collide in the vocabulary"
+        (isLeft (r :: Either ErrorCall Int))
+
   , testCase "cast rejects a borne trait missing from the vocabulary" $ do
       r <- try (evaluate (length (show (snd
              (cast [] [ (character "zed", [plainspoken]) ])))))
