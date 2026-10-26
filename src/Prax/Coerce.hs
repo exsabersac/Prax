@@ -53,6 +53,8 @@ module Prax.Coerce
   , isExiled, lacksExiled
   , isFled, lacksFled
   , isReconciled, lacksReconciled
+  , isConfessed, lacksConfessed
+  , isRecanted, lacksRecanted
   ) where
 
 import           Data.List (nub)
@@ -478,4 +480,25 @@ isReconciled who =
 lacksReconciled :: String -> Condition
 lacksReconciled who =
   Not ("reconciled." ++ guardSeg "lacksReconciled" who)
+
+
+-- | 条件：@who@ 已招供（@confessed.<who>@；Sandbox millSqueeze demand）。
+isConfessed :: String -> Condition
+isConfessed who =
+  Match ("confessed." ++ guardSeg "isConfessed" who)
+
+-- | 条件：无招供叶。
+lacksConfessed :: String -> Condition
+lacksConfessed who =
+  Not ("confessed." ++ guardSeg "lacksConfessed" who)
+
+-- | 条件：@who@ 已悔罪（@recanted.<who>@；Sandbox churchInquisit demand）。
+isRecanted :: String -> Condition
+isRecanted who =
+  Match ("recanted." ++ guardSeg "isRecanted" who)
+
+-- | 条件：无悔罪叶。
+lacksRecanted :: String -> Condition
+lacksRecanted who =
+  Not ("recanted." ++ guardSeg "lacksRecanted" who)
 

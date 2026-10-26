@@ -1491,4 +1491,23 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stPar = doAct "dave" "parade bob" stRally
       assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
       assertBool "rally spent" (not (hasAct "dave" "rally" stPar))
+
+  , testCase "church parade × rally: heretic parade and mill rally stay independent" $ do
+      -- inquisitSeed brand→activateChurchParade; dave+carol learn → notorious;
+      -- market: church parade and mill rally share no gate.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" inquisitSeed)
+          stSq = doAct "priest" "squeeze bob" st0
+          stRec = doAct "bob" "recant the heresy" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stP = activateChurchParade stBrand
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stP))
+      assertBool "priest parade yes" (hasAct "priest" "parade bob" stP)
+      let stM = iterate roundBoundary stP !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      assertBool "parade still" (hasAct "priest" "parade bob" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "parade after rally" (hasAct "priest" "parade bob" stRally)
   ]

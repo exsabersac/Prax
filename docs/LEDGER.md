@@ -1726,3 +1726,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec parade × rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v315 — Coerce isConfessed / isRecanted 条件对偶
+
+- **做了什么**：`isConfessed`/`lacksConfessed`、`isRecanted`/`lacksRecanted` 钉招供/悔罪 unary Match/Not 对偶（对齐 millSqueeze / churchInquisit demand）。无实践改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v316 — Sandbox 教会游街×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 inquisit brand→activateChurchParade 与 reputeSeed 臭名路径并置后，market 窗内 church parade 与 mill rally 互不阻挡。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church parade × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
