@@ -912,6 +912,19 @@ askChronicle st q
                 , ("holding." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " holds nothing"]
          else rows
+  | Just item <- stripPrefix "holders of " q =
+      -- 对齐 Host holdersOf：读闭合视图；短语化持有人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "holding." `isPrefixOf` s
+                , let rest = drop (length ("holding." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == item ]
+      in if null rows then ["nobody holds " ++ item]
+         else [ a ++ " holder of " ++ item
+              | s <- rows
+              , let a = head (splitDot (drop (length ("holding." :: String)) s)) ]
   | Just who <- stripPrefix "carrying of " q =
       -- 对齐 Host carryingsOf：读闭合视图。
       let rows = sort
@@ -919,6 +932,19 @@ askChronicle st q
                 , ("carrying." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " carries nothing"]
          else rows
+  | Just item <- stripPrefix "carriers of " q =
+      -- 对齐 Host carriersOf：读闭合视图；短语化携带人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "carrying." `isPrefixOf` s
+                , let rest = drop (length ("carrying." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == item ]
+      in if null rows then ["nobody carries " ++ item]
+         else [ a ++ " carrier of " ++ item
+              | s <- rows
+              , let a = head (splitDot (drop (length ("carrying." :: String)) s)) ]
   | Just who <- stripPrefix "threatened of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

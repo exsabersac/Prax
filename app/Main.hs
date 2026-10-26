@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -348,11 +348,25 @@ runHolding (who : ws) =
   in mapM_ putStrLn (holdingOf st who)
 runHolding _ = putStrLn "usage: prax holding <who> <world>"
 
+-- | List who holds/carries item: @prax holders <item> <world>@.
+runHolders :: [String] -> IO ()
+runHolders (item : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (holdersOf st item)
+runHolders _ = putStrLn "usage: prax holders <item> <world>"
+
 runCarrying :: [String] -> IO ()
 runCarrying (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (carryingOf st who)
 runCarrying _ = putStrLn "usage: prax carrying <who> <world>"
+
+-- | List who holds/carries item: @prax carriers <item> <world>@.
+runCarriers :: [String] -> IO ()
+runCarriers (item : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (carriersOf st item)
+runCarriers _ = putStrLn "usage: prax carriers <item> <world>"
 
 
 runShunners :: [String] -> IO ()
@@ -899,7 +913,9 @@ usageText = unlines
   , "  prax locations <who> <world>           list at.<who>.* location leaves"
   , "  prax occupants <place> <world>          list at.*.<place> leaves"
   , "  prax holding <who> <world>             list holding.<who>.* leaves"
+  , "  prax holders <item> <world>            list holding.*.<item> leaves"
   , "  prax carrying <who> <world>            list carrying.<who>.* leaves"
+  , "  prax carriers <item> <world>           list carrying.*.<item> leaves"
   , "  prax shunned <who> <world>             list shunned.<who>.* leaves"
   , "  prax threatened <who> <world>          list threatened leaves involving who"
   , "  prax extorted <who> <world>            list extorted leaves involving who"
@@ -1007,7 +1023,9 @@ main = do
     ("locations" : ws) -> runLocations ws
     ("occupants" : ws) -> runOccupants ws
     ("holding" : ws)   -> runHolding ws
+    ("holders" : ws)  -> runHolders ws
     ("carrying" : ws)  -> runCarrying ws
+    ("carriers" : ws) -> runCarriers ws
     ("shunned" : ws)   -> runShunned ws
     ("shunners" : ws)  -> runShunners ws
     ("threatened" : ws) -> runThreatened ws

@@ -2888,3 +2888,13 @@
 - **做了什么**：SandboxSpec 追加 tear 后 denounce/censure 复开；silence debt 下 cry 仍开；church debt 堵 gale 不堵 priest；fran wed×squeeze×parade 链；kyle churchSilence；brand 后 fears 满足；denounce×rally；censure×squeeze；exile 权重胜 rally；flee×church hear；无 joinsMill 不拣 wed。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（324 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v524 — Host holdersOf/carriersOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`holdersOf`/`carriersOf` 枚举 `holding.*.<item>` / `carrying.*.<item>`；CLI `holders`/`carriers`。
+
+## v525 — Chronicle holders/carriers of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`holders of`/`carriers of` 短语化持有/携带人；Spec 钉 Host 叶与 Chronicle 短语及空集。

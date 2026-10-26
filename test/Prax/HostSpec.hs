@@ -875,4 +875,16 @@ tests = testGroup "Prax.Host"
       occupantsOf st "market" @?= ["at.cass.market"]
       occupantsOf st "void" @?= []
 
+  , testCase "holdersOf / carriersOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "holding.ana.loaf"
+            , Insert "holding.ben.loaf"
+            , Insert "carrying.cass.flour"
+            , Insert "carrying.dave.flour"
+            ]
+      holdersOf st "loaf" @?= ["holding.ana.loaf", "holding.ben.loaf"]
+      holdersOf st "void" @?= []
+      carriersOf st "flour" @?= ["carrying.cass.flour", "carrying.dave.flour"]
+      carriersOf st "void" @?= []
+
   ]

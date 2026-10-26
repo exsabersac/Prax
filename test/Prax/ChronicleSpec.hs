@@ -9,7 +9,7 @@ import           Prax.Engine (definePractices, performOutcome, setAxioms, setCha
 import           Prax.Repute (standingUnless, notoriety)
 import           Prax.Chronicle
 import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
-                             carryingOf, shunnedOf, locationsOf, occupantsOf,
+                             carryingOf, shunnedOf, locationsOf, occupantsOf, holdersOf, carriersOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
@@ -1000,6 +1000,22 @@ tests = testGroup "Prax.Chronicle"
         ["ana at yard", "ben at yard"]
       askChronicle st "occupants of market" @?= ["cass at market"]
       askChronicle st "occupants of void" @?= ["nobody is at void"]
+
+  , testCase "askChronicle holders/carriers dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "holding.ana.loaf"
+            , Insert "holding.ben.loaf"
+            , Insert "carrying.cass.flour"
+            , Insert "carrying.dave.flour"
+            ]
+      holdersOf st "loaf" @?= ["holding.ana.loaf", "holding.ben.loaf"]
+      carriersOf st "flour" @?= ["carrying.cass.flour", "carrying.dave.flour"]
+      askChronicle st "holders of loaf" @?=
+        ["ana holder of loaf", "ben holder of loaf"]
+      askChronicle st "carriers of flour" @?=
+        ["cass carrier of flour", "dave carrier of flour"]
+      askChronicle st "holders of void" @?= ["nobody holds void"]
+      askChronicle st "carriers of void" @?= ["nobody carries void"]
 
 
   ]
