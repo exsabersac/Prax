@@ -2445,5 +2445,27 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：Deontic Spec 钉 oblige 后 isObliged/hasObliged/hasObligations/everObliged，以及 discharge 后 lacksObligations/neverObliged。无新实践 / 无 want 改动。
 - **测**：DeonticSpec（针对性；未跑全量）。
+
+## v435 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 gale 债挡 censure，dave brand parade 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec heresy silence × mill parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v436 — Sandbox 异端沉默×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 gale 债挡 censure，dave market rally 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec heresy silence × mill rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v437 — Sandbox 异端沉默×磨坊放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 gale 债挡 censure，dave denounce→exile 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec heresy silence × mill exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v438 — Sandbox 双沉默轨独立（磨坊×异端）（钉既有门禁）
+
+- **做了什么**：Spec 钉 ira favor 与 gale church-favor 双债并存，dave mill denounce 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec dual silence（针对性；未跑全量）。
 

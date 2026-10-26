@@ -2833,4 +2833,79 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (exists "threatened.squeeze.dave.bob" (db stSq))
       assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stSq))
 
+
+  , testCase "heresy silence × mill parade: gale debt blocks; dave parade open" $ do
+      -- eve/gale church-silence; mill brand parade unconstrained.
+      let st0 = doAct "gale" "hear the blasphemy"
+                  (activateParade (activateSqueeze sandboxWorld))
+          stDave = doAct "dave" "learn" st0
+          stSq = doAct "dave" "squeeze bob" stDave
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stBuy = doAct "eve" "buy gale" stBrand
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      assertBool "parade at harvest" (hasAct "dave" "parade bob" stH)
+      let stPar = doAct "dave" "parade bob" stH
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+      assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stPar))
+
+  , testCase "heresy silence × mill rally: gale debt blocks; dave market rally open" $ do
+      -- eve/gale church-silence; notorious+angry market rally unconstrained.
+      let st0 = doAct "gale" "hear the blasphemy"
+                  (doAct "carol" "learn" (doAct "dave" "learn" reputeSeed))
+          stBuy = doAct "eve" "buy gale" st0
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      let stM = roundBoundary stH
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stRally))
+
+  , testCase "heresy silence × mill exile: gale debt blocks; dave denounce/exile open" $ do
+      -- eve/gale church-silence; mill harvest denounce→exile unconstrained.
+      let st0 = doAct "gale" "hear the blasphemy" sandboxWorld
+          stDave = doAct "dave" "learn" st0
+          stBuy = doAct "eve" "buy gale" stDave
+      assertBool "debt" (exists "debt.gale.eve.church-favor" (db stBuy))
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "gale still blocked" (not (hasAct "gale" "censure" stAfter))
+      let stEx = doAct "dave" "exile" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "debt still" (exists "debt.gale.eve.church-favor" (db stEx))
+
+  , testCase "dual silence: ira mill debt and gale church debt stay independent" $ do
+      -- bob buys ira; eve buys gale; dave mill denounce open; both creditors blocked.
+      let st0 = doAct "gale" "hear the blasphemy" sandboxWorld
+          stIra = doAct "ira" "learn" st0
+          stDave = doAct "dave" "learn" stIra
+          stBuyIra = doAct "bob" "buy ira" stDave
+          stBuyGale = doAct "eve" "buy gale" stBuyIra
+      assertBool "ira debt" (exists "debt.ira.bob.favor" (db stBuyGale))
+      assertBool "gale debt" (exists "debt.gale.eve.church-favor" (db stBuyGale))
+      let stH = iterate roundBoundary stBuyGale !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stH))
+      assertBool "gale censure blocked" (not (hasAct "gale" "censure" stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      let stDen = doAct "dave" "denounce" stH
+      assertBool "denounced" (exists "denounced.dave.bob" (db stDen))
+      assertBool "ira debt still" (exists "debt.ira.bob.favor" (db stDen))
+      assertBool "gale debt still" (exists "debt.gale.eve.church-favor" (db stDen))
+
   ]
