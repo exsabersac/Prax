@@ -34,7 +34,9 @@ module Prax.Coerce
   , punitivePrefix
     -- * Condition smart constructors (fact-path duals)
   , isThreatened, lacksThreatened
+  , hasThreatened
   , isDefied, lacksDefied
+  , hasDefied
   , hasComplied, lacksComplied
   , hasExtorted, lacksExtorted
   , everThreatened, neverThreatened
@@ -256,6 +258,10 @@ lacksThreatened sid extorter victim =
        ++ "." ++ guardSeg "lacksThreatened" extorter
        ++ "." ++ guardSeg "lacksThreatened" victim)
 
+-- | 条件：@extorter@ 对 @victim@ 正持有 @sid@ 威胁标记（@isThreatened@ 同体；对齐 has* 命名）。
+hasThreatened :: String -> String -> String -> Condition
+hasThreatened = isThreatened
+
 -- | 条件：@victim@ 已违抗 @extorter@ 的 @sid@ 威胁。
 isDefied :: String -> String -> String -> Condition
 isDefied sid victim extorter =
@@ -269,6 +275,10 @@ lacksDefied sid victim extorter =
   Not ("defied." ++ guardSeg "lacksDefied" sid
        ++ "." ++ guardSeg "lacksDefied" victim
        ++ "." ++ guardSeg "lacksDefied" extorter)
+
+-- | 条件：@victim@ 已违抗 @extorter@ 的 @sid@ 威胁（@isDefied@ 同体；对齐 has* 命名）。
+hasDefied :: String -> String -> String -> Condition
+hasDefied = isDefied
 
 -- | 条件：@victim@ 已向 @extorter@ 就 @sid@ 服从（买断）。
 hasComplied :: String -> String -> String -> Condition

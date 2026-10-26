@@ -16,6 +16,7 @@
 -- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
+-- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
 module Prax.Host
   ( step
   , stepExact
@@ -71,6 +72,8 @@ module Prax.Host
   , extortedOf
   , compliedOf
   , defiedOf
+  , brandedOf
+  , revokedOf
   , checkpoint
   , restore
   ) where
@@ -518,6 +521,40 @@ defiedOf st who = sort
   , let parts = splitDots rest
   , length parts >= 3
   , (parts !! 1) == who || (parts !! 2) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中 @who@ 的烙印叶（@branded.<who>@ / @brandedHeretic.<who>@ 等 branded* 前缀）。
+brandedOf :: PraxState -> String -> [String]
+brandedOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 2
+  , "branded" `isPrefixOf` head parts
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的撕毁协议叶（@revoked.<creditor>.<debtor>@，任一侧）。
+revokedOf :: PraxState -> String -> [String]
+revokedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "revoked." `isPrefixOf` s
+  , let rest = drop (length ("revoked." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
   ]
   where
     splitDots :: String -> [String]

@@ -17,8 +17,8 @@ import           Prax.Debt (owe, owes)
 import           Prax.Witness (CoPresence, asRole)
 import           Prax.Persist (serializeState, deserializeState)
 import           Prax.Coerce (Coercion (..), coerce,
-                             isThreatened, lacksThreatened,
-                             isDefied, lacksDefied,
+                             isThreatened, lacksThreatened, hasThreatened,
+                             isDefied, lacksDefied, hasDefied,
                              hasComplied, lacksComplied,
                              hasExtorted, lacksExtorted,
                              everThreatened, neverThreatened,
@@ -520,9 +520,13 @@ tests = testGroup "Prax.Coerce"
     [ testCase "isThreatened / lacksThreatened are Match/Not duals" $ do
         isThreatened "racket" "mob" "vic" @?= Match "threatened.racket.mob.vic"
         lacksThreatened "racket" "mob" "vic" @?= Not "threatened.racket.mob.vic"
+    , testCase "hasThreatened aliases isThreatened" $
+        hasThreatened "racket" "mob" "vic" @?= isThreatened "racket" "mob" "vic"
     , testCase "isDefied / lacksDefied duals" $ do
         isDefied "racket" "vic" "mob" @?= Match "defied.racket.vic.mob"
         lacksDefied "racket" "vic" "mob" @?= Not "defied.racket.vic.mob"
+    , testCase "hasDefied aliases isDefied" $
+        hasDefied "racket" "vic" "mob" @?= isDefied "racket" "vic" "mob"
     , testCase "hasComplied / lacksComplied duals" $ do
         hasComplied "racket" "mob" "vic" @?= Match "complied.racket.mob.vic"
         lacksComplied "racket" "mob" "vic" @?= Not "complied.racket.mob.vic"

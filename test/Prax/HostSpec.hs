@@ -383,4 +383,22 @@ tests = testGroup "Prax.Host"
         ]
       defiedOf st "void" @?= []
 
+  , testCase "brandedOf / revokedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "branded.bob"
+                , Insert "brandedHeretic.eve"
+                , Insert "branded.ana"
+                , Insert "revoked.ira.bob"
+                , Insert "revoked.gale.eve"
+                , Insert "revoked.bob.dave"
+                , Insert "flag.x" ]
+      brandedOf st "bob" @?= ["branded.bob"]
+      brandedOf st "eve" @?= ["brandedHeretic.eve"]
+      brandedOf st "void" @?= []
+      revokedOf st "bob" @?=
+        [ "revoked.bob.dave"
+        , "revoked.ira.bob"
+        ]
+      revokedOf st "void" @?= []
+
   ]

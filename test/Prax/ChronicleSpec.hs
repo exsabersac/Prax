@@ -135,4 +135,16 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "members of nobody"
         @?= ["nobody is a member of nobody"]
 
+  , testCase "askChronicle branded-of / revoked-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "branded.bob"
+                , Insert "brandedHeretic.eve"
+                , Insert "revoked.ira.bob"
+                , Insert "revoked.gale.eve" ]
+      askChronicle st "branded of bob" @?= ["branded.bob"]
+      askChronicle st "branded of eve" @?= ["brandedHeretic.eve"]
+      askChronicle st "branded of void" @?= ["void has no brand marks"]
+      askChronicle st "revoked of bob" @?= ["revoked.ira.bob"]
+      askChronicle st "revoked of void" @?= ["void has no revoked deals"]
+
   ]

@@ -234,6 +234,29 @@ tests = testGroup "Prax.Worlds.Village"
       assertBool "person-victim memory persists"
         (exists "carol.believes.stole.bob.carol.seen" (db st2))
 
+  , testCase "v281 oathbreaker ostracize: mill can act after atonement clears thief shun" $ do
+      -- After return-the-loaf: thief regard gone → shun closed; oathbreaker remains
+      -- → ostracize still open for mill eyewitnesses. Outsiders never get it.
+      let st0 = doAct "bob" "steal the loaf" villageWorld
+          st1 = doAct "carol" "shun bob" st0
+          st2 = doAct "bob" "return the loaf" st1
+      assertBool "carol may ostracize after atonement"
+        (any (("ostracize bob" `isInfixOf`) . gaLabel) (possibleActions st2 "carol"))
+      assertBool "you (mill eyewitness) may ostracize"
+        (any (("ostracize bob" `isInfixOf`) . gaLabel) (possibleActions st2 "you"))
+      assertBool "shun-thief closed after atonement"
+        (not (any (("shun bob" `isInfixOf`) . gaLabel) (possibleActions st2 "carol")))
+      let st3 = doAct "carol" "ostracize bob" st2
+      assertBool "ostracized leaf"
+        (exists "ostracized.carol.bob" (db st3))
+      assertBool "ostracize one-shot"
+        (not (any (("ostracize bob" `isInfixOf`) . gaLabel) (possibleActions st3 "carol")))
+      -- eve outsiders: plant person-victim belief → still no oathbreaker regard → no ostracize
+      let stE = foldl (flip performOutcome) st0
+                  [ Insert "eve.believes.stole.bob.carol" ]
+      assertBool "eve cannot ostracize"
+        (not (any (("ostracize bob" `isInfixOf`) . gaLabel) (possibleActions stE "eve")))
+
   , testCase "amends is only offered under someone's regard" $ do
       let st = performOutcome (Insert "holding.bob.loaf") villageWorld
       assertBool "no regard, no apology affordance"

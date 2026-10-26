@@ -1540,3 +1540,19 @@ Tier 3 — 宿主游戏边界：
 - **金标准**：`AnalysisTableSpec` `villagePin` 刷新 footprint/axiomHead（`member`/`allied`/`regards…oathbreaker`）；`VillageSpec` 新增三案钉磨坊目击站队、局外信念不派生、赎罪清 thief 留 oathbreaker。`GoldenDrive` 村庄轨迹**未改**（早期自由跑不发生偷窃，行为与旁白不变）。FactionSpec 村庄形夹具保留为 Spec-only 对照，注释改为「Village 已接线」。
 - **测**：全量 `stack test --fast` **987/987** 绿（1828.11s）；`Worlds.Village` 52/52（含 v280 三案）；`AnalysisTable`/`GoldenDrive` village 绿。
 - **明确未做**：不合 main；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名；Sandbox 未改。
+
+## v281 — Coerce hasThreatened / hasDefied 叶子别名
+
+- **做了什么**：`hasThreatened` = `isThreatened` 同体；`hasDefied` = `isDefied` 同体（对齐已有 `hasComplied`/`hasExtorted` 的 has* 命名）。
+- **测**：CoerceSpec hasThreatened / hasDefied aliases。
+
+## v282 — Host brandedOf / revokedOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举烙印叶（`branded*` 前缀，含 `brandedHeretic`）与撕毁协议叶（`revoked.<creditor>.<debtor>` 任一侧）；CLI `prax branded`/`revoked`；`askChronicle` 加 `"branded of "`/`"revoked of "`；help 同步。
+- **测**：HostSpec brandedOf / revokedOf；ChronicleSpec branded-of / revoked-of。
+
+## v283 — Village oathbreaker 放逐（赎罪后派系冤屈仍有牙）
+
+- **做了什么**：村庄实践加 `[Actor]: ostracize [T] as oathbreaker`——门禁于 `regardedAs … oathbreaker`，与村级 `thief`/`shun` 解耦。赎罪清 thief 站队并关闭 shun 后，磨坊目击仍可放逐；局外信念不派生站队故无放逐。**无**角色 want 匹配 `ostracized.*`（仅 Spec/玩家驱动），早期自由跑不偷窃 → `GoldenDrive`/`AnalysisTable` caresAbout 预期不变。
+- **测**：VillageSpec v281 案（赎罪后 ostracize 开 / shun 闭 / 一击叶 / eve 负例）。全量 `stack test --fast` **992/992** 绿（1842.98s）；`GoldenDrive`/`AnalysisTable` village 绿。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；Sandbox 未改；未再堆其他 Condition has*/lacks*。

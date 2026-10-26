@@ -349,6 +349,18 @@ villageP = practice
           , Absent [ Match "regards.Actor.T.thief" ] ]
           [ Delete "shunned.Actor.T" ]
 
+        -- v281: mill faction grievance (oathbreaker) has teeth independent of
+        -- village thief standing. After atonement clears "thief"/shun, mill
+        -- co-members who still regard the culprit as oathbreaker may ostracize.
+        -- No cast want matches ostracized.* — Spec / player drive only; free-play
+        -- golden stays undisturbed (early turns never steal → no regard).
+      , action "[Actor]: ostracize [T] as oathbreaker"
+          [ regardedAs "Actor" "T" "oathbreaker"
+          , Neq "T" "Actor"
+          , Not "ostracized.Actor.T" ]
+          [ Insert "ostracized.Actor.T"
+          , adjustScore "Actor" "T" "trust" (-8) "oathbroken" ]
+
         -- Fabrication, and its road back: confessing self-incriminates
         -- through the ordinary hearsay channel; absolution is a refusable
         -- second-party grant (see 'whisperAct'/'confessWhisper'/

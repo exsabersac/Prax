@@ -130,7 +130,8 @@ formatEvent ev rs =
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
--- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@。
+-- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、
+-- @"branded of "++who@、@"revoked of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -222,6 +223,25 @@ askChronicle st q
                       , '.' `notElem` drop (length prefix) s ]
       in if null sibs then [who ++ " has no known siblings"]
          else map ((who ++ " sibling ") ++) sibs
+  | Just who <- stripPrefix "branded of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , let parts = splitDot s
+                , length parts >= 2
+                , "branded" `isPrefixOf` head parts
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no brand marks"]
+         else rows
+  | Just who <- stripPrefix "revoked of " q =
+      let prefix = "revoked."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no revoked deals"]
+         else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 
 -- helpers ----------------------------------------------------------------------
