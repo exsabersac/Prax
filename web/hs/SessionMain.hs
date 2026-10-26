@@ -1,10 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
--- | 「我的小镇」M2：浏览器/脚本可达的 Session JSON-lines 桥（wasm 非 Day-1）。
---
--- 契约真源：stdin 一行 JSON 请求 → stdout 一行 JSON 响应；进程内持有一份 Session。
--- HTTP（若有）只是便利壳，不是门禁。字段对齐 'Prax.Session' ToJSON /
--- @examples/my-town-session.json@。
+-- | 浏览器可达的 Session JSON-lines 桥（M2 前、wasm 前）。
+-- 每行一个 JSON 请求，回一行 JSON 响应；状态在进程内 IORef。
+-- 协议：new / view / menu / act / wait / save / load / quit
 module Main (main) where
 
 import           Control.Concurrent.MVar (MVar, newMVar, modifyMVar, readMVar, swapMVar)
@@ -21,7 +18,6 @@ import           System.IO (BufferMode (..), hFlush, hSetBuffering, isEOF, stdin
 
 import           Prax.Session
 
--- | 一行请求。@raw@ 为 praxSave 产出的整段 JSON 字符串（format/worldId/blob）。
 data Req = Req
   { reqOp       :: String
   , reqWorldId  :: Maybe String
@@ -37,8 +33,7 @@ instance FromJSON Req where
         <*> o .:? "raw"
 
 okFields :: [(String, Value)] -> BL.ByteString
-okFields kvs =
-  encode (object (("ok" .= True) : [ fromString k .= v | (k, v) <- kvs ]))
+okFields kvs = encode (object (("ok" .= True) : [ fromString k .= v | (k, v) <- kvs ]))
 
 errObj :: String -> String -> BL.ByteString
 errObj e msg = encode (object ["ok" .= False, "error" .= e, "message" .= msg])
@@ -65,6 +60,7 @@ loop slot = do
         else do
           out <- handleLine slot line
           writeLine out
+          -- quit 后退出
           case decodeStrict' line of
             Just (Req { reqOp = "quit" }) -> pure ()
             _ -> loop slot
@@ -92,51 +88,41 @@ dispatch slot req = case reqOp req of
         , ("menu", toJSON (praxMenu s))
         ]
   "view" -> withSess slot $ \s ->
-    pure $ okFields
-      [ ("view", toJSON (praxView s))
-      , ("menu", toJSON (praxMenu s))
-      ]
+    pure $ okFields [("view", toJSON (praxView s))]
   "menu" -> withSess slot $ \s ->
     pure $ okFields [("menu", toJSON (praxMenu s))]
   "act" -> case reqActionId req of
-    Nothing -> pure (errObj "missing_actionId" "act 需要 actionId（ga:v1:…）")
+    Nothing -> pure (errObj "missing_actionId" "act 需要 actionId")
     Just aid -> modifyMVar slot $ \ms -> case ms of
-      Nothing -> pure (Nothing, errObj "no_session" "尚未 new/load")
+      Nothing -> pure (Nothing, errObj "no_session" "尚未 praxNew")
       Just s -> case praxAct s aid of
         Left e -> pure (Just s, errObj "praxAct" e)
         Right (s', ar) ->
           pure ( Just s'
                , okFields
-                   [ ("narrative", toJSON (actNarrative ar))
+                   [ ("accepted", toJSON True)
+                   , ("narrative", toJSON (actNarrative ar))
                    , ("view", toJSON (actView ar))
                    , ("menu", toJSON (actMenu ar))
                    ]
                )
   "wait" -> modifyMVar slot $ \ms -> case ms of
-    Nothing -> pure (Nothing, errObj "no_session" "尚未 new/load")
+    Nothing -> pure (Nothing, errObj "no_session" "尚未 praxNew")
     Just s -> case praxWait s of
       Left e -> pure (Just s, errObj "praxWait" e)
       Right (s', ar) ->
         pure ( Just s'
              , okFields
-                 [ ("narrative", toJSON (actNarrative ar))
+                 [ ("accepted", toJSON True)
+                 , ("narrative", toJSON (actNarrative ar))
                  , ("view", toJSON (actView ar))
                  , ("menu", toJSON (actMenu ar))
                  ]
              )
-  -- 扁平 SaveMeta：format / worldId / blob（与 praxSave JSON 可互操作）
   "save" -> withSess slot $ \s ->
-    case eitherDecodeStrict' (BSC.pack (praxSave s)) of
-      Left e -> pure (errObj "save_decode" e)
-      Right (meta :: SaveMeta) ->
-        pure $ okFields
-          [ ("format", toJSON (saveFormat meta))
-          , ("worldId", toJSON (saveWorldId meta))
-          , ("blob", toJSON (saveBlob meta))
-          ]
-  -- load.raw = praxSave / 本桥 save 产出的整段 JSON 字符串
+    pure $ okFields [("save", toJSON (praxSave s))]
   "load" -> case reqRaw req of
-    Nothing -> pure (errObj "missing_raw" "load 需要 raw（Save JSON 字符串）")
+    Nothing -> pure (errObj "missing_raw" "load 需要 raw")
     Just raw -> case praxLoad raw of
       Left e -> pure (errObj "praxLoad" e)
       Right s -> do
@@ -154,5 +140,5 @@ withSess :: MVar (Maybe Session) -> (Session -> IO BL.ByteString) -> IO BL.ByteS
 withSess slot f = do
   ms <- readMVar slot
   case ms of
-    Nothing -> pure (errObj "no_session" "尚未 new/load")
+    Nothing -> pure (errObj "no_session" "尚未 praxNew")
     Just s  -> f s

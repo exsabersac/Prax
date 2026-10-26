@@ -128,11 +128,23 @@ export async function praxWait(prevView) {
 export async function praxSave() {
   const data = await rpc({ op: "save" });
   if (!data.ok) return data;
-  return { ok: true, save: data.save };
+  // 桥可能回 { save }，或扁平 { blob, format, worldId }
+  const save =
+    data.save != null
+      ? data.save
+      : { blob: data.blob, format: data.format, worldId: data.worldId };
+  return { ok: true, save };
+}
+
+function saveRaw(save) {
+  if (typeof save === "string") return save;
+  if (save && typeof save.blob === "string") return save.blob;
+  if (save && typeof save.save === "string") return save.save;
+  return JSON.stringify(save);
 }
 
 export async function praxLoad(raw) {
-  const data = await rpc({ op: "load", raw });
+  const data = await rpc({ op: "load", raw: saveRaw(raw) });
   if (!data.ok) return data;
   const view = normalizeView(data.view, {
     playerId: data.playerId,
