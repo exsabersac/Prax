@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, liesOf, traitsOf, traitedOf,
+                             moodsOf, arcsOf, liesOf, traitsOf, traitedOf, moodedOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -1104,5 +1104,21 @@ tests = testGroup "Prax.Chronicle"
         ["trait.ben.shy"]
       askChronicle st "traited of void" @?=
         ["nobody is traited void"]
+
+  , testCase "moodedOf / mooded of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "mood.ana.calm"
+            , Insert "mood.ben.angry"
+            , Insert "mood.cass.calm"
+            ]
+      sort (moodedOf st "calm") @?= ["mood.ana.calm", "mood.cass.calm"]
+      moodedOf st "angry" @?= ["mood.ben.angry"]
+      moodedOf st "void" @?= []
+      askChronicle st "mooded of calm" @?=
+        ["mood.ana.calm", "mood.cass.calm"]
+      askChronicle st "mooded of angry" @?=
+        ["mood.ben.angry"]
+      askChronicle st "mooded of void" @?=
+        ["nobody is mooded void"]
 
   ]

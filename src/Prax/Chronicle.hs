@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、@"regards by "++who@、
--- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"moods of "++who@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
+-- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"moods of "++who@、@"mooded of "++mood@、@"leads of "++faction@、@"leaders of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
 -- @"arc of "++who@、@"arcs of "++who@、@"age of "++who@、@"ages of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、@"revokers of "++who@、@"revokees of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"ostracizers of "++who@、@"ostracizees of "++who@、@"exiled of "++who@、
@@ -281,6 +281,21 @@ askChronicle st q
             [ s | s <- dbToSentences (readView st)
                 , ("mood." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has no mood marks"]
+         else rows
+  | Just mood <- stripPrefix "mooded of " q =
+      -- 对齐 Host moodedOf：读闭合视图。
+      let pref = "mood."
+          rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , pref `isPrefixOf` s
+            , let rest = drop (length pref) s
+            , let (who, lab) = splitLastDot rest
+            , lab == mood
+            , not (null who)
+            , '.' `notElem` who
+            ]
+      in if null rows then ["nobody is mooded " ++ mood]
          else rows
   | Just who <- stripPrefix "mood of " q =
       -- 对齐 Host moodOf：读闭合视图。

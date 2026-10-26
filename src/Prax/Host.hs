@@ -21,6 +21,7 @@
 -- v547：'believersOf' 信念内容侧叶（*.believes.<prop>…）。
 -- v550：'notorietiesOf' 恶名标签侧叶（notorious.*.<label>）。
 -- v553：'traitedOf' 性格标签侧叶（trait.*.<trait>）。
+-- v556：'moodedOf' 心境标签侧叶（mood.*.<mood>）。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -97,6 +98,7 @@ module Prax.Host
   , traitsOf
   , traitedOf
   , moodsOf
+  , moodedOf
   , bondsOf
   , bondersOf
   , kinOf
@@ -570,6 +572,25 @@ traitedOf st trait = sort
 moodsOf :: PraxState -> String -> [String]
 moodsOf st who =
   sort [ s | s <- queryView st, ("mood." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中心境标签为 @mood@ 的叶（@mood.<who>.<mood>@）。
+moodedOf :: PraxState -> String -> [String]
+moodedOf st mood = sort
+  [ s
+  | s <- queryView st
+  , let pref = "mood."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == mood
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
 
 -- | 闭合视图中与 @who@ 相关的公开纽带叶（@bond.<who>.*@ 一侧）。
 bondsOf :: PraxState -> String -> [String]

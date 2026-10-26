@@ -3058,3 +3058,13 @@
 - **做了什么**：SandboxSpec 追加 churchParade once×rally；brand×denounce；confess×flee/return；brand×buy 仍开；parade×exile 权重拣；return×cry；flee×squeeze；gale 无 mill cry；kyle bobHeresy 不 banish；dual tear 双轨恢复；squeeze 中途×cry；无 churchParadeDesire 不拣 parade。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（405 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v556 — Host moodedOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`moodedOf` 枚举 `mood.*.<mood>`；CLI `prax mooded <mood> <world>`。
+
+## v557 — Chronicle mooded of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`mooded of` 返回心境标签侧叶；Spec 钉 Host 与 Chronicle 空集。

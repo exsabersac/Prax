@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, agesOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, agesOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -236,6 +236,13 @@ runMoods (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (moodsOf st who)
 runMoods _ = putStrLn "usage: prax moods <who> <world>"
+
+-- | List mood leaves for mood name: @prax mooded <mood> <world>@.
+runMooded :: [String] -> IO ()
+runMooded (mood : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (moodedOf st mood)
+runMooded _ = putStrLn "usage: prax mooded <mood> <world>"
 
 -- | List bond leaves: @prax bonds <who> <world>@.
 
@@ -932,6 +939,7 @@ usageText = unlines
   , "  prax traits <who> <world>              list trait leaves for who"
   , "  prax traited <trait> <world>     list trait.*.<trait> leaves"
   , "  prax moods <who> <world>               list mood leaves for who"
+  , "  prax mooded <mood> <world>      list mood.*.<mood> leaves"
   , "  prax bonds <who> <world>               list bond leaves for who"
   , "  prax bonders <who> <world>            list bond.*.<who>.* leaves"
   , "  prax kin <who> <world>                 list kin leaves involving who"
@@ -1045,6 +1053,7 @@ main = do
     ("traits" : ws)   -> runTraits ws
     ("traited" : ws) -> runTraited ws
     ("moods" : ws)    -> runMoods ws
+    ("mooded" : ws) -> runMooded ws
     ("bonds" : ws)    -> runBonds ws
     ("bonders" : ws)   -> runBonders ws
     ("kin" : ws)      -> runKin ws
