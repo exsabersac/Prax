@@ -2603,3 +2603,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：CLI `prax view`/`facts`/`available`/`living` 薄封 `queryViewMatching`/`queryMatching`/`availableMatching`/`livingMatching`；help 同步。无实践 / 无 want 改动。
 - **测**：HostSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v466 — Sandbox 无游街 want 时不自选游街（钉既有门禁）
+
+- **做了什么**：Spec 钉 brand + activateParade 后 dave 仅挂 millCry（无 `parades-branded-thief`）时 `pickAction` 不选 parade。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wants: without paradeDesire dave does not pick parade after brand。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v467 — Sandbox 放逐权重压过游街 want（钉既有门禁）
+
+- **做了什么**：Spec 钉 denounce 后窗外 dave 同挂 `wants-exile-bob`(12) 与 `parades-branded-thief`(10) 时优先 exile。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wants: exile weight beats parade when both open。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
