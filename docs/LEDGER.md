@@ -1899,3 +1899,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"bonds of "` / `"esteemed of "` / `"scorned of "`（对齐 Host `bondsOf`/`esteemedOf`/`scornedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v345 — Sandbox 游街×放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 brand→activateParade 后 harvest denounce→exile 与 parade 互不阻挡（先 parade 仍可 exile）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec parade × exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v346 — Chronicle beliefs of / projects of
+
+- **做了什么**：`askChronicle` 增加 `"beliefs of "` / `"projects of "`（对齐 Host `beliefsOf`/`projectsOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+

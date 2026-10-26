@@ -146,7 +146,8 @@ formatEvent ev rs =
 -- @"extorted of "++who@、@"complied of "++who@、@"defied of "++who@、
 -- @"obligations of "++who@、@"breaches of "++who@、
 -- @"lies of "++who@、@"chatted with "++who@、@"traits of "++who@、
--- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@。
+-- @"bonds of "++who@、@"esteemed of "++who@、@"scorned of "++who@、
+-- @"beliefs of "++who@、@"projects of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -568,6 +569,22 @@ askChronicle st q
             [ s | s <- dbToSentences (db st)
                 , ("scorned." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " has scorned no one"]
+         else rows
+  | Just who <- stripPrefix "beliefs of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , (who ++ ".believes.") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no beliefs on record"]
+         else rows
+  | Just who <- stripPrefix "projects of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , "practice." `isPrefixOf` s
+                , let rest = drop (length ("practice." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no project marks"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

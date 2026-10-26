@@ -1736,4 +1736,27 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stCry = doAct "dave" "cry the theft" stM
       assertBool "cried" (exists "cried.dave.bob" (db stCry))
       assertBool "debt still" (exists "debt.priest.bob.church-favor" (db stCry))
+
+  , testCase "parade × exile: brand parade and denounce/exile stay independent" $ do
+      -- brand → activateParade; harvest denounce/exile shares no gate with parade.
+      let st0 = coerceSeed
+          stSq = doAct "dave" "squeeze bob" st0
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stH = iterate roundBoundary stP !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "parade at harvest" (hasAct "dave" "parade bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "parade after denounce" (hasAct "dave" "parade bob" stAfter)
+      let stPar = doAct "dave" "parade bob" stAfter
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+      assertBool "exile still" (hasAct "dave" "exile" stPar)
+      let stEx = doAct "dave" "exile" stPar
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
   ]
