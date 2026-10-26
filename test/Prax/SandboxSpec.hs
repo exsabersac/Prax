@@ -1,6 +1,6 @@
 -- | Prax.Worlds.Sandbox 可测闭环：磨坊审判、教会异端、婚入获站队、
 -- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解、沉默×叛逃×节庆复合门禁、
--- 臭名+愤怒市集声援，以及轻量 wants 驱动的自选节拍。
+-- 臭名+愤怒市集声援、站队胁迫招供（Coerce），以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
 
@@ -17,7 +17,8 @@ import           Prax.Host (practiceNames, castNames, festivalsOf, membersOf, le
 import           Prax.Planner (pickAction)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Worlds.Sandbox
-  ( sandboxWorld, playerName, sandboxDesires, millJustice, millCry )
+  ( sandboxWorld, playerName, sandboxDesires, millJustice, millCry
+  , squeezeDesireName, fearsBrandName, activateSqueeze )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -328,6 +329,46 @@ sandboxReputeGolden =
   , "ira: ira: cry the theft at market"
   ]
 
+
+-- Coerce × factionStanding: practice inactive by default; activate + dave holds
+-- punishes-squeeze, bob fears brand. dave already learned (regard up).
+coerceSeed :: PraxState
+coerceSeed =
+  let st0 = activateSqueeze (doAct "dave" "learn" sandboxWorld)
+      dave' = (actorOf "dave" st0) { charDesires = [squeezeDesireName] }
+      bob'  = (actorOf "bob" st0)  { charDesires = [fearsBrandName] }
+  in st0 { characters =
+              [ if charName c == "dave" then dave'
+                else if charName c == "bob" then bob'
+                else c
+              | c <- characters st0 ] }
+
+-- Captured live (v276): squeeze → confess → re-squeeze → brand (complied blocks re-pay).
+sandboxCoerceGolden :: [String]
+sandboxCoerceGolden =
+  [ "bob: bob: Wait a moment"
+  , "carol: carol: learn of the theft"
+  , "dave: dave: squeeze bob for a confession"
+  , "fran: fran: wed into the mill beside carol"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: hear the blasphemy"
+  , "priest: priest: hear the blasphemy"
+  , "ira: ira: learn of the theft"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: confess the theft to dave"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: squeeze bob for a confession"
+  , "fran: fran: learn of the theft"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: brand bob as unrepentant"
+  ]
+
 tests :: TestTree
 tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs)"
   [ testCase "well-formed: typeCheck empty" $
@@ -342,7 +383,15 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "marketCry" ("marketCry" `elem` practiceNames sandboxWorld)
       assertBool "millAllegiance" ("millAllegiance" `elem` practiceNames sandboxWorld)
       assertBool "millRally" ("millRally" `elem` practiceNames sandboxWorld)
+      assertBool "millSqueeze defined"
+        ("millSqueeze" `elem` practiceNames sandboxWorld)
+      assertBool "millSqueeze inactive by default"
+        (not (exists "practice.millSqueeze" (db sandboxWorld)))
       assertBool "presence" ("presence" `elem` practiceNames sandboxWorld)
+      assertBool "squeeze desire registered"
+        (any ((== squeezeDesireName) . desireName) sandboxDesires)
+      assertBool "fears-brand registered"
+        (any ((== fearsBrandName) . desireName) sandboxDesires)
       assertBool "you mill" (playerName `elem` membersOf sandboxWorld "mill")
       assertBool "ira mill" ("ira" `elem` membersOf sandboxWorld "mill")
       assertBool "kyle guild" ("kyle" `elem` membersOf sandboxWorld "guild")
@@ -714,4 +763,51 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
   , testCase "wants repute golden: 44 NPC turns notoriety → market rally" $
       driveLabels (length sandboxReputeGolden) reputeSeed
         @?= sandboxReputeGolden
+
+  , testCase "coerce × factionStanding: squeeze → confess; re-squeeze → brand" $ do
+      let st0 = coerceSeed
+      assertBool "squeeze active" ("millSqueeze" `elem` practiceNames st0)
+      assertBool "dave regards" (exists "regards.dave.bob.thief" (readView st0))
+      assertBool "dave can squeeze" (hasAct "dave" "squeeze bob" st0)
+      assertBool "inactive world: no squeeze"
+        (not (hasAct "dave" "squeeze bob" sandboxWorld))
+      let stSq = doAct "dave" "squeeze bob" st0
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+      assertBool "extorted mark"
+        (exists "dave.extorted.bob.squeeze" (db stSq))
+      assertBool "bob can confess" (hasAct "bob" "confess the theft" stSq)
+      assertBool "bob can defy" (hasAct "bob" "defy" stSq)
+      let stConf = doAct "bob" "confess the theft" stSq
+      assertBool "confessed" (exists "confessed.bob" (db stConf))
+      assertBool "threat cleared"
+        (not (exists "threatened.squeeze.dave.bob" (db stConf)))
+      assertBool "complied"
+        (exists "complied.squeeze.dave.bob" (db stConf))
+      -- Permanent complied: dave can re-threaten; bob cannot re-pay.
+      assertBool "dave re-squeeze yes" (hasAct "dave" "squeeze bob" stConf)
+      let stSq2 = doAct "dave" "squeeze bob" stConf
+      assertBool "threat back"
+        (exists "threatened.squeeze.dave.bob" (db stSq2))
+      assertBool "bob cannot re-confess"
+        (not (hasAct "bob" "confess the theft" stSq2))
+      assertBool "dave can brand" (hasAct "dave" "brand bob" stSq2)
+      let stBrand = doAct "dave" "brand bob" stSq2
+      assertBool "branded" (exists "branded.bob" (db stBrand))
+      assertBool "brand once" (not (hasAct "dave" "brand bob" stBrand))
+
+  , testCase "wants: coerceSeed dave squeezes; bob confesses after threat" $ do
+      pickLabel "dave" coerceSeed @?= Just "dave: squeeze bob for a confession"
+      let stSq = doAct "dave" "squeeze bob" coerceSeed
+      pickLabel "bob" stSq @?= Just "bob: confess the theft to dave"
+      let stConf = doAct "bob" "confess" stSq
+      pickLabel "dave" stConf @?= Just "dave: squeeze bob for a confession"
+      let stSq2 = doAct "dave" "squeeze bob" stConf
+      -- bob already complied permanently; waiting out the standing threat.
+      pickLabel "bob" stSq2 @?= Just "bob: Wait a moment"
+      pickLabel "dave" stSq2 @?= Just "dave: brand bob as unrepentant"
+
+  , testCase "wants coerce golden: 21 NPC turns squeeze → confess → brand" $
+      driveLabels (length sandboxCoerceGolden) coerceSeed
+        @?= sandboxCoerceGolden
   ]

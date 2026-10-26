@@ -1,6 +1,7 @@
 -- | 轻量可玩沙盒世界：节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
 -- 婚入磨坊 / 债务买沉默 / 双节庆错峰市集喊冤 / 受害方叛逃和解 /
--- 沉默×叛逃×节庆复合门禁 / 臭名+愤怒市集声援（非 Village）。
+-- 沉默×叛逃×节庆复合门禁 / 臭名+愤怒市集声援 /
+-- 站队胁迫招供（Coerce×factionStanding，默认未激活）（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -12,6 +13,9 @@ module Prax.Worlds.Sandbox
   , churchJustice
   , iraJustice
   , millCry
+  , squeezeDesireName
+  , fearsBrandName
+  , activateSqueeze
   ) where
 
 import           Prax.Query (Condition (..))
@@ -27,6 +31,7 @@ import           Prax.Schedule (festival, duringFestival, outsideFestival)
 import           Prax.Debt (owe, settle, lacksOwes, owes)
 import           Prax.Repute (notoriety, isNotorious)
 import           Prax.Emotion (feelToward, angry, feelingToward)
+import           Prax.Coerce (Coercion (..), coerce)
 
 -- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧与沉默债。玩家槽无 want。
 playerName :: String
@@ -69,6 +74,8 @@ sandboxDesires =
       (Want [ Match "reconciled.Owner" ] 11)
   , Desire "rallies-against-thief"
       (Want [ Match "rallied.Owner.bob" ] 9)
+  , squeezeDesire
+  , fearsBrandDesire
   ]
 
 millJustice :: [String]
@@ -250,6 +257,55 @@ millAllegianceP = practice
       ]
   }
 
+
+-- | 站队胁迫招供：已 factionStanding 站队的磨坊成员可胁迫贼招供；违抗则烙印。
+-- 默认不 Insert practice.millSqueeze（免搅既有金轨迹）；coerceSeed / activateSqueeze 激活。
+millSqueezeCoercion :: Coercion
+millSqueezeCoercion = Coercion
+  { coId            = "squeeze"
+  , coVictim        = "Mark"
+  , coTrigger       =
+      [ Match "regards.Actor.Mark.thief"
+      , isMember "Actor" "mill"
+      ]
+  , coThreatenLabel = "[Actor]: squeeze [Mark] for a confession"
+  , coDemandLabel   = "[Actor]: confess the theft to [E]"
+  , coDemand        = [ Insert "confessed.Actor" ]
+  , coPunishLabel   = "[Actor]: brand [Mark] as unrepentant"
+  , coPunishWhen    = [ Not "branded.Mark" ]
+  , coPunishOuts    = [ Insert "branded.Mark" ]
+  , coKernel        = [ Match "branded.Mark" ]
+  , coWeight        = 10
+  , coThreatLasts     = Nothing
+  , coComplianceLasts = Nothing
+  }
+
+squeezeDesire :: Desire
+squeezeActs :: [Action]
+(squeezeDesire, squeezeActs) = coerce millSqueezeCoercion
+
+squeezeDesireName :: String
+squeezeDesireName = desireName squeezeDesire
+
+fearsBrandName :: String
+fearsBrandName = "fears-brand"
+
+fearsBrandDesire :: Desire
+fearsBrandDesire =
+  Desire fearsBrandName (Want [ Match "branded.Owner" ] (-12))
+
+millSqueezeP :: Practice
+millSqueezeP = practice
+  { practiceId   = "millSqueeze"
+  , practiceName = "squeezing a regarded thief for confession"
+  , roles        = []
+  , actions      = squeezeActs
+  }
+
+-- | 激活站队胁迫实践（供 coerceSeed / 逐步测）：Insert practice + 不改角色 want。
+activateSqueeze :: PraxState -> PraxState
+activateSqueeze = performOutcome (Insert "practice.millSqueeze")
+
 -- Cast: village-shaped names for narrative parity with Spec fixtures;
 -- not the shipped Village world. Player has no wants; NPCs hold vocabulary desires.
 -- ira is the mill witness bob tries to buy silence from (parallel to carol/dave justice).
@@ -314,5 +370,5 @@ sandboxWorld =
         (setCharacters cast
           (definePractices
              [ presenceP, millTribunalP, churchHeresyP, millWedP, millSilenceP
-             , marketCryP, millAllegianceP, millRallyP ]
+             , marketCryP, millAllegianceP, millRallyP, millSqueezeP ]
              (setSchedule [harvestFestival, marketFestival] emptyState)))
