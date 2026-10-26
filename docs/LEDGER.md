@@ -1781,3 +1781,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec squeeze × rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v325 — Coerce isResents / isShortTempered / isAppetite 条件对偶
+
+- **做了什么**：`isResents`/`lacksResents`、`isShortTempered`/`lacksShortTempered`、`isAppetite`/`lacksAppetite` 钉 Feud/Village 叶 Match/Not 对偶。无实践改动；未动金标准。
+- **测**：CoerceSpec（针对性；未跑全量）。
+
+## v326 — Sandbox 婚入×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 已信但公会无站队；婚入磨坊后 regard 派生，market cry 打开（相对 harvest denounce 独立）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

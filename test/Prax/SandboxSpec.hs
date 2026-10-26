@@ -1578,4 +1578,19 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
       assertBool "squeeze after rally" (hasAct "dave" "squeeze bob" stRally)
+
+  , testCase "wed × cry: fran wedding unlocks mill regard then market cry" $ do
+      -- fran already believes (guild) → no regard; wed into mill → regard;
+      -- market cry opens (independent of harvest denounce once-gate).
+      let stBel = performOutcome (Insert "fran.believes.stole.bob.carol") sandboxWorld
+      assertBool "before: no regard"
+        (not (exists "regards.fran.bob.thief" (readView stBel)))
+      assertBool "before: no cry" (not (hasAct "fran" "cry the theft" stBel))
+      let stWed = doAct "fran" "wed into the mill" stBel
+      assertBool "after: regard" (exists "regards.fran.bob.thief" (readView stWed))
+      let stM = iterate roundBoundary stWed !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "fran cry yes" (hasAct "fran" "cry the theft" stM)
+      let stCry = doAct "fran" "cry the theft" stM
+      assertBool "cried" (exists "cried.fran.bob" (db stCry))
   ]

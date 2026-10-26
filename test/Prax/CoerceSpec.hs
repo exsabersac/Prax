@@ -44,7 +44,10 @@ import           Prax.Coerce (Coercion (..), coerce,
                              isEyed, lacksEyed,
                              isConfronted, lacksConfronted,
                              isWronged, lacksWronged,
-                             isAllied, lacksAllied)
+                             isAllied, lacksAllied,
+                             isResents, lacksResents,
+                             isShortTempered, lacksShortTempered,
+                             isAppetite, lacksAppetite)
 
 -- A protection racket, the SECOND instance of the leverage skeleton (blackmail
 -- is the first): mob threatens to burn a barn-owner's barn unless they do a
@@ -607,6 +610,15 @@ tests = testGroup "Prax.Coerce"
     , testCase "isAllied / lacksAllied duals" $ do
         isAllied "dave" "carol" @?= Match "allied.dave.carol"
         lacksAllied "dave" "carol" @?= Not "allied.dave.carol"
+    , testCase "isResents / lacksResents duals" $ do
+        isResents "carol" "bob" @?= Match "resents.carol.bob"
+        lacksResents "carol" "bob" @?= Not "resents.carol.bob"
+    , testCase "isShortTempered / lacksShortTempered duals" $ do
+        isShortTempered "ana" @?= Match "shortTempered.ana"
+        lacksShortTempered "ana" @?= Not "shortTempered.ana"
+    , testCase "isAppetite / lacksAppetite duals" $ do
+        isAppetite "ana" @?= Match "appetite.ana"
+        lacksAppetite "ana" @?= Not "appetite.ana"
     , testCase "hasComplied / lacksComplied duals" $ do
         hasComplied "racket" "mob" "vic" @?= Match "complied.racket.mob.vic"
         lacksComplied "racket" "mob" "vic" @?= Not "complied.racket.mob.vic"

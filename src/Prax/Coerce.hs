@@ -63,6 +63,9 @@ module Prax.Coerce
   , isConfronted, lacksConfronted
   , isWronged, lacksWronged
   , isAllied, lacksAllied
+  , isResents, lacksResents
+  , isShortTempered, lacksShortTempered
+  , isAppetite, lacksAppetite
   ) where
 
 import           Data.List (nub)
@@ -605,4 +608,37 @@ lacksAllied :: String -> String -> Condition
 lacksAllied a b =
   Not ("allied." ++ guardSeg "lacksAllied" a
        ++ "." ++ guardSeg "lacksAllied" b)
+
+
+-- | 条件：@who@ 怨恨 @target@（@resents.<who>.<target>@；Feud）。
+isResents :: String -> String -> Condition
+isResents who target =
+  Match ("resents." ++ guardSeg "isResents" who
+         ++ "." ++ guardSeg "isResents" target)
+
+-- | 条件：无该怨恨叶。
+lacksResents :: String -> String -> Condition
+lacksResents who target =
+  Not ("resents." ++ guardSeg "lacksResents" who
+       ++ "." ++ guardSeg "lacksResents" target)
+
+-- | 条件：@who@ 暴脾气（@shortTempered.<who>@；Village）。
+isShortTempered :: String -> Condition
+isShortTempered who =
+  Match ("shortTempered." ++ guardSeg "isShortTempered" who)
+
+-- | 条件：无暴脾气叶。
+lacksShortTempered :: String -> Condition
+lacksShortTempered who =
+  Not ("shortTempered." ++ guardSeg "lacksShortTempered" who)
+
+-- | 条件：@who@ 有胃口（@appetite.<who>@；Village）。
+isAppetite :: String -> Condition
+isAppetite who =
+  Match ("appetite." ++ guardSeg "isAppetite" who)
+
+-- | 条件：无胃口叶。
+lacksAppetite :: String -> Condition
+lacksAppetite who =
+  Not ("appetite." ++ guardSeg "lacksAppetite" who)
 
