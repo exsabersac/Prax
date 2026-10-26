@@ -3209,3 +3209,9 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`regards as` 返回站队标签侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v584 — Sandbox tear×justice + dual parade×denounce + exile×buy Spec
+
+- **做了什么**：SandboxSpec 追加 mill/church tear×正义恢复；kyle fearsBrand 负例；dual brand×parade×denounce；cry once×squeeze；无 exileBob 不 exile；wed×buy；repay×parade；seeks* util；exile×buy 仍开 denounce 关；cast bob/eve/kyle；brand×parade×cry。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（527 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
