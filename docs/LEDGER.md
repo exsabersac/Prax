@@ -3013,3 +3013,13 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`festivals`/`stall` 与既有 `what festivals`/`what is on the stall` 同义，对齐 Host `festivalsOf`/`stallOf`；Spec 钉别名。
+
+## v547 — Host believersOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`
+- **内容**：`believersOf` 枚举 `*.believes.<prop>…`；CLI `prax believers <prop> <world>`。
+
+## v548 — Chronicle believers of + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`believers of` 返回信念内容侧叶；Spec 钉 Host 与 Chronicle 空集。

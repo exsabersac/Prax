@@ -17,7 +17,7 @@ module Prax.Chronicle
   , askChronicle
   ) where
 
-import           Data.List (foldl', intercalate, isPrefixOf, isSuffixOf, nub, sort)
+import           Data.List (foldl', intercalate, isInfixOf, isPrefixOf, isSuffixOf, nub, sort)
 import           Data.Maybe (mapMaybe)
 import qualified Data.Map.Strict as Map
 
@@ -1317,6 +1317,13 @@ askChronicle st q
             [ s | s <- dbToSentences (readView st)
                 , (who ++ ".believes.") `isPrefixOf` s ]
       in if null rows then [who ++ " has no beliefs on record"]
+         else rows
+  | Just prop <- stripPrefix "believers of " q =
+      -- 对齐 Host believersOf：读闭合视图。
+      let marker = ".believes." ++ prop
+          rows = sort
+            [ s | s <- dbToSentences (readView st), marker `isInfixOf` s ]
+      in if null rows then ["no one believes " ++ prop]
          else rows
   | Just who <- stripPrefix "projects of " q =
       -- 对齐 Host *Of：读闭合视图。

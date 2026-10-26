@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, liarsOf, chattedWithOf, chattersOf, traitsOf, moodsOf, bondsOf, bondersOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, believersOf, arcsOf, agesOf, projectsOf, practitionersOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -289,6 +289,13 @@ runBeliefs (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (beliefsOf st who)
 runBeliefs _ = putStrLn "usage: prax beliefs <who> <world>"
+
+-- | List belief leaves matching prop: @prax believers <prop> <world>@.
+runBelievers :: [String] -> IO ()
+runBelievers (prop : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (believersOf st prop)
+runBelievers _ = putStrLn "usage: prax believers <prop> <world>"
 
 runArcs :: [String] -> IO ()
 runArcs (who : ws) =
@@ -919,6 +926,7 @@ usageText = unlines
   , "  prax scorned <who> <world>             list scorned leaves for who"
   , "  prax scorners <who> <world>           list scorned.*.<who>.* leaves"
   , "  prax beliefs <who> <world>             list belief leaves for who"
+  , "  prax believers <prop> <world>   list *.believes.<prop>… leaves"
   , "  prax arcs <who> <world>                list arc stage leaves for who"
   , "  prax ages <who> <world>                list age leaves for who"
   , "  prax projects <who> <world>            list practice instance leaves for who"
@@ -1029,6 +1037,7 @@ main = do
     ("scorned" : ws)  -> runScorned ws
     ("scorners" : ws)  -> runScorners ws
     ("beliefs" : ws)  -> runBeliefs ws
+    ("believers" : ws) -> runBelievers ws
     ("arcs" : ws)     -> runArcs ws
     ("ages" : ws)     -> runAges ws
     ("projects" : ws) -> runProjects ws

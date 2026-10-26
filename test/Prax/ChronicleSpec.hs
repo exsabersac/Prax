@@ -15,7 +15,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              brandedOf, exiledOf, denouncedOf,
                              moodsOf, arcsOf, liesOf, traitsOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
-                             beliefsOf, projectsOf, practitionersOf, bondsOf,
+                             beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
                              revokedOf, confessedOf, censuredOf,
                              paradedOf, criedOf, ralliedOf,
@@ -1055,5 +1055,21 @@ tests = testGroup "Prax.Chronicle"
         ["practice.hunt.ben.did.track"]
       askChronicle st "practitioners of void" @?=
         ["no one is in practice void"]
+
+  , testCase "believersOf / believers of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.believes.at.ben.yard"
+            , Insert "ben.believes.flag.x"
+            , Insert "cass.believes.flag.x"
+            ]
+      believersOf st "flag.x" @?= ["ben.believes.flag.x", "cass.believes.flag.x"]
+      believersOf st "at.ben.yard" @?= ["ana.believes.at.ben.yard"]
+      believersOf st "void" @?= []
+      askChronicle st "believers of flag.x" @?=
+        ["ben.believes.flag.x", "cass.believes.flag.x"]
+      askChronicle st "believers of at.ben.yard" @?=
+        ["ana.believes.at.ben.yard"]
+      askChronicle st "believers of void" @?=
+        ["no one believes void"]
 
   ]

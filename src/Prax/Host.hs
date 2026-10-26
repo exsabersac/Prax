@@ -18,6 +18,7 @@
 -- v515：'occupantsOf' 位置目标侧叶（at.*.<place>）。
 -- v534：'affiliatorsOf' 派系次级归属人侧（affiliate.*.<faction>）。
 -- v544：'practitionersOf' 实践 id 侧叶（practice.<pid>.*）。
+-- v547：'believersOf' 信念内容侧叶（*.believes.<prop>…）。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -109,6 +110,7 @@ module Prax.Host
   , scornedOf
   , scornersOf
   , beliefsOf
+  , believersOf
   , arcsOf
   , agesOf
   , projectsOf
@@ -709,6 +711,12 @@ scornersOf st who = sort
 beliefsOf :: PraxState -> String -> [String]
 beliefsOf st who =
   sort [ s | s <- queryView st, (who ++ ".believes.") `isPrefixOf` s ]
+
+-- | 闭合视图中信念内容含 @prop@ 的叶（@*.believes.<prop>…@）。
+believersOf :: PraxState -> String -> [String]
+believersOf st prop =
+  let marker = ".believes." ++ prop
+  in sort [ s | s <- queryView st, marker `isInfixOf` s ]
 
 -- | 闭合视图中 @who@ 的弧阶段叶（@<who>.arc.*@；排他 @!@ 展成 @.@）。
 arcsOf :: PraxState -> String -> [String]

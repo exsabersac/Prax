@@ -271,7 +271,7 @@ tests = testGroup "Prax.Host"
       notoriousOf st "ben" @?= ["notorious.ben.liar"]
       notoriousOf st "void" @?= []
 
-  , testCase "esteemedOf / scornedOf / beliefsOf from the view" $ do
+  , testCase "esteemedOf / scornedOf / beliefsOf / believersOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "esteemed.ana.ben.hero"
                 , Insert "esteemed.ana.cass.sage"
@@ -289,6 +289,9 @@ tests = testGroup "Prax.Host"
         ["ana.believes.at.ben.yard", "ana.believes.stole.loaf.seen"]
       beliefsOf st "ben" @?= ["ben.believes.flag.x"]
       beliefsOf st "void" @?= []
+      believersOf st "flag.x" @?= ["ben.believes.flag.x"]
+      sort (believersOf st "at.ben") @?= ["ana.believes.at.ben.yard"]
+      believersOf st "void" @?= []
 
   , testCase "arcsOf / agesOf / projectsOf / practitionersOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
