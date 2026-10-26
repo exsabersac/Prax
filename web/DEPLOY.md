@@ -49,6 +49,27 @@ docker build -f web/Dockerfile -t prax-my-town .
 docker run --rm -p 8080:8080 prax-my-town
 ```
 
+## 可分享（M5e）
+
+外人只按本文档起**近端桥**即可进主路径；验收用固定可复制 URL，**不硬卡公网/域名**。  
+Session / SaveMeta **不动**；不新增 share API。
+
+**固定可复制开局地址（复制这段）：**
+
+```
+http://127.0.0.1:8080/
+```
+
+形如 `http://127.0.0.1:${PORT:-8080}/`（默认 **8080**，与 `docker-compose` 的 `${PORT:-8080}:8080`、容器内 `PORT=8080`、`serve.py` 一致）。改主机侧 `PORT` 时，改 URL 端口即可。
+
+1. **前置**：Docker（推荐），或本机 `stack` + `python3`
+2. **一键起桥**：`cd web && docker compose up --build`
+3. **复制打开**：浏览器粘贴 `http://127.0.0.1:8080/`（非 `file://`）
+4. **探活**：`curl -s http://127.0.0.1:8080/health` → **200**（只探桥存活；**勿用** `new` / `praxNew`）
+5. **可玩**：真浏览器冷开 ≤30s 出 Menu（对齐已签 M5a/b）
+6. **停**：在 `web/` 下 `docker compose down`
+7. **可选公网**（非门禁）：自备隧道/反代映射到同一主机端口，路径仍为 `/`
+
 ## 边界（勿破）
 
 - 不扩 Session schema / View；菜单仍只传 opaque `actionId`
