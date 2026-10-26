@@ -159,7 +159,9 @@ myTownWorld =
                 -- M6p：持 heard.carol（gale→dana）后赴 mill + eyed.bob.gale（对称 M6l）
               , Want [ Match "bob.believes.helped.gale.dana.heard.carol"
                      , Match "practice.world.world.at.bob!mill" ] 3
-              , Want [ Match "eyed.bob.gale" ] 5 ] }
+              , Want [ Match "eyed.bob.gale" ] 5
+                -- M6r：Village 式二源听闻 → carol（≥5，对称 M6n carol→bob）
+              , Want [ Match "carol.believes.helped.gale.dana.heard.bob" ] 5 ] }
       , (character "carol")
           { charWants =
               [ Want [ Match "practice.world.world.at.carol!square" ] 1
