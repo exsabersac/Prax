@@ -3077,3 +3077,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 >>>>>>> 2511069 (v540–v543: bondersOf/liarsOf + Chronicle duals + CLI)
+
+## v544 — Sandbox Desire Match 叶词汇 + seeksBob / churchParade 权重（钉既有门禁）
+
+- **做了什么**：Spec 钉 Want Match 叶原子；seeksBobHeresy 自选 hear of bob；无 punishesBobHeretic 不 censure；churchParade 压 bobHeresyJustice；churchParade once；joinsMill 选 wed。无新实践。
+- **测**：SandboxSpec wants: desire Match leaf / seeksBobHeresy / without punishesBobHeretic / churchParade weight / after churchParade once / joinsMill。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未开 feat/my-town。
+
+## v545 — Sandbox 买沉默 once + affiliate×exile + activate 幂等（钉既有门禁）
+
+- **做了什么**：Spec 钉买沉默后无 want 不重买（mill/church）；kyle 挂 exile 不可放逐；activateSqueeze 幂等。无新实践。
+- **测**：SandboxSpec wants: after silence/church buy … does not re-buy；affiliate kyle with exile；activateSqueeze idempotent。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。

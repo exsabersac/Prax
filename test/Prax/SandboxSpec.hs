@@ -13,6 +13,7 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
+import           Prax.Query (Condition(Match))
 import           Prax.Types
 import           Prax.Engine (possibleActions, performAction, performOutcome, roundBoundary)
 import           Prax.TypeCheck (typeCheck)
@@ -54,6 +55,13 @@ actorOf who st =
 pickLabel :: String -> PraxState -> Maybe String
 pickLabel who st = fmap gaLabel (pickAction 1 st (actorOf who st))
 
+
+
+desireMatch n =
+  case listToMaybe [ wantConditions (desireWant d)
+                   | d <- sandboxDesires, desireName d == n ] of
+    Just cs -> cs
+    Nothing -> error ("no desire " ++ n)
 
 desireUtil :: String -> Int
 desireUtil n =
@@ -3961,6 +3969,184 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (null (charDesires (actorOf playerName sandboxWorld)))
       assertBool "player empty wants"
         (null (charWants (actorOf playerName sandboxWorld)))
+
+
+
+  , testCase "wants: desire Match leaf vocabulary pins condition atoms" $ do
+      -- Symbolic nails for Want Match leaves (Owner templates).
+      assertBool "theft"
+        (Match "Owner.believes.stole.bob.carol" `elem` desireMatch seeksTheftDesireName)
+      assertBool "denounce"
+        (Match "denounced.Owner.bob" `elem` desireMatch punishesThiefDesireName)
+      assertBool "exile bob"
+        (Match "exiled.bob" `elem` desireMatch exileBobDesireName)
+      assertBool "heresy"
+        (Match "Owner.believes.blasphemed.eve.gale"
+          `elem` desireMatch seeksHeresyDesireName)
+      assertBool "censure eve"
+        (Match "censured.Owner.eve" `elem` desireMatch punishesHereticDesireName)
+      assertBool "exile eve"
+        (Match "exiled.eve" `elem` desireMatch exileEveDesireName)
+      assertBool "joins mill"
+        (Match "member.Owner!mill" `elem` desireMatch joinsMillDesireName)
+      assertBool "mill silence debt"
+        (Match "debt.ira.bob.favor" `elem` desireMatch millSilenceDesireName)
+      assertBool "mill revoke"
+        (Match "revoked.Owner.bob" `elem` desireMatch millBreakSilenceDesireName)
+      assertBool "cry"
+        (Match "cried.Owner.bob" `elem` desireMatch cryDesireName)
+      assertBool "flee"
+        (Match "fled.Owner" `elem` desireMatch fleeDesireName)
+      assertBool "return"
+        (Match "reconciled.Owner" `elem` desireMatch returnDesireName)
+      assertBool "rally"
+        (Match "rallied.Owner.bob" `elem` desireMatch rallyDesireName)
+      assertBool "bob heresy"
+        (Match "Owner.believes.blasphemed.bob.gale"
+          `elem` desireMatch seeksBobHeresyDesireName)
+      assertBool "censure bob"
+        (Match "censured.Owner.bob"
+          `elem` desireMatch punishesBobHereticDesireName)
+      assertBool "church silence"
+        (Match "debt.gale.Owner.church-favor"
+          `elem` desireMatch churchSilenceDesireName)
+      assertBool "church revoke"
+        (Match "revoked.Owner.eve"
+          `elem` desireMatch churchBreakSilenceDesireName)
+      assertBool "parade mill"
+        (Match "paraded.Owner.bob" `elem` desireMatch paradeDesireName)
+      assertBool "parade church"
+        (Match "paraded.Owner.bob" `elem` desireMatch churchParadeDesireName)
+
+  , testCase "wants: seeksBobHeresy weight picks hear of bob when open" $ do
+      let st0 = activateChurchBob sandboxWorld
+          priest' = (actorOf "priest" st0)
+                      { charDesires = [seeksBobHeresyDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters st0 ] }
+      assertBool "hear open" (hasAct "priest" "hear of bob" st)
+      pickLabel "priest" st @?= Just "priest: hear of bob's heresy"
+
+  , testCase "wants: without punishesBobHeretic priest does not censure bob" $ do
+      let st0 = dualPressureSeed
+          stHear = doAct "priest" "hear of bob" st0
+          priest' = (actorOf "priest" stHear)
+                      { charDesires =
+                          [ seeksBobHeresyDesireName, exileBobDesireName ] }
+          stBase = stHear { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters stHear ] }
+          stH = iterate roundBoundary stBase !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "censure open" (hasAct "priest" "censure" stH)
+      let lab = pickLabel "priest" stH
+      assertBool ("not censure, got " ++ show lab)
+        (maybe True (not . ("censure" `isInfixOf`)) lab)
+
+  , testCase "wants: churchParade weight beats bobHeresyJustice after brand" $ do
+      let st0 = activateChurchParade
+                  (activateInquisit (activateChurchBob sandboxWorld))
+          stHear = doAct "priest" "hear of bob" st0
+          bobF = (actorOf "bob" stHear)
+                   { charDesires = [fearsBrandHereticName] }
+          priest' = (actorOf "priest" stHear)
+                      { charDesires =
+                          [churchParadeDesireName] ++ bobHeresyJustice }
+          st = stHear { characters =
+                  [ if charName c == "priest" then priest'
+                    else if charName c == "bob" then bobF
+                    else c
+                  | c <- characters stHear ] }
+          stSq = doAct "priest" "squeeze bob" st
+          stRec = doAct "bob" "recant" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+      assertBool "parade open" (hasAct "priest" "parade bob" stBrand)
+      pickLabel "priest" stBrand
+        @?= Just "priest: parade bob as branded heretic"
+
+  , testCase "wants: after churchParade once-gate priest does not re-parade" $ do
+      let st0 = activateChurchParade
+                  (activateInquisit (activateChurchBob sandboxWorld))
+          stHear = doAct "priest" "hear of bob" st0
+          bobF = (actorOf "bob" stHear)
+                   { charDesires = [fearsBrandHereticName] }
+          priest' = (actorOf "priest" stHear)
+                      { charDesires =
+                          [inquisitDesireName, churchParadeDesireName] }
+          st = stHear { characters =
+                  [ if charName c == "priest" then priest'
+                    else if charName c == "bob" then bobF
+                    else c
+                  | c <- characters stHear ] }
+          stSq = doAct "priest" "squeeze bob" st
+          stRec = doAct "bob" "recant" stSq
+          stSq2 = doAct "priest" "squeeze bob" stRec
+          stBrand = doAct "priest" "brand bob" stSq2
+          stPar = doAct "priest" "parade bob" stBrand
+      assertBool "parade closed"
+        (not (hasAct "priest" "parade bob" stPar))
+      let lab = pickLabel "priest" stPar
+      assertBool ("not parade, got " ++ show lab)
+        (maybe True (not . ("parade" `isInfixOf`)) lab)
+
+  , testCase "wants: joinsMill weight picks wed for fran" $ do
+      let fran' = (actorOf "fran" sandboxWorld)
+                    { charDesires = [joinsMillDesireName] }
+          st = sandboxWorld { characters =
+                  [ if charName c == "fran" then fran' else c
+                  | c <- characters sandboxWorld ] }
+      assertBool "wed open" (hasAct "fran" "wed" st)
+      pickLabel "fran" st @?= Just "fran: wed into the mill beside carol"
+
+  , testCase "wants: affiliate kyle with exile wants never exiles" $ do
+      let st0 = doAct "dave" "learn" sandboxWorld
+          stH = iterate roundBoundary st0 !! 3
+          stDen = doAct "dave" "denounce" stH
+          stAfter = roundBoundary stDen
+          kyle' = (actorOf "kyle" stAfter)
+                    { charDesires = [exileBobDesireName, exileEveDesireName] }
+          st = stAfter { characters =
+                  [ if charName c == "kyle" then kyle' else c
+                  | c <- characters stAfter ] }
+      assertBool "kyle no exile" (not (hasAct "kyle" "exile" st))
+      let lab = pickLabel "kyle" st
+      assertBool ("not exile, got " ++ show lab)
+        (maybe True (not . ("exile" `isInfixOf`)) lab)
+
+  , testCase "wants: after silence buy bob without millSilence does not re-buy" $ do
+      -- Debt already planted; without buy want bob does not pick buy again.
+      let st0 = doAct "bob" "buy ira" (doAct "ira" "learn" sandboxWorld)
+          bob' = (actorOf "bob" st0) { charDesires = millJustice }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bob' else c
+                  | c <- characters st0 ] }
+      assertBool "buy closed after debt"
+        (not (hasAct "bob" "buy ira" st))
+      let lab = pickLabel "bob" st
+      assertBool ("not buy, got " ++ show lab)
+        (maybe True (not . ("buy" `isInfixOf`)) lab)
+
+  , testCase "wants: after church buy eve without churchSilence does not re-buy" $ do
+      let st0 = doAct "eve" "buy gale"
+                  (doAct "gale" "hear the blasphemy" sandboxWorld)
+          eve' = (actorOf "eve" st0) { charDesires = churchJustice }
+          st = st0 { characters =
+                  [ if charName c == "eve" then eve' else c
+                  | c <- characters st0 ] }
+      assertBool "buy closed" (not (hasAct "eve" "buy gale" st))
+      let lab = pickLabel "eve" st
+      assertBool ("not buy, got " ++ show lab)
+        (maybe True (not . ("buy" `isInfixOf`)) lab)
+
+  , testCase "wants: activateSqueeze is idempotent Insert of practice" $ do
+      let st1 = activateSqueeze sandboxWorld
+          st2 = activateSqueeze st1
+      assertBool "practice present"
+        (exists "practice.millSqueeze" (db st2))
+      assertBool "still present after second"
+        (exists "practice.millSqueeze" (db st1))
 
 
 
