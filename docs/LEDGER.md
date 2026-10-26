@@ -3103,3 +3103,8 @@
 - **做了什么**：BarSpec 钉 barWorld/barDirectorWorld 阵容与 practiceDefs；FeudSpec 钉五人阵容+society；IntrigueSpec 钉 presence/plot。无新实践 / 无 want 改动。
 - **测**：Bar / Feud / Intrigue 针对性。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+## v564 — Sandbox exile×silence buy + cry/rally×parade + without silence want Spec
+
+- **做了什么**：SandboxSpec 追加 mill exile×church buy；banish×mill buy；rally once×churchParade；cry once×mill parade；kyle inquisitDesire；dual brand 非窗双 parade；return×squeeze/buy；silence>exile>denounce util；parade once×次 harvest denounce；churchParade once×次 harvest censure；无 silence want 不买。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（429 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
