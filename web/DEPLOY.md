@@ -70,6 +70,21 @@ http://127.0.0.1:8080/
 6. **停**：在 `web/` 下 `docker compose down`
 7. **可选公网**（非门禁）：自备隧道/反代映射到同一主机端口，路径仍为 `/`
 
+## 外人可玩最短路径（M5f）
+
+在上文「可分享」起桥并打开固定 URL 之后，按下列点法走通主路径中的 **3b**（亲见帮忙 → bob 自转告 → dana 怀疑）。  
+Session / SaveMeta / compose / serve **零改**；只按菜单点，**不要**点「怀疑地打量」（怀疑者是 dana，由引擎在 narrative 里给出）。
+
+1. **起桥**：同「可分享」— `cd web && docker compose up --build`，探活 `curl -s http://127.0.0.1:8080/health` → 200
+2. **打开**：浏览器粘贴 `http://127.0.0.1:8080/`（非 `file://`）；冷开出 Menu 后点 **新开一局**（或已在局中则直接用菜单）
+3. **主路径 · 3b（最短可玩）**
+   1. 菜单点 **`you: 公开帮助 bob`**（对 bob 的公开帮助；亲见）
+   2. 点 **稍候（praxWait）** — 推进 NPC；bob 会自行前往 mill 并向 dana 转告
+   3. 菜单点 **`you: 前往 mill`**
+   4. 再点 **稍候（praxWait）** — 可感知 = 对话/叙事区出现 Act.narrative 行 **`dana: 怀疑地打量 you`**
+
+玩家只点：帮忙 / 前往 / 稍候。bob 转告与 dana 怀疑均由引擎推进，**勿**在菜单里找或点「怀疑」。
+
 ## 边界（勿破）
 
 - 不扩 Session schema / View；菜单仍只传 opaque `actionId`
