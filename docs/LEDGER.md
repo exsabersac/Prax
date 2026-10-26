@@ -3225,3 +3225,9 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`owed of` 返回债务内容标签侧叶；Spec 钉 Host 与 Chronicle 空集。
+
+## v587 — Sandbox silence×wed + dual repay re-tear + flee×denounce Spec
+
+- **做了什么**：SandboxSpec 追加 mill/church silence×fran wed；kyle exile 负例；dual repay 再买可撕；parade once×cry；无 churchBreak 不撕；flee×buy/denounce；return×denounce；exile/silence util；inquisit brand×cry；cast priest/gale/ira；dual silence×squeeze。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（539 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
