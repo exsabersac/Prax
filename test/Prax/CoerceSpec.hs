@@ -710,5 +710,27 @@ tests = testGroup "Prax.Coerce"
         assertBool "isWronged" (satisfies (db st) [isWronged "bob" "carol"] Map.empty)
         assertBool "lacksCried on empty"
           (satisfies (db emptyState) [lacksCried "dave" "bob"] Map.empty)
+    , testCase "isAllied / isResents / isAtoned / isReconciled evaluate on Insert world" $ do
+        let st = foldl (flip performOutcome) emptyState
+              [ Insert "allied.dave.carol"
+              , Insert "resents.carol.bob"
+              , Insert "atoned.bob"
+              , Insert "reconciled.carol"
+              ]
+        assertBool "isAllied" (satisfies (db st) [isAllied "dave" "carol"] Map.empty)
+        assertBool "isResents" (satisfies (db st) [isResents "carol" "bob"] Map.empty)
+        assertBool "isAtoned" (satisfies (db st) [isAtoned "bob"] Map.empty)
+        assertBool "isReconciled" (satisfies (db st) [isReconciled "carol"] Map.empty)
+        assertBool "lacksAllied on empty"
+          (satisfies (db emptyState) [lacksAllied "dave" "carol"] Map.empty)
+    , testCase "isAppetite / isShortTempered / lacks* evaluate on Insert world" $ do
+        let st = foldl (flip performOutcome) emptyState
+              [ Insert "appetite.ana"
+              , Insert "shortTempered.ana"
+              ]
+        assertBool "isAppetite" (satisfies (db st) [isAppetite "ana"] Map.empty)
+        assertBool "isShortTempered" (satisfies (db st) [isShortTempered "ana"] Map.empty)
+        assertBool "lacksAppetite on empty"
+          (satisfies (db emptyState) [lacksAppetite "ana"] Map.empty)
     ]
   ]

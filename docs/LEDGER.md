@@ -2208,3 +2208,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec、CoerceSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v397 — Coerce allied/resents/atoned/reconciled/appetite/shortTempered 世界求值
+
+- **做了什么**：Coerce Spec 钉 isAllied/isResents/isAtoned/isReconciled/isAppetite/isShortTempered 世界求值。无新实践 / 无 want 改动。
+- **测**：CoerceSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v398 — Chronicle 更多 Host 对偶 + Sandbox 叛逃×磨坊沉默
+
+- **做了什么**：Chronicle Spec 钉 revoked/confessed/censured/paraded/cried/rallied 与 Host 对偶；Sandbox Spec 钉 carol flee×ira 债交叉（return 只恢复磨坊）。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec、SandboxSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

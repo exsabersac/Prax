@@ -16,7 +16,9 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              moodsOf, arcsOf, liesOf, traitsOf,
                              chattedWithOf, esteemedOf, scornedOf,
                              beliefsOf, projectsOf, bondsOf,
-                             extortedOf, compliedOf, defiedOf)
+                             extortedOf, compliedOf, defiedOf,
+                             revokedOf, confessedOf, censuredOf,
+                             paradedOf, criedOf, ralliedOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -529,5 +531,26 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "extorted of vic" @?= extortedOf st "vic"
       askChronicle st "complied of vic" @?= compliedOf st "vic"
       askChronicle st "defied of vic" @?= defiedOf st "vic"
+
+
+  , testCase "askChronicle revoked/confessed/censured dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "revoked.ira.bob"
+            , Insert "confessed.bob"
+            , Insert "censured.priest.eve"
+            ]
+      askChronicle st "revoked of bob" @?= revokedOf st "bob"
+      askChronicle st "confessed of bob" @?= confessedOf st "bob"
+      askChronicle st "censured of eve" @?= censuredOf st "eve"
+
+  , testCase "askChronicle paraded/cried/rallied dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "paraded.dave.bob"
+            , Insert "cried.dave.bob"
+            , Insert "rallied.dave.bob"
+            ]
+      askChronicle st "paraded of bob" @?= paradedOf st "bob"
+      askChronicle st "cried of bob" @?= criedOf st "bob"
+      askChronicle st "rallied of bob" @?= ralliedOf st "bob"
 
   ]
