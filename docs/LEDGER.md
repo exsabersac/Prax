@@ -1887,3 +1887,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"lies of "` / `"chatted with "` / `"traits of "`（对齐 Host `liesOf`/`chattedWithOf`/`traitsOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v343 — Sandbox 教会沉默×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 bob 买牧师异端沉默债后 harvest censure 被堵住，dave market cry 仍开。无新实践 / 无 want 改动。
+- **测**：SandboxSpec church silence × cry（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v344 — Chronicle bonds of / esteemed of / scorned of
+
+- **做了什么**：`askChronicle` 增加 `"bonds of "` / `"esteemed of "` / `"scorned of "`（对齐 Host `bondsOf`/`esteemedOf`/`scornedOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+
