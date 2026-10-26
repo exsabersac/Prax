@@ -129,7 +129,7 @@ formatEvent ev rs =
 -- | 涌现问答入口：宿主用关键词查询编年摘要。
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
--- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
+-- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、@"creditors of "++who@、@"debtors of "++who@、@"creditors of "++who@、@"debtors of "++who@、
 -- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、@"grandparents of "++who@、@"grandchildren of "++who@、@"in-laws of "++who@、@"spouses of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
@@ -180,6 +180,35 @@ askChronicle st q
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no debts on record"]
          else rows
+  | Just who <- stripPrefix "creditors of " q =
+      -- 对齐 Host creditorsOf：读闭合视图；短语化债权人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "debt." `isPrefixOf` s
+                , let rest = drop (length ("debt." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , parts !! 1 == who ]
+      in if null rows then [who ++ " has no known creditors"]
+         else [ c ++ " creditor of " ++ who
+              | s <- rows
+              , let rest = drop (length ("debt." :: String)) s
+              , let c = head (splitDot rest) ]
+  | Just who <- stripPrefix "debtors of " q =
+      -- 对齐 Host debtorsOf：读闭合视图；短语化债务人。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "debt." `isPrefixOf` s
+                , let rest = drop (length ("debt." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , head parts == who ]
+      in if null rows then [who ++ " has no known debtors"]
+         else [ who ++ " creditor of " ++ d
+              | s <- rows
+              , let rest = drop (length ("debt." :: String)) s
+              , let parts = splitDot rest
+              , let d = parts !! 1 ]
   | Just faction <- stripPrefix "leads of " q =
       -- 对齐 Host leadersOf：读闭合视图；! 展成 .
       let prefix = "leads." ++ faction ++ "."

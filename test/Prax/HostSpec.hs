@@ -601,4 +601,16 @@ tests = testGroup "Prax.Host"
       spousesOf st "dave" @?= ["married.dave.eve"]
       spousesOf st "void" @?= []
 
+  , testCase "creditorsOf / debtorsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "debt.ira.bob.favor"
+                , Insert "debt.gale.bob.church-favor"
+                , Insert "debt.ira.dave.favor"
+                , Insert "flag.x" ]
+      creditorsOf st "bob" @?=
+        ["debt.gale.bob.church-favor", "debt.ira.bob.favor"]
+      creditorsOf st "void" @?= []
+      debtorsOf st "ira" @?= ["debt.ira.bob.favor", "debt.ira.dave.favor"]
+      debtorsOf st "void" @?= []
+
   ]

@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -147,6 +147,18 @@ runDebts (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (debtsOf st who)
 runDebts _ = putStrLn "usage: prax debts <who> <world>"
+
+runCreditors :: [String] -> IO ()
+runCreditors (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (creditorsOf st who)
+runCreditors _ = putStrLn "usage: prax creditors <who> <world>"
+
+runDebtors :: [String] -> IO ()
+runDebtors (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (debtorsOf st who)
+runDebtors _ = putStrLn "usage: prax debtors <who> <world>"
 
 -- | List obligation leaves for a character: @prax obligations <who> <world>@.
 runObligations :: [String] -> IO ()
@@ -655,6 +667,8 @@ main = do
     ("factions" : ws)  -> runFactions ws
     ("regards" : ws)   -> runRegards ws
     ("debts" : ws)     -> runDebts ws
+    ("creditors" : ws) -> runCreditors ws
+    ("debtors" : ws)   -> runDebtors ws
     ("obligations" : ws) -> runObligations ws
     ("breaches" : ws)  -> runBreaches ws
     ("feelings" : ws) -> runFeelings ws

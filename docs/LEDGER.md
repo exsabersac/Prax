@@ -2564,3 +2564,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v458 — Host creditorsOf/debtorsOf + CLI
+
+- **做了什么**：闭合视图枚举 `debt.*.<who>.*` / `debt.<who>.*.*`；CLI `prax creditors`/`debtors`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v459 — Chronicle creditors/debtors of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"creditors of "` / `"debtors of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
