@@ -4386,5 +4386,86 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
 
 
 
+  , testCase "cast: playerName is you" $ do
+      playerName @?= "you"
+      assertBool "in cast" (playerName `elem` castNames sandboxWorld)
+      assertBool "mill member"
+        (playerName `elem` membersOf sandboxWorld "mill")
+
+  , testCase "wants: after mill buy denounce closed until tear" $ do
+      let st0 = doAct "bob" "buy ira" (doAct "ira" "learn" sandboxWorld)
+          stH = iterate roundBoundary st0 !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "denounce closed while debt"
+        (not (hasAct "ira" "denounce" stH))
+      let stTear = doAct "ira" "tear up bob" st0
+          stH2 = iterate roundBoundary stTear !! 3
+      assertBool "denounce open after tear"
+        (hasAct "ira" "denounce" stH2)
+
+  , testCase "wants: after church buy censure closed until tear" $ do
+      let st0 = doAct "eve" "buy gale" (doAct "gale" "hear" sandboxWorld)
+          stH = iterate roundBoundary st0 !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "censure closed while debt"
+        (not (hasAct "gale" "censure" stH))
+      let stTear = doAct "gale" "tear up eve" st0
+          stH2 = iterate roundBoundary stTear !! 3
+      assertBool "censure open after tear"
+        (hasAct "gale" "censure" stH2)
+
+  , testCase "wants: activateSqueeze does not hang squeezeDesire on cast" $ do
+      let st = activateSqueeze sandboxWorld
+          dave = charDesires (actorOf "dave" st)
+      assertBool "practice on"
+        (exists "practice.millSqueeze" (db st))
+      assertBool "dave still without squeezeDesire"
+        (squeezeDesireName `notElem` dave)
+      assertBool "bob still without fearsBrand"
+        (fearsBrandName `notElem` charDesires (actorOf "bob" st))
+
+  , testCase "wants: activateParade does not hang paradeDesire on cast" $ do
+      let st = activateParade sandboxWorld
+      assertBool "practice on"
+        (exists "practice.millBrandParade" (db st))
+      assertBool "dave without paradeDesire"
+        (paradeDesireName `notElem` charDesires (actorOf "dave" st))
+
+  , testCase "wants: exile still open after parade of branded thief" $ do
+      -- Denounce first so exile gate open; then coerce→brand→parade; exile remains.
+      let stLearn = doAct "dave" "learn" sandboxWorld
+          stH0 = iterate roundBoundary stLearn !! 3
+          stDen = doAct "dave" "denounce" stH0
+          stAfter = roundBoundary stDen
+          st0b = activateParade (activateSqueeze stAfter)
+          bob2 = (actorOf "bob" st0b) { charDesires = [fearsBrandName] }
+          dave2 = (actorOf "dave" st0b)
+                    { charDesires =
+                        [squeezeDesireName, paradeDesireName, exileBobDesireName] }
+          stB = st0b { characters =
+                  [ if charName c == "dave" then dave2
+                    else if charName c == "bob" then bob2
+                    else c
+                  | c <- characters st0b ] }
+          stSqB = doAct "dave" "squeeze bob" stB
+          stConfB = doAct "bob" "confess" stSqB
+          stSq2B = doAct "dave" "squeeze bob" stConfB
+          stBrandB = doAct "dave" "brand bob" stSq2B
+          stParB = doAct "dave" "parade bob" stBrandB
+      assertBool "exile open after parade"
+        (hasAct "dave" "exile" stParB)
+      pickLabel "dave" stParB @?= Just "dave: exile the thief"
+
+  , testCase "wants: harvest and market festivals stagger on schedule" $ do
+      let st0 = sandboxWorld
+          st3 = iterate roundBoundary st0 !! 3
+          st4 = iterate roundBoundary st0 !! 4
+      assertBool "t3 harvest" (exists "festival.harvest" (db st3))
+      assertBool "t3 no market" (not (exists "festival.market" (db st3)))
+      assertBool "t4 market" (exists "festival.market" (db st4))
+      assertBool "t4 no harvest" (not (exists "festival.harvest" (db st4)))
+
+
+
 
   ]
