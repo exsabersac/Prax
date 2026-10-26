@@ -3,7 +3,8 @@
 -- the feud) — all through the engine's normal read path ('readView').
 module Prax.FeudSpec (tests) where
 
-import           Data.List (isInfixOf, isPrefixOf)
+import           Data.List (isInfixOf, isPrefixOf, sort)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
@@ -132,4 +133,9 @@ tests = testGroup "Prax.Worlds.Feud (emergent sandbox)"
       axiomThen (feudAxioms !! 2) @?= ["resents.C.B"]
       feudAxioms !! 3 @?= comrades
       feudAxioms !! 4 @?= factionStanding "wronged.Offender.Victim" "feudbreaker"
+  
+  , testCase "feudWorld cast and society practice" $ do
+      sort (map charName (characters feudWorld))
+        @?= ["alice", "bob", "carol", "dave", "esme"]
+      Map.keys (practiceDefs feudWorld) @?= ["society"]
   ]

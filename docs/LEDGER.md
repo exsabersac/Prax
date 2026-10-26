@@ -3097,3 +3097,9 @@
 - **做了什么**：SandboxSpec 追加 church brand×mill cry；mill brand×censure；dual parade once×cry；kyle paradeDesire；revoke×ira cry；mill silence×priest banish；church silence×mill exile；cry<rally<parade util；fran wed×denounce/cry；defy brand×inquisit；cast iraCry/gale。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（417 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v563 — Bar/Feud/Intrigue 阵容与实践清单钉
+
+- **做了什么**：BarSpec 钉 barWorld/barDirectorWorld 阵容与 practiceDefs；FeudSpec 钉五人阵容+society；IntrigueSpec 钉 presence/plot。无新实践 / 无 want 改动。
+- **测**：Bar / Feud / Intrigue 针对性。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

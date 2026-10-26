@@ -1,12 +1,13 @@
 module Prax.IntrigueSpec (tests) where
 
-import           Data.List (isInfixOf)
+import           Data.List (isInfixOf, sort)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences)
 import           Prax.Query (Condition (..))
-import           Prax.Types (PraxState, Outcome (..), db, gaLabel, character, practice, action, practiceId, actions, characters, charName, charDesires, desires, Desire (..), Want (..), deadSentence)
+import           Prax.Types (PraxState, Outcome (..), db, gaLabel, character, practice, action, practiceId, actions, characters, charName, charDesires, desires, Desire (..), Want (..), deadSentence, practiceDefs)
 import           Prax.Engine (definePractices, possibleActions, performAction, performOutcome)
 import           Prax.Loop (runNpcTicks)
 import           Prax.Inspect (explain)
@@ -122,4 +123,7 @@ tests = testGroup "Prax.Worlds.Intrigue (a dramatic slice)"
       desireWant (head (desires intrigueWorld))
         @?= Want [Match (deadSentence "artus")] 100
       map charName (characters intrigueWorld) @?= ["marcus", "artus", "cassia"]
+  
+  , testCase "intrigueWorld practices are presence + plot" $
+      sort (Map.keys (practiceDefs intrigueWorld)) @?= ["plot", "presence"]
   ]

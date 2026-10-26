@@ -1,7 +1,8 @@
 module Prax.BarSpec (tests) where
 
 import           Control.Monad (foldM)
-import           Data.List (isInfixOf)
+import           Data.List (isInfixOf, sort)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
@@ -362,4 +363,18 @@ tests = testGroup "Prax.Worlds.Bar (feature integration)"
       charBoundTo placid @?= Just "dm"
       assertBool "placid director has no affordances in a quiet room"
         (null (possibleActions barWorld directorName))
+  
+  , testCase "barWorld cast and practice palette" $ do
+      sort (map charName (characters barWorld)) @?= ["ada", "bex", "director", "you"]
+      sort (Map.keys (practiceDefs barWorld)) @?=
+        [ "arc", "converse", "disapproval", "dm", "greet", "patron"
+        , "respondGreet", "settleUp", "tendBar", "world" ]
+
+  , testCase "barDirectorWorld cast and direct (not dm) palette" $ do
+      sort (map charName (characters barDirectorWorld))
+        @?= ["ada", "bex", "cai", "director"]
+      assertBool "direct practice registered"
+        (Map.member "direct" (practiceDefs barDirectorWorld))
+      assertBool "dm practice absent from director world"
+        (not (Map.member "dm" (practiceDefs barDirectorWorld)))
   ]
