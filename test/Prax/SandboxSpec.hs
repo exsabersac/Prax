@@ -2697,4 +2697,72 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "debt still" (exists "debt.ira.bob.favor" (db stCen))
       assertBool "ira still blocked" (not (hasAct "ira" "denounce" stCen))
 
+  , testCase "censure × mill squeeze: priest censure and mill squeeze stay independent" $ do
+      -- harvest: priest censure bob while dave mill squeeze shares no once-gate.
+      let st0 = activateChurchBob coerceSeed
+          stHear = doAct "priest" "hear of bob" st0
+      assertBool "dave squeeze yes" (hasAct "dave" "squeeze bob" stHear)
+      let stH = iterate roundBoundary stHear !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      assertBool "squeeze at harvest" (hasAct "dave" "squeeze bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+      assertBool "censured" (exists "censured.priest.bob" (db stCen))
+      assertBool "squeeze after censure" (hasAct "dave" "squeeze bob" stCen)
+      let stSq = doAct "dave" "squeeze bob" stCen
+      assertBool "threatened"
+        (exists "threatened.squeeze.dave.bob" (db stSq))
+
+  , testCase "censure × mill parade: priest censure and brand parade stay independent" $ do
+      -- brand→activateParade; harvest censure and dave parade share no gate.
+      let st0 = activateChurchBob coerceSeed
+          stHear = doAct "priest" "hear of bob" st0
+          stSq = doAct "dave" "squeeze bob" stHear
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stH = iterate roundBoundary stP !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      assertBool "parade at harvest" (hasAct "dave" "parade bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+      assertBool "censured" (exists "censured.priest.bob" (db stCen))
+      assertBool "parade after censure" (hasAct "dave" "parade bob" stCen)
+      let stPar = doAct "dave" "parade bob" stCen
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+
+  , testCase "censure × cry: priest censure and market cry stay independent" $ do
+      -- harvest censure then market cry; church tribunal and mill cry share no gate.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stDave = doAct "dave" "learn" stHear
+      let stH = iterate roundBoundary stDave !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+      assertBool "censured" (exists "censured.priest.bob" (db stCen))
+      let stM = roundBoundary stCen
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+      let stCry = doAct "dave" "cry the theft" stM
+      assertBool "cried" (exists "cried.dave.bob" (db stCry))
+
+  , testCase "censure × rally: priest censure and market rally stay independent" $ do
+      -- notorious+angry; harvest censure then market rally share no once-gate.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stHear = doAct "priest" "hear of bob" (activateChurchBob st0)
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stHear))
+      let stH = iterate roundBoundary stHear !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+      assertBool "censured" (exists "censured.priest.bob" (db stCen))
+      let stM = roundBoundary stCen
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+
   ]
