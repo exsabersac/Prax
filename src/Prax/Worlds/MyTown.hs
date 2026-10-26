@@ -165,7 +165,11 @@ myTownWorld =
               , Want [ Match "eyed.eve.T" ] 5 ] }
       , (character "gale")
           { charWants =
-              [ Want [ Match "practice.world.world.at.gale!mill" ] 1 ] }
+              [ Want [ Match "practice.world.world.at.gale!mill" ] 1
+                -- M6f：共场公开帮助 dana；门控 you@mill（>at.mill），
+                -- 避免开局在 square 燃尽 didHelp 导致亲见落空
+              , Want [ Match "practice.world.world.at.you!mill"
+                     , Match "didHelp.gale.dana" ] 5 ] }
       ]
     base = setSchedule [ sightRule myTownSighting ]
              (setCharacters roster

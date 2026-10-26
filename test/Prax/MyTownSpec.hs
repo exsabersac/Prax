@@ -1,6 +1,6 @@
--- | MyTown M1+M3+M4+M6c 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- | MyTown M1+M3+M4+M6c+M6f 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
 -- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
--- M6c eve 短反应（C02 硬卡）。
+-- M6c eve 短反应（C02 硬卡）；M6f 亲往 mill·当场说破（F01–F04）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -694,5 +694,81 @@ tests = testGroup "MyTown"
                    (factInfix (sessState s3) "eyed.eve.you"
                     || hard (actNarrative rGo))
             else goEye 8 s3 []
+
+      , -- M6f：亲往 mill·当场说破 gale→dana（硬卡 F01–F04；Session 冻）
+        testCase "M6f-F01 you 前往 mill（亲往，不遥控 NPC）" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "前往 mill"
+          viewLocationId (praxView s1) @?= Just "mill"
+          assertBool "you at mill"
+            (factInfix (sessState s1) "at.you.mill")
+
+      , testCase "M6f-F02 mill 亲见 gale 帮 dana 后 Menu 有说破" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "前往 mill"
+          let hasSpeak s =
+                any (\m -> "说破看见 gale 帮助了 dana" `isInfixOf` menuLabel m)
+                    (praxMenu s)
+              waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goWait 0 s = pure s
+              goWait k s
+                | hasSpeak s = pure s
+                | otherwise = do
+                    (s', _) <- waitOnce s
+                    goWait (k - 1) s'
+          s2 <- if hasSpeak s1 then pure s1 else goWait 8 s1
+          assertBool "Menu 含 you: 说破看见 gale 帮助了 dana" (hasSpeak s2)
+          assertBool "you.seen helped.gale.dana"
+            (factInfix (sessState s2) "you.believes.helped.gale.dana.seen")
+
+      , testCase "M6f-F03 点说破 → narrative 说破 + sawHelp" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "前往 mill"
+          let hasSpeak s =
+                any (\m -> "说破看见 gale 帮助了 dana" `isInfixOf` menuLabel m)
+                    (praxMenu s)
+              waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goWait 0 s = pure s
+              goWait k s
+                | hasSpeak s = pure s
+                | otherwise = do
+                    (s', _) <- waitOnce s
+                    goWait (k - 1) s'
+          s2 <- if hasSpeak s1 then pure s1 else goWait 8 s1
+          assertBool "pre: Menu 有说破" (hasSpeak s2)
+          (s3, r) <- actByLabel s2 "说破看见 gale 帮助了 dana"
+          let narr = unlines (actNarrative r)
+          assertBool ("narrative 含说破 gale/dana: " ++ narr)
+            ("说破" `isInfixOf` narr
+             && "gale" `isInfixOf` narr
+             && "dana" `isInfixOf` narr)
+          assertBool ("narrative 含 sawHelp: " ++ narr)
+            ("sawHelp" `isInfixOf` narr && "信任" `isInfixOf` narr)
+          assertBool "you→gale trust sawHelp reason"
+            (factInfix (sessState s3)
+               "you.relationship.gale.trust.reason.sawHelp")
+          assertBool ("spokeUp.you.gale.dana")
+            (factInfix (sessState s3) "spokeUp.you.gale.dana")
+
+      , testCase "M6f-F04 花名册未扩；脚本路径 sawHelp（Session 冻）" $ do
+          s <- mustNew
+          let names = sort [ actorId a | a <- viewActors (praxView s) ]
+          names @?= sort ["you","bob","carol","dana","eve","gale"]
+          let st0 = doAct "you" "前往 mill" MyTown.myTownWorld
+              st1 = doAct "gale" "公开帮助 dana" st0
+              speak = [ ga | ga <- possibleActions st1 "you"
+                           , "说破看见 gale 帮助了 dana" `isInfixOf` gaLabel ga ]
+          assertBool "脚本：Menu/aff 有说破 gale→dana" (not (null speak))
+          let ga0 = head speak
+              st2 = performAction st1 ga0
+          assertBool "脚本 sawHelp reason"
+            (factInfix st2 "you.relationship.gale.trust.reason.sawHelp")
+          assertBool ("硬卡 label: " ++ gaLabel ga0)
+            ("you" `isInfixOf` gaLabel ga0
+             && "说破看见 gale 帮助了 dana" `isInfixOf` gaLabel ga0)
       ]
   ]
