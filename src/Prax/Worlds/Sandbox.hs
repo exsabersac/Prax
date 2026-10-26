@@ -589,7 +589,7 @@ iraCry = iraJustice ++ [cryDesireName]
 cast :: [Character]
 cast =
   [ character playerName
-  , (character "bob")   { charDesires = ["buys-ira-silence"] }
+  , (character "bob")   { charDesires = [millSilenceDesireName] }
   , (character "carol") { charDesires = millCry }
   , (character "dave")  { charDesires = millCry }
   , (character "fran")  { charDesires = joinsMillDesireName : millCry }

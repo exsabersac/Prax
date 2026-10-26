@@ -2832,3 +2832,9 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 flee 后 return(11) 自选和解；buy(14) 压 millJustice；censure 后 exileEve(12) 压审查 want。无新实践。
 - **测**：SandboxSpec wants: return beats flee / silence buy beats millJustice / church exile beats censure。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v505 — Sandbox want 字符串改常量 + 撕毁权重/获知负例（钉既有门禁）
+
+- **做了什么**：阵容 bob 与 Spec 种子/断言改用沉默/正义/声援/放逐常量；Spec 钉 tear(10) 压 millJustice、church tear 压 churchJustice；无 seeksBobHeresy 不 hear of bob；默认阵容不挂 coerce/parade/fearsBrand。
+- **测**：SandboxSpec wants: breakSilence weight / church breakSilence weight / without seeksBobHeresy；cast default unhooks。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。

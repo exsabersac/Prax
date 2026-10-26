@@ -459,7 +459,7 @@ sandboxDualPressureGolden =
 churchSilenceSeed :: PraxState
 churchSilenceSeed =
   let st0 = doAct "gale" "hear the blasphemy" sandboxWorld
-      eve'  = (actorOf "eve" st0)  { charDesires = ["buys-church-silence"] }
+      eve'  = (actorOf "eve" st0)  { charDesires = [churchSilenceDesireName] }
       gale' = (actorOf "gale" st0)
                 { charDesires = churchJustice ++ [churchBreakSilenceDesireName] }
       -- Mute bob buy-silence + mill justice noise so church silence dominates.
@@ -632,14 +632,14 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "fears-brand-heretic registered"
         (any ((== fearsBrandHereticName) . desireName) sandboxDesires)
       assertBool "buys-church-silence registered"
-        (any ((== "buys-church-silence") . desireName) sandboxDesires)
+        (any ((== churchSilenceDesireName) . desireName) sandboxDesires)
       assertBool "churchBobHeresy defined"
         ("churchBobHeresy" `elem` practiceNames sandboxWorld)
       assertBool "churchBobHeresy inactive by default"
         (not (exists "practice.churchBobHeresy" (db sandboxWorld)))
       assertBool "bob heresy desires in vocabulary"
         (all (`elem` map desireName sandboxDesires)
-           ["seeks-bob-heresy", "punishes-bob-heretic"])
+           [seeksBobHeresyDesireName, punishesBobHereticDesireName])
       assertBool "presence" ("presence" `elem` practiceNames sandboxWorld)
       assertBool "squeeze desire registered"
         (any ((== squeezeDesireName) . desireName) sandboxDesires)
@@ -660,15 +660,15 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       festivalsOf sandboxWorld @?= []
       assertBool "vocab loaded" (not (null sandboxDesires))
       assertBool "dave holds mill justice"
-        ("seeks-theft-truth" `elem` charDesires (actorOf "dave" sandboxWorld))
+        (seeksTheftDesireName `elem` charDesires (actorOf "dave" sandboxWorld))
       assertBool "dave holds market cry"
-        ("cries-theft-at-market" `elem` charDesires (actorOf "dave" sandboxWorld))
+        (cryDesireName `elem` charDesires (actorOf "dave" sandboxWorld))
       assertBool "priest holds church justice"
-        ("punishes-heretic" `elem` charDesires (actorOf "priest" sandboxWorld))
+        (punishesHereticDesireName `elem` charDesires (actorOf "priest" sandboxWorld))
       assertBool "fran holds joins-mill"
-        ("joins-mill" `elem` charDesires (actorOf "fran" sandboxWorld))
+        (joinsMillDesireName `elem` charDesires (actorOf "fran" sandboxWorld))
       assertBool "bob holds buys-ira-silence"
-        ("buys-ira-silence" `elem` charDesires (actorOf "bob" sandboxWorld))
+        (millSilenceDesireName `elem` charDesires (actorOf "bob" sandboxWorld))
       assertBool "ira holds breaks-silence-deal"
         (millBreakSilenceDesireName `elem` charDesires (actorOf "ira" sandboxWorld))
       assertBool "player has no wants"
@@ -1127,8 +1127,7 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let st0 = dualPressureSeed
           priestBoth = (actorOf "priest" st0)
                          { charDesires = bobHeresyJustice ++ millJustice
-                                         ++ ["seeks-heresy-truth", "punishes-heretic"
-                                            , "wants-exile-eve"] }
+                                         ++ churchJustice }
           stBoth = st0 { characters =
                            [ if charName c == "priest" then priestBoth else c
                            | c <- characters st0 ] }
@@ -2157,7 +2156,7 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
           -- dave needs angry+notorious; inquisitSeed already has dave learn above;
           -- ensure repute anger: carol learn gave two regards → notorious if dave angry.
           dave' = (actorOf "dave" st0)
-                    { charDesires = ["rallies-against-thief"] ++ millCry }
+                    { charDesires = [rallyDesireName] ++ millCry }
           stR = st0 { characters =
                         [ if charName c == "dave" then dave' else c
                         | c <- characters st0 ] }
@@ -2995,7 +2994,7 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stDen = doAct "dave" "denounce" stH
           stAfter = roundBoundary stDen
           dave' = (actorOf "dave" stAfter)
-                     { charDesires = ["wants-exile-bob", paradeDesireName] }
+                     { charDesires = [exileBobDesireName, paradeDesireName] }
           bob' = (actorOf "bob" stAfter) { charDesires = [] }
           st = stAfter { characters =
                   [ if charName c == "dave" then dave'
@@ -3035,7 +3034,7 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stCen = doAct "priest" "censure" stH
           stAfter = roundBoundary stCen
           priest' = (actorOf "priest" stAfter)
-                      { charDesires = ["wants-exile-bob", churchParadeDesireName] }
+                      { charDesires = [exileBobDesireName, churchParadeDesireName] }
           bob' = (actorOf "bob" stAfter) { charDesires = [] }
           st = stAfter { characters =
                   [ if charName c == "priest" then priest'
@@ -3388,6 +3387,53 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
         (paradeDesireName `notElem` charDesires (actorOf "dave" sandboxWorld))
       assertBool "cast unhooks rally"
         (rallyDesireName `notElem` charDesires (actorOf "dave" sandboxWorld))
+
+
+
+  , testCase "wants: breakSilence weight beats millJustice when tear open" $ do
+      -- tear/revoke(10) vs denounce(8): after buy, ira with break+millJustice tears.
+      let st0 = doAct "bob" "buy ira" (doAct "ira" "learn" sandboxWorld)
+          ira' = (actorOf "ira" st0)
+                   { charDesires = millJustice ++ [millBreakSilenceDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "ira" then ira' else c
+                  | c <- characters st0 ] }
+      assertBool "tear open" (hasAct "ira" "tear up bob" st)
+      pickLabel "ira" st @?= Just "ira: tear up bob's silence deal"
+
+  , testCase "wants: without seeksBobHeresy priest does not hear of bob" $ do
+      let st0 = dualPressureSeed
+          priest' = (actorOf "priest" st0)
+                      { charDesires = [punishesBobHereticDesireName, exileBobDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters st0 ] }
+      assertBool "hear bob open" (hasAct "priest" "hear of bob" st)
+      let lab = pickLabel "priest" st
+      assertBool ("not hear of bob, got " ++ show lab)
+        (maybe True (not . ("hear of bob" `isInfixOf`)) lab)
+
+  , testCase "wants: church breakSilence weight beats churchJustice when tear open" $ do
+      let st0 = doAct "eve" "buy gale" (doAct "gale" "hear" sandboxWorld)
+          gale' = (actorOf "gale" st0)
+                    { charDesires = churchJustice ++ [churchBreakSilenceDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "gale" then gale' else c
+                  | c <- characters st0 ] }
+      assertBool "tear open" (hasAct "gale" "tear up eve" st)
+      pickLabel "gale" st @?= Just "gale: tear up eve's heresy silence deal"
+
+  , testCase "cast: default unhooks coerce and parade wants" $ do
+      let dave = charDesires (actorOf "dave" sandboxWorld)
+          priest = charDesires (actorOf "priest" sandboxWorld)
+          bob = charDesires (actorOf "bob" sandboxWorld)
+      assertBool "no squeeze on dave" (squeezeDesireName `notElem` dave)
+      assertBool "no inquisit on priest" (inquisitDesireName `notElem` priest)
+      assertBool "no parade on dave" (paradeDesireName `notElem` dave)
+      assertBool "no churchParade on priest" (churchParadeDesireName `notElem` priest)
+      assertBool "no fearsBrand on bob" (fearsBrandName `notElem` bob)
+      assertBool "bob holds mill silence buy"
+        (millSilenceDesireName `elem` bob)
 
 
   ]
