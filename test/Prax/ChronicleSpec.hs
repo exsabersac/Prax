@@ -27,7 +27,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -813,6 +813,41 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "wrongees of alice" @?= ["alice wronger of bob"]
       askChronicle st "wrongers of void" @?= ["void has no known wrongers"]
       askChronicle st "wrongees of void" @?= ["void has no known wrongees"]
+
+
+
+  , testCase "askChronicle eyers/eyees/confronters/confrontees dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "eyed.dana.bob"
+            , Insert "eyed.bob.eve"
+            , Insert "confronted.carol.bob"
+            , Insert "confronted.bob.gale"
+            ]
+      eyersOf st "bob" @?= ["eyed.dana.bob"]
+      eyeesOf st "dana" @?= ["eyed.dana.bob"]
+      confrontersOf st "bob" @?= ["confronted.carol.bob"]
+      confronteesOf st "carol" @?= ["confronted.carol.bob"]
+      askChronicle st "eyers of bob" @?= ["dana eyer of bob"]
+      askChronicle st "eyees of dana" @?= ["dana eyer of bob"]
+      askChronicle st "confronters of bob" @?= ["carol confronter of bob"]
+      askChronicle st "confrontees of carol" @?= ["carol confronter of bob"]
+      askChronicle st "eyers of void" @?= ["void has no known eyers"]
+      askChronicle st "eyees of void" @?= ["void has no known eyees"]
+      askChronicle st "confronters of void" @?= ["void has no known confronters"]
+      askChronicle st "confrontees of void" @?= ["void has no known confrontees"]
+
+
+  , testCase "askChronicle revokers/revokees dual Host raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "revoked.ira.bob"
+            , Insert "revoked.bob.dave"
+            ]
+      revokersOf st "bob" @?= ["revoked.ira.bob"]
+      revokeesOf st "ira" @?= ["revoked.ira.bob"]
+      askChronicle st "revokers of bob" @?= ["ira revoker of bob"]
+      askChronicle st "revokees of ira" @?= ["ira revoker of bob"]
+      askChronicle st "revokers of void" @?= ["void has no known revokers"]
+      askChronicle st "revokees of void" @?= ["void has no known revokees"]
 
 
   ]

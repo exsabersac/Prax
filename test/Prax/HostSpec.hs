@@ -718,4 +718,40 @@ tests = testGroup "Prax.Host"
       wrongeesOf st "void" @?= []
 
 
+
+  , testCase "eyersOf / eyeesOf / confrontersOf / confronteesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "eyed.dana.bob"
+                , Insert "eyed.bob.eve"
+                , Insert "confronted.carol.bob"
+                , Insert "confronted.bob.gale"
+                , Insert "flag.x" ]
+      eyersOf st "bob" @?= ["eyed.dana.bob"]
+      eyersOf st "eve" @?= ["eyed.bob.eve"]
+      eyersOf st "void" @?= []
+      eyeesOf st "dana" @?= ["eyed.dana.bob"]
+      eyeesOf st "bob" @?= ["eyed.bob.eve"]
+      eyeesOf st "void" @?= []
+      confrontersOf st "bob" @?= ["confronted.carol.bob"]
+      confrontersOf st "gale" @?= ["confronted.bob.gale"]
+      confrontersOf st "void" @?= []
+      confronteesOf st "carol" @?= ["confronted.carol.bob"]
+      confronteesOf st "bob" @?= ["confronted.bob.gale"]
+      confronteesOf st "void" @?= []
+
+
+  , testCase "revokersOf / revokeesOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "revoked.ira.bob"
+                , Insert "revoked.gale.eve"
+                , Insert "revoked.bob.dave"
+                , Insert "flag.x" ]
+      revokersOf st "bob" @?= ["revoked.ira.bob"]
+      revokersOf st "dave" @?= ["revoked.bob.dave"]
+      revokersOf st "void" @?= []
+      revokeesOf st "ira" @?= ["revoked.ira.bob"]
+      revokeesOf st "bob" @?= ["revoked.bob.dave"]
+      revokeesOf st "void" @?= []
+
+
   ]

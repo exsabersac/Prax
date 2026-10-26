@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -404,6 +404,19 @@ runRevoked (who : ws) =
   in mapM_ putStrLn (revokedOf st who)
 runRevoked _ = putStrLn "usage: prax revoked <who> <world>"
 
+
+runRevokers :: [String] -> IO ()
+runRevokers (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (revokersOf st who)
+runRevokers _ = putStrLn "usage: prax revokers <who> <world>"
+
+runRevokees :: [String] -> IO ()
+runRevokees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (revokeesOf st who)
+runRevokees _ = putStrLn "usage: prax revokees <who> <world>"
+
 runConfessed :: [String] -> IO ()
 runConfessed (who : ws) =
   let (_, st, _) = worldNamed ws
@@ -481,6 +494,31 @@ runEyed (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (eyedOf st who)
 runEyed _ = putStrLn "usage: prax eyed <who> <world>"
+
+
+runEyers :: [String] -> IO ()
+runEyers (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (eyersOf st who)
+runEyers _ = putStrLn "usage: prax eyers <who> <world>"
+
+runEyees :: [String] -> IO ()
+runEyees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (eyeesOf st who)
+runEyees _ = putStrLn "usage: prax eyees <who> <world>"
+
+runConfronters :: [String] -> IO ()
+runConfronters (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (confrontersOf st who)
+runConfronters _ = putStrLn "usage: prax confronters <who> <world>"
+
+runConfrontees :: [String] -> IO ()
+runConfrontees (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (confronteesOf st who)
+runConfrontees _ = putStrLn "usage: prax confrontees <who> <world>"
 
 runConfronted :: [String] -> IO ()
 runConfronted (who : ws) =
@@ -716,6 +754,8 @@ usageText = unlines
   , "  prax defied <who> <world>              list defied leaves involving who"
   , "  prax branded <who> <world>             list branded* leaves for who"
   , "  prax revoked <who> <world>             list revoked leaves involving who"
+  , "  prax revokers <who> <world>            list revoked.*.<who> leaves"
+  , "  prax revokees <who> <world>            list revoked.<who>.* leaves"
   , "  prax confessed <who> <world>           list confessed leaves for who"
   , "  prax recanted <who> <world>            list recanted leaves for who"
   , "  prax ostracized <who> <world>          list ostracized leaves involving who"
@@ -729,11 +769,15 @@ usageText = unlines
   , "  prax reconciled <who> <world>          list reconciled leaves for who"
   , "  prax married <who> <world>             list married leaves involving who"
   , "  prax eyed <who> <world>                list eyed leaves involving who"
+  , "  prax eyers <who> <world>               list eyed.*.<who> leaves"
+  , "  prax eyees <who> <world>               list eyed.<who>.* leaves"
   , "  prax confronted <who> <world>          list confronted leaves involving who"
+  , "  prax confronters <who> <world>         list confronted.*.<who> leaves"
+  , "  prax confrontees <who> <world>         list confronted.<who>.* leaves"
   , "  prax atoned <who> <world>              list atoned leaves for who"
   , "  prax wronged <who> <world>             list wronged leaves involving who"
   , "  prax hungry <who> <world>              list hungry leaves for who"
-  , "  prax short-tempered <who> <world>      list shortTempered leaves for who"
+  , "  prax short-tempered|shortTempered <who> <world>  list shortTempered leaves"
   , "  prax appetite <who> <world>            list appetite leaves for who"
   , "  prax resents <who> <world>             list resents leaves for who"
   , "  prax allied <who> <world>              list allied leaves involving who"
@@ -807,6 +851,8 @@ main = do
     ("defiees" : ws) -> runDefiees ws
     ("branded" : ws)   -> runBranded ws
     ("revoked" : ws)   -> runRevoked ws
+    ("revokers" : ws)  -> runRevokers ws
+    ("revokees" : ws)  -> runRevokees ws
     ("confessed" : ws) -> runConfessed ws
     ("recanted" : ws)  -> runRecanted ws
     ("ostracized" : ws) -> runOstracized ws
@@ -820,13 +866,19 @@ main = do
     ("reconciled" : ws) -> runReconciled ws
     ("married" : ws)   -> runMarried ws
     ("eyed" : ws)      -> runEyed ws
+    ("eyers" : ws)     -> runEyers ws
+    ("eyees" : ws)     -> runEyees ws
     ("confronted" : ws) -> runConfronted ws
+    ("confronters" : ws) -> runConfronters ws
+    ("confrontees" : ws) -> runConfrontees ws
     ("atoned" : ws)    -> runAtoned ws
     ("wronged" : ws)   -> runWronged ws
     ("wrongers" : ws) -> runWrongers ws
     ("wrongees" : ws) -> runWrongees ws
     ("hungry" : ws)    -> runHungry ws
     ("short-tempered" : ws) -> runShortTempered ws
+    ("shortTempered" : ws) -> runShortTempered ws
+    ("shorttempered" : ws) -> runShortTempered ws
     ("appetite" : ws)  -> runAppetite ws
     ("resents" : ws)   -> runResents ws
     ("allied" : ws)    -> runAllied ws
@@ -836,6 +888,7 @@ main = do
     ("grandparents" : ws) -> runGrandparents ws
     ("grandchildren" : ws) -> runGrandchildren ws
     ("in-laws" : ws)   -> runInLaws ws
+    ("inlaws" : ws)    -> runInLaws ws
     ("spouses" : ws)   -> runSpouses ws
     ("view" : ws)      -> runView ws
     ("facts" : ws)     -> runFacts ws

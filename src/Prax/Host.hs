@@ -36,6 +36,8 @@
 -- v481：'threatenersOf'/'threateneesOf'/'extortersOf'/'extorteesOf' 胁迫/勒索方叶。
 -- v488：'compliersOf'/'complieesOf'/'defiersOf'/'defieesOf' 顺从/违抗方叶。
 -- v495：'wrongersOf'/'wrongeesOf' 冤屈方叶（wronged.<o>.<v>）。
+-- v497：'eyersOf'/'eyeesOf'/'confrontersOf'/'confronteesOf' 目击/对质方叶。
+-- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
   , stepExact
@@ -112,6 +114,8 @@ module Prax.Host
   , defieesOf
   , brandedOf
   , revokedOf
+  , revokersOf
+  , revokeesOf
   , confessedOf
   , recantedOf
   , ostracizedOf
@@ -125,7 +129,11 @@ module Prax.Host
   , reconciledOf
   , marriedOf
   , eyedOf
+  , eyersOf
+  , eyeesOf
   , confrontedOf
+  , confrontersOf
+  , confronteesOf
   , atonedOf
   , wrongedOf
   , wrongersOf
@@ -900,6 +908,41 @@ revokedOf st who = sort
 
 
 
+
+-- | 闭合视图中 @who@ 作为被撕毁方的叶（@revoked.<creditor>.<who>@）。
+revokersOf :: PraxState -> String -> [String]
+revokersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "revoked." `isPrefixOf` s
+  , let rest = drop (length ("revoked." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为撕毁方的叶（@revoked.<who>.<debtor>@）。
+revokeesOf :: PraxState -> String -> [String]
+revokeesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "revoked." `isPrefixOf` s
+  , let rest = drop (length ("revoked." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的招供叶（@confessed.<who>@ 或 @<who>.confessed.@* Village 形）。
 confessedOf :: PraxState -> String -> [String]
 confessedOf st who = sort
@@ -1082,6 +1125,41 @@ eyedOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+
+-- | 闭合视图中 @who@ 作为被目击方的叶（@eyed.<actor>.<who>@）。
+eyersOf :: PraxState -> String -> [String]
+eyersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "eyed." `isPrefixOf` s
+  , let rest = drop (length ("eyed." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为目击方的叶（@eyed.<who>.<target>@）。
+eyeesOf :: PraxState -> String -> [String]
+eyeesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "eyed." `isPrefixOf` s
+  , let rest = drop (length ("eyed." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中与 @who@ 相关的对质叶（@confronted.<actor>.<target>@，任一侧）。
 confrontedOf :: PraxState -> String -> [String]
 confrontedOf st who = sort
@@ -1092,6 +1170,41 @@ confrontedOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+-- | 闭合视图中 @who@ 作为被对质方的叶（@confronted.<actor>.<who>@）。
+confrontersOf :: PraxState -> String -> [String]
+confrontersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "confronted." `isPrefixOf` s
+  , let rest = drop (length ("confronted." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 作为对质方的叶（@confronted.<who>.<target>@）。
+confronteesOf :: PraxState -> String -> [String]
+confronteesOf st who = sort
+  [ s
+  | s <- queryView st
+  , "confronted." `isPrefixOf` s
+  , let rest = drop (length ("confronted." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who
   ]
   where
     splitDots :: String -> [String]

@@ -2819,7 +2819,6 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：Beliefs lacksHoldsBelief（= doubts）；Conversation lacksTopic（= offTopic）；Faction lacksRegardAs（= lacksRegard）；Spec 钉结构与世界求值。无新实践 / 无 want 改动。
 - **测**：BeliefsSpec / ConversationSpec / FactionSpec（针对性；未跑全量）。
-- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
 ## v503 — Sandbox 无婚入/无获知 want 时不自选（钉既有门禁）
 
@@ -2844,3 +2843,33 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 squeeze/inquisit 权重压 millCry/bobHeresyJustice；flee(9) 窗外压 millCry；kyle affiliate 空 want 只 Wait。无新实践。
 - **测**：SandboxSpec wants: squeeze/inquisit/flee weight；affiliate kyle never picks mill justice。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v507 — Host eyers/eyees/confronters/confrontees + CLI
+
+- **做了什么**：闭合视图枚举 `eyed.*.<who>` / `eyed.<who>.*` 与 `confronted.*.<who>` / `confronted.<who>.*`；CLI 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v508 — Chronicle eyers/eyees/confronters/confrontees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加对应臂；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v509 — Host revokersOf/revokeesOf + CLI
+
+- **做了什么**：闭合视图枚举 `revoked.*.<who>` / `revoked.<who>.*`；CLI `prax revokers`/`revokees`。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v510 — Chronicle revokers/revokees of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"revokers of "` / `"revokees of "`；Spec 钉对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v511 — CLI in-laws/short-tempered 别名打磨
+
+- **做了什么**：dispatch 接受 `inlaws` 与 `shortTempered`/`shorttempered`；help 注明别名。无实践 / 无 want 改动。
+- **测**：编译；未跑全量。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
