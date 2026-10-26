@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static www/ + POST /api/session → prax-web-session (JSON-lines)."""
+"""Static www/ + POST /api/session -> prax-web-session (JSON-lines)."""
 from __future__ import annotations
 
 import json
@@ -56,8 +56,7 @@ class SessionBridge:
                 err = self._proc.stderr.read() if self._proc.stderr else ""
                 return {"ok": False, "error": "bridge_dead", "message": err or "exited"}
             assert self._proc.stdin and self._proc.stdout
-            self._proc.stdin.write(line + "\n")
-")
+            self._proc.stdin.write(line + chr(10))
             self._proc.stdin.flush()
             out = self._proc.stdout.readline()
             if not out:
@@ -95,7 +94,7 @@ class Handler(SimpleHTTPRequestHandler):
                 {
                     "ok": False,
                     "error": "no_bridge",
-                    "message": "未找到 prax-web-session；请先 stack build prax:exe:prax-web-session",
+                    "message": "missing prax-web-session; run stack build prax:exe:prax-web-session",
                 },
             )
             return
@@ -111,8 +110,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
     def log_message(self, fmt: str, *args) -> None:
-        sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
-" % (self.address_string(), fmt % args))
+        sys.stderr.write("%s - %s%s" % (self.address_string(), fmt % args, chr(10)))
 
 
 def main() -> int:
@@ -131,8 +129,7 @@ def main() -> int:
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("
-bye")
+        print("bye")
     finally:
         if bridge:
             bridge.close()
