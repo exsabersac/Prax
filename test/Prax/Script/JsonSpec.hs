@@ -58,6 +58,11 @@ tests = testGroup "Prax.Script.Json"
             ]
       decode (encode cs) @?= Just cs
 
+  , testCase "Insert / Delete / Call outcomes round-trip through JSON" $ do
+      decode (encode (Insert "fact.here")) @?= Just (Insert "fact.here")
+      decode (encode (Delete "fact.here")) @?= Just (Delete "fact.here")
+      decode (encode (Call "rollDie" ["Actor", "1"])) @?= Just (Call "rollDie" ["Actor", "1"])
+
   , testCase "a ForEach outcome round-trips through JSON" $ do
       let o = ForEach [ Match "at.Witness!P", Neq "Witness" "Actor" ]
                       [ Insert "Witness.believes.stole.Actor.loaf.seen" ]

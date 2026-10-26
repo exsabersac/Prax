@@ -440,6 +440,14 @@ tests = testGroup "Prax.Script"
       castDesires cm @?= [ Want [ Match "holding.ada.cake" ] 3 ]
       castTraits cm @?= []
 
+  , testCase "scene defaults leave opening/setup/beats/junctions empty" $ do
+      let s = scene "foyer"
+      sceneId s @?= "foyer"
+      sceneOpening s @?= ""
+      sceneSetup s @?= []
+      sceneBeats s @?= []
+      sceneJunctions s @?= []
+
   , testCase "beat / quip / goto / ending build Beat and Junction shapes" $ do
       let b = beat "wave" [ Match "seen" ] [ Insert "waved" ]
           q = quip "ada" "[Actor]: hi" [ Match "greet" ] [ Insert "said.hi" ]
