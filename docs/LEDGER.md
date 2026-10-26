@@ -2274,3 +2274,21 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v408 — Chronicle shortTempered/appetite 对偶
+
+- **做了什么**：Spec 钉 shortTempered/appetite 两条 askChronicle 臂与 Host *Of 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v409 — Chronicle resents/allied 对偶
+
+- **做了什么**：Spec 钉 resents/allied 两条 askChronicle 臂与 Host *Of 对偶（allied 含任一侧）。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v410 — Chronicle demanded/notorious/regardsToward/factionsNamed 对偶
+
+- **做了什么**：Spec 钉 demanded/notorious/regards toward/what factions 与 Host *Of 对偶。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

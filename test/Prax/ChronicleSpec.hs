@@ -20,7 +20,11 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              revokedOf, confessedOf, censuredOf,
                              paradedOf, criedOf, ralliedOf,
                              fledOf, reconciledOf, marriedOf,
-                             ostracizedOf, atonedOf, hungryOf)
+                             ostracizedOf, atonedOf, hungryOf,
+                             eyedOf, confrontedOf, wrongedOf,
+                             recantedOf, shortTemperedOf, appetiteOf,
+                             resentsOf, alliedOf, demandedOf,
+                             notoriousOf, regardsToward, factionsNamed)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -575,5 +579,57 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "ostracized of bob" @?= ostracizedOf st "bob"
       askChronicle st "atoned of bob" @?= atonedOf st "bob"
       askChronicle st "hungry of bob" @?= hungryOf st "bob"
+
+  , testCase "askChronicle eyed/confronted/wronged dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "eyed.dana.bob"
+            , Insert "confronted.carol.bob"
+            , Insert "wronged.alice.bob"
+            ]
+      askChronicle st "eyed of bob" @?= eyedOf st "bob"
+      askChronicle st "confronted of bob" @?= confrontedOf st "bob"
+      askChronicle st "wronged of bob" @?= wrongedOf st "bob"
+
+  , testCase "askChronicle recanted dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "recanted.eve"
+            ]
+      askChronicle st "recanted of eve" @?= recantedOf st "eve"
+
+  , testCase "askChronicle shortTempered/appetite dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "shortTempered.carol"
+            , Insert "appetite.bob"
+            ]
+      askChronicle st "shortTempered of carol" @?= shortTemperedOf st "carol"
+      askChronicle st "appetite of bob" @?= appetiteOf st "bob"
+
+  , testCase "askChronicle resents/allied dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "resents.bob.alice"
+            , Insert "allied.bob.carol"
+            , Insert "allied.dave.eve"
+            ]
+      askChronicle st "resents of bob" @?= resentsOf st "bob"
+      askChronicle st "allied of bob" @?= alliedOf st "bob"
+      askChronicle st "allied of eve" @?= alliedOf st "eve"
+
+  , testCase "askChronicle demanded/notorious dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "demanded.ira.ana.flour"
+            , Insert "notorious.ana.thief"
+            ]
+      askChronicle st "demanded of ana" @?= demandedOf st "ana"
+      askChronicle st "notorious of ana" @?= notoriousOf st "ana"
+
+  , testCase "askChronicle regardsToward/factionsNamed dual Host view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "regards.dave.eve.hero"
+            , Insert "member.ana.guild"
+            , Insert "affiliate.bob.mill"
+            , Insert "leads.choir!carol"
+            ]
+      askChronicle st "regards toward eve" @?= regardsToward st "eve"
+      askChronicle st "what factions" @?= factionsNamed st
 
   ]
