@@ -140,7 +140,8 @@ formatEvent ev rs =
 -- @"shortTempered of "++who@、@"appetite of "++who@、
 -- @"resents of "++who@、@"allied of "++who@、
 -- @"what is on the stall"@、@"what festivals"@、
--- @"holding of "++who@、@"carrying of "++who@。
+-- @"holding of "++who@、@"carrying of "++who@、
+-- @"threatened of "++who@、@"shunned of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -453,6 +454,22 @@ askChronicle st q
             [ s | s <- dbToSentences (db st)
                 , ("carrying." ++ who ++ ".") `isPrefixOf` s ]
       in if null rows then [who ++ " carries nothing"]
+         else rows
+  | Just who <- stripPrefix "threatened of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , "threatened." `isPrefixOf` s
+                , let rest = drop (length ("threatened." :: String)) s
+                , let parts = splitDot rest
+                , length parts >= 3
+                , (parts !! 1) == who || (parts !! 2) == who ]
+      in if null rows then [who ++ " has no threat marks"]
+         else rows
+  | Just who <- stripPrefix "shunned of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , ("shunned." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has shunned no one"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

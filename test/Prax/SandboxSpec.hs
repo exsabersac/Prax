@@ -1631,4 +1631,25 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
       assertBool "squeeze after rally" (hasAct "priest" "squeeze bob" stRally)
+
+  , testCase "wed × rally: fran wedding unlocks mill standing then market rally" $ do
+      -- fran believes (guild) → no mill regard; wed → regard; with dave learn
+      -- → notorious; fran angry from learn path via mill standing enables rally
+      -- once dave (angry) path is set — pin fran cry/regard unlock + dave rally.
+      let stBel = performOutcome (Insert "fran.believes.stole.bob.carol") reputeSeed
+          stDave = doAct "dave" "learn" stBel
+      assertBool "before: no fran regard"
+        (not (exists "regards.fran.bob.thief" (readView stDave)))
+      let stWed = doAct "fran" "wed into the mill" stDave
+      assertBool "after: fran regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      assertBool "notorious with dave+fran"
+        (exists "notorious.bob.thief" (readView stWed))
+      let stM = iterate roundBoundary stWed !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "fran regard persists"
+        (exists "regards.fran.bob.thief" (readView stRally))
   ]

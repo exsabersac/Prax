@@ -265,4 +265,18 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "carrying of ana" @?= ["carrying.ana.bag"]
       askChronicle st "carrying of void" @?= ["void carries nothing"]
 
+  , testCase "askChronicle threatened-of / shunned-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "threatened.sid1.ana.ben"
+                , Insert "threatened.sid2.cai.ana"
+                , Insert "shunned.ana.bob"
+                , Insert "flag.x" ]
+      askChronicle st "threatened of ana" @?=
+        [ "threatened.sid1.ana.ben"
+        , "threatened.sid2.cai.ana"
+        ]
+      askChronicle st "threatened of void" @?= ["void has no threat marks"]
+      askChronicle st "shunned of ana" @?= ["shunned.ana.bob"]
+      askChronicle st "shunned of void" @?= ["void has shunned no one"]
+
   ]

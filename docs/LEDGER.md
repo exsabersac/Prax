@@ -1827,3 +1827,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"holding of "` / `"carrying of "`，列出 `holding.<who>.*` / `carrying.<who>.*`（对齐 Host `holdingOf`/`carryingOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
+
+## v333 — Sandbox 婚入×市集声援交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 婚入磨坊后派生 regard，与 dave learn 凑齐臭名，market rally 打开（婚入站队与声援轨衔接）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × rally（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v334 — Chronicle threatened of / shunned of
+
+- **做了什么**：`askChronicle` 增加 `"threatened of "` / `"shunned of "`（对齐 Host `threatenedOf`/`shunnedOf`）。无实践 / 无 Village 金标准改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+
