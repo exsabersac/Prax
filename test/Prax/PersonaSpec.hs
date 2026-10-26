@@ -62,7 +62,11 @@ member n = case [ c | c <- characters world, charName c == n ] of
 
 tests :: TestTree
 tests = testGroup "Prax.Persona"
-  [ testCase "bearing endows a character with the trait's desires by name" $
+  [ testCase "Trait exposes traitName / traitDesires" $ do
+      traitName plainspoken @?= "plainspoken"
+      map desireName (traitDesires plainspoken) @?= ["clean-conscience"]
+
+  , testCase "bearing endows a character with the trait's desires by name" $
       charDesires (bearing plainspoken (character "zed"))
         @?= ["clean-conscience"]
 

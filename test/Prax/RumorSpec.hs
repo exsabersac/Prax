@@ -138,6 +138,16 @@ tests = testGroup "Prax.Rumor"
         assertBool "the legal shape is not rejected" (not (isLeft (r :: Either ErrorCall Int)))
     ]
 
+  , testCase "gossipPublic rejects Prax namespace in gate / event pattern" $ do
+      r1 <- try (evaluate (length (show
+             (gossipPublic together [ Not "flag.PraxD" ] "tripped.Klutz"
+                "[Actor]: shout"))))
+      assertBool "Prax in gate" (isLeft (r1 :: Either ErrorCall Int))
+      r2 <- try (evaluate (length (show
+             (gossipPublic together [] "tripped.PraxWho"
+                "[Actor]: shout"))))
+      assertBool "Prax in pattern" (isLeft (r2 :: Either ErrorCall Int))
+
   , testCase "gossipPublic on a subject-less pattern is an error" $ do
       r <- try (evaluate (length (show (gossipPublic together [] "somethinghappened"
                                          "[Actor]: shout"))))

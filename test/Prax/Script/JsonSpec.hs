@@ -10,7 +10,7 @@ import           Data.Maybe (isJust)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
-import           Prax.Query (CalcOp (..), Condition (..))
+import           Prax.Query (CalcOp (..), CmpOp (..), Condition (..))
 import           Prax.Types (Outcome (..))
 import           Prax.Script (compile, currentSceneOf, timeout)
 import           Prax.Script.Json (encodeScript, decodeScript, loadScript, saveScript)
@@ -36,6 +36,16 @@ tests = testGroup "Prax.Script.Json"
   , testCase "every CalcOp round-trips through JSON, Mod included" $ do
       let cs = [ Calc "R" op "17" "5" | op <- [Add, Sub, Mul, Mod] ]
       decode (encode cs) @?= Just cs
+
+  , testCase "every CmpOp round-trips through JSON" $ do
+      let cs = [ Cmp op "A" "B" | op <- [Lt, Lte, Gt, Gte] ]
+      decode (encode cs) @?= Just cs
+
+  , testCase "unknown cmp / calc operator tags fail decode loudly" $ do
+      assertBool "bad cmp"
+        (decode "[{\"cmp\":[\"nope\",\"A\",\"B\"]}]" == (Nothing :: Maybe [Condition]))
+      assertBool "bad calc"
+        (decode "[{\"calc\":[\"R\",\"div\",\"A\",\"B\"]}]" == (Nothing :: Maybe [Condition]))
 
   , testCase "a ForEach outcome round-trips through JSON" $ do
       let o = ForEach [ Match "at.Witness!P", Neq "Witness" "Actor" ]

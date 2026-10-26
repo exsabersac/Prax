@@ -2807,3 +2807,22 @@
 
 - **模块**：`src/Prax/Chronicle.hs`、`test/Prax/HostSpec.hs`、`test/Prax/ChronicleSpec.hs`
 - **内容**：`chatters of` 短语化聊天人；Spec 钉 Host 叶与 Chronicle 短语及空集。
+
+## v510 — Script.Json CmpOp 往返与未知算子 Spec 钉
+
+- **做了什么**：Script.JsonSpec 钉每个 CmpOp JSON 往返，以及未知 cmp/calc 标签解码失败。无新实践 / 无 want 改动。
+- **测**：Script.JsonSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v511 — Rumor gossipPublic Prax 命名空间 Spec 钉
+
+- **做了什么**：RumorSpec 钉 gossipPublic 对偶 gossip 的门禁/事件模式 Prax 保留名响亮报错。无新实践 / 无 want 改动。
+- **测**：RumorSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v512 — Persona Trait 字段访问 Spec 钉
+
+- **做了什么**：PersonaSpec 钉 Trait 的 traitName/traitDesires 字段。无新实践 / 无 want 改动。
+- **测**：PersonaSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
