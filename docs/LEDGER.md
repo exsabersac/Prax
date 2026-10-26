@@ -2920,3 +2920,26 @@
 - **做了什么**：SandboxSpec 追加 parade/churchParade once 后 squeeze 闭；kyle 默认 Wait；silence 权重钉；dual parade 双闭；cry/rally once 后 exile 路径仍开；kyle 挂 bobHeresy/churchJustice 仍无门；defy-brand×cry；权重链；return×church debt。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（337 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+## v530 — Types Spec 钉（turnPath/dead/living/isPraxVar/outcomeVars）
+
+- **做了什么**：新增 TypesSpec，钉 turnPath、deadSentence、livingCharacters、isPraxVar、authoredPatClash、outcomeVars/outcomeSents、emptyState 时钟种子。无新实践 / 无 want 改动。
+- **测**：TypesSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v531 — Inspect Spec 钉（firstFailing/explain/explainMatching）
+
+- **做了什么**：新增 InspectSpec，钉 firstFailing 左失败合取与 explain/explainMatching 可用/阻塞行。无新实践 / 无 want 改动。
+- **测**：InspectSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v532 — Db childKeys/isVariable/dbExcl/dbAsserted Spec 钉
+
+- **做了什么**：DbSpec 钉 childKeys、isVariable、dbExcl/dbAsserted 与排他/断言端点。无新实践 / 无 want 改动。
+- **测**：DbSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v533 — Engine currentTurn 守卫 Spec 钉
+
+- **做了什么**：EngineSpec 钉 currentTurn 读种子时钟，以及缺槽/多子时响亮报错。无新实践 / 无 want 改动。
+- **测**：EngineSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

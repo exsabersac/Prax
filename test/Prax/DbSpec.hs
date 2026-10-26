@@ -235,6 +235,33 @@ tests = testGroup "Prax.Db"
     , testCase "an interior ! (not trailing) is unaffected" $
         tokens "turn!0" @?= [("turn", Just '!'), ("0", Nothing)]
     ]
+
+  , testGroup "childKeys / isVariable / dbAsserted / dbExcl"
+    [ testCase "childKeys lists direct children of a path" $ do
+        let d = build ["at.bob!square", "at.eve!mill", "holding.bob.loaf"]
+        childKeys "at" d @?= ["bob", "eve"]
+        childKeys "holding.bob" d @?= ["loaf"]
+        childKeys "missing" d @?= []
+
+    , testCase "isVariable is uppercase-initial" $ do
+        assertBool "Who" (isVariable "Who")
+        assertBool "bob" (not (isVariable "bob"))
+        assertBool "empty" (not (isVariable ""))
+
+    , testCase "dbExcl / dbAsserted read node flags after insert" $ do
+        -- Walk to child of exclusive parent: flag!yes → child "yes" under excl parent "flag"
+        let d = build ["flag!yes", "plain.a"]
+            -- Retrieving via childKeys walk: exclusive slot under flag
+        childKeys "flag" d @?= ["yes"]
+        -- Asserted interior: insert "scaffold" then child under it leaves scaffold asserted
+        let d2 = build ["scaffold", "scaffold.leaf"]
+        assertBool "scaffold asserted endpoint survives" (exists "scaffold" d2)
+        assertBool "exclusive value present" (exists "flag!yes" d)
+        assertBool "multi sibling present" (exists "plain.a" d)
+        -- Root of emptyDb
+        assertBool "empty not excl" (not (dbExcl emptyDb))
+        assertBool "empty not asserted" (not (dbAsserted emptyDb))
+    ]
   ]
 
 -- Deterministic ordering for value lists (Val has no Ord instance).

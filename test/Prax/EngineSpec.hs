@@ -394,4 +394,20 @@ tests = testGroup "Prax.Engine"
                     (defineFunctions [ Function "f" [] [] ] emptyState)
         Map.keys (cookedFns st2) @?= ["f", "g"]
     ]
+
+  , testGroup "currentTurn guard"
+    [ testCase "currentTurn reads the seeded turn!0" $
+        currentTurn emptyState @?= 0
+
+    , testCase "currentTurn errors when the clock slot is missing" $ do
+        let st = performOutcome (Delete turnPath) emptyState
+        r <- try (evaluate (currentTurn st))
+        assertBool "missing clock" (isLeft (r :: Either ErrorCall Int))
+
+    , testCase "currentTurn errors when multiple turn children exist" $ do
+        let st = foldl (flip performOutcome) (performOutcome (Delete turnPath) emptyState)
+                       [ Insert "turn.0", Insert "turn.1" ]
+        r <- try (evaluate (currentTurn st))
+        assertBool "ambiguous clock" (isLeft (r :: Either ErrorCall Int))
+    ]
   ]
