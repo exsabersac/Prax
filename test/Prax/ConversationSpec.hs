@@ -5,7 +5,8 @@ import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
-import           Prax.Db (dbToSentences)
+import           Prax.Db (dbToSentences, Val (..))
+import           Prax.Sym (intern)
 import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (definePractice, performOutcome, possibleActions, performAction)
@@ -135,6 +136,34 @@ tests = testGroup "Prax.Conversation"
         (satisfies (db start) [talkingWith "ada" "bex"] Map.empty)
       assertBool "talkingWith reverse order absent as different path"
         (not (satisfies (db start) [talkingWith "bex" "ada"] Map.empty))
+
+  , testCase "onTopic / isSpeaker / isListener evaluate on beginConversation world" $ do
+      let b = Map.fromList
+            [ (intern "A", VSym (intern "ada"))
+            , (intern "B", VSym (intern "bex"))
+            , (intern "Actor", VSym (intern "ada"))
+            ]
+      assertBool "onTopic"
+        (satisfies (db start) [onTopic "greetings"] b)
+      assertBool "hasTopic"
+        (satisfies (db start) [hasTopic "greetings"] b)
+      assertBool "isSpeaker"
+        (satisfies (db start) [isSpeaker] b)
+      assertBool "hasSpeaker"
+        (satisfies (db start) [hasSpeaker] b)
+      assertBool "isListener fails for speaker Actor"
+        (not (satisfies (db start) [isListener] b))
+      let bListen = Map.insert (intern "Actor") (VSym (intern "bex")) b
+      assertBool "isListener"
+        (satisfies (db start) [isListener] bListen)
+      assertBool "hasListener"
+        (satisfies (db start) [hasListener] bListen)
+      assertBool "offTopic weather"
+        (satisfies (db start) [offTopic "weather"] b)
+      assertBool "lacksSpeaker fails for speaker"
+        (not (satisfies (db start) [lacksSpeaker] b))
+      assertBool "lacksListener fails for listener"
+        (not (satisfies (db start) [lacksListener] bListen))
 
   ]
 

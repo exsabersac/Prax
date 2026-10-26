@@ -374,4 +374,30 @@ tests = testGroup "Prax.Kin"
       assertBool "lacksInLawOf fails"
         (not (satisfies v [lacksInLawOf "pat" "cass"] Map.empty))
 
+  , testCase "lacksChildOf / lacksSiblingOf / hasParentOf evaluate on empty and kinWorld" $ do
+      assertBool "lacksChildOf on empty"
+        (satisfies (db emptyState) [lacksChildOf "ana" "pat"] Map.empty)
+      assertBool "lacksSiblingOf on empty"
+        (satisfies (db emptyState) [lacksSiblingOf "ana" "ben"] Map.empty)
+      let v = readView kinWorld
+      assertBool "lacksChildOf fails"
+        (not (satisfies v [lacksChildOf "ana" "pat"] Map.empty))
+      assertBool "lacksSiblingOf fails"
+        (not (satisfies v [lacksSiblingOf "ana" "ben"] Map.empty))
+      assertBool "hasSiblingOf"
+        (satisfies v [hasSiblingOf "ana" "ben"] Map.empty)
+      assertBool "hasParentOf"
+        (satisfies v [hasParentOf "pat" "ana"] Map.empty)
+
+  , testCase "ageAtLeast evaluates on setAge world" $ do
+      assertBool "no age fails"
+        (not (satisfies (db emptyState) (ageAtLeast "ana" 18) Map.empty))
+      let st = performOutcome (setAge "ana" 18) emptyState
+      assertBool "adult gte 18"
+        (satisfies (db st) (ageAtLeast "ana" 18) Map.empty)
+      assertBool "adult gte 17"
+        (satisfies (db st) (ageAtLeast "ana" 17) Map.empty)
+      assertBool "adult gte 19 fails"
+        (not (satisfies (db st) (ageAtLeast "ana" 19) Map.empty))
+
   ]

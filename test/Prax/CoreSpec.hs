@@ -76,4 +76,15 @@ tests = testGroup "Prax.Core"
       assertBool "neverBond fails"
         (not (satisfies (db st) [neverBond "ada"] Map.empty))
 
+  , testCase "scoreAtLeast evaluates on adjustScore world" $ do
+      assertBool "no score on base"
+        (not (satisfies (db base) (scoreAtLeast "ada" "bex" warmth 1) Map.empty))
+      let st = performOutcome (adjustScore "ada" "bex" warmth 10 "greeting") base
+      assertBool "gte 10"
+        (satisfies (db st) (scoreAtLeast "ada" "bex" warmth 10) Map.empty)
+      assertBool "gte 5"
+        (satisfies (db st) (scoreAtLeast "ada" "bex" warmth 5) Map.empty)
+      assertBool "gte 11 fails"
+        (not (satisfies (db st) (scoreAtLeast "ada" "bex" warmth 11) Map.empty))
+
   ]

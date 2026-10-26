@@ -386,4 +386,19 @@ tests = testGroup "Prax.Emotion"
       assertBool "feelingToward"
         (satisfies (db st) [feelingToward "ada" "angry" "ben"] Map.empty)
 
+  , testCase "intensityAtLeast / intensityTowardAtLeast / lacksMood evaluate via satisfies" $ do
+      assertBool "lacksMood on empty"
+        (satisfies (db emptyState) [lacksMood "ada"] Map.empty)
+      let st = foldl (flip performOutcome) emptyState (feelAt 2 "ada" afraid)
+      assertBool "intensityAtLeast 2"
+        (satisfies (db st) (intensityAtLeast "ada" afraid 2) Map.empty)
+      assertBool "intensityAtLeast 3 fails"
+        (not (satisfies (db st) (intensityAtLeast "ada" afraid 3) Map.empty))
+      let st2 = foldl (flip performOutcome) emptyState
+                  (feelTowardAt 4 "ada" angry "carol")
+      assertBool "intensityTowardAtLeast 3"
+        (satisfies (db st2) (intensityTowardAtLeast "ada" angry "carol" 3) Map.empty)
+      assertBool "intensityTowardAtLeast 5 fails"
+        (not (satisfies (db st2) (intensityTowardAtLeast "ada" angry "carol" 5) Map.empty))
+
   ]

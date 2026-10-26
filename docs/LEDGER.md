@@ -2615,3 +2615,26 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Spec 钉 denounce 后窗外 dave 同挂 `wants-exile-bob`(12) 与 `parades-branded-thief`(10) 时优先 exile。无新实践 / 无 want 改动。
 - **测**：SandboxSpec wants: exile weight beats parade when both open。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+## v468 — Kin lacksChildOf/lacksSiblingOf/ageAtLeast 世界求值
+
+- **做了什么**：Kin Spec 钉净世界上 lacksChildOf/lacksSiblingOf 与 kinWorld 上对偶失败/hasParentOf/hasSiblingOf；setAge 世界上 ageAtLeast。无新实践 / 无 want 改动。
+- **测**：KinSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v469 — Core scoreAtLeast 世界求值
+
+- **做了什么**：Core Spec 钉 adjustScore 世界上 scoreAtLeast（含阈值下界失败）。无新实践 / 无 want 改动。
+- **测**：CoreSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v470 — Emotion intensityAtLeast/lacksMood 世界求值
+
+- **做了什么**：Emotion Spec 钉 feelAt/feelTowardAt 世界上 intensityAtLeast/intensityTowardAtLeast 与净世界上 lacksMood（via satisfies）。无新实践 / 无 want 改动。
+- **测**：EmotionSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v471 — Conversation onTopic/isSpeaker/isListener 世界求值
+
+- **做了什么**：Conversation Spec 钉 beginConversation 世界上 onTopic/hasTopic/isSpeaker/isListener/offTopic/lacksSpeaker/lacksListener（A/B/Actor 绑定）。无新实践 / 无 want 改动。
+- **测**：ConversationSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
