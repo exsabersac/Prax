@@ -2951,3 +2951,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"allies of "`；Spec 钉对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v525 — Sandbox 欲望权重词汇钉 + 教会买沉默权重（钉既有门禁）
+
+- **做了什么**：Spec 钉 sandboxDesires 全表 wantUtility；教会买沉默(14) 压过 churchJustice；市集 cry(7) 压过 millJustice；fearsBrand/Heretic 负权重选 confess/recant；parade once 后不可再游街。无新实践。
+- **测**：SandboxSpec wants: desire weight vocabulary / church silence buy / cry weight / fearsBrand* / after parade once-gate。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未开 feat/my-town。
+
+## v526 — Sandbox affiliate×want 负例再扩 + cast 默认挂载（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 挂 rally/cry/silence/bobHeresy 时门禁仍关；cast 默认 millCry/churchJustice/silence/kyle 空。无新实践。
+- **测**：SandboxSpec wants: affiliate kyle with rally+cry / silence / bobHeresy；cast: default desire hooks。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
