@@ -3247,3 +3247,9 @@
 - **做了什么**：SandboxSpec 追加双 revoke 独立；mill brand×church squeeze；kyle inquisit 负例；cry once×rally 门；dual brand×buy；无 punishesThief 不 denounce；denounce/censure×buy 出窗；parade>cry util；flee×return×squeeze；cast fran/dave；repay×cry。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（551 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v591 — Sandbox silence×wed/parade + dual tear re-buy block + vocab Spec
+
+- **做了什么**：SandboxSpec 追加 silence×wed/squeeze；church silence×parade；kyle churchParade 负例；dual tear 挡再买；parade once×inquisit；无 return 不回；brand×rally/cry；churchParade once×denounce；break util；dual repay×正义；sandboxDesires 词汇；flee×return×buy/tear。无新实践 / 无 want 改动。
+- **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（563 绿）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
