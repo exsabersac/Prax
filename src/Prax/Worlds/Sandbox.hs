@@ -1,5 +1,6 @@
 -- | 轻量可玩沙盒世界：节庆门禁 + factionStanding 的磨坊审判 / 教会异端 /
--- 婚入磨坊 / 债务买沉默 / 双节庆错峰市集喊冤 / 受害方叛逃和解弧（非 Village）。
+-- 婚入磨坊 / 债务买沉默 / 双节庆错峰市集喊冤 / 受害方叛逃和解 /
+-- 沉默×叛逃×节庆复合门禁 / 臭名+愤怒市集声援（非 Village）。
 -- Village / GoldenDrive 金标准不动；以轻量 wants 驱动 NPC 自选节拍。
 
 module Prax.Worlds.Sandbox
@@ -10,6 +11,7 @@ module Prax.Worlds.Sandbox
   , millJustice
   , churchJustice
   , iraJustice
+  , millCry
   ) where
 
 import           Prax.Query (Condition (..))
@@ -23,6 +25,8 @@ import           Prax.Faction
 import           Prax.Kin (kinAxioms)
 import           Prax.Schedule (festival, duringFestival, outsideFestival)
 import           Prax.Debt (owe, settle, lacksOwes, owes)
+import           Prax.Repute (notoriety, isNotorious)
+import           Prax.Emotion (feelToward, angry, feelingToward)
 
 -- | 你是磨坊成员——可获知、控告、放逐；旁观教会弧与沉默债。玩家槽无 want。
 playerName :: String
@@ -33,6 +37,7 @@ sandboxAxioms :: [Axiom]
 sandboxAxioms =
   [ factionStanding "stole.Culprit.Victim" "thief"
   , factionStanding "blasphemed.Culprit.Victim" "heretic"
+  , notoriety "thief" 2   -- ≥2 磨坊站队 → notorious.bob.thief，打开市集声援
   ] ++ kinAxioms
 
 -- | 命名欲望词汇：磨坊正义 / 教会审查 / 婚入磨坊 / 买沉默与撕毁协议。
@@ -62,6 +67,8 @@ sandboxDesires =
       (Want [ Match "fled.Owner" ] 9)
   , Desire "returns-to-mill"
       (Want [ Match "reconciled.Owner" ] 11)
+  , Desire "rallies-against-thief"
+      (Want [ Match "rallied.Owner.bob" ] 9)
   ]
 
 millJustice :: [String]
@@ -102,7 +109,8 @@ millTribunalP = practice
           [ outsideFestival "harvest"
           , isMember "Actor" "mill"
           , Not "Actor.believes.stole.bob.carol" ]
-          [ Insert "Actor.believes.stole.bob.carol" ]
+          [ Insert "Actor.believes.stole.bob.carol"
+          , feelToward "Actor" angry "bob" ]
       , action "[Actor]: denounce the thief"
           [ duringFestival "harvest"
           , Match "regards.Actor.bob.thief"
@@ -203,6 +211,23 @@ marketCryP = practice
       ]
   }
 
+-- | 臭名声援：market 窗内、已愤怒且 bob 达臭名阈值的角色可公开声援（旁观者介入）。
+-- 主阵容默认不挂 rallies want（免搅 cry 金轨迹）；reputeSeed 覆盖后自由跑。
+millRallyP :: Practice
+millRallyP = practice
+  { practiceId   = "millRally"
+  , practiceName = "rallying the square against a notorious thief"
+  , roles        = []
+  , actions =
+      [ action "[Actor]: rally the square against the thief"
+          [ duringFestival "market"
+          , isNotorious "bob" "thief"
+          , feelingToward "Actor" angry "bob"
+          , Not "rallied.Actor.bob" ]
+          [ Insert "rallied.Actor.bob" ]
+      ]
+  }
+
 -- | 受害方叛逃与和解：离开磨坊溶解 factionStanding；再加入恢复站队与门禁。
 millAllegianceP :: Practice
 millAllegianceP = practice
@@ -271,6 +296,7 @@ setup =
   , Insert "practice.millSilence"
   , Insert "practice.marketCry"
   , Insert "practice.millAllegiance"
+  , Insert "practice.millRally"
   -- Outsider / affiliate negatives already hold belief without regard (demo seeds).
   , Insert "eve.believes.stole.bob.carol"
   , Insert "bob.believes.blasphemed.eve.gale"
@@ -288,5 +314,5 @@ sandboxWorld =
         (setCharacters cast
           (definePractices
              [ presenceP, millTribunalP, churchHeresyP, millWedP, millSilenceP
-             , marketCryP, millAllegianceP ]
+             , marketCryP, millAllegianceP, millRallyP ]
              (setSchedule [harvestFestival, marketFestival] emptyState)))

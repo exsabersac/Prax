@@ -1,5 +1,6 @@
 -- | Prax.Worlds.Sandbox 可测闭环：磨坊审判、教会异端、婚入获站队、
--- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解，以及轻量 wants 驱动的自选节拍。
+-- 债务买沉默、双节庆错峰市集喊冤、受害方叛逃和解、沉默×叛逃×节庆复合门禁、
+-- 臭名+愤怒市集声援，以及轻量 wants 驱动的自选节拍。
 -- 自有逐步断言与短轨迹；不触碰 Village / Bar / Feud / GoldenDrive 等既有金标准。
 module Prax.SandboxSpec (tests) where
 
@@ -16,7 +17,7 @@ import           Prax.Host (practiceNames, castNames, festivalsOf, membersOf, le
 import           Prax.Planner (pickAction)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Worlds.Sandbox
-  ( sandboxWorld, playerName, sandboxDesires, millJustice )
+  ( sandboxWorld, playerName, sandboxDesires, millJustice, millCry )
 
 hasAct :: String -> String -> PraxState -> Bool
 hasAct who needle st =
@@ -205,6 +206,128 @@ sandboxDefectionGolden =
   , "ira: ira: denounce the thief"
   ]
 
+-- Composite: silence debt × victim defection × festival gates in ONE arc.
+-- ira already learned (bob can buy); carol holds flee+return (+ millCry).
+-- Multi-gate flips: buy blocks ira → carol flees dissolves ALL mill regard
+-- (even after tear-up denounce stays closed) → return restores → harvest denounce.
+compositeSeed :: PraxState
+compositeSeed =
+  let st0 = doAct "ira" "learn" sandboxWorld
+      carol' = (actorOf "carol" st0)
+                  { charDesires = ["flees-mill", "returns-to-mill"] ++ millCry }
+  in st0 { characters =
+              [ if charName c == "carol" then carol' else c
+              | c <- characters st0 ] }
+
+-- Repute/emotion bystander: dave holds rally want (weight 9 > cry 7) so at
+-- market, once bob is notorious (≥2 regards) and dave is angry, he rallies.
+reputeSeed :: PraxState
+reputeSeed =
+  let st0 = sandboxWorld
+      dave' = (actorOf "dave" st0)
+                 { charDesires = ["rallies-against-thief"] ++ millCry }
+  in st0 { characters =
+              [ if charName c == "dave" then dave' else c
+              | c <- characters st0 ] }
+
+-- Captured from live wants-driven runs (v274/v275).
+-- Composite pins buy→flee→return→denounce (multi-gate); repute pins market rally.
+sandboxCompositeGolden :: [String]
+sandboxCompositeGolden =
+  [ "bob: bob: buy ira's silence about the theft"
+  , "carol: carol: learn of the theft"
+  , "dave: dave: learn of the theft"
+  , "fran: fran: wed into the mill beside carol"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: hear the blasphemy"
+  , "priest: priest: hear the blasphemy"
+  , "ira: ira: tear up bob's silence deal"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: abandon the mill for the guild"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: learn of the theft"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: return to the mill in reconciliation"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: denounce the thief"
+  , "dave: dave: denounce the thief"
+  , "fran: fran: denounce the thief"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: censure the heretic"
+  , "priest: priest: censure the heretic"
+  , "ira: ira: denounce the thief"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: exile the thief"
+  , "dave: dave: cry the theft at market"
+  , "fran: fran: cry the theft at market"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: exile the heretic"
+  , "ira: ira: cry the theft at market"
+  ]
+
+sandboxReputeGolden :: [String]
+sandboxReputeGolden =
+  [ "bob: bob: Wait a moment"
+  , "carol: carol: learn of the theft"
+  , "dave: dave: learn of the theft"
+  , "fran: fran: wed into the mill beside carol"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: hear the blasphemy"
+  , "priest: priest: hear the blasphemy"
+  , "ira: ira: learn of the theft"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: buy ira's silence about the theft"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: learn of the theft"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: tear up bob's silence deal"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: Wait a moment"
+  , "dave: dave: Wait a moment"
+  , "fran: fran: Wait a moment"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: Wait a moment"
+  , "ira: ira: Wait a moment"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: denounce the thief"
+  , "dave: dave: denounce the thief"
+  , "fran: fran: denounce the thief"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: censure the heretic"
+  , "priest: priest: censure the heretic"
+  , "ira: ira: denounce the thief"
+  , "kyle: kyle: Wait a moment"
+  , "bob: bob: Wait a moment"
+  , "carol: carol: exile the thief"
+  , "dave: dave: rally the square against the thief"
+  , "fran: fran: cry the theft at market"
+  , "eve: eve: Wait a moment"
+  , "gale: gale: Wait a moment"
+  , "priest: priest: exile the heretic"
+  , "ira: ira: cry the theft at market"
+  ]
+
 tests :: TestTree
 tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs)"
   [ testCase "well-formed: typeCheck empty" $
@@ -218,6 +341,7 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "millSilence" ("millSilence" `elem` practiceNames sandboxWorld)
       assertBool "marketCry" ("marketCry" `elem` practiceNames sandboxWorld)
       assertBool "millAllegiance" ("millAllegiance" `elem` practiceNames sandboxWorld)
+      assertBool "millRally" ("millRally" `elem` practiceNames sandboxWorld)
       assertBool "presence" ("presence" `elem` practiceNames sandboxWorld)
       assertBool "you mill" (playerName `elem` membersOf sandboxWorld "mill")
       assertBool "ira mill" ("ira" `elem` membersOf sandboxWorld "mill")
@@ -494,4 +618,100 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
   , testCase "wants defection golden: 35 NPC turns flee → return → denounce restored" $
       driveLabels (length sandboxDefectionGolden) defectionSeed
         @?= sandboxDefectionGolden
+
+  , testCase "composite silence × defection × festival: multi-gate flips" $ do
+      let st0 = compositeSeed
+      assertBool "ira regards" (exists "regards.ira.bob.thief" (readView st0))
+      assertBool "ira angry" (exists "ira.feels.angry.toward.bob" (db st0)
+                              || exists "ira.feels.angry.toward.bob" (readView st0))
+      -- bob buys ira silence; dave+carol learn; carol flees.
+      let stBuy = doAct "bob" "buy ira" st0
+          stDave = doAct "dave" "learn" stBuy
+          stCarol = doAct "carol" "learn" stDave
+      assertBool "debt" (exists "debt.ira.bob.favor" (db stCarol))
+      assertBool "dave regards before flee"
+        (exists "regards.dave.bob.thief" (readView stCarol))
+      assertBool "carol can abandon" (hasAct "carol" "abandon the mill" stCarol)
+      let stFlee = doAct "carol" "abandon the mill" stCarol
+      assertBool "all mill regard dissolved"
+        (not (exists "regards.dave.bob.thief" (readView stFlee))
+         && not (exists "regards.ira.bob.thief" (readView stFlee)))
+      assertBool "beliefs persist"
+        (exists "dave.believes.stole.bob.carol" (db stFlee)
+         && exists "ira.believes.stole.bob.carol" (db stFlee))
+      -- Tear-up clears debt but regard still gone → denounce stays closed at harvest.
+      assertBool "ira can tear" (hasAct "ira" "tear up bob" stFlee)
+      let stTear = doAct "ira" "tear up bob" stFlee
+      assertBool "debt gone" (not (exists "debt.ira.bob.favor" (db stTear)))
+      let stH = iterate roundBoundary stTear !! 3
+      assertBool "harvest open" (exists "festival.harvest" (db stH))
+      assertBool "ira still blocked (no regard)" (not (hasAct "ira" "denounce" stH))
+      assertBool "dave still blocked (no regard)" (not (hasAct "dave" "denounce" stH))
+      -- Return restores regard + denounce for both (ira already revoked).
+      assertBool "carol can return" (hasAct "carol" "return to the mill" stH)
+      let stBack = doAct "carol" "return to the mill" stH
+      assertBool "dave regard restored"
+        (exists "regards.dave.bob.thief" (readView stBack))
+      assertBool "ira regard restored"
+        (exists "regards.ira.bob.thief" (readView stBack))
+      assertBool "ira denounce yes" (hasAct "ira" "denounce" stBack)
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stBack)
+      let stDen = doAct "ira" "denounce" stBack
+      assertBool "ira denounced" (exists "denounced.ira.bob" (db stDen))
+      -- Market cry still opens on the next boundary for standing witnesses.
+      let stM = roundBoundary stDen
+      assertBool "market open" (exists "festival.market" (db stM))
+      assertBool "dave cry yes" (hasAct "dave" "cry the theft" stM)
+
+  , testCase "wants: compositeSeed carol flees then returns; bob buys after ira learned" $ do
+      pickLabel "bob" compositeSeed @?= Just "bob: buy ira's silence about the theft"
+      pickLabel "carol" compositeSeed @?= Just "carol: learn of the theft"
+      let stLearn = doAct "carol" "learn" compositeSeed
+      pickLabel "carol" stLearn @?= Just "carol: abandon the mill for the guild"
+      let stFlee = doAct "carol" "abandon the mill" stLearn
+      pickLabel "carol" stFlee @?= Just "carol: return to the mill in reconciliation"
+
+  , testCase "repute + emotion: notoriety at 2 regards; angry learn; market rally gate" $ do
+      let st0 = reputeSeed
+      assertBool "seed: not notorious"
+        (not (exists "notorious.bob.thief" (readView st0)))
+      let st1 = doAct "dave" "learn" st0
+      assertBool "dave angry"
+        (exists "dave.feels.angry.toward.bob" (db st1)
+         || exists "dave.feels.angry.toward.bob" (readView st1))
+      assertBool "one regard: still not notorious"
+        (not (exists "notorious.bob.thief" (readView st1)))
+      assertBool "dave regards" (exists "regards.dave.bob.thief" (readView st1))
+      let st2 = doAct "carol" "learn" st1
+      assertBool "two regards: notorious"
+        (exists "notorious.bob.thief" (readView st2))
+      -- Outside market: rally closed even when notorious+angry.
+      assertBool "outside: no rally" (not (hasAct "dave" "rally" st2))
+      let stH = iterate roundBoundary st2 !! 3
+      assertBool "harvest open" (exists "festival.harvest" (db stH))
+      assertBool "harvest: denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "harvest: rally no" (not (hasAct "dave" "rally" stH))
+      let stM = roundBoundary stH
+      assertBool "market open" (exists "festival.market" (db stM))
+      assertBool "market: rally yes" (hasAct "dave" "rally" stM)
+      assertBool "market: cry still yes" (hasAct "dave" "cry the theft" stM)
+      -- Affiliate kyle never learns → no anger → no rally even at market.
+      assertBool "kyle no rally" (not (hasAct "kyle" "rally" stM))
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "rally once" (not (hasAct "dave" "rally" stRally))
+
+  , testCase "wants: reputeSeed dave rallies at market (over cry)" $ do
+      let st2 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+      let stM = roundBoundary (iterate roundBoundary st2 !! 3)
+      assertBool "market open" (exists "festival.market" (db stM))
+      pickLabel "dave" stM @?= Just "dave: rally the square against the thief"
+
+  , testCase "wants composite golden: 44 NPC turns silence × flee × return × denounce" $
+      driveLabels (length sandboxCompositeGolden) compositeSeed
+        @?= sandboxCompositeGolden
+
+  , testCase "wants repute golden: 44 NPC turns notoriety → market rally" $
+      driveLabels (length sandboxReputeGolden) reputeSeed
+        @?= sandboxReputeGolden
   ]
