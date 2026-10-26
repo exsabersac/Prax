@@ -24,7 +24,8 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              eyedOf, confrontedOf, wrongedOf,
                              recantedOf, shortTemperedOf, appetiteOf,
                              resentsOf, alliedOf, demandedOf,
-                             notoriousOf, regardsToward, factionsNamed)
+                             notoriousOf, regardsToward, factionsNamed,
+                             membersOf, affiliatesOf, leadersOf, agesOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -631,5 +632,39 @@ tests = testGroup "Prax.Chronicle"
             ]
       askChronicle st "regards toward eve" @?= regardsToward st "eve"
       askChronicle st "what factions" @?= factionsNamed st
+
+  , testCase "askChronicle members/affiliates/leads dual Host names" $ do
+      -- Host *Of return bare names; Chronicle phrases them.
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "member.ana!hall"
+            , Insert "member.ben!hall"
+            , Insert "affiliate.ana.guild"
+            , Insert "leads.hall!ana"
+            ]
+      membersOf st "hall" @?= ["ana", "ben"]
+      affiliatesOf st "ana" @?= ["guild"]
+      leadersOf st "hall" @?= ["ana"]
+      askChronicle st "members of hall" @?=
+        ["ana is a member of hall", "ben is a member of hall"]
+      askChronicle st "affiliates of ana" @?= ["ana affiliates guild"]
+      askChronicle st "leads of hall" @?= ["ana leads hall"]
+
+  , testCase "askChronicle age dual Host agesOf raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "age.mia.17"
+            ]
+      agesOf st "mia" @?= ["age.mia.17"]
+      askChronicle st "age of mia" @?= ["mia age 17"]
+
+  , testCase "askChronicle regards-of dual Host regardsToward phrasing" $ do
+      -- Host regardsToward returns full leaves on target; Chronicle phrases observers.
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "regards.dave.eve.hero"
+            , Insert "regards.kai.dog.victim"
+            ]
+      regardsToward st "eve" @?= ["regards.dave.eve.hero"]
+      regardsToward st "dog" @?= ["regards.kai.dog.victim"]
+      askChronicle st "regards of eve" @?= ["dave as hero"]
+      askChronicle st "regards of dog" @?= ["kai as victim"]
 
   ]

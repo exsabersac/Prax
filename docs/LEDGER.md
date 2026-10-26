@@ -2328,3 +2328,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec censure × rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v417 — Chronicle members/affiliates/leads 对偶 Host 名表
+
+- **做了什么**：Spec 钉 members/affiliates/leads：Host *Of 返回裸名，askChronicle 短语化。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v418 — Chronicle age/regards-of 对偶 Host 原叶/短语
+
+- **做了什么**：Spec 钉 age（agesOf 原叶 vs 短语）与 regards of（regardsToward 原叶 vs RegardHook 观察者短语）。无新实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
