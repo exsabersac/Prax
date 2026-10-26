@@ -2656,3 +2656,16 @@
 - **做了什么**：Spec 钉 kyle∈guild∉mill、priest∈church leaders、fran∉mill。无新实践。
 - **测**：SandboxSpec cast: guild kyle and church leaders。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；不碰 feat/my-town。
+
+## v484 — Script.Json saveScript/loadScript Spec 钉
+
+- **做了什么**：JsonSpec 钉 saveScript/loadScript 临时文件往返（相对 encode/decode）。无新实践 / 无 want 改动。
+- **测**：Script.JsonSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v485 — Script scenePatiencePath 导出 + Spec 钉
+
+- **做了什么**：导出 scenePatiencePath（族头拼接）；Spec 钉 `scenePatience.<sid>.<j>`。无新实践 / 无 want 改动。
+- **测**：ScriptSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

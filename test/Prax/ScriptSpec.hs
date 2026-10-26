@@ -389,6 +389,9 @@ tests = testGroup "Prax.Script"
       scenePatienceFamily @?= "scenePatience"
       currentScenePath @?= "currentScene"
 
+  , testCase "scenePatiencePath joins family.scene.junction" $ do
+      scenePatiencePath "hall" "linger" @?= "scenePatience.hall.linger"
+
   , testCase "scriptPlayer picks the playable cast member" $ do
       let sc = Script
             { scriptStart = "s"

@@ -52,6 +52,7 @@ module Prax.Script
   , flowChart
     -- * Compiler-owned fact families (reserved by "Prax.TypeCheck", spec v53)
   , scenePatienceFamily
+  , scenePatiencePath
   , currentScenePath
   ) where
 

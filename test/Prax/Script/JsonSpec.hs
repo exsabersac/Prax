@@ -13,7 +13,9 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Query (CalcOp (..), Condition (..))
 import           Prax.Types (Outcome (..))
 import           Prax.Script (compile, currentSceneOf, timeout)
-import           Prax.Script.Json (encodeScript, decodeScript)
+import           Prax.Script.Json (encodeScript, decodeScript, loadScript, saveScript)
+import           System.Directory (getTemporaryDirectory, removeFile)
+import           System.IO (hClose, openTempFile)
 import           Prax.Worlds.Play (playScript)
 
 tests :: TestTree
@@ -101,4 +103,13 @@ tests = testGroup "Prax.Script.Json"
         Right sc -> case compile sc of
           st -> assertBool "compiles to a scene-bearing world"
                   (isJust (currentSceneOf st))
+
+  , testCase "saveScript / loadScript round-trip via a temp file" $ do
+      dir <- getTemporaryDirectory
+      (path, h) <- openTempFile dir "prax-script-.json"
+      hClose h
+      saveScript path playScript
+      got <- loadScript path
+      removeFile path
+      got @?= Right playScript
   ]
