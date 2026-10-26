@@ -51,6 +51,8 @@ module Prax.Coerce
   , isRallied, lacksRallied
   , isCensured, lacksCensured
   , isExiled, lacksExiled
+  , isFled, lacksFled
+  , isReconciled, lacksReconciled
   ) where
 
 import           Data.List (nub)
@@ -455,4 +457,25 @@ isExiled who =
 lacksExiled :: String -> Condition
 lacksExiled who =
   Not ("exiled." ++ guardSeg "lacksExiled" who)
+
+
+-- | 条件：@who@ 已叛逃（@fled.<who>@；Sandbox millAllegiance）。
+isFled :: String -> Condition
+isFled who =
+  Match ("fled." ++ guardSeg "isFled" who)
+
+-- | 条件：无叛逃叶。
+lacksFled :: String -> Condition
+lacksFled who =
+  Not ("fled." ++ guardSeg "lacksFled" who)
+
+-- | 条件：@who@ 已和解回队（@reconciled.<who>@；Sandbox millAllegiance）。
+isReconciled :: String -> Condition
+isReconciled who =
+  Match ("reconciled." ++ guardSeg "isReconciled" who)
+
+-- | 条件：无和解叶。
+lacksReconciled :: String -> Condition
+lacksReconciled who =
+  Not ("reconciled." ++ guardSeg "lacksReconciled" who)
 

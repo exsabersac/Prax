@@ -1469,4 +1469,26 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "rally stays" (hasAct "dave" "rally" stM)
       let stRally = doAct "dave" "rally" stM
       assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+
+  , testCase "parade × rally: brand parade and market rally stay independent" $ do
+      -- Brand→activateParade; reputeSeed path to notorious+angry; market:
+      -- mill parade (regard+brand) and rally (notorious+angry) share no once-gate.
+      let st0 = doAct "carol" "learn" (doAct "dave" "learn" reputeSeed)
+          stSq = doAct "dave" "squeeze bob" (activateSqueeze st0)
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+      assertBool "notorious" (exists "notorious.bob.thief" (readView stP))
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stP)
+      let stM = iterate roundBoundary stP !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "dave rally yes" (hasAct "dave" "rally" stM)
+      assertBool "parade still" (hasAct "dave" "parade bob" stM)
+      let stRally = doAct "dave" "rally" stM
+      assertBool "rallied" (exists "rallied.dave.bob" (db stRally))
+      assertBool "parade after rally" (hasAct "dave" "parade bob" stRally)
+      let stPar = doAct "dave" "parade bob" stRally
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+      assertBool "rally spent" (not (hasAct "dave" "rally" stPar))
   ]
