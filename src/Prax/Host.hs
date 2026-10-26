@@ -19,6 +19,8 @@
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
 -- v284：'confessedOf'/'recantedOf'/'ostracizedOf'/'exiledOf' 招供/悔罪/放逐/流放叶。
 -- v287：'denouncedOf'/'censuredOf'/'paradedOf' 控告/审查/游街叶（Sandbox）。
+-- v290：'criedOf'/'ralliedOf' 市集喊冤/声援叶。
+-- v291：'fledOf'/'reconciledOf'/'marriedOf' 叛逃/和解/婚入叶。
 module Prax.Host
   ( step
   , stepExact
@@ -83,6 +85,11 @@ module Prax.Host
   , denouncedOf
   , censuredOf
   , paradedOf
+  , criedOf
+  , ralliedOf
+  , fledOf
+  , reconciledOf
+  , marriedOf
   , checkpoint
   , restore
   ) where
@@ -661,6 +668,71 @@ paradedOf st who = sort
   | s <- queryView st
   , "paraded." `isPrefixOf` s
   , let rest = drop (length ("paraded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+
+
+-- | 闭合视图中与 @who@ 相关的市集喊冤叶（@cried.<actor>.<target>@，任一侧）。
+criedOf :: PraxState -> String -> [String]
+criedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "cried." `isPrefixOf` s
+  , let rest = drop (length ("cried." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中与 @who@ 相关的市集声援叶（@rallied.<actor>.<target>@，任一侧）。
+ralliedOf :: PraxState -> String -> [String]
+ralliedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "rallied." `isPrefixOf` s
+  , let rest = drop (length ("rallied." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , head parts == who || (parts !! 1) == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中 @who@ 的叛逃叶（@fled.<who>@）。
+fledOf :: PraxState -> String -> [String]
+fledOf st who =
+  sort [ s | s <- queryView st, s == ("fled." ++ who)
+              || ("fled." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中 @who@ 的和解叶（@reconciled.<who>@）。
+reconciledOf :: PraxState -> String -> [String]
+reconciledOf st who =
+  sort [ s | s <- queryView st, s == ("reconciled." ++ who)
+              || ("reconciled." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中与 @who@ 相关的婚入叶（@married.<a>.<b>@，任一侧）。
+marriedOf :: PraxState -> String -> [String]
+marriedOf st who = sort
+  [ s
+  | s <- queryView st
+  , "married." `isPrefixOf` s
+  , let rest = drop (length ("married." :: String)) s
   , let parts = splitDots rest
   , length parts >= 2
   , head parts == who || (parts !! 1) == who

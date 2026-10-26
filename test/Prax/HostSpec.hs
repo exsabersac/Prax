@@ -444,4 +444,34 @@ tests = testGroup "Prax.Host"
       paradedOf st "eve" @?= ["paraded.priest.eve"]
       paradedOf st "void" @?= []
 
+  , testCase "criedOf / ralliedOf / fledOf / reconciledOf / marriedOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "cried.dave.bob"
+                , Insert "cried.bob.carol"
+                , Insert "rallied.dave.bob"
+                , Insert "rallied.ira.bob"
+                , Insert "fled.carol"
+                , Insert "reconciled.carol"
+                , Insert "married.fran.carol"
+                , Insert "married.dave.eve"
+                , Insert "flag.x" ]
+      criedOf st "bob" @?=
+        [ "cried.bob.carol"
+        , "cried.dave.bob"
+        ]
+      criedOf st "void" @?= []
+      ralliedOf st "bob" @?=
+        [ "rallied.dave.bob"
+        , "rallied.ira.bob"
+        ]
+      ralliedOf st "void" @?= []
+      fledOf st "carol" @?= ["fled.carol"]
+      fledOf st "void" @?= []
+      reconciledOf st "carol" @?= ["reconciled.carol"]
+      reconciledOf st "void" @?= []
+      marriedOf st "fran" @?= ["married.fran.carol"]
+      marriedOf st "carol" @?= ["married.fran.carol"]
+      marriedOf st "dave" @?= ["married.dave.eve"]
+      marriedOf st "void" @?= []
+
   ]

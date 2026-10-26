@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -367,6 +367,36 @@ runParaded (who : ws) =
   in mapM_ putStrLn (paradedOf st who)
 runParaded _ = putStrLn "usage: prax paraded <who> <world>"
 
+runCried :: [String] -> IO ()
+runCried (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (criedOf st who)
+runCried _ = putStrLn "usage: prax cried <who> <world>"
+
+runRallied :: [String] -> IO ()
+runRallied (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (ralliedOf st who)
+runRallied _ = putStrLn "usage: prax rallied <who> <world>"
+
+runFled :: [String] -> IO ()
+runFled (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (fledOf st who)
+runFled _ = putStrLn "usage: prax fled <who> <world>"
+
+runReconciled :: [String] -> IO ()
+runReconciled (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (reconciledOf st who)
+runReconciled _ = putStrLn "usage: prax reconciled <who> <world>"
+
+runMarried :: [String] -> IO ()
+runMarried (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (marriedOf st who)
+runMarried _ = putStrLn "usage: prax married <who> <world>"
+
 runWorlds :: IO ()
 runWorlds = mapM_ putStrLn
   [ "bar        — a night at the bar (default)"
@@ -474,6 +504,11 @@ usageText = unlines
   , "  prax denounced <who> <world>           list denounced leaves involving who"
   , "  prax censured <who> <world>            list censured leaves involving who"
   , "  prax paraded <who> <world>             list paraded leaves involving who"
+  , "  prax cried <who> <world>               list cried leaves involving who"
+  , "  prax rallied <who> <world>             list rallied leaves involving who"
+  , "  prax fled <who> <world>                list fled leaves for who"
+  , "  prax reconciled <who> <world>          list reconciled leaves for who"
+  , "  prax married <who> <world>             list married leaves involving who"
   , "  prax flow [file.json]              scene flowchart"
   , "  prax dump-play                     emit built-in play JSON"
   , "  prax play <file.json>              play a script file"
@@ -538,6 +573,11 @@ main = do
     ("denounced" : ws) -> runDenounced ws
     ("censured" : ws)  -> runCensured ws
     ("paraded" : ws)   -> runParaded ws
+    ("cried" : ws)     -> runCried ws
+    ("rallied" : ws)   -> runRallied ws
+    ("fled" : ws)      -> runFled ws
+    ("reconciled" : ws) -> runReconciled ws
+    ("married" : ws)   -> runMarried ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)
     ("play" : file : _) | ".json" `isSuffixOf` file -> playFile file

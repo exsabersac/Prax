@@ -1589,3 +1589,19 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec church brand parade 门禁/一击/负例。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v290 — Host criedOf / ralliedOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举市集喊冤叶（`cried.<a>.<t>` 任一侧）、声援叶（`rallied.<a>.<t>`）；CLI `prax cried|rallied`；`askChronicle` 加 `"cried of "`/`"rallied of "`；help 同步。
+- **测**：HostSpec / ChronicleSpec。
+
+## v291 — Host fledOf / reconciledOf / marriedOf + CLI + Chronicle
+
+- **做了什么**：闭合视图枚举叛逃叶（`fled.<who>`）、和解叶（`reconciled.<who>`）、婚入叶（`married.<a>.<b>` 任一侧）；CLI `prax fled|reconciled|married`；`askChronicle` 对应查询；help 同步。
+- **测**：HostSpec / ChronicleSpec。
+
+## v292 — Sandbox 沉默×市集喊冤交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉沉默债堵住 ira harvest 控告时，market 窗 `cry the theft` 仍开（`marketCry` 不读 owes；与控告门禁解耦）。无新实践 / 无 want 改动。
+- **测**：SandboxSpec silence × market cry。Village / GoldenDrive / Bar / Feud 金标准未动。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未把 owes 接到 cry；未动 Village 金标准。
+

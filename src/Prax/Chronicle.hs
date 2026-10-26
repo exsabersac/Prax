@@ -133,7 +133,8 @@ formatEvent ev rs =
 -- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
--- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@。
+-- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
+-- @"cried of "++who@、@"rallied of "++who@、@"fled of "++who@、@"reconciled of "++who@、@"married of "++who@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -306,6 +307,50 @@ askChronicle st q
                 , length parts >= 2
                 , head parts == who || (parts !! 1) == who ]
       in if null rows then [who ++ " has no parade marks"]
+         else rows
+  | Just who <- stripPrefix "cried of " q =
+      let prefix = "cried."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no cry marks"]
+         else rows
+  | Just who <- stripPrefix "rallied of " q =
+      let prefix = "rallied."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no rally marks"]
+         else rows
+  | Just who <- stripPrefix "fled of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("fled." ++ who)
+                  || ("fled." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no flee mark"]
+         else rows
+  | Just who <- stripPrefix "reconciled of " q =
+      let rows = sort
+            [ s | s <- dbToSentences (db st)
+                , s == ("reconciled." ++ who)
+                  || ("reconciled." ++ who ++ ".") `isPrefixOf` s ]
+      in if null rows then [who ++ " has no reconcile mark"]
+         else rows
+  | Just who <- stripPrefix "married of " q =
+      let prefix = "married."
+          rows = sort
+            [ s | s <- dbToSentences (db st), prefix `isPrefixOf` s
+                , let rest = drop (length prefix) s
+                , let parts = splitDot rest
+                , length parts >= 2
+                , head parts == who || (parts !! 1) == who ]
+      in if null rows then [who ++ " has no marriage marks"]
          else rows
   | otherwise = ["chronicle: unknown query " ++ show q]
 

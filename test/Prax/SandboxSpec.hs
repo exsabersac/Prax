@@ -1281,4 +1281,20 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       let stPar = doAct "priest" "parade bob" stP
       assertBool "paraded leaf" (exists "paraded.priest.bob" (db stPar))
       assertBool "parade once" (not (hasAct "priest" "parade bob" stPar))
+
+  , testCase "silence × market cry: debt blocks ira denounce; market cry still open" $ do
+      -- ira learns + bob buys silence → harvest denounce blocked; market cry unconstrained by owes.
+      let stLearn = doAct "ira" "learn" sandboxWorld
+          stBuy = doAct "bob" "buy ira's silence" stLearn
+      assertBool "debt holds" (exists "debt.ira.bob.favor" (db stBuy))
+      assertBool "ira regards" (exists "regards.ira.bob.thief" (readView stBuy))
+      let stOpen = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stOpen))
+      assertBool "ira denounce blocked" (not (hasAct "ira" "denounce" stOpen))
+      let stM = iterate roundBoundary stBuy !! 4
+      assertBool "market" (exists "festival.market" (db stM))
+      assertBool "ira cry yes under debt" (hasAct "ira" "cry the theft" stM)
+      let stCry = doAct "ira" "cry the theft" stM
+      assertBool "cried leaf" (exists "cried.ira.bob" (db stCry))
+      assertBool "debt still" (exists "debt.ira.bob.favor" (db stCry))
   ]

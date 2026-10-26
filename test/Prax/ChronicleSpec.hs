@@ -176,4 +176,22 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "paraded of bob" @?= ["paraded.dave.bob"]
       askChronicle st "paraded of void" @?= ["void has no parade marks"]
 
+  , testCase "askChronicle cried/rallied/fled/reconciled/married-of" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "cried.dave.bob"
+                , Insert "rallied.ira.bob"
+                , Insert "fled.carol"
+                , Insert "reconciled.carol"
+                , Insert "married.fran.carol" ]
+      askChronicle st "cried of bob" @?= ["cried.dave.bob"]
+      askChronicle st "cried of void" @?= ["void has no cry marks"]
+      askChronicle st "rallied of bob" @?= ["rallied.ira.bob"]
+      askChronicle st "rallied of void" @?= ["void has no rally marks"]
+      askChronicle st "fled of carol" @?= ["fled.carol"]
+      askChronicle st "fled of void" @?= ["void has no flee mark"]
+      askChronicle st "reconciled of carol" @?= ["reconciled.carol"]
+      askChronicle st "reconciled of void" @?= ["void has no reconcile mark"]
+      askChronicle st "married of fran" @?= ["married.fran.carol"]
+      askChronicle st "married of void" @?= ["void has no marriage marks"]
+
   ]
