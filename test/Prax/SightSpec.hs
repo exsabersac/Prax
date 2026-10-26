@@ -7,7 +7,7 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (Val (..), exists)
-import           Prax.Query (Condition (..), groundCondition, query)
+import           Prax.Query (Condition (..), groundCondition, query, satisfies)
 import           Prax.Sym (intern)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, setCharacters,
@@ -111,5 +111,21 @@ tests = testGroup "Prax.Sight"
 
   , testCase "hasKnownWhere aliases knownWhere" $
       hasKnownWhere "ada" "bex" @?= knownWhere "ada" "bex"
+
+
+  , testCase "lastKnownAt / knownWhere evaluate on believes.at Insert world" $ do
+      assertBool "unknownWhere on empty"
+        (satisfies (db emptyState) [unknownWhere "ute" "vic"] Map.empty)
+      assertBool "lacksKnownWhere on empty"
+        (satisfies (db emptyState) [lacksKnownWhere "ute" "vic"] Map.empty)
+      let st = performOutcome (Insert "ute.believes.at.vic!hall") emptyState
+      assertBool "lastKnownAt"
+        (satisfies (db st) [lastKnownAt "ute" "vic" "hall"] Map.empty)
+      assertBool "knownWhere"
+        (satisfies (db st) [knownWhere "ute" "vic"] Map.empty)
+      assertBool "hasKnownWhere"
+        (satisfies (db st) [hasKnownWhere "ute" "vic"] Map.empty)
+      assertBool "unknownWhere fails"
+        (not (satisfies (db st) [unknownWhere "ute" "vic"] Map.empty))
 
   ]

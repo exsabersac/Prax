@@ -360,4 +360,18 @@ tests = testGroup "Prax.Kin"
       assertBool "lacksMarriedTo fails"
         (not (satisfies v [lacksMarriedTo "ana" "chris"] Map.empty))
 
+
+  , testCase "everInLaw / isInLawOf evaluate on weddedWorld readView" $ do
+      let v = readView weddedWorld
+      assertBool "isInLawOf pat-cass"
+        (satisfies v [isInLawOf "pat" "cass"] Map.empty)
+      assertBool "hasInLawOf"
+        (satisfies v [hasInLawOf "pat" "cass"] Map.empty)
+      assertBool "everInLaw"
+        (satisfies v [everInLaw "pat"] Map.empty)
+      assertBool "neverInLaw on empty"
+        (satisfies (db emptyState) [neverInLaw "ada"] Map.empty)
+      assertBool "lacksInLawOf fails"
+        (not (satisfies v [lacksInLawOf "pat" "cass"] Map.empty))
+
   ]

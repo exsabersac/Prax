@@ -5,7 +5,8 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (dbToSentences, exists)
-import           Prax.Query (Condition (..))
+import qualified Data.Map.Strict as Map
+import           Prax.Query (Condition (..), satisfies)
 import           Prax.Types
 import           Prax.Engine (performOutcome, definePractices, possibleActions, performAction, setCharacters)
 import           Prax.Arc
@@ -55,5 +56,28 @@ tests = testGroup "Prax.Arc"
 
   , testCase "hasArcIs aliases arcIs" $
       hasArcIs "bex" "hopeful" @?= arcIs "bex" "hopeful"
+
+
+  , testCase "arcIs / hasArc / everArc evaluate on enterArc world" $ do
+      assertBool "neverArc on empty"
+        (satisfies (db emptyState) [neverArc "bex"] Map.empty)
+      assertBool "lacksArc on empty"
+        (satisfies (db emptyState) [lacksArc "bex"] Map.empty)
+      let st = performOutcome (enterArc "bex" "hopeful") emptyState
+      assertBool "arcIs"
+        (satisfies (db st) [arcIs "bex" "hopeful"] Map.empty)
+      assertBool "hasArcIs"
+        (satisfies (db st) [hasArcIs "bex" "hopeful"] Map.empty)
+      assertBool "hasArc"
+        (satisfies (db st) [hasArc "bex"] Map.empty)
+      assertBool "everArc"
+        (satisfies (db st) [everArc "bex"] Map.empty)
+      assertBool "lacksArcIs fails"
+        (not (satisfies (db st) [lacksArcIs "bex" "hopeful"] Map.empty))
+      assertBool "neverArc fails"
+        (not (satisfies (db st) [neverArc "bex"] Map.empty))
+      let gone = performOutcome (leaveArc "bex") st
+      assertBool "lacksArc after leave"
+        (satisfies (db gone) [lacksArc "bex"] Map.empty)
 
   ]

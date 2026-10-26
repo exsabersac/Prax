@@ -1480,9 +1480,6 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec 逐步沉默债（买封控告 / 撕毁恢复 / 偿还无 revoked）；pickAction 买/撕；39 步主金 + 32 步沉默金；原磨坊/教会/婚入弧仍绿。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
 
-
-
-
 ## v272 — Sandbox 双节庆错峰门禁（harvest × market）
 
 - **做了什么**：`Prax.Worlds.Sandbox` 并挂 `festival "harvest" 3 1` 与 `festival "market" 4 1`（回合 3 仅丰收、回合 4 仅市集）；新实践 `marketCry`：已 `factionStanding` 站队的磨坊成员仅在 market 窗内可「市集喊冤」；欲望 `cries-theft-at-market`（权重 7 < 控告 8，故 harvest 窗优先控告）。主金与沉默金轨迹扩展纳入喊冤节拍。加分：次级归属角色 `kyle`（`affiliate` mill、主效忠 guild、已信偷窃）作可玩负例——无站队、无控告/喊冤。
@@ -1494,7 +1491,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：新实践 `millAllegiance`：受害方（已信 `stole.bob.Actor`）可「弃磨坊投公会」→ `joins` 覆盖主成员，同派 `factionStanding` 站队溶解（信念基事实仍在），控告门禁失效；再「和解归磨坊」→ 站队与控告恢复。欲望 `flees-mill` / `returns-to-mill`；主阵容 carol 不挂叛逃 want（免搅主金），`defectionSeed` 覆盖其欲望后自由跑。
 - **测**：SandboxSpec 逐步叛逃溶解 / 归队恢复；pickAction 弃→归；35 步 `sandboxDefectionGolden`。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
-
 
 ## v274 — Sandbox 沉默×叛逃×节庆复合门禁弧
 
@@ -1508,7 +1504,6 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec 臭名阈值/愤怒/harvest 控告 vs market 声援门禁；pickAction 优先声援；44 步 `sandboxReputeGolden`（dave 声援替代喊冤）。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名；未接线 Coerce/Blackmail（下一项候选）。
 
-
 ## v276 — Sandbox 站队胁迫招供（Coerce × factionStanding）
 
 - **做了什么**：自定义 `Coercion`「squeeze」——触发为已 `factionStanding` 站队的磨坊成员；威胁要招供（`confessed`），违抗/站立威胁可烙印（`branded`）；惩罚核重视烙印。实践默认**未激活**（不 Insert `practice.millSqueeze`，免搅既有金轨迹）；`activateSqueeze` / `coerceSeed` 激活并把 `punishes-squeeze` / `fears-brand` 挂到 dave/bob。永久 `complied`：招供后可再胁迫但不可再买，二次威胁以烙印收场。
@@ -1520,7 +1515,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：新实践 `churchBobHeresy`（默认未激活）——教会对 **bob** 的听闻→审查→领袖放逐轨，与磨坊贼案共享 `exiled.bob`，形成同场竞速。欲望 `seeks-bob-heresy` / `punishes-bob-heretic`（权重 9 > eve 审查 8）+ 复用 `wants-exile-bob`；`activateChurchBob` / `dualPressureSeed` 激活并把牧师/gale 挂到 bob 异端正义。可测：harvest 窗内磨坊控告与教会审查 bob 交错并存；窗外磨坊放逐 vs 领袖放逐竞速（先到堵住后到）；权重优先 bob 审查压过 eve。44 步金轨迹钉磨坊先放逐、教会审查后等待。
 - **测**：SandboxSpec 默认未激活 / 交错门禁+双向竞速 / 权重优先 / wants pick / 44 步 `sandboxDualPressureGolden`；既有 Sandbox 金仍绿。Village / GoldenDrive / Bar / Feud 金标准未动。
 - **明确未做**：不合 main；不接线 Village `factionStanding`；无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未堆 Condition has*/lacks* 叶子别名。
-
 
 ## v278 — Sandbox 教会异端 × 沉默债
 
@@ -1803,7 +1797,6 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec squeeze × cry（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-
 ## v329 — Sandbox 教会胁迫×市集喊冤交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 inquisitSeed 下 priest squeeze 与 dave market cry 互不阻挡（教会 coerce 与磨坊市集轨独立）。无新实践 / 无 want 改动。
@@ -1814,7 +1807,6 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 增加 `"what festivals"`，列出 `festival.*` 基事实（对齐 Host `festivalsOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
-
 
 ## v331 — Sandbox 教会胁迫×市集声援交叉（钉既有门禁）
 
@@ -1827,7 +1819,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"holding of "` / `"carrying of "`，列出 `holding.<who>.*` / `carrying.<who>.*`（对齐 Host `holdingOf`/`carryingOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
-
 ## v333 — Sandbox 婚入×市集声援交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 fran 婚入磨坊后派生 regard，与 dave learn 凑齐臭名，market rally 打开（婚入站队与声援轨衔接）。无新实践 / 无 want 改动。
@@ -1838,7 +1829,6 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 增加 `"threatened of "` / `"shunned of "`（对齐 Host `threatenedOf`/`shunnedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
-
 
 ## v335 — Sandbox 次级归属×胁迫负例（钉既有门禁）
 
@@ -1851,7 +1841,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"locations of "` / `"demanded of "`（对齐 Host `locationsOf`/`demandedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
-
 ## v337 — Sandbox 胁迫×放逐交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 activateSqueeze 后 harvest denounce→exile 与 millSqueeze 互不阻挡（先 squeeze 仍可 exile）。无新实践 / 无 want 改动。
@@ -1862,7 +1851,6 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 增加 `"extorted of "` / `"complied of "` / `"defied of "`（对齐 Host `extortedOf`/`compliedOf`/`defiedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
-
 
 ## v339 — Sandbox 婚入×胁迫交叉（钉既有门禁）
 
@@ -1875,7 +1863,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"obligations of "` / `"breaches of "`（对齐 Host `obligationsOf`/`breachesOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
-
 ## v341 — Sandbox 教会胁迫×磨坊放逐交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 inquisitSeed 下 priest squeeze 与 dave denounce→exile 互不阻挡（先 squeeze 仍可 exile）。无新实践 / 无 want 改动。
@@ -1886,7 +1873,6 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 增加 `"lies of "` / `"chatted with "` / `"traits of "`（对齐 Host `liesOf`/`chattedWithOf`/`traitsOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
-
 
 ## v343 — Sandbox 教会沉默×市集喊冤交叉（钉既有门禁）
 
@@ -1899,7 +1885,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"bonds of "` / `"esteemed of "` / `"scorned of "`（对齐 Host `bondsOf`/`esteemedOf`/`scornedOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
-
 ## v345 — Sandbox 游街×放逐交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 brand→activateParade 后 harvest denounce→exile 与 parade 互不阻挡（先 parade 仍可 exile）。无新实践 / 无 want 改动。
@@ -1911,7 +1896,6 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：`askChronicle` 增加 `"beliefs of "` / `"projects of "`（对齐 Host `beliefsOf`/`projectsOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
 
-
 ## v347 — Sandbox 教会沉默×市集声援交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 bob 买牧师异端沉默债后 harvest censure 被堵住，dave market rally 仍开（臭名路径）。无新实践 / 无 want 改动。
@@ -1922,7 +1906,6 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：`askChronicle` 增加 `"kin of "`，列出 married/parent/sibling/inLaw/grandparent 任一侧（对齐 Host `kinOf`）。无实践 / 无 Village 金标准改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
-
 
 ## v349 — Sandbox 婚入×放逐交叉（钉既有门禁）
 
@@ -2445,38 +2428,39 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：Deontic Spec 钉 oblige 后 isObliged/hasObliged/hasObligations/everObliged，以及 discharge 后 lacksObligations/neverObliged。无新实践 / 无 want 改动。
 - **测**：DeonticSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v441 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
+## v437 — Sandbox 异端沉默×磨坊游街交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave brand parade 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill parade（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v442 — Sandbox 异端沉默×市集声援交叉（钉既有门禁）
+## v438 — Sandbox 异端沉默×市集声援交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave market rally 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill rally（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v443 — Sandbox 异端沉默×磨坊放逐交叉（钉既有门禁）
+## v439 — Sandbox 异端沉默×磨坊放逐交叉（钉既有门禁）
 
 - **做了什么**：Spec 钉 gale 债挡 censure，dave denounce→exile 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec heresy silence × mill exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v444 — Sandbox 双沉默轨独立（磨坊×异端）（钉既有门禁）
+## v440 — Sandbox 双沉默轨独立（磨坊×异端）（钉既有门禁）
 
 - **做了什么**：Spec 钉 ira favor 与 gale church-favor 双债并存，dave mill denounce 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec dual silence（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v439 — Host parentsOf/childrenOf + CLI
+## v441 — Host parentsOf/childrenOf + CLI
 
 - **做了什么**：闭合视图枚举 `parent.<p>.<who>` / `parent.<who>.<c>`；CLI `prax parents`/`children`；help 同步。无实践 / 无 want 改动。
 - **测**：HostSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
-## v440 — Chronicle parents/children of + Host 对偶
+## v442 — Chronicle parents/children of + Host 对偶
 
 - **做了什么**：`askChronicle` 增加 `"parents of "` / `"children of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
 - **测**：ChronicleSpec（针对性；未跑全量）。
@@ -2494,3 +2478,56 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v447 — Arc arcIs/hasArc/everArc 世界求值
+
+- **做了什么**：Arc Spec 钉 enterArc/leaveArc 世界上 arcIs/hasArcIs/hasArc/everArc 与净世界上 neverArc/lacksArc。无新实践 / 无 want 改动。
+- **测**：ArcSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v448 — Beliefs believesThat/holdsBelief/everBelieves 世界求值
+
+- **做了什么**：Beliefs Spec 钉 believe 世界上 believesThat/holdsBelief/everBelieves/hasBelief 与净世界上 neverBelieves/doubts。无新实践 / 无 want 改动。
+- **测**：BeliefsSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v449 — Project isCrewOf/hasCompletedPart/everCrew 世界求值
+
+- **做了什么**：Project Spec 钉 Insert crew/did 世界上 isCrewOf/hasCompletedPart/everCrew/everCompletedPart 与净世界上 never*。无新实践 / 无 want 改动。
+- **测**：ProjectSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v450 — Reactions violationOf/everViolated 世界求值
+
+- **做了什么**：Reactions Spec 钉 markViolation 世界上 violationOf/hasViolation/everViolated/everBreach 与净世界上 neverViolated/noViolation。无新实践 / 无 want 改动。
+- **测**：ReactionsSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v451 — Schedule duringFestival/hasFestival 世界求值
+
+- **做了什么**：Schedule Spec 钉 Insert festival 叶后 duringFestival/hasFestival 与净世界上 outsideFestival/lacksFestival。无新实践 / 无 want 改动。
+- **测**：ScheduleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v452 — Sight lastKnownAt/knownWhere 世界求值
+
+- **做了什么**：Sight Spec 钉 believes.at Insert 世界上 lastKnownAt/knownWhere/hasKnownWhere 与净世界上 unknownWhere/lacksKnownWhere。无新实践 / 无 want 改动。
+- **测**：SightSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v453 — Core hasBond/everBond 世界求值
+
+- **做了什么**：Core Spec 钉 setBond 世界上 hasBond/everBond（含对称叶）与净世界上 neverBond/lacksBond。无新实践 / 无 want 改动。
+- **测**：CoreSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v454 — Conversation talkingWith 世界求值
+
+- **做了什么**：Conversation Spec 钉 beginConversation 世界上 talkingWith（规范化序路径）。无新实践 / 无 want 改动。
+- **测**：ConversationSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v455 — Kin everInLaw/isInLawOf 世界求值
+
+- **做了什么**：Kin Spec 钉 weddedWorld readView 上 isInLawOf/hasInLawOf/everInLaw 与净世界上 neverInLaw。无新实践 / 无 want 改动。
+- **测**：KinSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。

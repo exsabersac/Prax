@@ -6,7 +6,7 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (Db, dbToSentences, emptyDb, insertAll, valToString)
-import           Prax.Query (Condition (..), query)
+import           Prax.Query (Condition (..), query, satisfies)
 import           Prax.Sym (intern)
 import           Prax.Types (Outcome (..), PraxState (..), emptyState)
 import           Prax.Engine (performOutcome, withDb)
@@ -71,5 +71,31 @@ tests = testGroup "Prax.Beliefs"
   , testCase "hasBelievesThat / hasHoldsBelief aliases" $ do
       hasBelievesThat "ada" "weather" "rain" @?= believesThat "ada" "weather" "rain"
       hasHoldsBelief "ada" "weather" @?= holdsBelief "ada" "weather"
+
+
+  , testCase "believesThat / holdsBelief / everBelieves evaluate on believe world" $ do
+      assertBool "neverBelieves on empty"
+        (satisfies (db emptyState) [neverBelieves "bex"] Map.empty)
+      assertBool "lacksBelief on empty"
+        (satisfies (db emptyState) [lacksBelief "bex"] Map.empty)
+      assertBool "doubts on empty"
+        (satisfies (db emptyState) [doubts "bex" "sky"] Map.empty)
+      let st = performOutcome (believe "bex" "sky" "blue") emptyState
+      assertBool "believesThat"
+        (satisfies (db st) [believesThat "bex" "sky" "blue"] Map.empty)
+      assertBool "hasBelievesThat"
+        (satisfies (db st) [hasBelievesThat "bex" "sky" "blue"] Map.empty)
+      assertBool "holdsBelief"
+        (satisfies (db st) [holdsBelief "bex" "sky"] Map.empty)
+      assertBool "hasHoldsBelief"
+        (satisfies (db st) [hasHoldsBelief "bex" "sky"] Map.empty)
+      assertBool "everBelieves"
+        (satisfies (db st) [everBelieves "bex"] Map.empty)
+      assertBool "hasBelief"
+        (satisfies (db st) [hasBelief "bex"] Map.empty)
+      assertBool "disbelievesThat fails"
+        (not (satisfies (db st) [disbelievesThat "bex" "sky" "blue"] Map.empty))
+      assertBool "doubts fails"
+        (not (satisfies (db st) [doubts "bex" "sky"] Map.empty))
 
   ]

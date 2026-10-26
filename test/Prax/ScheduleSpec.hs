@@ -12,7 +12,8 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Cooked (cookScheduleRule)
 import           Prax.Db (exists)
 import           Prax.Engine (currentTurn, performOutcome, roundBoundary)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
+import           Prax.Schedule (duringFestival, hasFestival, outsideFestival, lacksFestival)
 import           Prax.Types
 
 -- A bare fixture: 'emptyState' already carries the seeded clock (turn!0).
@@ -149,4 +150,20 @@ tests = testGroup "Prax.Schedule"
         let s3 = iterate roundBoundary base !! 3
         currentTurn s3 @?= 3
     ]
+
+  , testCase "duringFestival / hasFestival evaluate on Insert festival leaf" $ do
+      assertBool "outsideFestival on empty"
+        (satisfies (db emptyState) [outsideFestival "harvest"] Map.empty)
+      assertBool "lacksFestival on empty"
+        (satisfies (db emptyState) [lacksFestival "harvest"] Map.empty)
+      let st = performOutcome (Insert "festival.harvest") emptyState
+      assertBool "duringFestival"
+        (satisfies (db st) [duringFestival "harvest"] Map.empty)
+      assertBool "hasFestival"
+        (satisfies (db st) [hasFestival "harvest"] Map.empty)
+      assertBool "outsideFestival fails"
+        (not (satisfies (db st) [outsideFestival "harvest"] Map.empty))
+      assertBool "lacksFestival fails"
+        (not (satisfies (db st) [lacksFestival "harvest"] Map.empty))
+
   ]

@@ -8,7 +8,8 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Db (exists)
-import           Prax.Query (Condition (..), CmpOp (..))
+import           Prax.Query (Condition (..), CmpOp (..), satisfies)
+import qualified Data.Map.Strict as Map
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, possibleActions, performAction, setDesires, setCharacters)
 import           Prax.Planner (pickAction, predictMove, evaluate)
@@ -394,5 +395,29 @@ tests = testGroup "Prax.Project"
 
   , testCase "hasCrewOf aliases isCrewOf" $
       hasCrewOf "ada" "ben" "bake" @?= isCrewOf "ada" "ben" "bake"
+
+
+  , testCase "isCrewOf / hasCompletedPart / everCrew evaluate on Insert world" $ do
+      assertBool "neverCrew on empty"
+        (satisfies (db emptyState) [neverCrew "mia" "oven2"] Map.empty)
+      assertBool "neverCompletedPart on empty"
+        (satisfies (db emptyState) [neverCompletedPart "mia" "oven2"] Map.empty)
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "practice.oven2.mia.crew.pat"
+            , Insert "practice.oven2.mia.did.sweep" ]
+      assertBool "isCrewOf"
+        (satisfies (db st) [isCrewOf "mia" "pat" "oven2"] Map.empty)
+      assertBool "hasCrewOf"
+        (satisfies (db st) [hasCrewOf "mia" "pat" "oven2"] Map.empty)
+      assertBool "everCrew"
+        (satisfies (db st) [everCrew "mia" "oven2"] Map.empty)
+      assertBool "hasCompletedPart"
+        (satisfies (db st) [hasCompletedPart "mia" "oven2" "sweep"] Map.empty)
+      assertBool "everCompletedPart"
+        (satisfies (db st) [everCompletedPart "mia" "oven2"] Map.empty)
+      assertBool "lacksCrewOf fails"
+        (not (satisfies (db st) [lacksCrewOf "mia" "pat" "oven2"] Map.empty))
+      assertBool "lacksCompletedPart fails"
+        (not (satisfies (db st) [lacksCompletedPart "mia" "oven2" "sweep"] Map.empty))
 
   ]

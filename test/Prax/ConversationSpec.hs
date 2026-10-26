@@ -129,6 +129,13 @@ tests = testGroup "Prax.Conversation"
       assertBool "neverChattedWith fails"
         (not (satisfies (db st) [neverChattedWith "ada" "bex"] Map.empty))
 
+
+  , testCase "talkingWith evaluates on beginConversation world" $ do
+      assertBool "talkingWith"
+        (satisfies (db start) [talkingWith "ada" "bex"] Map.empty)
+      assertBool "talkingWith reverse order absent as different path"
+        (not (satisfies (db start) [talkingWith "bex" "ada"] Map.empty))
+
   ]
 
 -- helper: does any needle appear in the list of strings?

@@ -5,7 +5,8 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
+import qualified Data.Map.Strict as Map
 import           Prax.Types
 import           Prax.Engine (definePractices, defineFunctions, performOutcome, possibleActions, performAction, setCharacters)
 import           Prax.Planner (pickAction)
@@ -160,5 +161,27 @@ tests = testGroup "Prax.Reactions"
       neverBreach "bex" @?= neverViolated "bex"
   , testCase "hasViolation aliases violationOf" $
       hasViolation "ada" "theft" @?= violationOf "ada" "theft"
+
+
+  , testCase "violationOf / everViolated evaluate on markViolation world" $ do
+      assertBool "neverViolated on empty"
+        (satisfies (db emptyState) [neverViolated "bex"] Map.empty)
+      assertBool "neverBreach on empty"
+        (satisfies (db emptyState) [neverBreach "bex"] Map.empty)
+      assertBool "noViolation on empty"
+        (satisfies (db emptyState) [noViolation "bex" "tipping"] Map.empty)
+      let st = performOutcome (markViolation "bex" "tipping") emptyState
+      assertBool "violationOf"
+        (satisfies (db st) [violationOf "bex" "tipping"] Map.empty)
+      assertBool "hasViolation"
+        (satisfies (db st) [hasViolation "bex" "tipping"] Map.empty)
+      assertBool "everViolated"
+        (satisfies (db st) [everViolated "bex"] Map.empty)
+      assertBool "everBreach"
+        (satisfies (db st) [everBreach "bex"] Map.empty)
+      assertBool "lacksViolation fails"
+        (not (satisfies (db st) [lacksViolation "bex" "tipping"] Map.empty))
+      assertBool "neverViolated fails"
+        (not (satisfies (db st) [neverViolated "bex"] Map.empty))
 
   ]

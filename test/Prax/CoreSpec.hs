@@ -7,7 +7,8 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 import           Prax.Db (dbToSentences)
 import           Prax.Types
 import           Prax.Engine (defineFunctions, performOutcome)
-import           Prax.Query (Condition (..))
+import           Prax.Query (Condition (..), satisfies)
+import qualified Data.Map.Strict as Map
 import           Prax.Core
 
 -- A state with the core library registered.
@@ -56,5 +57,23 @@ tests = testGroup "Prax.Core"
   , testCase "everBond / neverBond are Exists/Absent of bond leaves" $ do
       everBond "ada" @?= Exists [ Match "bond.ada.Other!State" ]
       neverBond "ada" @?= Absent [ Match "bond.ada.Other!State" ]
+
+
+  , testCase "hasBond / everBond evaluate on setBond world" $ do
+      assertBool "neverBond on empty"
+        (satisfies (db emptyState) [neverBond "ada"] Map.empty)
+      assertBool "lacksBond on empty"
+        (satisfies (db emptyState) [lacksBond "ada" "bex"] Map.empty)
+      let st = performOutcome (setBond "ada" "bex" "friends") base
+      assertBool "hasBond"
+        (satisfies (db st) [hasBond "ada" "bex" "friends"] Map.empty)
+      assertBool "everBond"
+        (satisfies (db st) [everBond "ada"] Map.empty)
+      assertBool "symmetric hasBond"
+        (satisfies (db st) [hasBond "bex" "ada" "friends"] Map.empty)
+      assertBool "lacksBond fails"
+        (not (satisfies (db st) [lacksBond "ada" "bex"] Map.empty))
+      assertBool "neverBond fails"
+        (not (satisfies (db st) [neverBond "ada"] Map.empty))
 
   ]
