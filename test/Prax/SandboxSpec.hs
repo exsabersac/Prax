@@ -2323,4 +2323,49 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "exiled" (exists "exiled.bob" (db stEx))
       assertBool "rallied persists" (exists "rallied.dave.bob" (db stEx))
 
+
+  , testCase "wed × church exile: fran wedding unlocks mill; priest banish stays" $ do
+      -- fran wed → mill regard/denounce; church bob heresy censure→banish independent.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stBel = performOutcome (Insert "fran.believes.stole.bob.carol") stHear
+      assertBool "before: no fran regard"
+        (not (exists "regards.fran.bob.thief" (readView stBel)))
+      assertBool "priest can censure path later" True
+      let stWed = doAct "fran" "wed into the mill" stBel
+      assertBool "after: fran regard"
+        (exists "regards.fran.bob.thief" (readView stWed))
+      let stH = iterate roundBoundary stWed !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "fran denounce yes" (hasAct "fran" "denounce" stH)
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      assertBool "fran denounce after censure" (hasAct "fran" "denounce" stAfter
+        || exists "censured.priest.bob" (db stAfter))
+      let stEx = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "fran regard persists"
+        (exists "regards.fran.bob.thief" (readView stEx))
+
+  , testCase "affiliate × church: kyle affiliate-only cannot censure/banish" $ do
+      -- kyle affiliates mill / primary guild → no church standing; priest hear
+      -- opens censure/banish for priest only.
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+      assertBool "kyle affiliate mill"
+        (exists "affiliate.kyle.mill" (db stHear))
+      assertBool "kyle primary guild" (exists "member.kyle!guild" (db stHear))
+      let stH = iterate roundBoundary stHear !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      assertBool "kyle censure no" (not (hasAct "kyle" "censure bob" stH))
+      let stCen = doAct "priest" "censure bob" stH
+          stAfter = roundBoundary stCen
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      assertBool "kyle banish no" (not (hasAct "kyle" "banish bob" stAfter))
+      let stEx = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+
   ]

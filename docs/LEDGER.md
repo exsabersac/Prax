@@ -2112,3 +2112,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：SandboxSpec rally × church exile（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v381 — Sandbox 婚入×教会放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 婚入打开磨坊 regard/denounce，priest censure→banish 并行。无新实践 / 无 want 改动。
+- **测**：SandboxSpec wed × church exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v382 — Sandbox 附属×教会轨负例（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 仅 affiliate 磨坊 → 无教会 standing → censure/banish 关闭；priest 可完成放逐。无新实践 / 无 want 改动。
+- **测**：SandboxSpec affiliate × church（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
