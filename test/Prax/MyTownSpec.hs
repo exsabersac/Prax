@@ -1,5 +1,6 @@
--- | MyTown M1+M3+M4 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
--- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）。
+-- | MyTown M1+M3+M4+M6c 验收：Session S01–S06、CLI 01–07、AFF/NEG/INV、满 5 站位、trust、
+-- action.id、praxAct 整回合、Save/Load；M3 弧 A（A01–A06）；M4 债清（MT-M4-INV01–06 + 3b B1–B5）；
+-- M6c eve 短反应（C02 硬卡）。
 -- @stack test --test-arguments '-p MyTown'@。
 module Prax.MyTownSpec (tests) where
 
@@ -608,5 +609,90 @@ tests = testGroup "MyTown"
           if factInfix (sessState s3) "eyed.dana.you"
             then assertBool "eyed after go mill" True
             else goSuspect 6 s3 []
+
+      , -- M6c：第三角色 eve 短反应（硬卡 C02；异于 dana 主语）
+        testCase "M6c-C02 bob 转告 eve → heard.bob ∧ ¬seen" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              gossipActs = [ ga | ga <- possibleActions st2 "bob"
+                                , "转告" `isInfixOf` gaLabel ga
+                                , "eve" `isInfixOf` gaLabel ga ]
+          assertBool "Menu 有转告 eve" (not (null gossipActs))
+          let ga0 = head gossipActs
+              st3 = performAction st2 ga0
+          assertBool "eve heard.bob"
+            (factInfix st3 "eve.believes.helped.you.carol.heard.bob")
+          assertBool "eve ¬seen"
+            (not (factInfix st3 "eve.believes.helped.you.carol.seen"))
+
+      , testCase "M6c-C02 eve 怀疑地打量 you → eyed + narrative 硬卡行" $ do
+          let st0 = doAct "you" "公开帮助 carol" MyTown.myTownWorld
+              st1 = doAct "bob" "说破看见 you" st0
+              st2 = doAct "bob" "前往 mill" st1
+              st3 = doAct "bob" "转告 eve" st2
+              st4 = doAct "you" "前往 mill" st3
+              eyeActs = [ ga | ga <- possibleActions st4 "eve"
+                             , "怀疑" `isInfixOf` gaLabel ga
+                             , "you" `isInfixOf` gaLabel ga ]
+          assertBool "Menu 有 eve 怀疑地打量 you" (not (null eyeActs))
+          let ga0 = head eyeActs
+              st5 = performAction st4 ga0
+              narr = gaLabel ga0
+          assertBool "eyed.eve.you" (factInfix st5 "eyed.eve.you")
+          assertBool "heardRumor reason"
+            (factInfix st5 "eve.relationship.you.trust.reason.heardRumor")
+          assertBool ("硬卡 narrative: " ++ narr)
+            ("eve" `isInfixOf` narr && "怀疑地打量" `isInfixOf` narr
+             && "you" `isInfixOf` narr)
+          assertBool "非 dana 冒充" (not ("dana" `isInfixOf` narr))
+
+      , testCase "M6c-web praxWait：eve 得 heard + 硬卡 narrative" $ do
+          s0 <- mustNew
+          (s1, _) <- actByLabel s0 "公开帮助 carol"
+          let waitOnce s = case praxWait s of
+                Left e -> assertFailure e >> error "unreachable"
+                Right r -> pure r
+              goHeard 0 s narrAcc = pure (s, reverse narrAcc)
+              goHeard k s narrAcc = do
+                (s', r) <- waitOnce s
+                let n = actNarrative r
+                    heard = factInfix (sessState s')
+                              "eve.believes.helped.you.carol.heard.bob"
+                    bobMill = factInfix (sessState s') "at.bob.mill"
+                if heard && bobMill
+                  then pure (s', reverse (n : narrAcc))
+                  else goHeard (k - 1) s' (n : narrAcc)
+          (s2, waitNarrs) <- goHeard 12 s1 []
+          assertBool ("eve heard after waits; narr=" ++ show waitNarrs)
+            (factInfix (sessState s2)
+               "eve.believes.helped.you.carol.heard.bob")
+          assertBool "eve ¬seen"
+            (not (factInfix (sessState s2)
+                    "eve.believes.helped.you.carol.seen"))
+          (s3, rGo) <- actByLabel s2 "前往 mill"
+          let hard n =
+                any (\t -> "eve" `isInfixOf` t
+                        && "怀疑地打量" `isInfixOf` t
+                        && "you" `isInfixOf` t) n
+              goEye 0 _ narrAcc =
+                assertFailure ("no eve 硬卡; had: " ++ show (reverse narrAcc))
+              goEye k s narrAcc = do
+                (s', r) <- waitOnce s
+                let n = actNarrative r
+                if hard n || factInfix (sessState s') "eyed.eve.you"
+                  then do
+                    assertBool ("硬卡 eve 行: " ++ unlines n
+                                ++ "; eyed="
+                                ++ show (factInfix (sessState s') "eyed.eve.you"))
+                      (hard n || factInfix (sessState s') "eyed.eve.you")
+                    assertBool "eyed.eve.you"
+                      (factInfix (sessState s') "eyed.eve.you")
+                  else goEye (k - 1) s' (n : narrAcc)
+          if hard (actNarrative rGo) || factInfix (sessState s3) "eyed.eve.you"
+            then assertBool "eyed.eve after go mill"
+                   (factInfix (sessState s3) "eyed.eve.you"
+                    || hard (actNarrative rGo))
+            else goEye 8 s3 []
       ]
   ]

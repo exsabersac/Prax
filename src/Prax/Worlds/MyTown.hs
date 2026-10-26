@@ -148,7 +148,9 @@ myTownWorld =
               , Want [ Match "bob.believes.helped.you.carol.seen"
                      , Match "practice.world.world.at.bob!mill" ] 3
                 -- ② Village 式转告：想让 dana 从自己听说（≥5）
-              , Want [ Match "dana.believes.helped.you.carol.heard.bob" ] 5 ] }
+              , Want [ Match "dana.believes.helped.you.carol.heard.bob" ] 5
+                -- M6c：对称转告 eve（仅钉 dana 不够）
+              , Want [ Match "eve.believes.helped.you.carol.heard.bob" ] 5 ] }
       , (character "carol")
           { charWants =
               [ Want [ Match "practice.world.world.at.carol!square" ] 1 ] }
@@ -158,7 +160,9 @@ myTownWorld =
               , Want [ Match "eyed.dana.T" ] 5 ] }
       , (character "eve")
           { charWants =
-              [ Want [ Match "practice.world.world.at.eve!mill" ] 1 ] }
+              [ Want [ Match "practice.world.world.at.eve!mill" ] 1
+                -- M6c：对称 dana 的怀疑 Want
+              , Want [ Match "eyed.eve.T" ] 5 ] }
       , (character "gale")
           { charWants =
               [ Want [ Match "practice.world.world.at.gale!mill" ] 1 ] }
