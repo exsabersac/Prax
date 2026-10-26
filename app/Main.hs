@@ -33,7 +33,7 @@ import qualified Prax.Worlds.Audience as Audience
 import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, explainActor)
+import           Prax.Host (practiceNames, castNames, livingCast, deadCast, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, scornedOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, threatenedOf, extortedOf, compliedOf, defiedOf, brandedOf, revokedOf, confessedOf, recantedOf, ostracizedOf, exiledOf, denouncedOf, censuredOf, paradedOf, criedOf, ralliedOf, fledOf, reconciledOf, marriedOf, eyedOf, confrontedOf, atonedOf, wrongedOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -462,6 +462,18 @@ runSiblings (who : ws) =
   in mapM_ putStrLn (siblingsOf st who)
 runSiblings _ = putStrLn "usage: prax siblings <who> <world>"
 
+runParents :: [String] -> IO ()
+runParents (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (parentsOf st who)
+runParents _ = putStrLn "usage: prax parents <who> <world>"
+
+runChildren :: [String] -> IO ()
+runChildren (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (childrenOf st who)
+runChildren _ = putStrLn "usage: prax children <who> <world>"
+
 runExplain :: [String] -> IO ()
 runExplain (actor : needle : ws) =
   let (_, st, _) = worldNamed ws
@@ -670,6 +682,8 @@ main = do
     ("resents" : ws)   -> runResents ws
     ("allied" : ws)    -> runAllied ws
     ("siblings" : ws)  -> runSiblings ws
+    ("parents" : ws)   -> runParents ws
+    ("children" : ws)  -> runChildren ws
     ("explain" : ws)   -> runExplain ws
     ("dump-play" : _) -> BLC.putStrLn (encodeScript Play.playScript)
     ("flow" : rest)   -> do scr <- scriptFrom rest; putStr (flowChart scr)

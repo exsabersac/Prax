@@ -28,6 +28,7 @@
 -- v299：'resentsOf' 怨恨叶（Feud 派生）。
 -- v301：'alliedOf' 同盟叶（Feud）。
 -- v423：'siblingsOf' 兄弟姐妹叶（对齐 Chronicle siblings of）。
+-- v429：'parentsOf'/'childrenOf' 亲子叶（parent.<p>.<c>）。
 module Prax.Host
   ( step
   , stepExact
@@ -67,6 +68,8 @@ module Prax.Host
   , bondsOf
   , kinOf
   , siblingsOf
+  , parentsOf
+  , childrenOf
   , notoriousOf
   , esteemedOf
   , scornedOf
@@ -411,6 +414,26 @@ siblingsOf :: PraxState -> String -> [String]
 siblingsOf st who =
   sort [ s | s <- queryView st
            , let pref = "sibling." ++ who ++ "."
+           , pref `isPrefixOf` s
+           , '.' `notElem` drop (length pref) s ]
+
+-- | 闭合视图中 @who@ 的父母叶（@parent.<p>.<who>@）。
+parentsOf :: PraxState -> String -> [String]
+parentsOf st who = sort
+  [ s
+  | s <- queryView st
+  , "parent." `isPrefixOf` s
+  , let rest = drop (length ("parent." :: String)) s
+  , let (p, after) = break (== '.') rest
+  , not (null p)
+  , drop 1 after == who
+  ]
+
+-- | 闭合视图中 @who@ 的子女叶（@parent.<who>.<c>@）。
+childrenOf :: PraxState -> String -> [String]
+childrenOf st who =
+  sort [ s | s <- queryView st
+           , let pref = "parent." ++ who ++ "."
            , pref `isPrefixOf` s
            , '.' `notElem` drop (length pref) s ]
 

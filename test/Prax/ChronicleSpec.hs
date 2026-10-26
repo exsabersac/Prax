@@ -26,7 +26,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              resentsOf, alliedOf, demandedOf,
                              notoriousOf, regardsToward, factionsNamed,
                              membersOf, affiliatesOf, leadersOf, agesOf,
-                             siblingsOf)
+                             siblingsOf, parentsOf, childrenOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -676,5 +676,19 @@ tests = testGroup "Prax.Chronicle"
       siblingsOf st "mia" @?= ["sibling.mia.pat", "sibling.mia.sam"]
       askChronicle st "siblings of mia" @?=
         ["mia sibling pat", "mia sibling sam"]
+
+  , testCase "askChronicle parents/children dual Host raw leaves" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "parent.pat.ana"
+            , Insert "parent.mia.ana"
+            , Insert "parent.ana.cara"
+            ]
+      parentsOf st "ana" @?= ["parent.mia.ana", "parent.pat.ana"]
+      childrenOf st "ana" @?= ["parent.ana.cara"]
+      askChronicle st "parents of ana" @?=
+        ["mia parent of ana", "pat parent of ana"]
+      askChronicle st "children of ana" @?= ["ana parent of cara"]
+      askChronicle st "parents of void" @?= ["void has no known parents"]
+      askChronicle st "children of void" @?= ["void has no known children"]
 
   ]

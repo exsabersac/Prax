@@ -130,7 +130,7 @@ formatEvent ev rs =
 --
 -- 支持：@"who knows "++event@、@"what is notorious"@、@"regards of "++subject@、
 -- @"salient "++show k@、@"feelings of "++who@、@"mood of "++who@、@"leads of "++faction@、@"affiliates of "++who@、@"members of "++faction@、@"debts of "++who@、
--- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、
+-- @"arc of "++who@、@"age of "++who@、@"siblings of "++who@、@"parents of "++who@、@"children of "++who@、
 -- @"branded of "++who@、@"revoked of "++who@、
 -- @"confessed of "++who@、@"recanted of "++who@、@"ostracized of "++who@、@"exiled of "++who@、
 -- @"denounced of "++who@、@"censured of "++who@、@"paraded of "++who@、
@@ -248,6 +248,28 @@ askChronicle st q
                       , '.' `notElem` drop (length prefix) s ]
       in if null sibs then [who ++ " has no known siblings"]
          else map ((who ++ " sibling ") ++) sibs
+  | Just who <- stripPrefix "parents of " q =
+      -- 对齐 Host parentsOf：读闭合视图；短语化父母名。
+      let rows = sort
+            [ s | s <- dbToSentences (readView st)
+                , "parent." `isPrefixOf` s
+                , let rest = drop (length ("parent." :: String)) s
+                , let (p, after) = break (== '.') rest
+                , not (null p)
+                , drop 1 after == who ]
+      in if null rows then [who ++ " has no known parents"]
+         else [ p ++ " parent of " ++ who
+              | s <- rows
+              , let rest = drop (length ("parent." :: String)) s
+              , let (p, _) = break (== '.') rest ]
+  | Just who <- stripPrefix "children of " q =
+      -- 对齐 Host childrenOf：读闭合视图；短语化子女名。
+      let prefix = "parent." ++ who ++ "."
+          kids = sort [ drop (length prefix) s
+                      | s <- dbToSentences (readView st), prefix `isPrefixOf` s
+                      , '.' `notElem` drop (length prefix) s ]
+      in if null kids then [who ++ " has no known children"]
+         else map ((who ++ " parent of ") ++) kids
   | Just who <- stripPrefix "branded of " q =
       -- 对齐 Host *Of：读闭合视图。
       let rows = sort

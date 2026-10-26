@@ -2468,4 +2468,17 @@ Tier 3 — 宿主游戏边界：
 
 - **做了什么**：Spec 钉 ira favor 与 gale church-favor 双债并存，dave mill denounce 仍开。无新实践 / 无 want 改动。
 - **测**：SandboxSpec dual silence（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v439 — Host parentsOf/childrenOf + CLI
+
+- **做了什么**：闭合视图枚举 `parent.<p>.<who>` / `parent.<who>.<c>`；CLI `prax parents`/`children`；help 同步。无实践 / 无 want 改动。
+- **测**：HostSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v440 — Chronicle parents/children of + Host 对偶
+
+- **做了什么**：`askChronicle` 增加 `"parents of "` / `"children of "`（对齐 Host）；Spec 钉原叶与短语对偶。无实践 / 无 want 改动。
+- **测**：ChronicleSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
