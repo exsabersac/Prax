@@ -671,5 +671,18 @@ tests = testGroup "Prax.Coerce"
           (not (satisfies (db st) [lacksCensured "priest" "eve"] Map.empty))
         assertBool "lacksDenounced on empty"
           (satisfies (db emptyState) [lacksDenounced "dave" "bob"] Map.empty)
+    , testCase "isMarried / isOstracized / isConfessed evaluate on Insert world" $ do
+        let st = foldl (flip performOutcome) emptyState
+              [ Insert "married.fran.dave"
+              , Insert "ostracized.dana.bob"
+              , Insert "confessed.bob"
+              ]
+        assertBool "isMarried" (satisfies (db st) [isMarried "fran" "dave"] Map.empty)
+        assertBool "lacksMarried fails"
+          (not (satisfies (db st) [lacksMarried "fran" "dave"] Map.empty))
+        assertBool "isOstracized" (satisfies (db st) [isOstracized "dana" "bob"] Map.empty)
+        assertBool "isConfessed" (satisfies (db st) [isConfessed "bob"] Map.empty)
+        assertBool "lacksConfessed on empty"
+          (satisfies (db emptyState) [lacksConfessed "bob"] Map.empty)
     ]
   ]

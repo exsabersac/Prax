@@ -233,4 +233,14 @@ tests = testGroup "Prax.Debt"
       assertBool "lacksRevoked on clean"
         (satisfies (db clean) [lacksRevoked "ira" "bob"] Map.empty)
 
+
+  , testCase "isDemanded / lacksDemanded evaluate after demand action" $ do
+      let st = doAct "cora" "demand" aloneWorld
+      assertBool "isDemanded"
+        (satisfies (db st) [isDemanded "cora" "dell" "favor"] Map.empty)
+      assertBool "lacksDemanded fails"
+        (not (satisfies (db st) [lacksDemanded "cora" "dell" "favor"] Map.empty))
+      assertBool "lacksDemanded on seed"
+        (satisfies (db aloneWorld) [lacksDemanded "cora" "dell" "favor"] Map.empty)
+
   ]

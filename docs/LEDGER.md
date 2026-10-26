@@ -2160,3 +2160,15 @@ Tier 3 — 宿主游戏边界：
 - **测**：ChronicleSpec、CoerceSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v389 — Sandbox 游街×教会沉默 + 检举×教会放逐交叉（钉既有门禁）
+
+- **做了什么**：Spec 钉 mill parade 与 priest 债挡 censure 并行；钉 dave denounce/exile 与 priest banish 并行。无新实践 / 无 want 改动。
+- **测**：SandboxSpec parade × church silence、denounce × church exile（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v390 — Coerce married/ostracized/confessed + Debt isDemanded 世界求值
+
+- **做了什么**：Coerce Spec 钉 isMarried/isOstracized/isConfessed 世界求值；Debt Spec 钉 isDemanded 在 demand 动作后求值。无新实践 / 无 want 改动。
+- **测**：CoerceSpec、DebtSpec（针对性；未跑全量）。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+

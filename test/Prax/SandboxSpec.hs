@@ -2466,4 +2466,46 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
       assertBool "priest censure still blocked"
         (not (hasAct "priest" "censure bob" stBack))
 
+
+  , testCase "parade × church silence: mill parade open; priest debt blocks censure" $ do
+      -- mill brand parade stays while bob buys priest church-silence.
+      let st0 = activateChurchBob coerceSeed
+          stHear = doAct "priest" "hear of bob" st0
+          stSq = doAct "dave" "squeeze bob" stHear
+          stConf = doAct "bob" "confess the theft" stSq
+          stSq2 = doAct "dave" "squeeze bob" stConf
+          stBrand = doAct "dave" "brand bob" stSq2
+          stP = activateParade stBrand
+          stBuy = doAct "bob" "buy priest" stP
+      assertBool "debt" (exists "debt.priest.bob.church-favor" (db stBuy))
+      assertBool "dave parade yes" (hasAct "dave" "parade bob" stBuy)
+      let stH = iterate roundBoundary stBuy !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "priest censure blocked" (not (hasAct "priest" "censure bob" stH))
+      assertBool "parade at harvest" (hasAct "dave" "parade bob" stH)
+      let stPar = doAct "dave" "parade bob" stH
+      assertBool "paraded" (exists "paraded.dave.bob" (db stPar))
+      assertBool "debt still" (exists "debt.priest.bob.church-favor" (db stPar))
+
+  , testCase "denounce × church exile: mill denounce/exile and priest banish stay independent" $ do
+      -- dave harvest denounce→exile while priest hear→censure→banish share no gate.
+      -- After either exile mark lands, the other exile/banish may close — pin both
+      -- open together, then take priest banish (church path completes).
+      let st0 = activateChurchBob sandboxWorld
+          stHear = doAct "priest" "hear of bob" st0
+          stDave = doAct "dave" "learn" stHear
+          stH = iterate roundBoundary stDave !! 3
+      assertBool "harvest" (exists "festival.harvest" (db stH))
+      assertBool "dave denounce yes" (hasAct "dave" "denounce" stH)
+      assertBool "priest censure yes" (hasAct "priest" "censure bob" stH)
+      let stDen = doAct "dave" "denounce" stH
+          stCen = doAct "priest" "censure bob" stDen
+          stAfter = roundBoundary stCen
+      assertBool "dave exile yes" (hasAct "dave" "exile" stAfter)
+      assertBool "priest banish yes" (hasAct "priest" "banish bob" stAfter)
+      let stEx = doAct "priest" "banish bob" stAfter
+      assertBool "exiled" (exists "exiled.bob" (db stEx))
+      assertBool "dave denounced mark stays"
+        (exists "denounced.dave.bob" (db stEx))
+
   ]
