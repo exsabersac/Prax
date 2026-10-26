@@ -2904,3 +2904,14 @@ Tier 3 — 宿主游戏边界：
 - **测**：SightSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
 
+## v517 — Sandbox 撕毁后控告权重 + parade/squeeze 门互斥（钉既有门禁）
+
+- **做了什么**：Spec 钉 tear 后 harvest 窗 millJustice 选 denounce、church 选 censure；brand 后 squeeze 门关、parade(10) 自选游街（mill/church）。无新实践。
+- **测**：SandboxSpec wants: after breakSilence denounce / after church tear censure / parade vs squeeze after brand。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准；未开 feat/my-town。
+
+## v518 — Sandbox affiliate×want 负例扩展（钉既有门禁）
+
+- **做了什么**：Spec 钉 kyle 挂 millCry/squeeze+parade/churchJustice+inquisit/flee 时门禁仍关、不选对应 act；挂 joinsMill 可 wed。无新实践。
+- **测**：SandboxSpec wants: affiliate kyle with …。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
