@@ -128,18 +128,25 @@ export async function praxWait(prevView) {
 export async function praxSave() {
   const data = await rpc({ op: "save" });
   if (!data.ok) return data;
-  // 桥可能回 { save }，或扁平 { blob, format, worldId }
+  // 扁平 SaveMeta：format / worldId / blob（与 praxSave JSON 互操作）
   const save =
     data.save != null
       ? data.save
-      : { blob: data.blob, format: data.format, worldId: data.worldId };
+      : { format: data.format, worldId: data.worldId, blob: data.blob };
   return { ok: true, save };
 }
 
+/** load.raw = praxSave / 桥 save 产出的整段 JSON 字符串 */
 function saveRaw(save) {
   if (typeof save === "string") return save;
+  if (save && typeof save.blob === "string" && (save.format || save.worldId)) {
+    return JSON.stringify({
+      format: save.format,
+      worldId: save.worldId,
+      blob: save.blob,
+    });
+  }
   if (save && typeof save.blob === "string") return save.blob;
-  if (save && typeof save.save === "string") return save.save;
   return JSON.stringify(save);
 }
 
