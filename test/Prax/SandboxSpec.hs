@@ -3310,4 +3310,84 @@ tests = testGroup "Prax.Worlds.Sandbox (playable festival + factionStanding arcs
            Nothing -> False)
 
 
+
+  , testCase "wants: without joinsMill fran does not wed" $ do
+      -- Strip all wants (millCry includes seeks which can compete); empty → Wait.
+      let st0 = sandboxWorld
+          fran' = (actorOf "fran" st0) { charDesires = [] }
+          st = st0 { characters =
+                  [ if charName c == "fran" then fran' else c
+                  | c <- characters st0 ] }
+      assertBool "wed open" (hasAct "fran" "wed" st)
+      let lab = pickLabel "fran" st
+      assertBool ("not wed, got " ++ show lab)
+        (maybe True (not . ("wed" `isInfixOf`)) lab)
+      pickLabel "fran" st @?= Just "fran: Wait a moment"
+
+  , testCase "wants: without seeksTheft dave does not learn" $ do
+      let st0 = sandboxWorld
+          dave' = (actorOf "dave" st0)
+                    { charDesires = [punishesThiefDesireName, exileBobDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "dave" then dave' else c
+                  | c <- characters st0 ] }
+      assertBool "learn open" (hasAct "dave" "learn" st)
+      let lab = pickLabel "dave" st
+      assertBool ("not learn, got " ++ show lab)
+        (maybe True (not . ("learn" `isInfixOf`)) lab)
+
+  , testCase "wants: without seeksHeresy priest does not hear blasphemy" $ do
+      let st0 = sandboxWorld
+          priest' = (actorOf "priest" st0)
+                      { charDesires = [punishesHereticDesireName, exileEveDesireName] }
+          st = st0 { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters st0 ] }
+      assertBool "hear open" (hasAct "priest" "hear the blasphemy" st)
+      let lab = pickLabel "priest" st
+      assertBool ("not hear, got " ++ show lab)
+        (maybe True (not . ("hear" `isInfixOf`)) lab)
+
+  , testCase "wants: return weight beats flee after abandon" $ do
+      -- After flee, return(11) open; carol holds both flee+return — picks return.
+      let st0 = defectionSeed
+          stFlee = doAct "carol" "abandon" (doAct "carol" "learn" st0)
+      assertBool "return open" (hasAct "carol" "return" stFlee)
+      pickLabel "carol" stFlee
+        @?= Just "carol: return to the mill in reconciliation"
+
+  , testCase "wants: silence buy weight beats millJustice when buy open" $ do
+      -- buy(14) > exile(12)/denounce(8): after ira learns, bob with buy+millJustice buys.
+      let st0 = doAct "ira" "learn" sandboxWorld
+          bob' = (actorOf "bob" st0)
+                   { charDesires = [millSilenceDesireName] ++ millJustice }
+          st = st0 { characters =
+                  [ if charName c == "bob" then bob' else c
+                  | c <- characters st0 ] }
+      assertBool "buy open" (hasAct "bob" "buy ira" st)
+      pickLabel "bob" st @?= Just "bob: buy ira's silence about the theft"
+
+  , testCase "wants: church exile weight beats censure after censure done" $ do
+      -- After harvest censure, outside: exile(12) for eve.
+      let st0 = doAct "priest" "hear the blasphemy" sandboxWorld
+          stH = iterate roundBoundary st0 !! 3
+          stCen = doAct "priest" "censure" stH
+          stAfter = roundBoundary stCen
+          priest' = (actorOf "priest" stAfter)
+                      { charDesires = [exileEveDesireName, punishesHereticDesireName] }
+          st = stAfter { characters =
+                  [ if charName c == "priest" then priest' else c
+                  | c <- characters stAfter ] }
+      assertBool "exile open" (hasAct "priest" "exile" st)
+      pickLabel "priest" st @?= Just "priest: exile the heretic"
+
+  , testCase "cast: fran holds joinsMillDesireName by default" $ do
+      assertBool "fran joins"
+        (joinsMillDesireName `elem` charDesires (actorOf "fran" sandboxWorld))
+      assertBool "cast unhooks parade"
+        (paradeDesireName `notElem` charDesires (actorOf "dave" sandboxWorld))
+      assertBool "cast unhooks rally"
+        (rallyDesireName `notElem` charDesires (actorOf "dave" sandboxWorld))
+
+
   ]

@@ -592,7 +592,7 @@ cast =
   , (character "bob")   { charDesires = ["buys-ira-silence"] }
   , (character "carol") { charDesires = millCry }
   , (character "dave")  { charDesires = millCry }
-  , (character "fran")  { charDesires = "joins-mill" : millCry }
+  , (character "fran")  { charDesires = joinsMillDesireName : millCry }
   , character "eve"
   , (character "gale")  { charDesires = churchJustice }
   , (character "priest") { charDesires = churchJustice }

@@ -2820,3 +2820,15 @@ Tier 3 — 宿主游戏边界：
 - **做了什么**：Beliefs lacksHoldsBelief（= doubts）；Conversation lacksTopic（= offTopic）；Faction lacksRegardAs（= lacksRegard）；Spec 钉结构与世界求值。无新实践 / 无 want 改动。
 - **测**：BeliefsSpec / ConversationSpec / FactionSpec（针对性；未跑全量）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准。
+
+## v503 — Sandbox 无婚入/无获知 want 时不自选（钉既有门禁）
+
+- **做了什么**：Spec 钉 fran 空 want 不 wed；dave 无 seeksTheft 不 learn；priest 无 seeksHeresy 不 hear blasphemy。阵容 fran 改用 `joinsMillDesireName` 常量。
+- **测**：SandboxSpec wants: without joinsMill / seeksTheft / seeksHeresy；cast fran holds joins。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
+
+## v504 — Sandbox 权重交叉：和解/买沉默/教会放逐（钉既有门禁）
+
+- **做了什么**：Spec 钉 flee 后 return(11) 自选和解；buy(14) 压 millJustice；censure 后 exileEve(12) 压审查 want。无新实践。
+- **测**：SandboxSpec wants: return beats flee / silence buy beats millJustice / church exile beats censure。
+- **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实；未改 Village 金标准。
