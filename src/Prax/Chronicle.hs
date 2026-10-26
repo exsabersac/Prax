@@ -149,7 +149,7 @@ formatEvent ev rs =
 -- @"bonds of "++who@、@"bonders of "++who@、@"bonded of "++label@、@"esteemed of "++who@、@"esteemers of "++who@、@"scorned of "++who@、@"scorners of "++who@、
 -- @"beliefs of "++who@、@"projects of "++who@、
 -- @"kin of "++who@、@"notorious of "++who@、@"notorieties of "++label@、
--- @"regards toward "++who@、@"what factions"@。
+-- @"regards toward "++who@、@"regards as "++label@、@"what factions"@。
 askChronicle :: PraxState -> String -> [String]
 askChronicle st q
   | Just event <- stripPrefix "who knows " q =
@@ -1508,6 +1508,19 @@ askChronicle st q
             , '.' `notElem` who
             ]
       in if null rows then ["nobody is notorious as " ++ label]
+         else rows
+  | Just label <- stripPrefix "regards as " q =
+      -- 对齐 Host regardsAsOf：读闭合视图。
+      let rows = sort
+            [ s
+            | s <- dbToSentences (readView st)
+            , "regards." `isPrefixOf` s
+            , let rest = drop (length ("regards." :: String)) s
+            , let parts = splitDots rest
+            , length parts >= 3
+            , intercalate "." (drop 2 parts) == label
+            ]
+      in if null rows then ["nobody regards as " ++ label]
          else rows
   | Just target <- stripPrefix "regards toward " q =
       -- 对齐 Host regardsToward：闭合视图中指向 target 的 regards.*.target.*。

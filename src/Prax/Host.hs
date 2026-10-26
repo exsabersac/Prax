@@ -27,6 +27,7 @@
 -- v572：'esteemsOf'/'scornsOf' 赞誉/蔑视标签侧叶。
 -- v575：'demandsOf' 催收内容标签侧叶。
 -- v578：'liedOf' 谎言内容标签侧叶。
+-- v582：'regardsAsOf' 站队标签侧叶。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -89,6 +90,7 @@ module Prax.Host
   , affiliatorsOf
   , leadersOf
   , regardsToward
+  , regardsAsOf
   , factionsNamed
   , debtsOf
   , creditorsOf
@@ -407,6 +409,23 @@ regardsToward st target = sort
   , tgt == target
   , not (null (drop 1 afterTgt))  -- label nonempty
   ]
+
+-- | 闭合视图中站队标签为 @label@ 的叶（@regards.<who>.<target>.<label>@）。
+regardsAsOf :: PraxState -> String -> [String]
+regardsAsOf st label = sort
+  [ s
+  | s <- queryView st
+  , "regards." `isPrefixOf` s
+  , let rest = drop (length ("regards." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == label
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中出现的派系名（来自 @member.*.<f>@、@affiliate.*.<f>@、@leads.<f>.*@）。
 factionsNamed :: PraxState -> [String]

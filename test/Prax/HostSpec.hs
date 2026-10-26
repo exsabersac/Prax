@@ -246,7 +246,7 @@ tests = testGroup "Prax.Host"
       chattedWithOf st "ana" @?= ["ana.chattedWith.ben"]
       chattedWithOf st "cass" @?= ["cass.chattedWith.ana"]
 
-  , testCase "regardsToward / factionsNamed from the view" $ do
+  , testCase "regardsToward / regardsAsOf / factionsNamed from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "regards.dave.bob.thief"
                 , Insert "regards.fran.bob.thief"
@@ -256,6 +256,9 @@ tests = testGroup "Prax.Host"
                 , Insert "leads.guild!ana" ]
       regardsToward st "bob" @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
       regardsToward st "eve" @?= ["regards.dave.eve.hero"]
+      regardsAsOf st "thief" @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      regardsAsOf st "hero" @?= ["regards.dave.eve.hero"]
+      regardsAsOf st "void" @?= []
       factionsNamed st @?= ["choir", "guild", "mill"]
 
   , testCase "traitsOf / traitedOf / moodsOf / moodedOf / bondsOf / kinOf / notoriousOf / notorietiesOf from the view" $ do

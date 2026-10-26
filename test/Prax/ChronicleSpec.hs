@@ -13,7 +13,7 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf,
                              chattedWithOf, chattersOf, esteemedOf, scornedOf,
                              beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
@@ -420,6 +420,10 @@ tests = testGroup "Prax.Chronicle"
         @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
       askChronicle st "regards toward eve" @?= ["regards.dave.eve.hero"]
       askChronicle st "regards toward void" @?= ["nobody regards void"]
+      askChronicle st "regards as thief"
+        @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      askChronicle st "regards as hero" @?= ["regards.dave.eve.hero"]
+      askChronicle st "regards as void" @?= ["nobody regards as void"]
 
   , testCase "askChronicle what-factions" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -644,6 +648,7 @@ tests = testGroup "Prax.Chronicle"
             , Insert "leads.choir!carol"
             ]
       askChronicle st "regards toward eve" @?= regardsToward st "eve"
+      askChronicle st "regards as hero" @?= regardsAsOf st "hero"
       askChronicle st "what factions" @?= factionsNamed st
 
   , testCase "askChronicle members/affiliates/leads dual Host names" $ do
@@ -1258,5 +1263,22 @@ tests = testGroup "Prax.Chronicle"
         ["ben.lied.ana.saw.nothing"]
       askChronicle st "lied of void" @?=
         ["nobody lied void"]
+
+  , testCase "regardsAsOf / regards as dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "regards.dave.bob.thief"
+            , Insert "regards.fran.bob.thief"
+            , Insert "regards.dave.eve.hero"
+            ]
+      sort (regardsAsOf st "thief") @?=
+        ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      regardsAsOf st "hero" @?= ["regards.dave.eve.hero"]
+      regardsAsOf st "void" @?= []
+      askChronicle st "regards as thief" @?=
+        ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      askChronicle st "regards as hero" @?=
+        ["regards.dave.eve.hero"]
+      askChronicle st "regards as void" @?=
+        ["nobody regards as void"]
 
   ]

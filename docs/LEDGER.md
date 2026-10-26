@@ -3199,3 +3199,13 @@
 - **做了什么**：SandboxSpec 追加 mill silence×hear；church silence×learn；kyle return 负例；dual silence×repay×cry/censure；churchParade once×mill squeeze；无 squeeze want 负例；flee×return×cry；brand×church buy；fearsBrand util；inquisit×cry；cast eve/gale；dual parade once 跨市。无新实践 / 无 want 改动。
 - **测**：`stack test --fast --test-arguments '--pattern /Sandbox/'`（515 绿）。
 - **明确未做**：无 PWIM / 嵌套信念 / 硬 Swaygent / 反事实放置；未动 Village 金标准；未碰 feat/my-town。
+
+## v582 — Host regardsAsOf + CLI
+
+- **模块**：`src/Prax/Host.hs`、`app/Main.hs`、`test/Prax/HostSpec.hs`
+- **内容**：`regardsAsOf` 枚举 `regards.*.*.<label>`；CLI `prax regards as <label> <world>`。
+
+## v583 — Chronicle regards as + Host 对偶
+
+- **模块**：`src/Prax/Chronicle.hs`、`test/Prax/ChronicleSpec.hs`
+- **内容**：`regards as` 返回站队标签侧叶；Spec 钉 Host 与 Chronicle 空集。
