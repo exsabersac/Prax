@@ -1,5 +1,5 @@
 /**
- * U4：挂载 Phaser 3（像素锐化 + 多地点地图）；对外 sync(view) / syncMenu / set*Handler。
+ * U5：挂载 Phaser 3（多帧朝向 + 地图层次 + HUD）；对外 sync(view) / syncMenu / set*Handler。
  */
 import { BootScene } from "./BootScene.js";
 import { TownScene, TOWN_SIZE } from "./TownScene.js";
@@ -49,7 +49,7 @@ export function mountPhaser(parentEl) {
     height: TOWN_SIZE.height,
     backgroundColor: "#2a2a28",
     scene: [BootScene, TownScene],
-    // U4-01：pixelArt + roundPixels，缓解 FIT 发虚
+    // U4/U5：pixelArt + roundPixels，缓解 FIT 发虚
     render: {
       pixelArt: true,
       antialias: false,
@@ -100,7 +100,7 @@ export function syncMenu(menu) {
   if (town) town.syncMenu(menu);
 }
 
-/** View + Menu 一次推入（U3/U4 主 paint 路径） */
+/** View + Menu 一次推入（U3–U5 主 paint 路径） */
 export function syncHud(view, menu) {
   lastView = view;
   lastMenu = menu;

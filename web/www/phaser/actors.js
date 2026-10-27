@@ -1,6 +1,6 @@
 /**
- * U1–U4：角色色与文案短标（纯前端装饰，不回写世界）。
- * 站位 / 地点区见 map.js。
+ * U1–U5：角色色与文案短标（纯前端装饰，不回写世界）。
+ * U5：气泡截断放宽，避免过度省略。
  */
 
 export const ACTOR_FILL = {
@@ -16,8 +16,8 @@ export function actorFill(id) {
   return ACTOR_FILL[id] || 0x666666;
 }
 
-/** 截断现有文案为头顶短标（不新增 Session 字段） */
-export function shortenLabel(text, max = 10) {
+/** 截断现有文案为头顶短标（不新增 Session 字段）；U5 默认更宽 */
+export function shortenLabel(text, max = 18) {
   const s = String(text || "").replace(/\s+/g, " ").trim();
   if (!s) return "";
   if (s.length <= max) return s;
@@ -34,7 +34,7 @@ export function bubbleFromView(actor, view, menu) {
 
   if (selected && menu && Array.isArray(menu.actions) && menu.actions.length) {
     const a = menu.actions[0];
-    return shortenLabel(a.label || a.id || "", 10);
+    return shortenLabel(a.label || a.id || "", 18);
   }
 
   const log = (view && view.log) || [];
@@ -47,7 +47,7 @@ export function bubbleFromView(actor, view, menu) {
       t.includes(actor.id) ||
       (selected && (line.kind === "narrative" || line.kind === "system"))
     ) {
-      return shortenLabel(t, 12);
+      return shortenLabel(t, 20);
     }
   }
 

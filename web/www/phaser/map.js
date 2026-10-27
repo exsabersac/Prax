@@ -1,19 +1,20 @@
 /**
- * U4：多地点像素风世界地图（纯前端装饰）。
+ * U5：多地点像素风世界地图（纯前端装饰）。
  * placeId → 静态像素区；不回写 Session / 世界。
  * 角色只落「当前 View 同场」区；其它区仅地标/空区，不伪造超 View 演员。
+ * U5：层次/地标/路径可读提升；装饰性第三区「小桥」（不扩世界契约）。
  */
 
 export const VIEW_W = 640;
 export const VIEW_H = 360;
 
 /** 世界大于视口，镜头可逛开 */
-export const WORLD_W = 1280;
-export const WORLD_H = 560;
+export const WORLD_W = 1400;
+export const WORLD_H = 640;
 
 /**
  * @typedef {{ id: string, label: string, x: number, y: number, w: number, h: number,
- *   floor: number, accent: number, sky: number, path: number }} PlaceZone
+ *   floor: number, accent: number, sky: number, path: number, decorative?: boolean }} PlaceZone
  */
 
 /** @type {Record<string, PlaceZone>} */
@@ -21,10 +22,10 @@ export const PLACES = {
   square: {
     id: "square",
     label: "广场",
-    x: 48,
-    y: 48,
-    w: 520,
-    h: 440,
+    x: 40,
+    y: 56,
+    w: 500,
+    h: 420,
     floor: 0x6f9260,
     accent: 0x4e6b42,
     sky: 0x8eb8d4,
@@ -34,13 +35,27 @@ export const PLACES = {
     id: "mill",
     label: "磨坊",
     x: 700,
-    y: 48,
-    w: 520,
-    h: 440,
+    y: 56,
+    w: 500,
+    h: 420,
     floor: 0xb08a5c,
     accent: 0x7a5f3c,
     sky: 0xc4a882,
     path: 0xc4a878,
+  },
+  /** 装饰性第三区：不进世界契约，仅镜头可逛 / 地标可读 */
+  bridge: {
+    id: "bridge",
+    label: "小桥",
+    x: 520,
+    y: 460,
+    w: 360,
+    h: 150,
+    floor: 0x5a7a6a,
+    accent: 0x3d5a4e,
+    sky: 0x7aa8b8,
+    path: 0x8a9a7a,
+    decorative: true,
   },
 };
 
@@ -77,7 +92,7 @@ export function placeZone(placeId) {
   return PLACES[placeId] || PLACES.square;
 }
 
-/** 世界坐标站位（仅用于当前 View 同场角色） */
+/** 世界坐标站位（仅用于当前 View 同场角色；装饰区无槽） */
 export function worldSlot(placeId, actorId, index = 0) {
   const z = placeZone(placeId);
   const cx = z.x + z.w / 2;

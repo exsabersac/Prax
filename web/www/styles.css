@@ -135,7 +135,7 @@ body {
 .toolbar { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
 
 
-/* U1–U4 Phaser 场景 */
+/* U1–U5 Phaser 场景 */
 .panel-scene { padding-bottom: 0.75rem; }
 .town-frame {
   width: 100%;

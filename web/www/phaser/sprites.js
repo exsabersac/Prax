@@ -1,81 +1,204 @@
 /**
- * U4：程序化像素人物（自研几何帧，非 GA/CuteRPG 素材）。
- * 生成 idle / walk 两帧纹理，供 TownScene 播放。
+ * U5：程序化像素人物（自研几何帧，非 GA/CuteRPG）。
+ * idle 4 帧 + walk 4 帧 × 三朝向（下/侧/上）；左朝向用 flipX。
+ * 相对 U4 双帧几何：可感知多帧步态与朝向差异。
  */
 
-const FRAME_W = 16;
-const FRAME_H = 24;
+export const FRAME_W = 16;
+export const FRAME_H = 24;
+const COLS = 4;
+const ROWS = 3; // down / side / up
+
+/** @typedef {'down'|'side'|'up'} FaceRow */
 
 /**
- * 在 Graphics 上画一帧小人（像素块）。
- * @param {Phaser.GameObjects.Graphics} g
- * @param {number} fill 身体主色
- * @param {0|1} frame 0=idle 1=walk（腿错位）
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} ox
+ * @param {number} oy
+ * @param {number} fill
+ * @param {FaceRow} face
+ * @param {number} frame 0–3
+ * @param {'idle'|'walk'} mode
  */
-function paintFrame(g, fill, frame) {
-  g.clear();
-  // 头
-  g.fillStyle(0xffe0bd, 1);
-  g.fillRect(5, 1, 6, 6);
-  // 发/帽沿
+function paintFrame(ctx, ox, oy, fill, face, frame, mode) {
   const hair = ((fill >> 1) & 0x7f7f7f) | 0x202020;
-  g.fillStyle(hair, 1);
-  g.fillRect(5, 0, 6, 2);
+  const pants = 0x2a2a28;
+  const shoe = 0x1a1a18;
+  const skin = 0xffe0bd;
+  const f = frame % 4;
+
+  const hex = (n) => "#" + (n >>> 0).toString(16).padStart(6, "0");
+  const rect = (x, y, w, h, c) => {
+    ctx.fillStyle = hex(c);
+    ctx.fillRect(ox + x, oy + y, w, h);
+  };
+
+  // 头 / 发 / 脸
+  if (face === "up") {
+    rect(5, 0, 6, 7, hair);
+    rect(6, 5, 4, 2, skin);
+  } else if (face === "side") {
+    rect(6, 1, 6, 6, skin);
+    rect(5, 0, 6, 3, hair);
+    rect(10, 3, 2, 2, 0x1c1a17);
+  } else {
+    rect(5, 1, 6, 6, skin);
+    rect(5, 0, 6, 2, hair);
+    rect(6, 3, 1, 1, 0x1c1a17);
+    rect(9, 3, 1, 1, 0x1c1a17);
+  }
+
   // 身
-  g.fillStyle(fill, 1);
-  g.fillRect(4, 7, 8, 9);
+  if (face === "side") rect(5, 7, 7, 9, fill);
+  else rect(4, 7, 8, 9, fill);
+
   // 手臂
-  g.fillStyle(0xffe0bd, 1);
-  if (frame === 0) {
-    g.fillRect(2, 8, 2, 6);
-    g.fillRect(12, 8, 2, 6);
+  if (mode === "idle") {
+    const sway = f === 0 || f === 1 ? 0 : f === 2 ? 1 : -1;
+    if (face === "side") {
+      rect(3, 8 + sway, 2, 6, skin);
+      rect(12, 9 - sway, 2, 5, skin);
+    } else if (face === "up") {
+      rect(2, 8 + Math.abs(sway), 2, 6, skin);
+      rect(12, 8 + Math.abs(sway), 2, 6, skin);
+    } else {
+      rect(2, 8 + sway, 2, 6, skin);
+      rect(12, 8 - sway, 2, 6, skin);
+    }
   } else {
-    g.fillRect(1, 9, 2, 5);
-    g.fillRect(13, 7, 2, 6);
+    const phase = f % 4;
+    const leftUp = phase === 0 || phase === 3;
+    if (face === "side") {
+      rect(leftUp ? 12 : 11, leftUp ? 7 : 10, 2, 5, skin);
+      rect(3, leftUp ? 10 : 7, 2, 5, skin);
+    } else {
+      rect(1, leftUp ? 7 : 10, 2, leftUp ? 6 : 5, skin);
+      rect(13, leftUp ? 10 : 7, 2, leftUp ? 5 : 6, skin);
+    }
   }
-  // 腿
-  g.fillStyle(0x2a2a28, 1);
-  if (frame === 0) {
-    g.fillRect(5, 16, 3, 7);
-    g.fillRect(9, 16, 3, 7);
+
+  // 腿 / 鞋
+  if (mode === "idle") {
+    const lean = f === 0 ? 0 : f === 1 ? 0 : f === 2 ? -1 : 1;
+    rect(5 + lean, 16, 3, 7, pants);
+    rect(9 + lean, 16, 3, 7, pants);
+    rect(4 + lean, 22, 4, 2, shoe);
+    rect(9 + lean, 22, 4, 2, shoe);
+  } else if (face === "side") {
+    const sideCycle = [
+      { bx: 6, by: 16, bh: 7, fx: 8, fy: 16, fh: 7 },
+      { bx: 5, by: 16, bh: 7, fx: 9, fy: 15, fh: 8 },
+      { bx: 6, by: 16, bh: 7, fx: 8, fy: 16, fh: 7 },
+      { bx: 4, by: 15, bh: 8, fx: 9, fy: 16, fh: 7 },
+    ][f];
+    rect(sideCycle.bx, sideCycle.by, 3, sideCycle.bh, pants);
+    rect(sideCycle.fx, sideCycle.fy, 3, sideCycle.fh, pants);
+    rect(sideCycle.bx - 1, 22, 4, 2, shoe);
+    rect(sideCycle.fx, 22, 4, 2, shoe);
   } else {
-    g.fillRect(4, 16, 3, 7);
-    g.fillRect(10, 15, 3, 8);
-  }
-  // 鞋
-  g.fillStyle(0x1a1a18, 1);
-  if (frame === 0) {
-    g.fillRect(4, 22, 4, 2);
-    g.fillRect(9, 22, 4, 2);
-  } else {
-    g.fillRect(3, 22, 4, 2);
-    g.fillRect(10, 22, 4, 2);
+    const cycle = [
+      { lx: 5, ly: 16, lh: 7, rx: 9, ry: 16, rh: 7 },
+      { lx: 3, ly: 16, lh: 7, rx: 10, ry: 15, rh: 8 },
+      { lx: 5, ly: 16, lh: 7, rx: 9, ry: 16, rh: 7 },
+      { lx: 4, ly: 15, lh: 8, rx: 11, ry: 16, rh: 7 },
+    ][f];
+    rect(cycle.lx, cycle.ly, 3, cycle.lh, pants);
+    rect(cycle.rx, cycle.ry, 3, cycle.rh, pants);
+    rect(cycle.lx - 1, 22, 4, 2, shoe);
+    rect(cycle.rx, 22, 4, 2, shoe);
   }
 }
 
 /**
- * 为角色生成 idle/walk 纹理键（幂等）。
  * @param {Phaser.Scene} scene
  * @param {string} actorId
  * @param {number} fill
- * @returns {{ idle: string, walk: string, w: number, h: number }}
+ * @returns {{ sheet: string, w: number, h: number }}
  */
 export function ensureActorTextures(scene, actorId, fill) {
-  const idleKey = `u4-actor-${actorId}-idle`;
-  const walkKey = `u4-actor-${actorId}-walk`;
-  if (!scene.textures.exists(idleKey)) {
-    const g = scene.make.graphics({ x: 0, y: 0, add: false });
-    paintFrame(g, fill, 0);
-    g.generateTexture(idleKey, FRAME_W, FRAME_H);
-    g.destroy();
+  const sheetKey = `u5-actor-${actorId}-sheet`;
+  const faces = /** @type {FaceRow[]} */ (["down", "side", "up"]);
+
+  if (!scene.textures.exists(sheetKey)) {
+    const canvas = document.createElement("canvas");
+    canvas.width = FRAME_W * COLS;
+    canvas.height = FRAME_H * ROWS * 2; // idle rows 0–2, walk rows 3–5
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    faces.forEach((face, row) => {
+      for (let col = 0; col < COLS; col++) {
+        paintFrame(ctx, col * FRAME_W, row * FRAME_H, fill, face, col, "idle");
+        paintFrame(
+          ctx,
+          col * FRAME_W,
+          (row + ROWS) * FRAME_H,
+          fill,
+          face,
+          col,
+          "walk"
+        );
+      }
+    });
+
+    scene.textures.addCanvas(sheetKey, canvas);
+    const tex = scene.textures.get(sheetKey);
+    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    for (let row = 0; row < ROWS * 2; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const idx = row * COLS + col;
+        tex.add(idx, 0, col * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H);
+      }
+    }
   }
-  if (!scene.textures.exists(walkKey)) {
-    const g = scene.make.graphics({ x: 0, y: 0, add: false });
-    paintFrame(g, fill, 1);
-    g.generateTexture(walkKey, FRAME_W, FRAME_H);
-    g.destroy();
+
+  const faceIdx = { down: 0, side: 1, up: 2 };
+  for (const face of faces) {
+    const idleKey = animKey(actorId, "idle", face);
+    const walkKey = animKey(actorId, "walk", face);
+    if (!scene.anims.exists(idleKey)) {
+      const base = faceIdx[face] * COLS;
+      scene.anims.create({
+        key: idleKey,
+        frames: [0, 1, 2, 3].map((i) => ({ key: sheetKey, frame: base + i })),
+        frameRate: 3,
+        repeat: -1,
+      });
+    }
+    if (!scene.anims.exists(walkKey)) {
+      const base = (ROWS + faceIdx[face]) * COLS;
+      scene.anims.create({
+        key: walkKey,
+        frames: [0, 1, 2, 3].map((i) => ({ key: sheetKey, frame: base + i })),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
   }
-  return { idle: idleKey, walk: walkKey, w: FRAME_W, h: FRAME_H };
+
+  return { sheet: sheetKey, w: FRAME_W, h: FRAME_H };
 }
 
-export const SPRITE_SCALE = 2; // 16×24 → 显示 32×48，整数倍锐化
+/**
+ * @param {string} actorId
+ * @param {'idle'|'walk'} mode
+ * @param {FaceRow} face
+ */
+export function animKey(actorId, mode, face) {
+  return `u5-${actorId}-${mode}-${face}`;
+}
+
+/**
+ * @param {number} dx
+ * @param {number} dy
+ * @returns {{ face: FaceRow, flipX: boolean }}
+ */
+export function facingFromDelta(dx, dy) {
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return { face: "side", flipX: dx < 0 };
+  }
+  if (dy < 0) return { face: "up", flipX: false };
+  return { face: "down", flipX: false };
+}
+
+export const SPRITE_SCALE = 2;
