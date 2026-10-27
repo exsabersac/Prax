@@ -135,30 +135,31 @@ body {
 .toolbar { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
 
 
-/* U1–U6 Phaser 场景 */
+/* U1–U7 Phaser 场景 */
 .panel-scene { padding-bottom: 0.75rem; }
+/* U7：流体铺满可用区；不再钉死 640×360 aspect + 离散 zoom */
 .town-frame {
   width: 100%;
-  max-width: min(1280px, 100%);
-  aspect-ratio: 640 / 360;
+  max-width: 100%;
+  height: clamp(280px, calc(100vh - 11rem), 820px);
+  min-height: 280px;
   background: #2a2a28;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
   box-shadow: 0 8px 24px #1c1a1722;
 }
-/* U6：host 吃满 frame；canvas 尺寸由 scale.js 按整数/可控 zoom + DPR backing 设定，禁止 CSS 百分比重采样 */
+/* U7：host 吃满 frame；canvas CSS/逻辑尺寸由 scale.js 按 host 流体 + DPR backing 设定 */
 .phaser-host {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  position: relative;
   overflow: hidden;
 }
 .phaser-host canvas {
   display: block;
-  /* 宽高由 scale.js 按 cssZoom 内联设定；此处禁止 100% 拉伸发虚 */
+  /* 宽高由 scale.js 按 host 内联设定为铺满；禁止二次 CSS 百分比重采样发虚 */
   max-width: none;
   max-height: none;
   image-rendering: pixelated;
@@ -167,7 +168,15 @@ body {
 }
 @media (max-width: 480px) {
   body { padding: 0.5rem 0.6rem 1.25rem; }
-  .town-frame { border-radius: 6px; }
+  .town-frame {
+    border-radius: 6px;
+    height: clamp(240px, calc(100vh - 9rem), 720px);
+  }
+}
+@media (min-width: 900px) {
+  .layout-u2 .town-frame {
+    height: clamp(360px, calc(100vh - 10rem), 820px);
+  }
 }
 
 /* U2：主舞台为 Phaser；DOM 菜单/对话旁路隐藏 */

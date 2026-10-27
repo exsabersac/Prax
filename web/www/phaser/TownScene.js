@@ -1,6 +1,6 @@
 /**
- * U6 TownScene：叠 U5 表现；缩放/DPR 由 phaser/scale.js + game.js 管，本场景逻辑坐标仍 VIEW_W×VIEW_H。
- * Menu / 叙事·tick 叠层固定于镜头（scrollFactor 0）；交互命中用屏坐标，与 world scroll 解耦。
+ * U7 TownScene：叠 U6 抗糊 + U5 表现；逻辑尺寸随布局（scale.js computeLayout）。
+ * Menu / 叙事·tick 叠层固定于镜头（scrollFactor 0）；屏坐标命中随逻辑尺寸重算，与 world scroll 解耦。
  * 角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
  */
 import { actorFill, bubbleFromView } from "./actors.js";
@@ -24,16 +24,28 @@ import {
 
 const R = 16;
 
-const MENU_X = 424;
-const MENU_Y = 28;
-const MENU_W = 204;
-const LOG_X = 12;
-const LOG_Y = 214;
-const LOG_W = 400;
-const LOG_H = 118;
-const HINT_Y = 348;
+/** 设计参考（640×360）下的默认 HUD；实际由 _computeHud(viewW,viewH) 随布局重算 */
+const MENU_Y0 = 28;
+const MENU_W0 = 204;
+const LOG_X0 = 12;
+const LOG_H0 = 118;
 
 const CAM_SPEED = 240;
+
+function computeHud(viewW, viewH) {
+  const vw = Math.max(2, viewW | 0);
+  const vh = Math.max(2, viewH | 0);
+  const menuW = Math.min(MENU_W0, Math.max(148, Math.floor(vw * 0.3)));
+  const menuX = Math.max(8, vw - menuW - 12);
+  const menuY = MENU_Y0;
+  const logH = Math.min(LOG_H0, Math.max(72, Math.floor(vh * 0.28)));
+  const logW = Math.min(400, Math.max(160, menuX - 24));
+  const logX = LOG_X0;
+  const logY = Math.max(100, vh - logH - 28);
+  const hintY = Math.max(24, vh - 14);
+  return { vw, vh, menuX, menuY, menuW, logX, logY, logW, logH, hintY };
+}
+
 
 export class TownScene extends Phaser.Scene {
   constructor() {
@@ -74,6 +86,10 @@ export class TownScene extends Phaser.Scene {
     this._camReady = false;
     this._selectPulse = null;
     this._viewLabel = "";
+    this._viewW = VIEW_W;
+    this._viewH = VIEW_H;
+    this._hud = computeHud(VIEW_W, VIEW_H);
+    this._layoutKey = "";
   }
 
   setSelectHandler(fn) {
@@ -86,6 +102,74 @@ export class TownScene extends Phaser.Scene {
 
   setWaitHandler(fn) {
     this._onWait = fn;
+  }
+
+  /**
+   * U7：逻辑尺寸 / HUD / 镜头 size 随布局重算。
+   * 保留镜头中心与选中；不碰 Session；菜单命中随新逻辑尺寸重建。
+   * @param {{ gameW:number, gameH:number, cssW?:number, cssH?:number, dpr?:number, designScale?:number, cssZoom?:number }} layout
+   */
+  applyLayout(layout) {
+    if (!layout) return;
+    const gameW = Math.max(2, Math.round(layout.gameW || layout.cssW || this._viewW));
+    const gameH = Math.max(2, Math.round(layout.gameH || layout.cssH || this._viewH));
+    const key = `${gameW}x${gameH}@${layout.dpr || 1}`;
+    const sizeChanged = gameW !== this._viewW || gameH !== this._viewH;
+    if (!sizeChanged && key === this._layoutKey && this._camReady) {
+      this._updateCamBadge();
+      return;
+    }
+    this._layoutKey = key;
+
+    const cam = this.cameras && this.cameras.main;
+    let cx = this._viewW / 2;
+    let cy = this._viewH / 2;
+    if (cam && this._camReady) {
+      cx = cam.scrollX + this._viewW / 2;
+      cy = cam.scrollY + this._viewH / 2;
+    }
+
+    this._viewW = gameW;
+    this._viewH = gameH;
+    this._hud = computeHud(gameW, gameH);
+
+    if (cam) {
+      if (typeof cam.setSize === "function") cam.setSize(gameW, gameH);
+      if (this._camReady) {
+        const c = clampCamera(cx - gameW / 2, cy - gameH / 2, gameW, gameH);
+        cam.setScroll(c.x, c.y);
+      }
+    }
+
+    this._relayoutHudChrome();
+    // 菜单命中随逻辑尺寸重算（保留当前 menu 内容；quiet 避免 resize 闪入场）
+    if (this._menuRoot && this._lastMenu) {
+      this.syncMenu(this._lastMenu, { quiet: true });
+    } else if (this._menuRoot) {
+      this._menuRoot.setPosition(this._hud.menuX, this._hud.menuY);
+    }
+    if (this._logRoot && this._lastView) {
+      this.syncLog(this._lastView);
+    } else if (this._logRoot) {
+      this._logRoot.setPosition(this._hud.logX, this._hud.logY);
+    }
+    this._updateCamBadge();
+  }
+
+  /** 仅搬 HUD 铬件位置/宽度，不重建菜单内容 */
+  _relayoutHudChrome() {
+    const h = this._hud;
+    if (!h) return;
+    if (this._tickLabel) this._tickLabel.setPosition(h.vw / 2, 10);
+    if (this._camBadge) this._camBadge.setPosition(h.menuX - 8, 10);
+    if (this._hint) this._hint.setPosition(16, h.hintY);
+    if (this._selectPulse && typeof this._selectPulse.setSize === "function") {
+      this._selectPulse.setSize(h.vw, 3);
+    } else if (this._selectPulse) {
+      this._selectPulse.width = h.vw;
+    }
+    if (this._menuRoot) this._menuRoot.setPosition(h.menuX, h.menuY);
+    if (this._logRoot) this._logRoot.setPosition(h.logX, h.logY);
   }
 
   create() {
@@ -108,8 +192,9 @@ export class TownScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(40);
 
+    const hud0 = this._hud;
     this._tickLabel = this.add
-      .text(VIEW_W / 2, 10, "", {
+      .text(hud0.vw / 2, 10, "", {
         fontFamily: "monospace, PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "12px",
         color: "#fffdf8",
@@ -122,7 +207,7 @@ export class TownScene extends Phaser.Scene {
 
     // 镜头徽章放菜单左侧，避免被盖住
     this._camBadge = this.add
-      .text(MENU_X - 8, 10, "", {
+      .text(hud0.menuX - 8, 10, "", {
         fontFamily: "monospace, PingFang SC, sans-serif",
         fontSize: "10px",
         color: "#ffe066",
@@ -135,7 +220,7 @@ export class TownScene extends Phaser.Scene {
       .setAlpha(0.9);
 
     this._hint = this.add
-      .text(16, HINT_Y, "方向键/拖拽逛地图 · 点选居民 → 菜单 → Act", {
+      .text(16, hud0.hintY, "方向键/拖拽逛地图 · 点选居民 → 菜单 → Act", {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "11px",
         color: "#fffdf8bb",
@@ -147,21 +232,21 @@ export class TownScene extends Phaser.Scene {
       .setOrigin(0, 0);
 
     this._menuRoot = this.add
-      .container(MENU_X, MENU_Y)
+      .container(hud0.menuX, hud0.menuY)
       .setScrollFactor(0)
       .setDepth(50)
       .setAlpha(0);
     this._pinHud(this._menuRoot);
 
     this._logRoot = this.add
-      .container(LOG_X, LOG_Y)
+      .container(hud0.logX, hud0.logY)
       .setScrollFactor(0)
       .setDepth(50)
       .setAlpha(0);
     this._pinHud(this._logRoot);
 
     this._selectPulse = this.add
-      .rectangle(0, 0, VIEW_W, 3, 0xffe066, 0)
+      .rectangle(0, 0, hud0.vw, 3, 0xffe066, 0)
       .setScrollFactor(0)
       .setDepth(45)
       .setOrigin(0, 0);
@@ -176,8 +261,9 @@ export class TownScene extends Phaser.Scene {
 
     this._wireCameraDrag();
 
-    const focus = cameraFocusFor("square");
-    const c = clampCamera(focus.x, focus.y);
+    this.cameras.main.setSize(this._viewW, this._viewH);
+    const focus = cameraFocusFor("square", this._viewW, this._viewH);
+    const c = clampCamera(focus.x, focus.y, this._viewW, this._viewH);
     this.cameras.main.setScroll(c.x, c.y);
     this._camReady = true;
     this._updateCamBadge();
@@ -222,7 +308,7 @@ export class TownScene extends Phaser.Scene {
       const dy = pointer.y - this._dragLast.y;
       this._dragLast = { x: pointer.x, y: pointer.y };
       const cam = this.cameras.main;
-      const c = clampCamera(cam.scrollX - dx, cam.scrollY - dy);
+      const c = clampCamera(cam.scrollX - dx, cam.scrollY - dy, this._viewW, this._viewH);
       cam.setScroll(c.x, c.y);
       this._updateCamBadge();
     });
@@ -231,10 +317,11 @@ export class TownScene extends Phaser.Scene {
   _hoverMenu(pointer) {
     const hits = this._menuHits || [];
     if (!this._menuRoot) return;
+    const rootX = this._menuRoot.x;
     const rootY = this._menuRoot.y;
     let any = false;
     for (const rec of hits) {
-      const sx = MENU_X + rec.x;
+      const sx = rootX + rec.x;
       const sy = rootY + rec.y;
       const over =
         pointer.x >= sx &&
@@ -262,14 +349,20 @@ export class TownScene extends Phaser.Scene {
   _pointerOnHud(pointer) {
     const x = pointer.x;
     const y = pointer.y;
+    const hud = this._hud || computeHud(this._viewW, this._viewH);
     if (this._menuRoot && this._menuRoot.alpha > 0.05) {
       const h = this._menuRoot.getData("panelH") || 120;
-      if (x >= MENU_X && x <= MENU_X + MENU_W && y >= MENU_Y && y <= MENU_Y + h) {
+      const mx = this._menuRoot.x;
+      const my = this._menuRoot.y;
+      const mw = hud.menuW;
+      if (x >= mx && x <= mx + mw && y >= my && y <= my + h) {
         return true;
       }
     }
     if (this._logRoot && this._logRoot.alpha > 0.05) {
-      if (x >= LOG_X && x <= LOG_X + LOG_W && y >= LOG_Y && y <= LOG_Y + LOG_H) {
+      const lx = this._logRoot.x;
+      const ly = this._logRoot.y;
+      if (x >= lx && x <= lx + hud.logW && y >= ly && y <= ly + hud.logH) {
         return true;
       }
     }
@@ -283,10 +376,12 @@ export class TownScene extends Phaser.Scene {
   _tryMenuClick(pointer) {
     if (!this._menuRoot || this._menuRoot.alpha < 0.05) return false;
     const hits = this._menuHits || [];
+    const rootX = this._menuRoot.x;
+    const rootY = this._menuRoot.y;
     for (let i = hits.length - 1; i >= 0; i--) {
       const rec = hits[i];
-      const sx = MENU_X + rec.x;
-      const sy = (this._menuRoot ? this._menuRoot.y : MENU_Y) + rec.y;
+      const sx = rootX + rec.x;
+      const sy = rootY + rec.y;
       if (
         pointer.x >= sx &&
         pointer.x <= sx + rec.w &&
@@ -316,14 +411,22 @@ export class TownScene extends Phaser.Scene {
   _updateCamBadge() {
     if (!this._camBadge || !this._camReady) return;
     const cam = this.cameras.main;
-    const maxX = Math.max(1, WORLD_W - VIEW_W);
-    const maxY = Math.max(1, WORLD_H - VIEW_H);
+    const vw = this._viewW || VIEW_W;
+    const vh = this._viewH || VIEW_H;
+    const maxX = Math.max(1, WORLD_W - vw);
+    const maxY = Math.max(1, WORLD_H - vh);
     const px = Math.round((cam.scrollX / maxX) * 100);
     const py = Math.round((cam.scrollY / maxY) * 100);
-    const u6 = (this.game && this.game.__u6Scale) || (typeof window !== "undefined" && window.__praxU6Scale) || null;
-    const scaleTag = u6
-      ? ` · ×${u6.cssZoom}${u6.dpr !== 1 ? `@${Number(u6.dpr).toFixed(2)}dpr` : ""}`
-      : "";
+    const lay =
+      (this.game && (this.game.__u7Layout || this.game.__u6Scale)) ||
+      (typeof window !== "undefined" &&
+        (window.__praxU7Layout || window.__praxU6Scale)) ||
+      null;
+    let scaleTag = "";
+    if (lay) {
+      const dprBit = lay.dpr && lay.dpr !== 1 ? `@${Number(lay.dpr).toFixed(2)}dpr` : "";
+      scaleTag = ` · ${vw}×${vh}${dprBit}`;
+    }
     this._camBadge.setText(`镜头 ${px}%,${py}%${scaleTag}`);
     this._refreshPlaceLabel();
   }
@@ -332,8 +435,8 @@ export class TownScene extends Phaser.Scene {
   _refreshPlaceLabel() {
     if (!this._placeLabel || !this._camReady) return;
     const cam = this.cameras.main;
-    const cx = cam.scrollX + VIEW_W / 2;
-    const cy = cam.scrollY + VIEW_H / 2;
+    const cx = cam.scrollX + (this._viewW || VIEW_W) / 2;
+    const cy = cam.scrollY + (this._viewH || VIEW_H) / 2;
     const focus = placeZoneAt(cx, cy);
     const hereLabel =
       this._viewLabel ||
@@ -350,12 +453,12 @@ export class TownScene extends Phaser.Scene {
   }
 
   _resetCameraToPlace(placeId, animate) {
-    const focus = cameraFocusFor(placeId || "square");
-    const c = clampCamera(focus.x, focus.y);
+    const focus = cameraFocusFor(placeId || "square", this._viewW, this._viewH);
+    const c = clampCamera(focus.x, focus.y, this._viewW, this._viewH);
     if (animate) {
       this.cameras.main.pan(
-        c.x + VIEW_W / 2,
-        c.y + VIEW_H / 2,
+        c.x + this._viewW / 2,
+        c.y + this._viewH / 2,
         280,
         "Cubic.easeOut"
       );
@@ -646,7 +749,12 @@ export class TownScene extends Phaser.Scene {
     if (k.down.isDown || (w && w.down.isDown)) dy += 1;
     if (dx === 0 && dy === 0) return;
     const dist = (CAM_SPEED * dt) / 1000;
-    const c = clampCamera(cam.scrollX + dx * dist, cam.scrollY + dy * dist);
+    const c = clampCamera(
+      cam.scrollX + dx * dist,
+      cam.scrollY + dy * dist,
+      this._viewW,
+      this._viewH
+    );
     cam.setScroll(c.x, c.y);
     this._updateCamBadge();
   }
@@ -752,8 +860,10 @@ export class TownScene extends Phaser.Scene {
 
   /**
    * @param {null | { actorId?: string, actions?: Array<{id:string,label:string,kind?:string,practiceId?:string}> }} menu
+   * @param {{ quiet?: boolean }} [opts] quiet=true：布局重算时重建命中，不播入场动画
    */
-  syncMenu(menu) {
+  syncMenu(menu, opts = {}) {
+    const quiet = !!(opts && opts.quiet);
     this._lastMenu = menu || null;
     if (!this._menuRoot) {
       this._pendingMenu = menu;
@@ -763,8 +873,13 @@ export class TownScene extends Phaser.Scene {
     this._clearMenuHits();
     this._menuRoot.removeAll(true);
 
+    const hud = this._hud || computeHud(this._viewW, this._viewH);
+    const menuW = hud.menuW;
+    const menuY = hud.menuY;
+    this._menuRoot.setPosition(hud.menuX, menuY);
+
     const bg = this.add
-      .rectangle(0, 0, MENU_W, 8, 0x0e0c0a, 0.94)
+      .rectangle(0, 0, menuW, 8, 0x0e0c0a, 0.94)
       .setOrigin(0, 0)
       .setScrollFactor(0);
     bg.setStrokeStyle(2, 0xffe066, 0.45);
@@ -789,7 +904,7 @@ export class TownScene extends Phaser.Scene {
           fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
           fontSize: "12px",
           color: "#fffdf8aa",
-          wordWrap: { width: MENU_W - 20 },
+          wordWrap: { width: menuW - 20 },
         })
         .setOrigin(0, 0)
         .setScrollFactor(0);
@@ -801,7 +916,7 @@ export class TownScene extends Phaser.Scene {
         const row = this._makeMenuButton(
           8,
           y,
-          MENU_W - 16,
+          menuW - 16,
           btnH,
           a.label || a.id,
           a.kind || a.practiceId || "",
@@ -817,7 +932,7 @@ export class TownScene extends Phaser.Scene {
     const wait = this._makeMenuButton(
       8,
       y,
-      MENU_W - 16,
+      menuW - 16,
       32,
       "稍候（praxWait）",
       "",
@@ -830,19 +945,24 @@ export class TownScene extends Phaser.Scene {
     y += 40;
 
     const h = Math.max(y + 8, 72);
-    bg.setDisplaySize(MENU_W, h);
+    bg.setDisplaySize(menuW, h);
     this._menuRoot.setData("panelH", h);
     this._pinHud(this._menuRoot);
 
-    this._menuRoot.setAlpha(0);
-    this._menuRoot.y = MENU_Y - 8;
-    this.tweens.add({
-      targets: this._menuRoot,
-      alpha: 1,
-      y: MENU_Y,
-      duration: 200,
-      ease: "Cubic.easeOut",
-    });
+    if (quiet) {
+      this._menuRoot.setAlpha(1);
+      this._menuRoot.y = menuY;
+    } else {
+      this._menuRoot.setAlpha(0);
+      this._menuRoot.y = menuY - 8;
+      this.tweens.add({
+        targets: this._menuRoot,
+        alpha: 1,
+        y: menuY,
+        duration: 200,
+        ease: "Cubic.easeOut",
+      });
+    }
 
     if (this._lastView && this._selectedId) {
       const actor = (this._lastView.actors || []).find(
@@ -870,8 +990,13 @@ export class TownScene extends Phaser.Scene {
 
     this._logRoot.removeAll(true);
 
+    const hud = this._hud || computeHud(this._viewW, this._viewH);
+    const logW = hud.logW;
+    const logH = hud.logH;
+    this._logRoot.setPosition(hud.logX, hud.logY);
+
     const bg = this.add
-      .rectangle(0, 0, LOG_W, LOG_H, 0x0e0c0a, 0.92)
+      .rectangle(0, 0, logW, logH, 0x0e0c0a, 0.92)
       .setOrigin(0, 0)
       .setScrollFactor(0);
     bg.setStrokeStyle(2, 0xd9d2c4, 0.55);
@@ -920,14 +1045,14 @@ export class TownScene extends Phaser.Scene {
             fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
             fontSize: "11px",
             color,
-            wordWrap: { width: LOG_W - 28 },
+            wordWrap: { width: logW - 28 },
           })
           .setOrigin(0, 0)
           .setScrollFactor(0);
         this._logRoot.add(bar);
         this._logRoot.add(t);
         y += Math.min(t.height + 4, 22);
-        if (y > LOG_H - 10) break;
+        if (y > logH - 10) break;
       }
     }
 

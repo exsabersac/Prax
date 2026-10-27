@@ -1,6 +1,6 @@
 /**
- * U6：挂载 Phaser 3（多分辨率抗糊 + U5 表现）。
- * 对外 sync(view) / syncMenu / set*Handler；resize 不丢 Session。
+ * U7：挂载 Phaser 3（流体铺满 + U6 抗糊 + U5 表现）。
+ * 对外 sync(view) / syncMenu / set*Handler；resize 只重算布局，不丢 Session。
  */
 import { BootScene } from "./BootScene.js";
 import { TownScene, TOWN_SIZE } from "./TownScene.js";
@@ -36,8 +36,12 @@ function bindTown() {
 
 function layoutOnly() {
   if (!game || !hostEl) return;
-  // 只重算 backing / CSS zoom；不 remount、不清 Town、不碰 Session
-  applyTownScale(game, hostEl);
+  // 只重算 backing / 逻辑尺寸 / HUD 命中；不 remount、不清 Town、不碰 Session
+  const info = applyTownScale(game, hostEl);
+  if (!town) bindTown();
+  if (town && info && typeof town.applyLayout === "function") {
+    town.applyLayout(info);
+  }
 }
 
 export function mountPhaser(parentEl) {
@@ -60,7 +64,7 @@ export function mountPhaser(parentEl) {
     height: TOWN_SIZE.height,
     backgroundColor: "#2a2a28",
     scene: [BootScene, TownScene],
-    // U6：pixelArt + roundPixels；缩放改走整数/可控 zoom，不再用 FIT 非整数拉伸
+    // U6/U7：pixelArt + roundPixels；U7 流体铺满，不再用 FIT / 离散 zoom
     render: {
       pixelArt: true,
       antialias: false,
@@ -90,6 +94,7 @@ export function mountPhaser(parentEl) {
 
   if (typeof window !== "undefined") {
     window.__praxPhaser = game;
+    window.__praxU7Relayout = layoutOnly;
     window.__praxU6Relayout = layoutOnly;
   }
   return game;
@@ -122,7 +127,7 @@ export function syncMenu(menu) {
   if (town) town.syncMenu(menu);
 }
 
-/** View + Menu 一次推入（U3–U6 主 paint 路径） */
+/** View + Menu 一次推入（U3–U7 主 paint 路径） */
 export function syncHud(view, menu) {
   lastView = view;
   lastMenu = menu;

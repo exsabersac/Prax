@@ -121,18 +121,23 @@ export function worldSlot(placeId, actorId, index = 0) {
   return [Math.round(cx + off[0]), Math.round(cy + off[1])];
 }
 
-/** 镜头初始对准该地点中心 */
-export function cameraFocusFor(placeId) {
+/** 镜头初始对准该地点中心；viewW/viewH 随 U7 逻辑尺寸 */
+export function cameraFocusFor(placeId, viewW = VIEW_W, viewH = VIEW_H) {
   const z = placeZone(placeId);
+  const vw = viewW > 0 ? viewW : VIEW_W;
+  const vh = viewH > 0 ? viewH : VIEW_H;
   return {
-    x: Math.round(z.x + z.w / 2 - VIEW_W / 2),
-    y: Math.round(z.y + z.h / 2 - VIEW_H / 2),
+    x: Math.round(z.x + z.w / 2 - vw / 2),
+    y: Math.round(z.y + z.h / 2 - vh / 2),
   };
 }
 
-export function clampCamera(scrollX, scrollY) {
-  const maxX = Math.max(0, WORLD_W - VIEW_W);
-  const maxY = Math.max(0, WORLD_H - VIEW_H);
+/** 镜头 scroll clamp；view 尺寸随布局变时传入当前逻辑宽高 */
+export function clampCamera(scrollX, scrollY, viewW = VIEW_W, viewH = VIEW_H) {
+  const vw = viewW > 0 ? viewW : VIEW_W;
+  const vh = viewH > 0 ? viewH : VIEW_H;
+  const maxX = Math.max(0, WORLD_W - vw);
+  const maxY = Math.max(0, WORLD_H - vh);
   return {
     x: Math.max(0, Math.min(maxX, scrollX)),
     y: Math.max(0, Math.min(maxY, scrollY)),
