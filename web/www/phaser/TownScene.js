@@ -1,8 +1,8 @@
 /**
- * U9 TownScene：叠 U8 HUD 分槽 + U7 流体 + U6 抗糊。
- * 选中环 / 菜单入场 / Act 按下反馈更清晰；地图层次与角色呼吸可感。
+ * U12 TownScene：叠 U11 烘像素 + U9 表现 + U8 HUD + U7 流体 + U6 抗糊。
+ * 选中环 / 菜单入场 / Act 按下反馈再精修；地图路径/路标层次再可读。
  * Menu / 叙事·tick 固定屏坐标；日志右侧底栏不挡主舞台；地名/tick/徽章分槽不回退。
- * 角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
+ * BAKED 仍仅 you；角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
  */
 import { actorFill, bubbleFromView } from "./actors.js";
 import {
@@ -12,6 +12,7 @@ import {
   WORLD_H,
   PLACES,
   PATH_SPINE,
+  SIGNPOSTS,
   worldSlot,
   cameraFocusFor,
   clampCamera,
@@ -204,7 +205,7 @@ export class TownScene extends Phaser.Scene {
       this._hint.setOrigin(0, 1);
     }
     if (this._selectPulse && typeof this._selectPulse.setSize === "function") {
-      this._selectPulse.setSize(h.vw, 3);
+      this._selectPulse.setSize(h.vw, 5);
     } else if (this._selectPulse) {
       this._selectPulse.width = h.vw;
     }
@@ -285,8 +286,9 @@ export class TownScene extends Phaser.Scene {
       .setAlpha(0);
     this._pinHud(this._logRoot);
 
+    // U12-01：顶栏选中/Act 闪条加厚，反馈更可感
     this._selectPulse = this.add
-      .rectangle(0, 0, hud0.vw, 3, 0xffe066, 0)
+      .rectangle(0, 0, hud0.vw, 5, 0xffe066, 0)
       .setScrollFactor(0)
       .setDepth(45)
       .setOrigin(0, 0);
@@ -428,11 +430,11 @@ export class TownScene extends Phaser.Scene {
         pointer.y >= sy &&
         pointer.y <= sy + rec.h
       ) {
-        // U9-01：Act 按下反馈更清晰（压下 + 亮边 + 顶栏闪），不挡不误触
+        // U12-01：Act 按下反馈更清晰（亮填 + 粗描边 + 压下弹回 + 顶栏绿闪），不挡不误触
         if (rec.bg) {
           rec.bg.setFillStyle(0xffe066, 1);
-          rec.bg.setStrokeStyle(2, 0xfffdf8, 1);
-          this.time.delayedCall(90, () => {
+          rec.bg.setStrokeStyle(3, 0xfffdf8, 1);
+          this.time.delayedCall(120, () => {
             if (rec.bg && rec.bg.active !== false) {
               rec.bg.setFillStyle(rec.fill, 0.95);
               rec.bg.setStrokeStyle(1, 0xd9d2c4, 0.75);
@@ -440,23 +442,23 @@ export class TownScene extends Phaser.Scene {
           });
         }
         if (this._selectPulse) {
-          this._selectPulse.setFillStyle(0x7dcea0, 0.7);
+          this._selectPulse.setFillStyle(0x7dcea0, 0.85);
           this.tweens.killTweensOf(this._selectPulse);
           this._selectPulse.setAlpha(1);
           this.tweens.add({
             targets: this._selectPulse,
             alpha: 0,
-            duration: 320,
+            duration: 420,
           });
         }
         if (rec.g) {
           this.tweens.add({
             targets: rec.g,
-            scaleX: 0.94,
-            scaleY: 0.94,
-            duration: 70,
+            scaleX: 0.9,
+            scaleY: 0.9,
+            duration: 80,
             yoyo: true,
-            ease: "Quad.easeOut",
+            ease: "Back.easeOut",
             onComplete: () => {
               if (rec.onClick) rec.onClick();
             },
@@ -536,7 +538,7 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
-  /** 画完整小镇：多层底 + 路径层次 + 三区地标（U9 可读提升，不扩地点） */
+  /** 画完整小镇：多层底 + 路径层次 + 三区地标（U12 再精修，不扩地点） */
   _paintWorld() {
     const root = this._worldRoot;
     root.removeAll(true);
@@ -576,45 +578,66 @@ export class TownScene extends Phaser.Scene {
     }
     root.add(dots);
 
-    // U9-02：路径先画阴影再画路面，主道更可读
+    // U12-02：路径阴影 + 路面 + 路缘 + 中线虚线 + 方向箭头，主道更可读
     const pathShadow = this.add.graphics();
-    pathShadow.fillStyle(0x1a1a18, 0.22);
+    pathShadow.fillStyle(0x1a1a18, 0.28);
     for (const seg of PATH_SPINE) {
-      pathShadow.fillRect(seg.x + 3, seg.y + 4, seg.w, seg.h);
+      pathShadow.fillRect(seg.x + 3, seg.y + 5, seg.w, seg.h);
     }
     root.add(pathShadow);
 
     const path = this.add.graphics();
-    path.fillStyle(0xc4a878, 0.95);
+    // 主干：广场→磨坊
+    path.fillStyle(0xc4a878, 0.97);
     path.fillRect(500, 230, 240, 40);
-    path.fillStyle(0xb89560, 0.75);
+    path.fillStyle(0xb89560, 0.8);
     path.fillRect(500, 242, 240, 10);
-    path.fillStyle(0xc4a878, 0.9);
+    path.fillStyle(0xd9c090, 0.55);
+    path.fillRect(500, 232, 240, 4);
+    // 主干延伸到磨坊门口
+    path.fillStyle(0xc4a878, 0.92);
+    path.fillRect(720, 236, 90, 28);
+    path.fillStyle(0xb89560, 0.7);
+    path.fillRect(720, 248, 90, 8);
+    // 主干→小桥
+    path.fillStyle(0xc4a878, 0.92);
     path.fillRect(660, 268, 36, 210);
-    path.fillStyle(0xb89560, 0.65);
+    path.fillStyle(0xb89560, 0.7);
     path.fillRect(668, 268, 10, 210);
-    // 路缘石
-    path.fillStyle(0xd9d2c4, 0.9);
-    for (let x = 510; x < 730; x += 20) {
-      path.fillRect(x, 226, 6, 4);
-      path.fillRect(x + 6, 268, 6, 4);
+    // 路缘石（双排更醒目）
+    path.fillStyle(0xd9d2c4, 0.95);
+    for (let x = 510; x < 800; x += 18) {
+      path.fillRect(x, 224, 7, 5);
+      path.fillRect(x + 5, 268, 7, 5);
     }
-    for (let y = 280; y < 470; y += 22) {
-      path.fillRect(654, y, 5, 6);
-      path.fillRect(692, y + 4, 5, 6);
+    for (let y = 280; y < 470; y += 20) {
+      path.fillRect(652, y, 6, 7);
+      path.fillRect(692, y + 3, 6, 7);
     }
     // 广场内环路 + 中间虚线
-    path.fillStyle(0xb8a878, 0.6);
+    path.fillStyle(0xb8a878, 0.7);
     path.fillRect(120, 250, 320, 14);
     path.fillRect(260, 160, 14, 200);
-    path.fillStyle(0xe8dcc0, 0.55);
-    for (let x = 140; x < 420; x += 18) path.fillRect(x, 255, 8, 3);
-    for (let y = 180; y < 340; y += 18) path.fillRect(265, y, 3, 8);
+    path.fillStyle(0xf0e6c8, 0.7);
+    for (let x = 140; x < 420; x += 16) path.fillRect(x, 255, 9, 3);
+    for (let y = 180; y < 340; y += 16) path.fillRect(265, y, 3, 9);
+    // 主干中线虚线（方向感）
+    path.fillStyle(0xfff8e0, 0.65);
+    for (let x = 520; x < 780; x += 22) path.fillRect(x, 247, 12, 3);
+    for (let y = 290; y < 460; y += 22) path.fillRect(675, y, 3, 12);
     // 踏脚石：广场→磨坊衔接
-    path.fillStyle(0xd0b888, 0.85);
-    for (let i = 0; i < 5; i++) {
-      path.fillRect(480 + i * 8, 238 + (i % 2) * 6, 10, 8);
+    path.fillStyle(0xd0b888, 0.9);
+    for (let i = 0; i < 6; i++) {
+      path.fillRect(478 + i * 8, 236 + (i % 2) * 7, 11, 9);
     }
+    // U12：方向箭头（装饰）
+    path.fillStyle(0xfffdf8, 0.75);
+    // → 往磨坊
+    path.fillTriangle(610, 242, 610, 258, 628, 250);
+    path.fillTriangle(640, 242, 640, 258, 658, 250);
+    // ↓ 往小桥
+    path.fillTriangle(668, 360, 688, 360, 678, 378);
+    path.fillTriangle(668, 400, 688, 400, 678, 418);
     root.add(path);
 
     for (const id of Object.keys(PLACES)) {
@@ -655,12 +678,29 @@ export class TownScene extends Phaser.Scene {
       props.fillRect(x, 218, 4, 12);
       props.fillRect(x - 1, 216, 6, 3);
     }
-    // 路牌（广场东口）
+    // 路牌底柱（广场东口，保留）
     props.fillStyle(0x6b4f2a, 0.95);
     props.fillRect(492, 210, 5, 28);
     props.fillStyle(0xd9d2c4, 0.95);
     props.fillRect(478, 208, 34, 12);
     root.add(props);
+
+    // U12-02：中文路标（装饰，不扩世界地点）
+    for (const sp of SIGNPOSTS) {
+      const post = this.add.rectangle(sp.x, sp.y + 14, 5, 28, 0x5c4030, 0.95);
+      const board = this.add
+        .rectangle(sp.x + 2, sp.y, 52, 16, 0xfffdf8, 0.92)
+        .setStrokeStyle(1, 0x5c4030, 0.85);
+      const lbl = this.add
+        .text(sp.x + 2, sp.y, sp.label, {
+          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+          fontSize: "10px",
+          color: "#1c1a17",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5, 0.5);
+      root.add([post, board, lbl]);
+    }
 
     const border = this.add.graphics();
     border.lineStyle(2, 0x1a1a18, 0.55);
@@ -673,7 +713,7 @@ export class TownScene extends Phaser.Scene {
    * @param {import("./map.js").PlaceZone} z
    */
   _paintPlace(root, z) {
-    // U9-02：区阴影 + 天空带，层次更分明
+    // U12-02：区阴影 + 天空带 + 边框，层次更分明
     const drop = this.add.rectangle(
       z.x + z.w / 2 + 4,
       z.y + z.h / 2 + 10,
@@ -699,8 +739,13 @@ export class TownScene extends Phaser.Scene {
 
     const floor = this.add
       .rectangle(z.x + z.w / 2, z.y + z.h / 2 + 6, z.w - 6, z.h - 36, z.floor)
-      .setStrokeStyle(3, z.accent, 1);
+      .setStrokeStyle(4, z.accent, 1);
     root.add(floor);
+    // U12：区外亮边，远处也能分清地块
+    const rim = this.add
+      .rectangle(z.x + z.w / 2, z.y + z.h / 2 + 6, z.w - 2, z.h - 32, 0x000000, 0)
+      .setStrokeStyle(1, 0xfffdf8, z.decorative ? 0.25 : 0.4);
+    root.add(rim);
 
     // 地面浅色斜纹，区与区更好区分
     const hatch = this.add.graphics();
@@ -1057,8 +1102,24 @@ export class TownScene extends Phaser.Scene {
     bg.setStrokeStyle(2, 0xffe066, 0.45);
     this._menuRoot.add(bg);
 
+    // U12-01：左侧金色强调条，菜单入场更醒目
+    const accent = this.add
+      .rectangle(0, 0, 4, 8, 0xffe066, 1)
+      .setOrigin(0, 0)
+      .setScrollFactor(0);
+    this._menuRoot.add(accent);
+
+    let who = "";
+    if (menu && menu.actorId && this._lastView) {
+      const a = (this._lastView.actors || []).find((x) => x.id === menu.actorId);
+      who = (a && a.label) || "";
+    } else if (this._selectedId && this._lastView) {
+      const a = (this._lastView.actors || []).find((x) => x.id === this._selectedId);
+      who = (a && a.label) || "";
+    }
+    const titleStr = who ? `菜单 · ${who}` : "菜单";
     const title = this.add
-      .text(10, 8, "菜单", {
+      .text(12, 8, titleStr, {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "14px",
         color: "#ffe066",
@@ -1121,24 +1182,39 @@ export class TownScene extends Phaser.Scene {
     this._menuRoot.setData("panelH", h);
     this._pinHud(this._menuRoot);
 
+    // 强调条跟面板高度（直接用 accent 引用，避免 list 下标漂移）
+    if (accent && typeof accent.setDisplaySize === "function") {
+      accent.setDisplaySize(4, h);
+    }
+
     if (quiet) {
       this._menuRoot.setAlpha(1);
       this._menuRoot.y = menuY;
     } else {
-      // U9-01：菜单入场更清晰（下滑弹入 + 描边闪）；不改 scale，避免屏坐标命中短暂错位
+      // U12-01：菜单入场更清晰（下滑弹入 + 白描边闪 + 强调条）；不改 scale，避免屏坐标命中短暂错位
       this._menuRoot.setAlpha(0);
-      this._menuRoot.y = menuY - 16;
+      this._menuRoot.y = menuY - 22;
       this.tweens.add({
         targets: this._menuRoot,
         alpha: 1,
         y: menuY,
-        duration: 260,
+        duration: 300,
         ease: "Back.easeOut",
       });
       bg.setStrokeStyle(3, 0xfffdf8, 1);
-      this.time.delayedCall(240, () => {
-        if (bg && bg.active !== false) bg.setStrokeStyle(2, 0xffe066, 0.45);
+      this.time.delayedCall(280, () => {
+        if (bg && bg.active !== false) bg.setStrokeStyle(2, 0xffe066, 0.55);
       });
+      if (this._selectPulse) {
+        this._selectPulse.setFillStyle(0xffe066, 0.55);
+        this.tweens.killTweensOf(this._selectPulse);
+        this._selectPulse.setAlpha(1);
+        this.tweens.add({
+          targets: this._selectPulse,
+          alpha: 0,
+          duration: 380,
+        });
+      }
     }
 
     if (this._lastView && this._selectedId) {
@@ -1300,12 +1376,15 @@ export class TownScene extends Phaser.Scene {
     body.setData("face", "down");
     body.play(animKey(id, "idle", "down"));
 
+    // U12-01：选中底盘柔光 + 双环，选中更可感且不挡命中
+    const ringFill = this.add.circle(0, 8, R + 10, 0xffe066, 0);
+    ringFill.setVisible(false);
+
     const ring = this.add.circle(0, 4, R + 6, 0x000000, 0);
     ring.setStrokeStyle(3, 0xffe066, 0);
     ring.setVisible(false);
 
-    // U9-01：外环柔光，选中更易辨
-    const ringOuter = this.add.circle(0, 4, R + 12, 0x000000, 0);
+    const ringOuter = this.add.circle(0, 4, R + 14, 0x000000, 0);
     ringOuter.setStrokeStyle(2, 0xfffdf8, 0);
     ringOuter.setVisible(false);
 
@@ -1344,6 +1423,7 @@ export class TownScene extends Phaser.Scene {
 
     const node = this.add.container(x, y, [
       shadow,
+      ringFill,
       ringOuter,
       ring,
       body,
@@ -1357,6 +1437,7 @@ export class TownScene extends Phaser.Scene {
     node.setData("body", body);
     node.setData("ring", ring);
     node.setData("ringOuter", ringOuter);
+    node.setData("ringFill", ringFill);
     node.setData("arrow", arrow);
     node.setData("shadow", shadow);
     node.setData("labelText", name);
@@ -1395,41 +1476,49 @@ export class TownScene extends Phaser.Scene {
         yoyo: true,
         ease: "Quad.easeOut",
       });
+      ringFill.setVisible(true);
+      ringFill.setFillStyle(0xffe066, 0.35);
+      ringFill.setScale(1);
+      ringFill.setAlpha(1);
       ring.setVisible(true);
-      ring.setStrokeStyle(3, 0xffe066, 1);
+      ring.setStrokeStyle(3.5, 0xffe066, 1);
       ring.setScale(1);
       ring.setAlpha(1);
       ringOuter.setVisible(true);
-      ringOuter.setStrokeStyle(2, 0xfffdf8, 0.7);
+      ringOuter.setStrokeStyle(2.5, 0xfffdf8, 0.85);
       ringOuter.setScale(1);
       ringOuter.setAlpha(1);
       this.tweens.add({
-        targets: [ring, ringOuter],
-        scaleX: 1.4,
-        scaleY: 1.4,
+        targets: [ring, ringOuter, ringFill],
+        scaleX: 1.5,
+        scaleY: 1.5,
         alpha: 0,
-        duration: 280,
+        duration: 320,
         onComplete: () => {
           ring.setScale(1);
           ring.setAlpha(1);
           ringOuter.setScale(1);
           ringOuter.setAlpha(1);
+          ringFill.setScale(1);
+          ringFill.setAlpha(1);
           if (id !== this._selectedId) {
             ring.setVisible(false);
             ring.setStrokeStyle(3, 0xffe066, 0);
             ringOuter.setVisible(false);
+            ringFill.setVisible(false);
+            ringFill.setFillStyle(0xffe066, 0);
           }
         },
       });
-      // 顶栏选中闪一下
+      // U12-01：顶栏选中闪更醒目
       if (this._selectPulse) {
-        this._selectPulse.setFillStyle(0xffe066, 0.65);
+        this._selectPulse.setFillStyle(0xffe066, 0.8);
         this.tweens.killTweensOf(this._selectPulse);
         this._selectPulse.setAlpha(1);
         this.tweens.add({
           targets: this._selectPulse,
           alpha: 0,
-          duration: 360,
+          duration: 420,
         });
       }
       if (this._onSelect) this._onSelect(id);
@@ -1548,11 +1637,13 @@ export class TownScene extends Phaser.Scene {
     this.tweens.killTweensOf(node);
     const ring = node.getData("ring");
     const ringOuter = node.getData("ringOuter");
+    const ringFill = node.getData("ringFill");
     const body = node.getData("body");
     const arrow = node.getData("arrow");
     const shadow = node.getData("shadow");
     if (ring) this.tweens.killTweensOf(ring);
     if (ringOuter) this.tweens.killTweensOf(ringOuter);
+    if (ringFill) this.tweens.killTweensOf(ringFill);
     if (body) this.tweens.killTweensOf(body);
     if (arrow) this.tweens.killTweensOf(arrow);
     if (shadow) this.tweens.killTweensOf(shadow);
@@ -1561,19 +1652,38 @@ export class TownScene extends Phaser.Scene {
   _paintSelected(node, selected) {
     const ring = node.getData("ring");
     const ringOuter = node.getData("ringOuter");
+    const ringFill = node.getData("ringFill");
     const arrow = node.getData("arrow");
+    const name = node.getData("labelText");
     if (selected) {
+      if (ringFill) {
+        ringFill.setVisible(true);
+        ringFill.setFillStyle(0xffe066, 0.28);
+        ringFill.setScale(1);
+        ringFill.setAlpha(1);
+        this.tweens.killTweensOf(ringFill);
+        this.tweens.add({
+          targets: ringFill,
+          scaleX: 1.18,
+          scaleY: 1.18,
+          alpha: 0.12,
+          duration: 640,
+          yoyo: true,
+          repeat: -1,
+          ease: "Sine.easeInOut",
+        });
+      }
       if (ring) {
         ring.setVisible(true);
-        ring.setStrokeStyle(3, 0xffe066, 1);
+        ring.setStrokeStyle(3.5, 0xffe066, 1);
         ring.setScale(1);
         ring.setAlpha(1);
         this.tweens.killTweensOf(ring);
         this.tweens.add({
           targets: ring,
-          scaleX: 1.22,
-          scaleY: 1.22,
-          duration: 520,
+          scaleX: 1.28,
+          scaleY: 1.28,
+          duration: 480,
           yoyo: true,
           repeat: -1,
           ease: "Sine.easeInOut",
@@ -1581,16 +1691,16 @@ export class TownScene extends Phaser.Scene {
       }
       if (ringOuter) {
         ringOuter.setVisible(true);
-        ringOuter.setStrokeStyle(2, 0xfffdf8, 0.55);
-        ringOuter.setScale(1.05);
-        ringOuter.setAlpha(0.85);
+        ringOuter.setStrokeStyle(2.5, 0xfffdf8, 0.7);
+        ringOuter.setScale(1.08);
+        ringOuter.setAlpha(0.9);
         this.tweens.killTweensOf(ringOuter);
         this.tweens.add({
           targets: ringOuter,
-          scaleX: 1.38,
-          scaleY: 1.38,
-          alpha: 0.25,
-          duration: 700,
+          scaleX: 1.45,
+          scaleY: 1.45,
+          alpha: 0.2,
+          duration: 660,
           yoyo: true,
           repeat: -1,
           ease: "Sine.easeInOut",
@@ -1602,23 +1712,34 @@ export class TownScene extends Phaser.Scene {
         this.tweens.killTweensOf(arrow);
         this.tweens.add({
           targets: arrow,
-          y: -58,
-          duration: 400,
+          y: -60,
+          duration: 380,
           yoyo: true,
           repeat: -1,
           ease: "Sine.easeInOut",
         });
       }
-      if (Math.abs(node.scaleX - 1.1) > 0.02) {
+      if (name && name.setColor) {
+        name.setColor("#1c1a17");
+        name.setBackgroundColor("#ffe066dd");
+      }
+      if (Math.abs(node.scaleX - 1.12) > 0.02) {
         this.tweens.add({
           targets: node,
-          scaleX: 1.1,
-          scaleY: 1.1,
+          scaleX: 1.12,
+          scaleY: 1.12,
           duration: 120,
         });
       }
       if (!node.getData("walking")) this._syncBreath(node, true);
     } else {
+      if (ringFill) {
+        this.tweens.killTweensOf(ringFill);
+        ringFill.setVisible(false);
+        ringFill.setFillStyle(0xffe066, 0);
+        ringFill.setScale(1);
+        ringFill.setAlpha(1);
+      }
       if (ring) {
         this.tweens.killTweensOf(ring);
         ring.setVisible(false);
@@ -1636,6 +1757,10 @@ export class TownScene extends Phaser.Scene {
         this.tweens.killTweensOf(arrow);
         arrow.setVisible(false);
         arrow.y = -52;
+      }
+      if (name && name.setBackgroundColor) {
+        name.setColor("#1c1a17");
+        name.setBackgroundColor("#fffdf8dd");
       }
       if (Math.abs(node.scaleX - 1) > 0.02) {
         this.tweens.add({
