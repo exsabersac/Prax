@@ -135,7 +135,7 @@ body {
 .toolbar { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
 
 
-/* U1–U7 Phaser 场景 */
+/* U1–U8 Phaser 场景 */
 .panel-scene { padding-bottom: 0.75rem; }
 /* U7：流体铺满可用区；不再钉死 640×360 aspect + 离散 zoom */
 .town-frame {

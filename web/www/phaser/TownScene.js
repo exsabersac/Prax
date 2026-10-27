@@ -1,6 +1,7 @@
 /**
- * U7 TownScene：叠 U6 抗糊 + U5 表现；逻辑尺寸随布局（scale.js computeLayout）。
- * Menu / 叙事·tick 叠层固定于镜头（scrollFactor 0）；屏坐标命中随逻辑尺寸重算，与 world scroll 解耦。
+ * U8 TownScene：叠 U7 流体 + U6 抗糊；HUD/标签/气泡可读精修。
+ * Menu / 叙事·tick 叠层固定于镜头（scrollFactor 0）；屏坐标命中随逻辑尺寸重算。
+ * U8：日志右侧底栏不挡主舞台；地名/tick/徽章分槽不互叠；气泡完整少截断。
  * 角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
  */
 import { actorFill, bubbleFromView } from "./actors.js";
@@ -24,26 +25,54 @@ import {
 
 const R = 16;
 
-/** 设计参考（640×360）下的默认 HUD；实际由 _computeHud(viewW,viewH) 随布局重算 */
-const MENU_Y0 = 28;
-const MENU_W0 = 204;
-const LOG_X0 = 12;
-const LOG_H0 = 118;
+/** 设计参考下的默认 HUD；实际由 computeHud(viewW,viewH) 随布局重算 */
+const MENU_W0 = 200;
+const LOG_H0 = 88;
 
 const CAM_SPEED = 240;
 
+/**
+ * U8 HUD：菜单右上；日志贴菜单下方右侧（不挡中左主舞台）；
+ * 地名 / tick 左上纵排；镜头徽章贴菜单左上，互不重叠。
+ */
 function computeHud(viewW, viewH) {
   const vw = Math.max(2, viewW | 0);
   const vh = Math.max(2, viewH | 0);
-  const menuW = Math.min(MENU_W0, Math.max(148, Math.floor(vw * 0.3)));
-  const menuX = Math.max(8, vw - menuW - 12);
-  const menuY = MENU_Y0;
-  const logH = Math.min(LOG_H0, Math.max(72, Math.floor(vh * 0.28)));
-  const logW = Math.min(400, Math.max(160, menuX - 24));
-  const logX = LOG_X0;
-  const logY = Math.max(100, vh - logH - 28);
-  const hintY = Math.max(24, vh - 14);
-  return { vw, vh, menuX, menuY, menuW, logX, logY, logW, logH, hintY };
+  const menuW = Math.min(MENU_W0, Math.max(140, Math.floor(vw * 0.28)));
+  const menuX = Math.max(8, vw - menuW - 10);
+  const menuY = 36; // 给顶栏徽章留位
+  // 日志：右侧底栏，与菜单同列，中左舞台留给角色
+  const logW = menuW;
+  const logH = Math.min(LOG_H0, Math.max(52, Math.floor(vh * 0.16)));
+  const logX = menuX;
+  const logY = Math.max(menuY + 100, vh - logH - 6);
+  // 顶栏分槽（U8-02）
+  const placeX = 10;
+  const placeY = 8;
+  const tickX = 10;
+  const tickY = 32;
+  const camX = menuX - 6;
+  const camY = 8;
+  // hint 贴底左，矮条，不盖角色腰线
+  const hintY = Math.max(24, vh - 4);
+  return {
+    vw,
+    vh,
+    menuX,
+    menuY,
+    menuW,
+    logX,
+    logY,
+    logW,
+    logH,
+    hintY,
+    placeX,
+    placeY,
+    tickX,
+    tickY,
+    camX,
+    camY,
+  };
 }
 
 
@@ -156,13 +185,23 @@ export class TownScene extends Phaser.Scene {
     this._updateCamBadge();
   }
 
-  /** 仅搬 HUD 铬件位置/宽度，不重建菜单内容 */
+  /** 仅搬 HUD 铬件位置/宽度，不重建菜单内容（U8 分槽） */
   _relayoutHudChrome() {
     const h = this._hud;
     if (!h) return;
-    if (this._tickLabel) this._tickLabel.setPosition(h.vw / 2, 10);
-    if (this._camBadge) this._camBadge.setPosition(h.menuX - 8, 10);
-    if (this._hint) this._hint.setPosition(16, h.hintY);
+    if (this._placeLabel) this._placeLabel.setPosition(h.placeX, h.placeY);
+    if (this._tickLabel) {
+      this._tickLabel.setOrigin(0, 0);
+      this._tickLabel.setPosition(h.tickX, h.tickY);
+    }
+    if (this._camBadge) this._camBadge.setPosition(h.camX, h.camY);
+    if (this._hint) {
+      // 底左矮条；窄屏时藏到菜单下以免挡
+      const hideHint = h.vw < 420;
+      this._hint.setVisible(!hideHint);
+      this._hint.setPosition(10, h.hintY);
+      this._hint.setOrigin(0, 1);
+    }
     if (this._selectPulse && typeof this._selectPulse.setSize === "function") {
       this._selectPulse.setSize(h.vw, 3);
     } else if (this._selectPulse) {
@@ -180,34 +219,34 @@ export class TownScene extends Phaser.Scene {
     this._worldRoot = this.add.container(0, 0).setDepth(0);
     this._paintWorld();
 
-    // HUD（固定于镜头；全部 scrollFactor 0）
-    this._placeLabel = this.add
-      .text(16, 10, "", {
-        fontFamily: "monospace, PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "13px",
-        color: "#fffdf8",
-        backgroundColor: "#000000aa",
-        padding: { x: 8, y: 4 },
-      })
-      .setScrollFactor(0)
-      .setDepth(40);
-
+    // HUD（固定于镜头；全部 scrollFactor 0）— U8 分槽：地名/tick 左上纵排，徽章贴菜单左
     const hud0 = this._hud;
-    this._tickLabel = this.add
-      .text(hud0.vw / 2, 10, "", {
+    this._placeLabel = this.add
+      .text(hud0.placeX, hud0.placeY, "", {
         fontFamily: "monospace, PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "12px",
         color: "#fffdf8",
-        backgroundColor: "#00000099",
-        padding: { x: 8, y: 4 },
+        backgroundColor: "#000000aa",
+        padding: { x: 7, y: 3 },
       })
-      .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(40);
 
-    // 镜头徽章放菜单左侧，避免被盖住
+    this._tickLabel = this.add
+      .text(hud0.tickX, hud0.tickY, "", {
+        fontFamily: "monospace, PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "11px",
+        color: "#fffdf8",
+        backgroundColor: "#00000099",
+        padding: { x: 7, y: 3 },
+      })
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(40);
+
+    // 镜头徽章：菜单左上角外侧，不与地名/tick 互叠
     this._camBadge = this.add
-      .text(hud0.menuX - 8, 10, "", {
+      .text(hud0.camX, hud0.camY, "", {
         fontFamily: "monospace, PingFang SC, sans-serif",
         fontSize: "10px",
         color: "#ffe066",
@@ -216,20 +255,20 @@ export class TownScene extends Phaser.Scene {
       })
       .setOrigin(1, 0)
       .setScrollFactor(0)
-      .setDepth(40)
+      .setDepth(41)
       .setAlpha(0.9);
 
     this._hint = this.add
-      .text(16, hud0.hintY, "方向键/拖拽逛地图 · 点选居民 → 菜单 → Act", {
+      .text(10, hud0.hintY, "方向键/拖拽 · 点选 → 菜单 → Act", {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "11px",
-        color: "#fffdf8bb",
-        backgroundColor: "#00000066",
-        padding: { x: 6, y: 2 },
+        fontSize: "10px",
+        color: "#fffdf8aa",
+        backgroundColor: "#00000055",
+        padding: { x: 5, y: 2 },
       })
       .setScrollFactor(0)
-      .setDepth(55)
-      .setOrigin(0, 0);
+      .setDepth(35)
+      .setOrigin(0, 1);
 
     this._menuRoot = this.add
       .container(hud0.menuX, hud0.menuY)
@@ -427,7 +466,12 @@ export class TownScene extends Phaser.Scene {
       const dprBit = lay.dpr && lay.dpr !== 1 ? `@${Number(lay.dpr).toFixed(2)}dpr` : "";
       scaleTag = ` · ${vw}×${vh}${dprBit}`;
     }
-    this._camBadge.setText(`镜头 ${px}%,${py}%${scaleTag}`);
+    // 窄屏缩短徽章，避免与左侧 tick 互叠（U8-02）
+    const slim = (this._viewW || VIEW_W) < 520;
+    const tag = slim
+      ? `镜头 ${px}%,${py}%`
+      : `镜头 ${px}%,${py}%${scaleTag}`;
+    this._camBadge.setText(tag);
     this._refreshPlaceLabel();
   }
 
@@ -912,7 +956,7 @@ export class TownScene extends Phaser.Scene {
       y += 28;
     } else {
       for (const a of actions) {
-        const btnH = 36;
+        const btnH = 40;
         const row = this._makeMenuButton(
           8,
           y,
@@ -995,17 +1039,18 @@ export class TownScene extends Phaser.Scene {
     const logH = hud.logH;
     this._logRoot.setPosition(hud.logX, hud.logY);
 
+    // U8：半透明右侧底栏，不挡中左主舞台角色
     const bg = this.add
-      .rectangle(0, 0, logW, logH, 0x0e0c0a, 0.92)
+      .rectangle(0, 0, logW, logH, 0x0e0c0a, 0.78)
       .setOrigin(0, 0)
       .setScrollFactor(0);
-    bg.setStrokeStyle(2, 0xd9d2c4, 0.55);
+    bg.setStrokeStyle(1, 0xd9d2c4, 0.4);
     this._logRoot.add(bg);
 
     const title = this.add
-      .text(10, 5, "对话与回合反馈", {
+      .text(8, 4, "对话 / 反馈", {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "12px",
+        fontSize: "11px",
         color: "#ffe066",
         fontStyle: "bold",
       })
@@ -1015,17 +1060,17 @@ export class TownScene extends Phaser.Scene {
 
     if (!lines.length) {
       const empty = this.add
-        .text(10, 24, "还没有发生的事。", {
+        .text(8, 20, "还没有发生的事。", {
           fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-          fontSize: "12px",
+          fontSize: "11px",
           color: "#fffdf8aa",
         })
         .setOrigin(0, 0)
         .setScrollFactor(0);
       this._logRoot.add(empty);
     } else {
-      const tail = lines.slice(-5);
-      let y = 22;
+      const tail = lines.slice(-4);
+      let y = 18;
       for (const line of tail) {
         const kind = line.kind || "system";
         const color =
@@ -1037,22 +1082,22 @@ export class TownScene extends Phaser.Scene {
         const barColor =
           kind === "narrative" ? 0x2f6f4e : kind === "system" ? 0x8a7a4a : 0x666666;
         const bar = this.add
-          .rectangle(6, y + 2, 3, 16, barColor, 0.95)
+          .rectangle(5, y + 1, 2, 12, barColor, 0.9)
           .setOrigin(0, 0)
           .setScrollFactor(0);
         const t = this.add
-          .text(14, y, line.text || "", {
+          .text(11, y, line.text || "", {
             fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-            fontSize: "11px",
+            fontSize: "10px",
             color,
-            wordWrap: { width: logW - 28 },
+            wordWrap: { width: logW - 20 },
           })
           .setOrigin(0, 0)
           .setScrollFactor(0);
         this._logRoot.add(bar);
         this._logRoot.add(t);
-        y += Math.min(t.height + 4, 22);
-        if (y > logH - 10) break;
+        y += Math.min(t.height + 3, 20);
+        if (y > logH - 8) break;
       }
     }
 
@@ -1083,12 +1128,12 @@ export class TownScene extends Phaser.Scene {
       .setScrollFactor(0);
     bg.setStrokeStyle(1, 0xd9d2c4, 0.75);
 
-    const shown = ellipsize(label, 16);
     const title = this.add
-      .text(8, sub ? 4 : h / 2, shown, {
+      .text(8, sub ? 3 : h / 2, String(label || ""), {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "12px",
         color: "#fffdf8",
+        wordWrap: { width: Math.max(40, w - 16) },
       })
       .setOrigin(0, sub ? 0 : 0.5)
       .setScrollFactor(0);
@@ -1096,7 +1141,7 @@ export class TownScene extends Phaser.Scene {
     g.add(title);
     if (sub) {
       const kind = this.add
-        .text(8, 20, ellipsize(sub, 18), {
+        .text(8, 19, ellipsize(sub, 22), {
           fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
           fontSize: "10px",
           color: "#d9d2c4",
@@ -1140,8 +1185,8 @@ export class TownScene extends Phaser.Scene {
         fontSize: "11px",
         color: "#1c1a17",
         align: "center",
-        wordWrap: { width: 140 },
-        padding: { x: 3, y: 1 },
+        wordWrap: { width: 200 },
+        padding: { x: 4, y: 2 },
       })
       .setOrigin(0.5, 0.5)
       .setVisible(false);
@@ -1275,12 +1320,16 @@ export class TownScene extends Phaser.Scene {
       tx.setVisible(false);
       return;
     }
+    // U8：完整两行量级，少截断；宽随视口但不超过主舞台
+    const wrapW = Math.min(200, Math.max(120, Math.floor((this._viewW || 640) * 0.36)));
+    tx.setStyle({ wordWrap: { width: wrapW } });
     tx.setText(text);
-    const w = Math.max(Math.min(tx.width + 16, 148), 28);
-    const h = Math.max(tx.height + 10, 18);
+    const maxW = wrapW + 20;
+    const w = Math.max(Math.min(tx.width + 18, maxW), 36);
+    const h = Math.max(tx.height + 12, 20);
     bg.setSize(w, h);
     bg.setDisplaySize(w, h);
-    const by = arrow && arrow.visible ? -62 : -44;
+    const by = arrow && arrow.visible ? -(h / 2 + 54) : -(h / 2 + 36);
     bg.setY(by);
     tx.setY(by);
     bg.setVisible(true);
