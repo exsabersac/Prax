@@ -1,8 +1,7 @@
 /**
- * U6：程序化像素人物（自研几何帧，非 GA/CuteRPG）。
- * 逻辑稿 16×24，2× 烘焙成 32×48 纹理（对照 Mach「像素资源宜 2×」）；
- * 显示 SPRITE_SCALE=1，与 U5 屏上尺寸一致，高 DPI backing 更锐。
- * idle 4 帧 + walk 4 帧 × 三朝向（下/侧/上）；左朝向用 flipX。
+ * U9：程序化像素人物（自研几何帧，非 GA/CuteRPG）。
+ * 逻辑稿 16×24，2× 烘焙成 32×48 纹理；idle 呼吸起伏 + walk 迈步更可感。
+ * idle 4 帧 + walk 4 帧 × 三朝向（下/侧/上）；左朝向用 flipX。禁商用素材。
  */
 
 const LOGICAL_W = 16;
@@ -38,37 +37,40 @@ function paintFrameLogical(ctx, ox, oy, fill, face, frame, mode) {
     ctx.fillRect(ox + x, oy + y, w, h);
   };
 
+  // U9：idle 呼吸起伏（头身整体 bob）；walk 保持迈步
+  const breath = mode === "idle" ? [0, -1, 0, 1][f] : 0;
+
   // 头 / 发 / 脸
   if (face === "up") {
-    rect(5, 0, 6, 7, hair);
-    rect(6, 5, 4, 2, skin);
+    rect(5, 0 + breath, 6, 7, hair);
+    rect(6, 5 + breath, 4, 2, skin);
   } else if (face === "side") {
-    rect(6, 1, 6, 6, skin);
-    rect(5, 0, 6, 3, hair);
-    rect(10, 3, 2, 2, 0x1c1a17);
+    rect(6, 1 + breath, 6, 6, skin);
+    rect(5, 0 + breath, 6, 3, hair);
+    rect(10, 3 + breath, 2, 2, 0x1c1a17);
   } else {
-    rect(5, 1, 6, 6, skin);
-    rect(5, 0, 6, 2, hair);
-    rect(6, 3, 1, 1, 0x1c1a17);
-    rect(9, 3, 1, 1, 0x1c1a17);
+    rect(5, 1 + breath, 6, 6, skin);
+    rect(5, 0 + breath, 6, 2, hair);
+    rect(6, 3 + breath, 1, 1, 0x1c1a17);
+    rect(9, 3 + breath, 1, 1, 0x1c1a17);
   }
 
   // 身
-  if (face === "side") rect(5, 7, 7, 9, fill);
-  else rect(4, 7, 8, 9, fill);
+  if (face === "side") rect(5, 7 + breath, 7, 9, fill);
+  else rect(4, 7 + breath, 8, 9, fill);
 
   // 手臂
   if (mode === "idle") {
     const sway = f === 0 || f === 1 ? 0 : f === 2 ? 1 : -1;
     if (face === "side") {
-      rect(3, 8 + sway, 2, 6, skin);
-      rect(12, 9 - sway, 2, 5, skin);
+      rect(3, 8 + sway + breath, 2, 6, skin);
+      rect(12, 9 - sway + breath, 2, 5, skin);
     } else if (face === "up") {
-      rect(2, 8 + Math.abs(sway), 2, 6, skin);
-      rect(12, 8 + Math.abs(sway), 2, 6, skin);
+      rect(2, 8 + Math.abs(sway) + breath, 2, 6, skin);
+      rect(12, 8 + Math.abs(sway) + breath, 2, 6, skin);
     } else {
-      rect(2, 8 + sway, 2, 6, skin);
-      rect(12, 8 - sway, 2, 6, skin);
+      rect(2, 8 + sway + breath, 2, 6, skin);
+      rect(12, 8 - sway + breath, 2, 6, skin);
     }
   } else {
     const phase = f % 4;
@@ -142,7 +144,7 @@ function paintFrameBaked(ctx, ox, oy, fill, face, frame, mode) {
  * @returns {{ sheet: string, w: number, h: number }}
  */
 export function ensureActorTextures(scene, actorId, fill) {
-  const sheetKey = `u6-actor-${actorId}-sheet`;
+  const sheetKey = `u9-actor-${actorId}-sheet`;
   const faces = /** @type {FaceRow[]} */ (["down", "side", "up"]);
 
   if (!scene.textures.exists(sheetKey)) {
@@ -187,7 +189,7 @@ export function ensureActorTextures(scene, actorId, fill) {
       scene.anims.create({
         key: idleKey,
         frames: [0, 1, 2, 3].map((i) => ({ key: sheetKey, frame: base + i })),
-        frameRate: 3,
+        frameRate: 4,
         repeat: -1,
       });
     }
@@ -196,7 +198,7 @@ export function ensureActorTextures(scene, actorId, fill) {
       scene.anims.create({
         key: walkKey,
         frames: [0, 1, 2, 3].map((i) => ({ key: sheetKey, frame: base + i })),
-        frameRate: 8,
+        frameRate: 9,
         repeat: -1,
       });
     }
@@ -211,7 +213,7 @@ export function ensureActorTextures(scene, actorId, fill) {
  * @param {FaceRow} face
  */
 export function animKey(actorId, mode, face) {
-  return `u6-${actorId}-${mode}-${face}`;
+  return `u9-${actorId}-${mode}-${face}`;
 }
 
 /**
