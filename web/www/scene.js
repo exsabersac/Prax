@@ -1,11 +1,18 @@
 /**
- * U1：场景面板挂 Phaser 单地点 canvas；点选走 onSelect → praxMenu。
- * 无 Phaser 时回退到旧 DOM 按钮（便于静态自检）。
+ * U2：场景面板挂 Phaser；Menu/叙事在 canvas 叠层。
+ * 无 Phaser 时回退到旧 DOM 按钮 + menu/dialogue 旁路。
  */
-import { mountPhaser, setSelectHandler, syncTown, isMounted } from "./phaser/game.js";
+import {
+  mountPhaser,
+  setSelectHandler,
+  setActHandler,
+  setWaitHandler,
+  syncTown,
+  syncHud,
+  isMounted,
+} from "./phaser/game.js";
 
 let mounted = false;
-let lastOnSelect = null;
 
 function renderDomFallback(root, view, onSelect) {
   root.innerHTML = "";
@@ -35,11 +42,13 @@ function renderDomFallback(root, view, onSelect) {
   root.appendChild(row);
 }
 
-export function renderScene(root, view, onSelect) {
-  lastOnSelect = onSelect;
+/**
+ * @returns {"phaser" | "dom"} 当前渲染模式，供 main 决定是否还画 DOM 旁路
+ */
+export function renderScene(root, view, onSelect, onAct, onWait) {
   if (typeof Phaser === "undefined") {
     renderDomFallback(root, view, onSelect);
-    return;
+    return "dom";
   }
 
   if (!mounted || !isMounted()) {
@@ -56,10 +65,18 @@ export function renderScene(root, view, onSelect) {
     } catch (e) {
       console.warn("Phaser mount failed, DOM fallback", e);
       renderDomFallback(root, view, onSelect);
-      return;
+      return "dom";
     }
   }
 
   setSelectHandler(onSelect);
+  setActHandler(onAct);
+  setWaitHandler(onWait);
   syncTown(view);
+  return "phaser";
+}
+
+export function pushHud(view, menu) {
+  if (!isMounted()) return;
+  syncHud(view, menu);
 }

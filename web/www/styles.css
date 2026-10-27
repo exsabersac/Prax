@@ -151,3 +151,15 @@ body {
   height: 100% !important;
   display: block;
 }
+
+/* U2：主舞台为 Phaser；DOM 菜单/对话旁路隐藏 */
+.layout-u2 {
+  grid-template-columns: 1fr !important;
+}
+.layout-u2 #menu[hidden],
+.layout-u2 #dialogue[hidden] {
+  display: none !important;
+}
+.panel-scene .town-frame {
+  max-width: 720px;
+}

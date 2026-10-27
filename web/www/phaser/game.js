@@ -1,5 +1,5 @@
 /**
- * U1：挂载 Phaser 3 单场景；对外 sync(view) / setSelectHandler。
+ * U2：挂载 Phaser 3 单场景；对外 sync(view) / syncMenu / set*Handler。
  */
 import { BootScene } from "./BootScene.js";
 import { TownScene, TOWN_SIZE } from "./TownScene.js";
@@ -9,8 +9,14 @@ let game = null;
 let town = null;
 /** @type {null | ((actorId: string) => void)} */
 let selectHandler = null;
+/** @type {null | ((actionId: string) => void)} */
+let actHandler = null;
+/** @type {null | (() => void)} */
+let waitHandler = null;
 /** @type {object | null} */
 let lastView = null;
+/** @type {object | null | undefined} */
+let lastMenu = undefined;
 
 function bindTown() {
   if (!game) return;
@@ -18,7 +24,10 @@ function bindTown() {
   if (!s) return;
   town = /** @type {TownScene} */ (s);
   if (selectHandler) town.setSelectHandler(selectHandler);
+  if (actHandler) town.setActHandler(actHandler);
+  if (waitHandler) town.setWaitHandler(waitHandler);
   if (lastView) town.sync(lastView);
+  if (lastMenu !== undefined) town.syncMenu(lastMenu);
 }
 
 export function mountPhaser(parentEl) {
@@ -63,10 +72,37 @@ export function setSelectHandler(fn) {
   if (town) town.setSelectHandler(fn);
 }
 
+export function setActHandler(fn) {
+  actHandler = fn;
+  if (town) town.setActHandler(fn);
+}
+
+export function setWaitHandler(fn) {
+  waitHandler = fn;
+  if (town) town.setWaitHandler(fn);
+}
+
 export function syncTown(view) {
   lastView = view;
   if (!town) bindTown();
   if (town) town.sync(view);
+}
+
+export function syncMenu(menu) {
+  lastMenu = menu;
+  if (!town) bindTown();
+  if (town) town.syncMenu(menu);
+}
+
+/** View + Menu 一次推入（U2 主 paint 路径） */
+export function syncHud(view, menu) {
+  lastView = view;
+  lastMenu = menu;
+  if (!town) bindTown();
+  if (town) {
+    town.sync(view);
+    town.syncMenu(menu);
+  }
 }
 
 export function isMounted() {

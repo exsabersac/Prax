@@ -1,5 +1,5 @@
 import { praxNew, praxMenu, praxAct, praxWait, praxSave, praxLoad, formatError } from "./api.js";
-import { renderScene } from "./scene.js";
+import { renderScene, pushHud } from "./scene.js";
 import { renderMenu } from "./menu.js";
 import { renderDialogue } from "./dialogue.js";
 
@@ -9,6 +9,7 @@ const elDialogue = document.getElementById("dialogue");
 const elMeta = document.getElementById("meta");
 const elError = document.getElementById("error");
 const elGuide = document.getElementById("guide");
+const elLayout = document.querySelector(".layout");
 
 /** J05：扁平 SaveMeta 持久化，刷新后 praxLoad 可恢复 */
 const SAVE_KEY = "prax.my-town.saveMeta";
@@ -18,6 +19,8 @@ const GUIDE_DISMISS_KEY = "prax.my-town.guideDismissed";
 let view = null;
 let menu = null;
 let offerNewOnError = false;
+/** @type {"phaser" | "dom"} */
+let uiMode = "dom";
 
 function clearError() {
   offerNewOnError = false;
@@ -71,7 +74,7 @@ function showGuide() {
   for (const line of [
     "地点：广场（square）、磨坊（mill）",
     "阵容：你（you）+ Bob / Carol / Dana / Eve / Gale",
-    "下一步：点一名居民或选一个动作继续",
+    "下一步：在地图上点一名居民，用地图内菜单选动作",
   ]) {
     const li = document.createElement("li");
     li.textContent = line;
@@ -118,12 +121,24 @@ function writeStoredSave(save) {
   localStorage.setItem(SAVE_KEY, JSON.stringify(meta));
 }
 
+function setBypassPanels(hidden) {
+  if (elMenu) elMenu.hidden = hidden;
+  if (elDialogue) elDialogue.hidden = hidden;
+  if (elLayout) elLayout.classList.toggle("layout-u2", hidden);
+}
+
 function paint() {
   if (!view) return;
   elMeta.textContent = `${view.locationLabel} · 回合 ${view.tick} · 玩家 ${view.playerId}`;
-  renderScene(elScene, view, onSelectActor);
-  renderMenu(elMenu, menu, onAct, onWait);
-  renderDialogue(elDialogue, view);
+  uiMode = renderScene(elScene, view, onSelectActor, onAct, onWait);
+  if (uiMode === "phaser") {
+    setBypassPanels(true);
+    pushHud(view, menu);
+  } else {
+    setBypassPanels(false);
+    renderMenu(elMenu, menu, onAct, onWait);
+    renderDialogue(elDialogue, view);
+  }
 }
 
 async function onSelectActor(actorId) {
