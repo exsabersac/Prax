@@ -1,5 +1,5 @@
 /**
- * U5 TownScene：多帧朝向人物 + 地图层次精修 + HUD 可读。
+ * U6 TownScene：叠 U5 表现；缩放/DPR 由 phaser/scale.js + game.js 管，本场景逻辑坐标仍 VIEW_W×VIEW_H。
  * Menu / 叙事·tick 叠层固定于镜头（scrollFactor 0）；交互命中用屏坐标，与 world scroll 解耦。
  * 角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
  */
@@ -320,7 +320,11 @@ export class TownScene extends Phaser.Scene {
     const maxY = Math.max(1, WORLD_H - VIEW_H);
     const px = Math.round((cam.scrollX / maxX) * 100);
     const py = Math.round((cam.scrollY / maxY) * 100);
-    this._camBadge.setText(`镜头 ${px}%,${py}%`);
+    const u6 = (this.game && this.game.__u6Scale) || (typeof window !== "undefined" && window.__praxU6Scale) || null;
+    const scaleTag = u6
+      ? ` · ×${u6.cssZoom}${u6.dpr !== 1 ? `@${Number(u6.dpr).toFixed(2)}dpr` : ""}`
+      : "";
+    this._camBadge.setText(`镜头 ${px}%,${py}%${scaleTag}`);
     this._refreshPlaceLabel();
   }
 

@@ -1,5 +1,5 @@
 /**
- * U1–U5 Boot：立刻进 TownScene（人物纹理运行时程序化生成）。
+ * U1–U6 Boot：立刻进 TownScene（人物纹理运行时程序化生成）。
  */
 export class BootScene extends Phaser.Scene {
   constructor() {

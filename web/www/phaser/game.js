@@ -1,8 +1,10 @@
 /**
- * U5：挂载 Phaser 3（多帧朝向 + 地图层次 + HUD）；对外 sync(view) / syncMenu / set*Handler。
+ * U6：挂载 Phaser 3（多分辨率抗糊 + U5 表现）。
+ * 对外 sync(view) / syncMenu / set*Handler；resize 不丢 Session。
  */
 import { BootScene } from "./BootScene.js";
 import { TownScene, TOWN_SIZE } from "./TownScene.js";
+import { applyTownScale, watchTownScale } from "./scale.js";
 
 let game = null;
 /** @type {TownScene | null} */
@@ -17,6 +19,8 @@ let waitHandler = null;
 let lastView = null;
 /** @type {object | null | undefined} */
 let lastMenu = undefined;
+/** @type {HTMLElement | null} */
+let hostEl = null;
 
 function bindTown() {
   if (!game) return;
@@ -30,6 +34,12 @@ function bindTown() {
   if (lastMenu !== undefined) town.syncMenu(lastMenu);
 }
 
+function layoutOnly() {
+  if (!game || !hostEl) return;
+  // 只重算 backing / CSS zoom；不 remount、不清 Town、不碰 Session
+  applyTownScale(game, hostEl);
+}
+
 export function mountPhaser(parentEl) {
   if (typeof Phaser === "undefined") {
     throw new Error("Phaser 未加载（需要 vendor/phaser.min.js）");
@@ -41,6 +51,7 @@ export function mountPhaser(parentEl) {
   host.id = "phaser-host";
   host.className = "phaser-host";
   parentEl.appendChild(host);
+  hostEl = host;
 
   game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -49,27 +60,38 @@ export function mountPhaser(parentEl) {
     height: TOWN_SIZE.height,
     backgroundColor: "#2a2a28",
     scene: [BootScene, TownScene],
-    // U4/U5：pixelArt + roundPixels，缓解 FIT 发虚
+    // U6：pixelArt + roundPixels；缩放改走整数/可控 zoom，不再用 FIT 非整数拉伸
     render: {
       pixelArt: true,
       antialias: false,
       roundPixels: true,
+      powerPreference: "high-performance",
     },
     scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
+      mode: Phaser.Scale.NONE,
       width: TOWN_SIZE.width,
       height: TOWN_SIZE.height,
+      zoom: 1,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     banner: false,
   });
 
-  game.events.on("ready", bindTown);
+  game.events.on("ready", () => {
+    bindTown();
+    layoutOnly();
+  });
   setTimeout(bindTown, 0);
   setTimeout(bindTown, 50);
   setTimeout(bindTown, 200);
 
-  if (typeof window !== "undefined") window.__praxPhaser = game;
+  watchTownScale(game, host, layoutOnly);
+  layoutOnly();
+
+  if (typeof window !== "undefined") {
+    window.__praxPhaser = game;
+    window.__praxU6Relayout = layoutOnly;
+  }
   return game;
 }
 
@@ -100,7 +122,7 @@ export function syncMenu(menu) {
   if (town) town.syncMenu(menu);
 }
 
-/** View + Menu 一次推入（U3–U5 主 paint 路径） */
+/** View + Menu 一次推入（U3–U6 主 paint 路径） */
 export function syncHud(view, menu) {
   lastView = view;
   lastMenu = menu;

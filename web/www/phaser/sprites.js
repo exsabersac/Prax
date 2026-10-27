@@ -1,11 +1,16 @@
 /**
- * U5：程序化像素人物（自研几何帧，非 GA/CuteRPG）。
+ * U6：程序化像素人物（自研几何帧，非 GA/CuteRPG）。
+ * 逻辑稿 16×24，2× 烘焙成 32×48 纹理（对照 Mach「像素资源宜 2×」）；
+ * 显示 SPRITE_SCALE=1，与 U5 屏上尺寸一致，高 DPI backing 更锐。
  * idle 4 帧 + walk 4 帧 × 三朝向（下/侧/上）；左朝向用 flipX。
- * 相对 U4 双帧几何：可感知多帧步态与朝向差异。
  */
 
-export const FRAME_W = 16;
-export const FRAME_H = 24;
+const LOGICAL_W = 16;
+const LOGICAL_H = 24;
+/** 2× 烘焙倍率 */
+const BAKE = 2;
+export const FRAME_W = LOGICAL_W * BAKE;
+export const FRAME_H = LOGICAL_H * BAKE;
 const COLS = 4;
 const ROWS = 3; // down / side / up
 
@@ -20,7 +25,7 @@ const ROWS = 3; // down / side / up
  * @param {number} frame 0–3
  * @param {'idle'|'walk'} mode
  */
-function paintFrame(ctx, ox, oy, fill, face, frame, mode) {
+function paintFrameLogical(ctx, ox, oy, fill, face, frame, mode) {
   const hair = ((fill >> 1) & 0x7f7f7f) | 0x202020;
   const pants = 0x2a2a28;
   const shoe = 0x1a1a18;
@@ -110,13 +115,34 @@ function paintFrame(ctx, ox, oy, fill, face, frame, mode) {
 }
 
 /**
+ * 逻辑帧 nearest 放大 BAKE 倍写入 sheet。
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} ox sheet 原点
+ * @param {number} oy
+ * @param {number} fill
+ * @param {FaceRow} face
+ * @param {number} frame
+ * @param {'idle'|'walk'} mode
+ */
+function paintFrameBaked(ctx, ox, oy, fill, face, frame, mode) {
+  const tmp = document.createElement("canvas");
+  tmp.width = LOGICAL_W;
+  tmp.height = LOGICAL_H;
+  const tctx = tmp.getContext("2d");
+  tctx.imageSmoothingEnabled = false;
+  paintFrameLogical(tctx, 0, 0, fill, face, frame, mode);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(tmp, 0, 0, LOGICAL_W, LOGICAL_H, ox, oy, FRAME_W, FRAME_H);
+}
+
+/**
  * @param {Phaser.Scene} scene
  * @param {string} actorId
  * @param {number} fill
  * @returns {{ sheet: string, w: number, h: number }}
  */
 export function ensureActorTextures(scene, actorId, fill) {
-  const sheetKey = `u5-actor-${actorId}-sheet`;
+  const sheetKey = `u6-actor-${actorId}-sheet`;
   const faces = /** @type {FaceRow[]} */ (["down", "side", "up"]);
 
   if (!scene.textures.exists(sheetKey)) {
@@ -128,8 +154,8 @@ export function ensureActorTextures(scene, actorId, fill) {
 
     faces.forEach((face, row) => {
       for (let col = 0; col < COLS; col++) {
-        paintFrame(ctx, col * FRAME_W, row * FRAME_H, fill, face, col, "idle");
-        paintFrame(
+        paintFrameBaked(ctx, col * FRAME_W, row * FRAME_H, fill, face, col, "idle");
+        paintFrameBaked(
           ctx,
           col * FRAME_W,
           (row + ROWS) * FRAME_H,
@@ -185,7 +211,7 @@ export function ensureActorTextures(scene, actorId, fill) {
  * @param {FaceRow} face
  */
 export function animKey(actorId, mode, face) {
-  return `u5-${actorId}-${mode}-${face}`;
+  return `u6-${actorId}-${mode}-${face}`;
 }
 
 /**
@@ -201,4 +227,5 @@ export function facingFromDelta(dx, dy) {
   return { face: "down", flipX: false };
 }
 
-export const SPRITE_SCALE = 2;
+/** 2× 已烘焙进纹理，显示倍率 1（屏上与 U5 的 16×24@scale2 同大） */
+export const SPRITE_SCALE = 1;
