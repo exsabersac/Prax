@@ -1,5 +1,6 @@
 /**
  * U9：程序化像素人物（自研几何帧，非 GA/CuteRPG）。
+ * U11：部分角色改用 Blender 烘图集（assets/u11/{id}-sheet.png）；其余仍几何回退。
  * 逻辑稿 16×24，2× 烘焙成 32×48 纹理；idle 呼吸起伏 + walk 迈步更可感。
  * idle 4 帧 + walk 4 帧 × 三朝向（下/侧/上）；左朝向用 flipX。禁商用素材。
  */
@@ -12,6 +13,12 @@ export const FRAME_W = LOGICAL_W * BAKE;
 export const FRAME_H = LOGICAL_H * BAKE;
 const COLS = 4;
 const ROWS = 3; // down / side / up
+
+/**
+ * U11：已预载 Blender 烘图集的角色内部 id（展示层替换，不改 Session/世界）。
+ * 纹理键：u11-actor-{id}-sheet（BootScene 预载）。
+ */
+export const BAKED_ACTOR_IDS = new Set(["you"]);
 
 /** @typedef {'down'|'side'|'up'} FaceRow */
 
@@ -138,12 +145,58 @@ function paintFrameBaked(ctx, ox, oy, fill, face, frame, mode) {
 }
 
 /**
+ * U11：用已预载的 Blender 图集注册与几何精灵同名的 animKey。
+ * @param {Phaser.Scene} scene
+ * @param {string} actorId
+ * @returns {{ sheet: string, w: number, h: number } | null}
+ */
+function ensureBakedActorTextures(scene, actorId) {
+  const sheetKey = `u11-actor-${actorId}-sheet`;
+  if (!scene.textures.exists(sheetKey)) return null;
+
+  const tex = scene.textures.get(sheetKey);
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+
+  const faces = /** @type {FaceRow[]} */ (["down", "side", "up"]);
+  const faceIdx = { down: 0, side: 1, up: 2 };
+  for (const face of faces) {
+    const idleKey = animKey(actorId, "idle", face);
+    const walkKey = animKey(actorId, "walk", face);
+    if (!scene.anims.exists(idleKey)) {
+      const base = faceIdx[face] * COLS;
+      scene.anims.create({
+        key: idleKey,
+        frames: [0, 1, 2, 3].map((i) => ({ key: sheetKey, frame: base + i })),
+        frameRate: 4,
+        repeat: -1,
+      });
+    }
+    if (!scene.anims.exists(walkKey)) {
+      const base = (ROWS + faceIdx[face]) * COLS;
+      scene.anims.create({
+        key: walkKey,
+        frames: [0, 1, 2, 3].map((i) => ({ key: sheetKey, frame: base + i })),
+        frameRate: 9,
+        repeat: -1,
+      });
+    }
+  }
+  return { sheet: sheetKey, w: FRAME_W, h: FRAME_H };
+}
+
+/**
  * @param {Phaser.Scene} scene
  * @param {string} actorId
  * @param {number} fill
  * @returns {{ sheet: string, w: number, h: number }}
  */
 export function ensureActorTextures(scene, actorId, fill) {
+  // U11：优先 Blender 烘图（可感异于几何）；缺失则几何回退
+  if (BAKED_ACTOR_IDS.has(actorId)) {
+    const baked = ensureBakedActorTextures(scene, actorId);
+    if (baked) return baked;
+  }
+
   const sheetKey = `u9-actor-${actorId}-sheet`;
   const faces = /** @type {FaceRow[]} */ (["down", "side", "up"]);
 
