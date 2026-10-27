@@ -181,7 +181,9 @@ myTownWorld =
           { charWants =
               [ Want [ Match "practice.world.world.at.eve!mill" ] 1
                 -- M6c：对称 dana 的怀疑 Want
-              , Want [ Match "eyed.eve.T" ] 5 ] }
+              , Want [ Match "eyed.eve.T" ] 5
+                -- M6z：Village 式再传谣 → dana（you→carol；≥5，对称 M6v carol→eve / M6r bob→carol）
+              , Want [ Match "dana.believes.helped.you.carol.heard.eve" ] 5 ] }
       , (character "gale")
           { charWants =
               [ Want [ Match "practice.world.world.at.gale!mill" ] 1
