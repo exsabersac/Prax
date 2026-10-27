@@ -92,6 +92,25 @@ export function placeZone(placeId) {
   return PLACES[placeId] || PLACES.square;
 }
 
+/** 镜头中心落在哪块像素区（用于 HUD 画面标签） */
+export function placeZoneAt(worldX, worldY) {
+  // 先匹配非装饰区，再装饰区
+  const ordered = Object.values(PLACES).sort(
+    (a, b) => Number(!!a.decorative) - Number(!!b.decorative)
+  );
+  for (const z of ordered) {
+    if (
+      worldX >= z.x &&
+      worldX <= z.x + z.w &&
+      worldY >= z.y &&
+      worldY <= z.y + z.h
+    ) {
+      return z;
+    }
+  }
+  return null;
+}
+
 /** 世界坐标站位（仅用于当前 View 同场角色；装饰区无槽） */
 export function worldSlot(placeId, actorId, index = 0) {
   const z = placeZone(placeId);
