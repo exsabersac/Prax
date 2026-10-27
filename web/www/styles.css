@@ -135,21 +135,31 @@ body {
 .toolbar { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap; }
 
 
-/* U1 Phaser 场景 */
+/* U1–U4 Phaser 场景 */
 .panel-scene { padding-bottom: 0.75rem; }
 .town-frame {
   width: 100%;
-  max-width: 640px;
+  max-width: 800px;
   aspect-ratio: 640 / 360;
   background: #2a2a28;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
+  box-shadow: 0 8px 24px #1c1a1722;
 }
-.phaser-host, .phaser-host canvas {
-  width: 100% !important;
-  height: 100% !important;
+/* U4：锐化 — 避免 CSS 百分比重采样发虚；交由 Phaser FIT + pixelArt */
+.phaser-host {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phaser-host canvas {
   display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
 }
 
 /* U2：主舞台为 Phaser；DOM 菜单/对话旁路隐藏 */
@@ -159,16 +169,6 @@ body {
 .layout-u2 #menu[hidden],
 .layout-u2 #dialogue[hidden] {
   display: none !important;
-}
-.panel-scene .town-frame {
-  max-width: 720px;
-}
-
-
-/* U3：舞台略放大，边框更干净 */
-.panel-scene .town-frame {
-  max-width: 760px;
-  box-shadow: 0 8px 24px #1c1a1722;
 }
 .layout-u2 .panel-scene {
   padding: 0.75rem 0.9rem 1rem;

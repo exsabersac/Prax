@@ -74,7 +74,7 @@ function showGuide() {
   for (const line of [
     "地点：广场（square）、磨坊（mill）",
     "阵容：你（you）+ Bob / Carol / Dana / Eve / Gale",
-    "下一步：在地图上点一名居民，用地图内菜单选动作",
+    "下一步：方向键/拖拽逛地图；点居民 → 菜单 → Act",
   ]) {
     const li = document.createElement("li");
     li.textContent = line;

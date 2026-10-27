@@ -1,5 +1,5 @@
 /**
- * U2：场景面板挂 Phaser；Menu/叙事在 canvas 叠层。
+ * U2–U4：场景面板挂 Phaser；Menu/叙事在 canvas 叠层。
  * 无 Phaser 时回退到旧 DOM 按钮 + menu/dialogue 旁路。
  */
 import {

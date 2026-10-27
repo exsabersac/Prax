@@ -1,20 +1,22 @@
 /**
- * U3 TownScene：单地点俯视 + 同场可点精灵；
- * Menu / 叙事·tick 叠层在 canvas 内。
- * U3：点选反馈、HUD 过渡动效、场景层次与 idle 动画。
+ * U4 TownScene：多地点像素地图 + 镜头 + 头顶气泡 + 程序化人物动画。
+ * Menu / 叙事·tick 叠层固定于镜头（scrollFactor 0）。
+ * 角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
  */
+import { actorFill, bubbleFromView } from "./actors.js";
 import {
-  accentColor,
-  actorFill,
-  floorColor,
-  pathColor,
-  skyColor,
-  slotFor,
-} from "./actors.js";
+  VIEW_W,
+  VIEW_H,
+  WORLD_W,
+  WORLD_H,
+  PLACES,
+  worldSlot,
+  cameraFocusFor,
+  clampCamera,
+} from "./map.js";
+import { ensureActorTextures, SPRITE_SCALE } from "./sprites.js";
 
-const W = 640;
-const H = 360;
-const R = 24;
+const R = 16; // 热区半径（相对缩放后精灵）
 
 const MENU_X = 430;
 const MENU_Y = 36;
@@ -23,6 +25,8 @@ const LOG_X = 12;
 const LOG_Y = 258;
 const LOG_W = 406;
 const LOG_H = 90;
+
+const CAM_SPEED = 220;
 
 export class TownScene extends Phaser.Scene {
   constructor() {
@@ -35,11 +39,7 @@ export class TownScene extends Phaser.Scene {
     this._onWait = null;
     /** @type {Map<string, Phaser.GameObjects.Container>} */
     this._sprites = new Map();
-    this._floor = null;
-    this._border = null;
-    this._sky = null;
-    this._path = null;
-    this._decor = null;
+    this._worldRoot = null;
     this._placeLabel = null;
     this._tickLabel = null;
     this._hint = null;
@@ -53,6 +53,15 @@ export class TownScene extends Phaser.Scene {
     this._pendingView = null;
     /** @type {object | null | undefined} */
     this._pendingMenu = undefined;
+    /** @type {object | null} */
+    this._lastView = null;
+    /** @type {object | null} */
+    this._lastMenu = null;
+    this._cursors = null;
+    this._wasd = null;
+    this._dragging = false;
+    this._dragLast = null;
+    this._camReady = false;
   }
 
   setSelectHandler(fn) {
@@ -69,57 +78,71 @@ export class TownScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor(0x2a2a28);
+    this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
+    this.cameras.main.setRoundPixels(true);
 
-    // U3-03：背景层次 — 天条 / 地面 / 小径 / 边框
-    this._sky = this.add
-      .rectangle(W / 2, 28, W - 16, 48, skyColor("square"))
-      .setDepth(0);
-    this._floor = this.add
-      .rectangle(W / 2, H / 2 + 8, W - 16, H - 40, floorColor("square"))
-      .setDepth(1);
-    this._path = this.add
-      .ellipse(W / 2 - 20, H / 2 + 30, 280, 90, pathColor("square"), 0.55)
-      .setDepth(2);
-    this._border = this.add.rectangle(W / 2, H / 2, W - 16, H - 16);
-    this._border.setStrokeStyle(3, accentColor("square"), 1);
-    this._border.setFillStyle();
-    this._border.setDepth(3);
+    this._worldRoot = this.add.container(0, 0).setDepth(0);
+    this._paintWorld();
 
-    this._decor = this.add.container(0, 0).setDepth(2);
-    this._paintDecor("square");
-
+    // HUD（固定于镜头）
     this._placeLabel = this.add
       .text(16, 10, "", {
-        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "16px",
+        fontFamily: "monospace, PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "14px",
+        color: "#fffdf8",
+        backgroundColor: "#00000099",
+        padding: { x: 8, y: 4 },
+      })
+      .setScrollFactor(0)
+      .setDepth(40);
+
+    this._tickLabel = this.add
+      .text(VIEW_W / 2, 10, "", {
+        fontFamily: "monospace, PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "12px",
         color: "#fffdf8",
         backgroundColor: "#00000088",
         padding: { x: 8, y: 4 },
       })
-      .setDepth(10);
-
-    this._tickLabel = this.add
-      .text(W / 2, 10, "", {
-        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "13px",
-        color: "#fffdf8",
-        backgroundColor: "#00000077",
-        padding: { x: 8, y: 4 },
-      })
       .setOrigin(0.5, 0)
-      .setDepth(10);
+      .setScrollFactor(0)
+      .setDepth(40);
 
     this._hint = this.add
-      .text(16, H - 8, "点选同场居民 → 地图内菜单 → Act", {
+      .text(16, VIEW_H - 8, "方向键/拖拽逛地图 · 点选居民 → 菜单 → Act", {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "11px",
         color: "#fffdf8bb",
       })
-      .setDepth(10)
+      .setScrollFactor(0)
+      .setDepth(40)
       .setOrigin(0, 1);
 
-    this._menuRoot = this.add.container(MENU_X, MENU_Y).setDepth(30).setAlpha(0);
-    this._logRoot = this.add.container(LOG_X, LOG_Y).setDepth(30).setAlpha(0);
+    this._menuRoot = this.add
+      .container(MENU_X, MENU_Y)
+      .setScrollFactor(0)
+      .setDepth(50)
+      .setAlpha(0);
+    this._logRoot = this.add
+      .container(LOG_X, LOG_Y)
+      .setScrollFactor(0)
+      .setDepth(50)
+      .setAlpha(0);
+
+    this._cursors = this.input.keyboard.createCursorKeys();
+    this._wasd = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+    });
+
+    this._wireCameraDrag();
+
+    const focus = cameraFocusFor("square");
+    const c = clampCamera(focus.x, focus.y);
+    this.cameras.main.setScroll(c.x, c.y);
+    this._camReady = true;
 
     if (this._pendingView) {
       this.sync(this._pendingView);
@@ -131,26 +154,173 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
-  /**
-   * U3-03：极简场景装饰（广场喷泉环 / 磨坊粮袋），无正式美术。
-   * @param {string} placeId
-   */
-  _paintDecor(placeId) {
-    if (!this._decor) return;
-    this._decor.removeAll(true);
-    if (placeId === "mill") {
-      const sack = this.add.ellipse(520, 210, 48, 32, 0x8a6d48, 0.85);
-      const sack2 = this.add.ellipse(545, 225, 36, 24, 0x7a5f3c, 0.8);
-      const post = this.add.rectangle(70, 200, 14, 70, 0x5c4030, 0.9);
-      this._decor.add([sack, sack2, post]);
-    } else {
-      const ring = this.add.circle(200, 175, 38, 0x000000, 0);
-      ring.setStrokeStyle(3, 0xd9d2c4, 0.45);
-      const center = this.add.circle(200, 175, 10, 0xa8c4d8, 0.7);
-      const bushL = this.add.ellipse(55, 240, 40, 22, 0x4a6b3c, 0.75);
-      const bushR = this.add.ellipse(360, 235, 44, 24, 0x4a6b3c, 0.7);
-      this._decor.add([ring, center, bushL, bushR]);
+  _wireCameraDrag() {
+    this.input.on("pointerdown", (pointer) => {
+      // 点在交互物上不拖镜头（角色/按钮自带 interactive）
+      if (pointer.downElement && pointer.downElement !== this.game.canvas) return;
+      const hits = this.input.hitTestPointer(pointer);
+      if (hits && hits.length) return;
+      this._dragging = true;
+      this._dragLast = { x: pointer.x, y: pointer.y };
+    });
+    this.input.on("pointerup", () => {
+      this._dragging = false;
+      this._dragLast = null;
+    });
+    this.input.on("pointermove", (pointer) => {
+      if (!this._dragging || !pointer.isDown || !this._dragLast) return;
+      const dx = pointer.x - this._dragLast.x;
+      const dy = pointer.y - this._dragLast.y;
+      this._dragLast = { x: pointer.x, y: pointer.y };
+      const cam = this.cameras.main;
+      const c = clampCamera(cam.scrollX - dx, cam.scrollY - dy);
+      cam.setScroll(c.x, c.y);
+    });
+  }
+
+  /** 画完整小镇：草地底 + 两地点分区 + 连接小路 + 地标 */
+  _paintWorld() {
+    const root = this._worldRoot;
+    root.removeAll(true);
+
+    // 世界底（深草 / 土）
+    const ground = this.add.rectangle(
+      WORLD_W / 2,
+      WORLD_H / 2,
+      WORLD_W,
+      WORLD_H,
+      0x3d5a3a
+    );
+    root.add(ground);
+
+    // 棋盘感像素草点（程序化，无外部素材）
+    const dots = this.add.graphics();
+    dots.fillStyle(0x4a6b42, 0.35);
+    for (let y = 8; y < WORLD_H; y += 16) {
+      for (let x = 8; x < WORLD_W; x += 16) {
+        if ((x + y) % 32 === 0) dots.fillRect(x, y, 2, 2);
+      }
     }
+    root.add(dots);
+
+    // 连接两地的土路
+    const path = this.add.graphics();
+    path.fillStyle(0xc4a878, 0.95);
+    path.fillRect(520, 240, 220, 36);
+    path.fillStyle(0xb89560, 0.7);
+    path.fillRect(520, 248, 220, 8);
+    // 路边石
+    path.fillStyle(0xd9d2c4, 0.8);
+    for (let x = 530; x < 730; x += 28) {
+      path.fillRect(x, 236, 6, 4);
+      path.fillRect(x + 10, 274, 6, 4);
+    }
+    root.add(path);
+
+    for (const id of Object.keys(PLACES)) {
+      this._paintPlace(root, PLACES[id]);
+    }
+
+    // 世界边界细线
+    const border = this.add.graphics();
+    border.lineStyle(2, 0x1a1a18, 0.6);
+    border.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
+    root.add(border);
+  }
+
+  /**
+   * @param {Phaser.GameObjects.Container} root
+   * @param {import("./map.js").PlaceZone} z
+   */
+  _paintPlace(root, z) {
+    // 天条
+    const sky = this.add
+      .rectangle(z.x + z.w / 2, z.y + 22, z.w - 8, 36, z.sky)
+      .setStrokeStyle(1, z.accent, 0.4);
+    root.add(sky);
+
+    // 地面块
+    const floor = this.add
+      .rectangle(z.x + z.w / 2, z.y + z.h / 2 + 8, z.w - 8, z.h - 40, z.floor)
+      .setStrokeStyle(3, z.accent, 1);
+    root.add(floor);
+
+    // 区内小径椭圆
+    const oval = this.add.ellipse(
+      z.x + z.w / 2,
+      z.y + z.h / 2 + 40,
+      z.w * 0.55,
+      70,
+      z.path,
+      0.55
+    );
+    root.add(oval);
+
+    // 地点名牌
+    const tag = this.add
+      .text(z.x + 14, z.y + 10, z.label, {
+        fontFamily: "monospace, PingFang SC, sans-serif",
+        fontSize: "13px",
+        color: "#1c1a17",
+        backgroundColor: "#fffdf8cc",
+        padding: { x: 6, y: 2 },
+      })
+      .setDepth(2);
+    root.add(tag);
+
+    if (z.id === "square") {
+      // 喷泉环 + 长椅 + 灌木
+      const ring = this.add.circle(z.x + 200, z.y + 200, 42, 0x000000, 0);
+      ring.setStrokeStyle(4, 0xd9d2c4, 0.55);
+      const water = this.add.circle(z.x + 200, z.y + 200, 14, 0xa8c4d8, 0.85);
+      const bench = this.add.rectangle(z.x + 360, z.y + 280, 56, 12, 0x6b4f2a, 0.95);
+      const bushL = this.add.ellipse(z.x + 70, z.y + 320, 44, 24, 0x4a6b3c, 0.85);
+      const bushR = this.add.ellipse(z.x + 430, z.y + 310, 48, 26, 0x3f5f34, 0.8);
+      const lamp = this.add.rectangle(z.x + 90, z.y + 160, 6, 40, 0x4a4030, 1);
+      const lampTop = this.add.circle(z.x + 90, z.y + 138, 8, 0xffe066, 0.75);
+      root.add([ring, water, bench, bushL, bushR, lamp, lampTop]);
+    } else {
+      // 磨坊：粮袋 + 木柱 + 水车轮示意 + 木屋块
+      const house = this.add
+        .rectangle(z.x + 380, z.y + 160, 90, 70, 0x8a6d48, 0.95)
+        .setStrokeStyle(2, 0x5c4030, 1);
+      const roof = this.add.graphics();
+      roof.fillStyle(0x6b3a2a, 0.95);
+      roof.fillTriangle(
+        z.x + 330,
+        z.y + 130,
+        z.x + 430,
+        z.y + 130,
+        z.x + 380,
+        z.y + 95
+      );
+      const sack = this.add.ellipse(z.x + 140, z.y + 280, 52, 34, 0x8a6d48, 0.9);
+      const sack2 = this.add.ellipse(z.x + 175, z.y + 300, 40, 26, 0x7a5f3c, 0.85);
+      const post = this.add.rectangle(z.x + 80, z.y + 220, 14, 80, 0x5c4030, 0.95);
+      // 水车轮（程序化圆环）
+      const wheel = this.add.circle(z.x + 80, z.y + 170, 28, 0x000000, 0);
+      wheel.setStrokeStyle(4, 0x5c4030, 0.9);
+      const hub = this.add.circle(z.x + 80, z.y + 170, 6, 0x7a5f3c, 1);
+      const crate = this.add.rectangle(z.x + 280, z.y + 300, 36, 28, 0x6b4f2a, 0.9);
+      root.add([house, roof, sack, sack2, post, wheel, hub, crate]);
+    }
+  }
+
+  update(_t, dt) {
+    if (!this._camReady || !this._cursors) return;
+    const cam = this.cameras.main;
+    let dx = 0;
+    let dy = 0;
+    const k = this._cursors;
+    const w = this._wasd;
+    if (k.left.isDown || (w && w.left.isDown)) dx -= 1;
+    if (k.right.isDown || (w && w.right.isDown)) dx += 1;
+    if (k.up.isDown || (w && w.up.isDown)) dy -= 1;
+    if (k.down.isDown || (w && w.down.isDown)) dy += 1;
+    if (dx === 0 && dy === 0) return;
+    const dist = (CAM_SPEED * dt) / 1000;
+    const c = clampCamera(cam.scrollX + dx * dist, cam.scrollY + dy * dist);
+    cam.setScroll(c.x, c.y);
   }
 
   /**
@@ -158,7 +328,8 @@ export class TownScene extends Phaser.Scene {
    */
   sync(view) {
     if (!view) return;
-    if (!this._floor) {
+    this._lastView = view;
+    if (!this._worldRoot) {
       this._pendingView = view;
       return;
     }
@@ -166,60 +337,55 @@ export class TownScene extends Phaser.Scene {
     const placeId = view.locationId || "square";
     if (placeId !== this._placeId) {
       this._placeId = placeId;
-      this._floor.setFillStyle(floorColor(placeId));
-      this._border.setStrokeStyle(3, accentColor(placeId), 1);
-      if (this._sky) this._sky.setFillStyle(skyColor(placeId));
-      if (this._path) this._path.setFillStyle(pathColor(placeId), 0.55);
-      this._paintDecor(placeId);
+      const focus = cameraFocusFor(placeId);
+      const c = clampCamera(focus.x, focus.y);
+      this.cameras.main.pan(c.x + VIEW_W / 2, c.y + VIEW_H / 2, 280, "Cubic.easeOut");
     }
     this._placeLabel.setText(view.locationLabel || placeId);
     const tick = view.tick != null ? String(view.tick) : "?";
     const player = view.playerId || "you";
     this._tickLabel.setText(`回合 ${tick} · ${player}`);
 
-    // U3-02：回合变化时 tick 标签轻脉冲
     if (this._lastTick !== null && this._lastTick !== tick) {
       this.tweens.killTweensOf(this._tickLabel);
-      this._tickLabel.setScale(1.15);
+      this._tickLabel.setScale(1.12);
       this.tweens.add({
         targets: this._tickLabel,
         scaleX: 1,
         scaleY: 1,
-        duration: 280,
+        duration: 260,
         ease: "Back.easeOut",
       });
     }
     this._lastTick = tick;
 
+    // 仅同场角色（不伪造超 View 演员）
     const here = (view.actors || []).filter((a) => a.atPlayerLoc);
     const keep = new Set(here.map((a) => a.id));
 
     for (const [id, node] of this._sprites) {
       if (!keep.has(id)) {
-        this.tweens.killTweensOf(node);
-        const ring = node.getData("ring");
-        const body = node.getData("body");
-        if (ring) this.tweens.killTweensOf(ring);
-        if (body) this.tweens.killTweensOf(body);
+        this._killActorTweens(node);
         node.destroy();
         this._sprites.delete(id);
       }
     }
 
     here.forEach((a, i) => {
-      const [x, y] = slotFor(placeId, a.id, i);
+      const [x, y] = worldSlot(placeId, a.id, i);
       let node = this._sprites.get(a.id);
       if (!node) {
         node = this._makeActor(a.id, a.label || a.id, x, y);
         this._sprites.set(a.id, node);
       } else if (Math.abs(node.x - x) > 0.5 || Math.abs(node.y - y) > 0.5) {
-        node.setData("baseY", y);
+        this._playWalk(node, true);
         this.tweens.add({
           targets: node,
           x,
           y,
-          duration: 220,
+          duration: 280,
           ease: "Sine.easeInOut",
+          onComplete: () => this._playWalk(node, false),
         });
       }
       const label = node.getData("labelText");
@@ -227,6 +393,7 @@ export class TownScene extends Phaser.Scene {
         label.setText(a.label || a.id);
       }
       this._paintSelected(node, a.id === view.selectedActorId);
+      this._syncBubble(node, a, view, this._lastMenu);
     });
 
     this._selectedId = view.selectedActorId || null;
@@ -237,6 +404,7 @@ export class TownScene extends Phaser.Scene {
    * @param {null | { actorId?: string, actions?: Array<{id:string,label:string,kind?:string,practiceId?:string}> }} menu
    */
   syncMenu(menu) {
+    this._lastMenu = menu || null;
     if (!this._menuRoot) {
       this._pendingMenu = menu;
       return;
@@ -310,7 +478,6 @@ export class TownScene extends Phaser.Scene {
     const h = Math.max(y + 8, 72);
     bg.setDisplaySize(MENU_W, h);
 
-    // U3-02：菜单淡入 + 微下滑
     this._menuRoot.setAlpha(0);
     this._menuRoot.y = MENU_Y - 8;
     this.tweens.add({
@@ -320,6 +487,13 @@ export class TownScene extends Phaser.Scene {
       duration: 200,
       ease: "Cubic.easeOut",
     });
+
+    // 菜单更新后刷新选中角色气泡
+    if (this._lastView && this._selectedId) {
+      const actor = (this._lastView.actors || []).find((a) => a.id === this._selectedId);
+      const node = this._sprites.get(this._selectedId);
+      if (actor && node) this._syncBubble(node, actor, this._lastView, menu);
+    }
   }
 
   /**
@@ -389,7 +563,6 @@ export class TownScene extends Phaser.Scene {
       }
     }
 
-    // U3-02：日志更新时淡入
     if (changed) {
       this.tweens.killTweensOf(this._logRoot);
       this._logRoot.setAlpha(0.35);
@@ -455,59 +628,85 @@ export class TownScene extends Phaser.Scene {
 
   _makeActor(id, label, x, y) {
     const fill = actorFill(id);
-    // U3-03：脚底阴影
-    const shadow = this.add.ellipse(0, R + 2, R * 1.6, 10, 0x000000, 0.28);
-    const body = this.add.circle(0, 0, R, fill);
-    body.setStrokeStyle(2, 0xffffff, 0.9);
-    // U3-01：选中环（默认隐藏）
-    const ring = this.add.circle(0, 0, R + 7, 0x000000, 0);
-    ring.setStrokeStyle(3, 0xffe066, 0);
+    const tex = ensureActorTextures(this, id, fill);
+
+    const shadow = this.add.ellipse(0, 22, 22, 8, 0x000000, 0.3);
+    const body = this.add.sprite(0, 0, tex.idle);
+    body.setScale(SPRITE_SCALE);
+    body.setData("idleKey", tex.idle);
+    body.setData("walkKey", tex.walk);
+
+    const ring = this.add.circle(0, 4, R + 6, 0x000000, 0);
+    ring.setStrokeStyle(2, 0xffe066, 0);
     ring.setVisible(false);
 
-    const text = this.add
-      .text(0, R + 12, label, {
+    // 头顶气泡
+    const bubbleBg = this.add
+      .rectangle(0, -36, 8, 16, 0xfffdf8, 0.95)
+      .setStrokeStyle(1, 0x1c1a17, 0.55)
+      .setVisible(false);
+    const bubbleText = this.add
+      .text(0, -36, "", {
         fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "12px",
+        fontSize: "10px",
+        color: "#1c1a17",
+        padding: { x: 2, y: 1 },
+      })
+      .setOrigin(0.5, 0.5)
+      .setVisible(false);
+
+    const name = this.add
+      .text(0, 28, label, {
+        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "11px",
         color: "#1c1a17",
         backgroundColor: "#fffdf8dd",
-        padding: { x: 5, y: 2 },
+        padding: { x: 4, y: 1 },
       })
       .setOrigin(0.5, 0);
 
-    const hit = this.add.circle(0, 0, R + 10, 0xffffff, 0.001);
+    const hit = this.add.circle(0, 4, R + 8, 0xffffff, 0.001);
     hit.setInteractive({ useHandCursor: true });
 
-    const node = this.add.container(x, y, [shadow, ring, body, text, hit]);
-    node.setSize((R + 10) * 2, (R + 10) * 2);
+    const node = this.add.container(x, y, [
+      shadow,
+      ring,
+      body,
+      bubbleBg,
+      bubbleText,
+      name,
+      hit,
+    ]);
+    node.setSize((R + 8) * 2, (R + 8) * 2);
     node.setData("body", body);
     node.setData("ring", ring);
-    node.setData("labelText", text);
+    node.setData("labelText", name);
+    node.setData("bubbleBg", bubbleBg);
+    node.setData("bubbleText", bubbleText);
     node.setData("actorId", id);
-    node.setData("baseY", y);
-    node.setDepth(5);
+    node.setData("walking", false);
+    node.setDepth(10);
 
     hit.on("pointerover", () => {
       if (id === this._selectedId) return;
-      body.setStrokeStyle(3, 0xffffff, 1);
       this.tweens.add({
         targets: node,
         scaleX: 1.06,
         scaleY: 1.06,
-        duration: 100,
+        duration: 90,
       });
     });
     hit.on("pointerout", () => {
       if (id === this._selectedId) return;
-      body.setStrokeStyle(2, 0xffffff, 0.9);
       this.tweens.add({
         targets: node,
         scaleX: 1,
         scaleY: 1,
-        duration: 100,
+        duration: 90,
       });
     });
-    hit.on("pointerdown", () => {
-      // U3-01：点击瞬时反馈
+    hit.on("pointerdown", (pointer, _lx, _ly, event) => {
+      if (event && event.stopPropagation) event.stopPropagation();
       this.tweens.add({
         targets: node,
         scaleX: 0.92,
@@ -517,7 +716,7 @@ export class TownScene extends Phaser.Scene {
         ease: "Quad.easeOut",
       });
       ring.setVisible(true);
-      ring.setStrokeStyle(3, 0xffe066, 1);
+      ring.setStrokeStyle(2, 0xffe066, 1);
       ring.setScale(1);
       ring.setAlpha(1);
       this.tweens.add({
@@ -525,71 +724,116 @@ export class TownScene extends Phaser.Scene {
         scaleX: 1.35,
         scaleY: 1.35,
         alpha: 0,
-        duration: 280,
+        duration: 260,
         onComplete: () => {
           ring.setScale(1);
           ring.setAlpha(1);
           if (id !== this._selectedId) {
             ring.setVisible(false);
-            ring.setStrokeStyle(3, 0xffe066, 0);
+            ring.setStrokeStyle(2, 0xffe066, 0);
           }
         },
       });
       if (this._onSelect) this._onSelect(id);
     });
 
-    // U3-03：轻微 idle —— 只动 body/shadow，不抢容器站位
-    const phase = (id.charCodeAt(0) % 7) * 80;
+    // idle 呼吸 + 双帧切换（程序化 walk/idle 纹理）
+    const phase = (id.charCodeAt(0) % 7) * 90;
     this.tweens.add({
       targets: [body, shadow],
-      y: "-=3",
-      duration: 900 + phase,
+      y: "-=2",
+      duration: 850 + phase,
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut",
       delay: phase,
     });
+    // 轻微 idle 帧闪动（像呼吸脚步）
+    this.time.addEvent({
+      delay: 700 + phase,
+      loop: true,
+      callback: () => {
+        if (node.getData("walking")) return;
+        const b = node.getData("body");
+        if (!b) return;
+        const idle = b.getData("idleKey");
+        const walk = b.getData("walkKey");
+        b.setTexture(b.texture.key === idle ? walk : idle);
+      },
+    });
 
     return node;
   }
 
-  _paintSelected(node, selected) {
+  _playWalk(node, walking) {
+    node.setData("walking", !!walking);
     const body = node.getData("body");
-    const ring = node.getData("ring");
     if (!body) return;
+    if (walking) {
+      body.setTexture(body.getData("walkKey"));
+    } else {
+      body.setTexture(body.getData("idleKey"));
+    }
+  }
+
+  _syncBubble(node, actor, view, menu) {
+    const bg = node.getData("bubbleBg");
+    const tx = node.getData("bubbleText");
+    if (!bg || !tx) return;
+    const text = bubbleFromView(actor, view, menu);
+    if (!text) {
+      bg.setVisible(false);
+      tx.setVisible(false);
+      return;
+    }
+    tx.setText(text);
+    const w = Math.max(tx.width + 10, 24);
+    bg.setSize(w, 16);
+    bg.setDisplaySize(w, 16);
+    bg.setVisible(true);
+    tx.setVisible(true);
+  }
+
+  _killActorTweens(node) {
+    this.tweens.killTweensOf(node);
+    const ring = node.getData("ring");
+    const body = node.getData("body");
+    if (ring) this.tweens.killTweensOf(ring);
+    if (body) this.tweens.killTweensOf(body);
+  }
+
+  _paintSelected(node, selected) {
+    const ring = node.getData("ring");
     if (selected) {
-      body.setStrokeStyle(4, 0xffe066, 1);
       if (ring) {
         ring.setVisible(true);
-        ring.setStrokeStyle(2, 0xffe066, 0.85);
+        ring.setStrokeStyle(2, 0xffe066, 0.9);
         ring.setScale(1);
         ring.setAlpha(1);
         this.tweens.killTweensOf(ring);
-        // U3-01：选中环脉冲
         this.tweens.add({
           targets: ring,
-          scaleX: 1.18,
-          scaleY: 1.18,
-          duration: 520,
+          scaleX: 1.15,
+          scaleY: 1.15,
+          duration: 500,
           yoyo: true,
           repeat: -1,
           ease: "Sine.easeInOut",
         });
       }
-      if (Math.abs(node.scaleX - 1.1) > 0.02) {
+      if (Math.abs(node.scaleX - 1.08) > 0.02) {
         this.tweens.add({
           targets: node,
-          scaleX: 1.1,
-          scaleY: 1.1,
-          duration: 120,
+          scaleX: 1.08,
+          scaleY: 1.08,
+          duration: 110,
         });
       }
     } else {
-      body.setStrokeStyle(2, 0xffffff, 0.9);
       if (ring) {
         this.tweens.killTweensOf(ring);
         ring.setVisible(false);
-        ring.setStrokeStyle(3, 0xffe066, 0);
+        ring.setStrokeStyle(2, 0xffe066, 0);
         ring.setScale(1);
         ring.setAlpha(1);
       }
@@ -598,11 +842,11 @@ export class TownScene extends Phaser.Scene {
           targets: node,
           scaleX: 1,
           scaleY: 1,
-          duration: 120,
+          duration: 110,
         });
       }
     }
   }
 }
 
-export const TOWN_SIZE = { width: W, height: H };
+export const TOWN_SIZE = { width: VIEW_W, height: VIEW_H };
