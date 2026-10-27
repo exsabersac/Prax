@@ -959,7 +959,10 @@ export class TownScene extends Phaser.Scene {
 
     this._refreshPlaceLabel();
 
-    const player = view.playerId || "you";
+    const player =
+      view.playerLabel ||
+      (view.playerId === "you" ? "你" : view.playerId) ||
+      "你";
     this._tickLabel.setText(`回合 ${tick} · ${player}`);
 
     if (this._lastTick !== null && this._lastTick !== tick) {
@@ -1103,7 +1106,7 @@ export class TownScene extends Phaser.Scene {
       y,
       menuW - 16,
       32,
-      "稍候（praxWait）",
+      "稍候",
       "",
       () => {
         if (this._onWait) this._onWait();

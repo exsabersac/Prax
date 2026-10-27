@@ -33,7 +33,7 @@ function renderDomFallback(root, view, onSelect) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "actor";
-    btn.textContent = a.atPlayerLoc ? a.label : `${a.label}（${a.place || "?"}）`;
+    btn.textContent = a.atPlayerLoc ? a.label : `${a.label}（${a.placeLabel || a.place || "?"}）`;
     btn.disabled = !a.atPlayerLoc;
     btn.setAttribute("aria-pressed", a.id === view.selectedActorId ? "true" : "false");
     if (a.atPlayerLoc) btn.addEventListener("click", () => onSelect(a.id));

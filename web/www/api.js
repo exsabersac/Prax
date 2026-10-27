@@ -3,10 +3,29 @@
  * 字段对齐 Session ToJSON / examples/my-town-session.json；JS 不重算规则。
  */
 
-const PLACE_LABEL = { square: "广场", mill: "磨坊" };
+/** 玩家可见地名（内部 id 不变） */
+const PLACE_LABEL = { square: "广场", mill: "磨坊", bridge: "小桥" };
+/** 玩家可见角色名（产品定稿；内部 id 不变） */
 const ACTOR_LABEL = {
-  you: "你", bob: "Bob", carol: "Carol", dana: "Dana", eve: "Eve", gale: "Gale",
+  you: "你", bob: "鲍勃", carol: "卡萝", dana: "黛娜", eve: "伊芙", gale: "盖尔",
 };
+
+/** 展示层：把文案里的角色/地点 id 换成中文专名（不改契约字段） */
+const DISPLAY_ID_RE = /\b(you|bob|carol|dana|eve|gale|square|mill|bridge)\b/g;
+const DISPLAY_ID_ZH = Object.assign({}, ACTOR_LABEL, PLACE_LABEL);
+
+export function localizeDisplayText(text) {
+  if (text == null || text === "") return text == null ? "" : String(text);
+  return String(text).replace(DISPLAY_ID_RE, (id) => DISPLAY_ID_ZH[id] || id);
+}
+
+export function actorDisplayName(id) {
+  return ACTOR_LABEL[id] || localizeDisplayText(id) || String(id || "");
+}
+
+export function placeDisplayName(id) {
+  return PLACE_LABEL[id] || localizeDisplayText(id) || String(id || "");
+}
 
 /** 已知 error 码 → 中文（坏档/桥死等强制中文，勿被桥端英文技术串盖掉） */
 const ERROR_ZH = {
@@ -81,42 +100,61 @@ async function rpc(payload) {
 
 export function normalizeView(raw, opts = {}) {
   const locationId = raw.locationId || "square";
+  const playerId = raw.player || opts.playerId || "you";
   const actors = (raw.actors || []).map((a) => {
     const place = a.here;
     return {
       id: a.id,
       label: ACTOR_LABEL[a.id] || a.id,
       place,
+      placeLabel: PLACE_LABEL[place] || place,
       atPlayerLoc: place === locationId,
     };
   });
+  const log = (opts.log || []).map((line) =>
+    line && typeof line === "object"
+      ? { ...line, text: localizeDisplayText(line.text) }
+      : line
+  );
   return {
     worldId: raw.worldId,
-    playerId: raw.player || opts.playerId || "you",
+    playerId,
+    playerLabel: ACTOR_LABEL[playerId] || playerId,
     locationId,
-    locationLabel: PLACE_LABEL[locationId] || raw.locationLabel || locationId,
+    locationLabel: PLACE_LABEL[locationId] || localizeDisplayText(raw.locationLabel) || locationId,
     actors,
     selectedActorId: opts.selectedActorId ?? null,
-    log: opts.log || [],
+    log,
     tick: opts.tick ?? 0,
     canSave: true,
   };
 }
 
 export function normalizeMenu(items) {
-  return (items || []).map((m) => ({
-    id: m.actionId,
-    label: m.label,
-    kind: m.practiceId,
-    practiceId: m.practiceId,
-    actionName: m.actionName,
-  }));
+  return (items || []).map((m) => {
+    // 主文案 id→中文；副标不直出 practice.* 技术 id（动作仍只靠不透明 action.id）
+    const rawKind = m.practiceId || m.kind || "";
+    const kindLooksTech =
+      !rawKind ||
+      /^practice\./i.test(String(rawKind)) ||
+      !/[\u4e00-\u9fff]/.test(String(rawKind));
+    return {
+      id: m.actionId,
+      label: localizeDisplayText(m.label),
+      kind: kindLooksTech ? "" : String(rawKind),
+      practiceId: m.practiceId,
+      actionName: m.actionName,
+    };
+  });
 }
 
 function appendNarrative(log, narrative) {
   const lines = Array.isArray(narrative) ? narrative : [];
   return (log || []).concat(
-    lines.map((text) => ({ kind: "narrative", text: String(text) }))
+    lines.map((text) => ({
+      kind: "narrative",
+      text: localizeDisplayText(String(text)),
+    }))
   );
 }
 

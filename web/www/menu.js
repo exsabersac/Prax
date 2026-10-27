@@ -31,7 +31,7 @@ export function renderMenu(root, menu, onAct, onWait) {
   wait.type = "button";
   wait.className = "action";
   wait.style.marginTop = "0.5rem";
-  wait.textContent = "稍候（praxWait）";
+  wait.textContent = "稍候";
   wait.addEventListener("click", onWait);
   root.appendChild(wait);
 }

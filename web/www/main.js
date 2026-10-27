@@ -72,9 +72,9 @@ function showGuide() {
   elGuide.appendChild(h);
   const ul = document.createElement("ul");
   for (const line of [
-    "地点：广场（square）、磨坊（mill）",
-    "阵容：你（you）+ Bob / Carol / Dana / Eve / Gale",
-    "下一步：方向键/拖拽逛地图；点居民 → 菜单 → Act",
+    "地点：广场、磨坊（另有装饰小桥）",
+    "阵容：你、鲍勃、卡萝、黛娜、伊芙、盖尔",
+    "下一步：方向键/拖拽逛地图；点居民 → 菜单 → 行动",
   ]) {
     const li = document.createElement("li");
     li.textContent = line;
@@ -129,7 +129,7 @@ function setBypassPanels(hidden) {
 
 function paint() {
   if (!view) return;
-  elMeta.textContent = `${view.locationLabel} · 回合 ${view.tick} · 玩家 ${view.playerId}`;
+  elMeta.textContent = `${view.locationLabel} · 回合 ${view.tick} · 玩家 ${view.playerLabel || view.playerId}`;
   uiMode = renderScene(elScene, view, onSelectActor, onAct, onWait);
   if (uiMode === "phaser") {
     setBypassPanels(true);
