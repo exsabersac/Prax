@@ -1,5 +1,5 @@
 /**
- * U2：挂载 Phaser 3 单场景；对外 sync(view) / syncMenu / set*Handler。
+ * U3：挂载 Phaser 3 单场景（表现精修）；对外 sync(view) / syncMenu / set*Handler。
  */
 import { BootScene } from "./BootScene.js";
 import { TownScene, TOWN_SIZE } from "./TownScene.js";
@@ -94,7 +94,7 @@ export function syncMenu(menu) {
   if (town) town.syncMenu(menu);
 }
 
-/** View + Menu 一次推入（U2 主 paint 路径） */
+/** View + Menu 一次推入（U3 主 paint 路径） */
 export function syncHud(view, menu) {
   lastView = view;
   lastMenu = menu;

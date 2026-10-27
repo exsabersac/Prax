@@ -163,3 +163,13 @@ body {
 .panel-scene .town-frame {
   max-width: 720px;
 }
+
+
+/* U3：舞台略放大，边框更干净 */
+.panel-scene .town-frame {
+  max-width: 760px;
+  box-shadow: 0 8px 24px #1c1a1722;
+}
+.layout-u2 .panel-scene {
+  padding: 0.75rem 0.9rem 1rem;
+}
