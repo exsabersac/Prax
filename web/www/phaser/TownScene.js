@@ -1632,7 +1632,40 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
-ily: "PingFang SC, Noto Sans SC, sans-serif",
+  _makeActor(id, label, x, y) {
+    const fill = actorFill(id);
+    const tex = ensureActorTextures(this, id, fill);
+
+    const shadow = this.add.ellipse(0, 22, 22, 8, 0x000000, 0.3);
+    const body = this.add.sprite(0, 0, tex.sheet, 0);
+    body.setScale(SPRITE_SCALE);
+    body.setData("actorId", id);
+    body.setData("face", "down");
+    body.play(animKey(id, "idle", "down"));
+
+    // U12-01：选中底盘柔光 + 双环，选中更可感且不挡命中
+    const ringFill = this.add.circle(0, 8, R + 10, 0xffe066, 0);
+    ringFill.setVisible(false);
+
+    const ring = this.add.circle(0, 4, R + 6, 0x000000, 0);
+    ring.setStrokeStyle(3, 0xffe066, 0);
+    ring.setVisible(false);
+
+    const ringOuter = this.add.circle(0, 4, R + 14, 0x000000, 0);
+    ringOuter.setStrokeStyle(2, 0xfffdf8, 0);
+    ringOuter.setVisible(false);
+
+    const arrow = this.add
+      .triangle(0, -52, 0, 0, 6, 8, -6, 8, 0xffe066, 0.95)
+      .setVisible(false);
+
+    const bubbleBg = this.add
+      .rectangle(0, -40, 8, 18, 0xfffdf8, 0.96)
+      .setStrokeStyle(1, 0x1c1a17, 0.6)
+      .setVisible(false);
+    const bubbleText = this.add
+      .text(0, -40, "", {
+        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "11px",
         color: "#1c1a17",
         align: "center",
