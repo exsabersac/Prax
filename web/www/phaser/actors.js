@@ -37,8 +37,10 @@ export function bubbleFromView(actor, view, menu) {
     return shortenLabel(a.label || a.id || "", 44);
   }
 
+  // U14：只扫近期日志，避免步数堆叠后 O(全量 log) 变卡
   const log = (view && view.log) || [];
-  for (let i = log.length - 1; i >= 0; i--) {
+  const scanFrom = Math.max(0, log.length - 16);
+  for (let i = log.length - 1; i >= scanFrom; i--) {
     const line = log[i];
     const t = (line && line.text) || "";
     if (!t) continue;

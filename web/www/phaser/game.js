@@ -1,5 +1,5 @@
 /**
- * U13：挂载 Phaser 3（流体铺满 + U6 抗糊 + U12 表现；减卡）。
+ * U14：挂载 Phaser 3（叠 U13 减卡 + 多步稳帧；流体/抗糊不回退）。
  * 对外 sync(view) / syncMenu / syncHud / set*Handler；resize 只重算布局，不丢 Session。
  * paint 主路径请走 syncHud 一次，避免 syncTown+syncHud 双推。
  */

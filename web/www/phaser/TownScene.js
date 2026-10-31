@@ -1,7 +1,7 @@
 /**
- * U13 TownScene：表现层减卡（叠 U12）。
- * 脏刷新选中/呼吸/气泡/日志/菜单；避免 paint 路径空转重绘与无限 tween 重启风暴。
- * Act 按下立即派发（视觉压下不挡回调）；U6–U12 观感等价不故意回退。
+ * U14 TownScene：多步后稳帧（叠 U13）。
+ * 日志/菜单/气泡有界复用；孤儿 tween·delayedCall 清理；脏键只扫近期。
+ * 继承 U13 脏刷新/合批/单次 syncHud 与 Act 立即派发；U6–U12 观感不故意回退。
  * BAKED 仍仅 you；Session/api 零改。
  */
 import { actorFill, bubbleFromView } from "./actors.js";
@@ -30,6 +30,12 @@ const R = 16;
 /** 设计参考下的默认 HUD；实际由 computeHud(viewW,viewH) 随布局重算 */
 const MENU_W0 = 200;
 const LOG_H0 = 88;
+/** U14：展示行上限（HUD 可视） */
+const LOG_DISPLAY_MAX = 4;
+/** U14：脏键只取近期行，避免全量 join 随步数变卡 */
+const LOG_KEY_TAIL = 8;
+/** U14：菜单按钮对象池上限（含稍候） */
+const MENU_BTN_POOL_MAX = 10;
 
 const CAM_SPEED = 240;
 
@@ -127,6 +133,14 @@ export class TownScene extends Phaser.Scene {
     this._hoverIdx = -1;
     /** @type {string} */
     this._lastMenuKey = "";
+    /** @type {Phaser.Time.TimerEvent[]} U14 可取消的 delayedCall */
+    this._trackedTimers = [];
+    /** @type {null | { bg: any, title: any, empty: any, rows: Array<{ bar: any, text: any }> }} */
+    this._logPool = null;
+    /** @type {null | { bg: any, accent: any, title: any, empty: any, btns: any[], wait: any | null }} */
+    this._menuPool = null;
+    /** @type {number} */
+    this._syncGen = 0;
   }
 
   setSelectHandler(fn) {
@@ -454,12 +468,14 @@ export class TownScene extends Phaser.Scene {
         if (rec.bg) {
           rec.bg.setFillStyle(0xffe066, 1);
           rec.bg.setStrokeStyle(3, 0xfffdf8, 1);
-          this.time.delayedCall(120, () => {
-            if (rec.bg && rec.bg.active !== false) {
-              rec.bg.setFillStyle(rec.fill, 0.95);
-              rec.bg.setStrokeStyle(1, 0xd9d2c4, 0.75);
-            }
-          });
+          this._trackTimer(
+            this.time.delayedCall(120, () => {
+              if (rec.bg && rec.bg.active !== false) {
+                rec.bg.setFillStyle(rec.fill, 0.95);
+                rec.bg.setStrokeStyle(1, 0xd9d2c4, 0.75);
+              }
+            })
+          );
         }
         if (this._selectPulse) {
           this._selectPulse.setFillStyle(0x7dcea0, 0.85);
@@ -474,6 +490,8 @@ export class TownScene extends Phaser.Scene {
         // U13-02：先派发 Act，压下动画不挡回调（避免半拍延迟）
         if (rec.onClick) rec.onClick();
         if (rec.g) {
+          this.tweens.killTweensOf(rec.g);
+          rec.g.setScale(1);
           this.tweens.add({
             targets: rec.g,
             scaleX: 0.9,
@@ -555,7 +573,7 @@ export class TownScene extends Phaser.Scene {
         280,
         "Cubic.easeOut"
       );
-      this.time.delayedCall(300, () => this._updateCamBadge());
+      this._trackTimer(this.time.delayedCall(300, () => this._updateCamBadge()));
     } else {
       this.cameras.main.setScroll(c.x, c.y);
       this._updateCamBadge();
@@ -1133,11 +1151,15 @@ export class TownScene extends Phaser.Scene {
     });
 
     this.syncLog(view);
+    this._syncGen = (this._syncGen || 0) + 1;
+    // U14：每几步清一次孤儿 tween/timer，避免越玩越卡
+    if (this._syncGen % 3 === 0) this._pruneFx();
   }
 
   /**
    * @param {null | { actorId?: string, actions?: Array<{id:string,label:string,kind?:string,practiceId?:string}> }} menu
    * @param {{ quiet?: boolean }} [opts] quiet=true：布局重算时重建命中，不播入场动画
+   * U14：菜单铬件+按钮池复用；重建前取消 delayedCall，避免步数堆叠孤儿定时器。
    */
   syncMenu(menu, opts = {}) {
     const quiet = !!(opts && opts.quiet);
@@ -1155,7 +1177,7 @@ export class TownScene extends Phaser.Scene {
       .map((a) => `${a.id}:${a.label || ""}:${a.kind || ""}`)
       .join(",")}|${menuW}`;
     // 同内容且非 quiet 重布局：跳过整板重建（U13-03）
-    if (!quiet && menuKey === this._lastMenuKey && this._menuRoot.list.length) {
+    if (!quiet && menuKey === this._lastMenuKey && this._menuPool) {
       if (this._lastView && this._selectedId) {
         const actor = (this._lastView.actors || []).find(
           (a) => a.id === this._selectedId
@@ -1168,25 +1190,16 @@ export class TownScene extends Phaser.Scene {
     this._lastMenuKey = menuKey;
 
     this.tweens.killTweensOf(this._menuRoot);
+    this._cancelTrackedTimers();
     this._clearMenuHits();
-    this._hoverIdx = -1;
-    this._menuRoot.removeAll(true);
-
     this._menuRoot.setPosition(hud.menuX, menuY);
 
-    const bg = this.add
-      .rectangle(0, 0, menuW, 8, 0x0e0c0a, 0.94)
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
-    bg.setStrokeStyle(2, 0xffe066, 0.45);
-    this._menuRoot.add(bg);
+    this._ensureMenuPool(menuW);
 
-    // U12-01：左侧金色强调条，菜单入场更醒目
-    const accent = this.add
-      .rectangle(0, 0, 4, 8, 0xffe066, 1)
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
-    this._menuRoot.add(accent);
+    const pool = this._menuPool;
+    const bg = pool.bg;
+    const accent = pool.accent;
+    const title = pool.title;
 
     let who = "";
     if (menu && menu.actorId && this._lastView) {
@@ -1197,34 +1210,27 @@ export class TownScene extends Phaser.Scene {
       who = (a && a.label) || "";
     }
     const titleStr = who ? `菜单 · ${who}` : "菜单";
-    const title = this.add
-      .text(12, 8, titleStr, {
-        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "14px",
-        color: "#ffe066",
-        fontStyle: "bold",
-      })
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
-    this._menuRoot.add(title);
+    title.setText(titleStr);
 
     let y = 30;
+    let btnIdx = 0;
     if (!actions.length) {
-      const empty = this.add
-        .text(10, y, "此刻没有候选动作。", {
-          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-          fontSize: "12px",
-          color: "#fffdf8aa",
-          wordWrap: { width: menuW - 20 },
-        })
-        .setOrigin(0, 0)
-        .setScrollFactor(0);
-      this._menuRoot.add(empty);
+      pool.empty.setVisible(true);
+      pool.empty.setPosition(10, y);
+      pool.empty.setStyle({
+        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "12px",
+        color: "#fffdf8aa",
+        wordWrap: { width: menuW - 20 },
+      });
       y += 28;
     } else {
+      pool.empty.setVisible(false);
       for (const a of actions) {
+        if (btnIdx >= MENU_BTN_POOL_MAX - 1) break; // 留一格给稍候
         const btnH = 40;
-        const row = this._makeMenuButton(
+        this._bindMenuBtn(
+          btnIdx++,
           8,
           y,
           menuW - 16,
@@ -1233,14 +1239,16 @@ export class TownScene extends Phaser.Scene {
           a.kind || a.practiceId || "",
           () => {
             if (this._onAct) this._onAct(a.id);
-          }
+          },
+          0x2f6f4e
         );
-        this._menuRoot.add(row);
         y += btnH + 6;
       }
     }
 
-    const wait = this._makeMenuButton(
+    // 稍候固定占一格
+    this._bindMenuBtn(
+      btnIdx++,
       8,
       y,
       menuW - 16,
@@ -1252,24 +1260,27 @@ export class TownScene extends Phaser.Scene {
       },
       0x3a4a3a
     );
-    this._menuRoot.add(wait);
     y += 40;
+
+    // 隐藏未用按钮池
+    for (let i = btnIdx; i < pool.btns.length; i++) {
+      const b = pool.btns[i];
+      b.g.setVisible(false);
+      b.g.setActive(false);
+    }
 
     const h = Math.max(y + 8, 72);
     bg.setDisplaySize(menuW, h);
+    accent.setDisplaySize(4, h);
     this._menuRoot.setData("panelH", h);
     this._pinHud(this._menuRoot);
-
-    // 强调条跟面板高度（直接用 accent 引用，避免 list 下标漂移）
-    if (accent && typeof accent.setDisplaySize === "function") {
-      accent.setDisplaySize(4, h);
-    }
 
     if (quiet) {
       this._menuRoot.setAlpha(1);
       this._menuRoot.y = menuY;
+      bg.setStrokeStyle(2, 0xffe066, 0.55);
     } else {
-      // U12-01：菜单入场更清晰（下滑弹入 + 白描边闪 + 强调条）；不改 scale，避免屏坐标命中短暂错位
+      // U12-01：菜单入场更清晰（下滑弹入 + 白描边闪 + 强调条）
       this._menuRoot.setAlpha(0);
       this._menuRoot.y = menuY - 22;
       this.tweens.add({
@@ -1280,9 +1291,11 @@ export class TownScene extends Phaser.Scene {
         ease: "Back.easeOut",
       });
       bg.setStrokeStyle(3, 0xfffdf8, 1);
-      this.time.delayedCall(280, () => {
-        if (bg && bg.active !== false) bg.setStrokeStyle(2, 0xffe066, 0.55);
-      });
+      this._trackTimer(
+        this.time.delayedCall(280, () => {
+          if (bg && bg.active !== false) bg.setStrokeStyle(2, 0xffe066, 0.55);
+        })
+      );
       if (this._selectPulse) {
         this._selectPulse.setFillStyle(0xffe066, 0.55);
         this.tweens.killTweensOf(this._selectPulse);
@@ -1304,53 +1317,219 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
+  /** U14：确保菜单铬件与按钮池已建（不 destroy 重建） */
+  _ensureMenuPool(menuW) {
+    if (this._menuPool) return;
+    // 清空旧子节点（仅首次）
+    this.tweens.killTweensOf(this._menuRoot);
+    this._menuRoot.removeAll(true);
+
+    const bg = this.add
+      .rectangle(0, 0, menuW, 8, 0x0e0c0a, 0.94)
+      .setOrigin(0, 0)
+      .setScrollFactor(0);
+    bg.setStrokeStyle(2, 0xffe066, 0.45);
+    const accent = this.add
+      .rectangle(0, 0, 4, 8, 0xffe066, 1)
+      .setOrigin(0, 0)
+      .setScrollFactor(0);
+    const title = this.add
+      .text(12, 8, "菜单", {
+        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "14px",
+        color: "#ffe066",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0)
+      .setScrollFactor(0);
+    const empty = this.add
+      .text(10, 30, "此刻没有候选动作。", {
+        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+        fontSize: "12px",
+        color: "#fffdf8aa",
+        wordWrap: { width: Math.max(40, menuW - 20) },
+      })
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setVisible(false);
+
+    this._menuRoot.add(bg);
+    this._menuRoot.add(accent);
+    this._menuRoot.add(title);
+    this._menuRoot.add(empty);
+
+    const btns = [];
+    for (let i = 0; i < MENU_BTN_POOL_MAX; i++) {
+      const g = this.add.container(8, 30).setScrollFactor(0).setVisible(false);
+      const bbg = this.add
+        .rectangle(0, 0, menuW - 16, 40, 0x2f6f4e, 0.95)
+        .setOrigin(0, 0)
+        .setScrollFactor(0);
+      bbg.setStrokeStyle(1, 0xd9d2c4, 0.75);
+      const tTitle = this.add
+        .text(8, 3, "", {
+          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+          fontSize: "12px",
+          color: "#fffdf8",
+          wordWrap: { width: Math.max(40, menuW - 32) },
+        })
+        .setOrigin(0, 0)
+        .setScrollFactor(0);
+      const tSub = this.add
+        .text(8, 19, "", {
+          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+          fontSize: "10px",
+          color: "#d9d2c4",
+        })
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+        .setVisible(false);
+      g.add(bbg);
+      g.add(tTitle);
+      g.add(tSub);
+      this._menuRoot.add(g);
+      btns.push({ g, bg: bbg, title: tTitle, sub: tSub });
+    }
+    this._menuPool = { bg, accent, title, empty, btns };
+    this._pinHud(this._menuRoot);
+  }
+
+  /**
+   * U14：绑定池内第 idx 个按钮并登记命中。
+   */
+  _bindMenuBtn(idx, x, y, w, h, label, sub, onClick, fill = 0x2f6f4e) {
+    const pool = this._menuPool;
+    if (!pool || idx < 0 || idx >= pool.btns.length) return null;
+    const b = pool.btns[idx];
+    this.tweens.killTweensOf(b.g);
+    b.g.setActive(true);
+    b.g.setVisible(true);
+    b.g.setPosition(x, y);
+    b.g.setScale(1);
+    b.bg.setDisplaySize(w, h);
+    b.bg.setFillStyle(fill, 0.95);
+    b.bg.setStrokeStyle(1, 0xd9d2c4, 0.75);
+    const hasSub = !!sub;
+    b.title.setPosition(8, hasSub ? 3 : h / 2);
+    b.title.setOrigin(0, hasSub ? 0 : 0.5);
+    b.title.setStyle({
+      fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+      fontSize: "12px",
+      color: "#fffdf8",
+      wordWrap: { width: Math.max(40, w - 16) },
+    });
+    b.title.setText(String(label || ""));
+    if (hasSub) {
+      b.sub.setVisible(true);
+      b.sub.setText(ellipsize(sub, 22));
+    } else {
+      b.sub.setVisible(false);
+      b.sub.setText("");
+    }
+    this._menuHits.push({ x, y, w, h, onClick, bg: b.bg, g: b.g, fill });
+    return b.g;
+  }
+
   _clearMenuHits() {
     this._menuHits = [];
+    this._hoverIdx = -1;
+  }
+
+  /** U14：登记 delayedCall，便于菜单/日志重建时取消 */
+  _trackTimer(ev) {
+    if (!ev) return ev;
+    if (!this._trackedTimers) this._trackedTimers = [];
+    this._trackedTimers.push(ev);
+    // 防止数组无限涨：已完成的清掉
+    if (this._trackedTimers.length > 24) {
+      this._trackedTimers = this._trackedTimers.filter(
+        (t) => t && !t.hasDispatched && t.getProgress && t.getProgress() < 1
+      );
+    }
+    return ev;
+  }
+
+  _cancelTrackedTimers() {
+    const list = this._trackedTimers || [];
+    for (const ev of list) {
+      try {
+        if (ev && typeof ev.remove === "function") ev.remove(false);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    this._trackedTimers = [];
+  }
+
+  /**
+   * U14：仅清「目标已销毁」的孤儿 tween；不动仍在播/无限呼吸与选中脉动。
+   */
+  _pruneFx() {
+    if (!this.tweens || typeof this.tweens.getTweens !== "function") return;
+    const all = this.tweens.getTweens();
+    for (const tw of all) {
+      if (!tw) continue;
+      const targets = tw.targets || [];
+      if (!targets.length) continue;
+      let alive = false;
+      for (const t of targets) {
+        if (t && t.active !== false) {
+          alive = true;
+          break;
+        }
+      }
+      if (alive) continue;
+      try {
+        if (typeof tw.stop === "function") tw.stop();
+        if (typeof tw.remove === "function") tw.remove();
+      } catch (_) {
+        /* ignore */
+      }
+    }
   }
 
   /**
    * @param {object} view
+   * U14：固定对象池刷新尾部行；脏键只取近期，不随全量 log 变卡。
    */
   syncLog(view, opts = {}) {
     if (!this._logRoot) return;
 
     const force = !!(opts && opts.force);
     const lines = (view && view.log) || [];
-    const key = lines.map((l) => `${l.kind}|${l.text}`).join("\n");
-    const changed = key !== this._lastLogKey;
     const hud = this._hud || computeHud(this._viewW, this._viewH);
+    const tailKey = lines
+      .slice(-LOG_KEY_TAIL)
+      .map((l) => `${l.kind}|${l.text}`)
+      .join("\n");
+    const key = `${lines.length}|${hud.logW}x${hud.logH}|${tailKey}`;
+    const changed = key !== this._lastLogKey;
     if (!changed && !force) {
       if (this._logRoot.alpha < 1) this._logRoot.setAlpha(1);
       return;
     }
     this._lastLogKey = key;
 
-    this._logRoot.removeAll(true);
-
     const logW = hud.logW;
     const logH = hud.logH;
     this._logRoot.setPosition(hud.logX, hud.logY);
 
-    // U8：半透明右侧底栏，不挡中左主舞台角色
-    const bg = this.add
-      .rectangle(0, 0, logW, logH, 0x0e0c0a, 0.78)
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
-    bg.setStrokeStyle(1, 0xd9d2c4, 0.4);
-    this._logRoot.add(bg);
-
-    const title = this.add
-      .text(8, 4, "对话 / 反馈", {
-        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "11px",
-        color: "#ffe066",
-        fontStyle: "bold",
-      })
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
-    this._logRoot.add(title);
-
-    if (!lines.length) {
+    // 首次：建池（bg/title/empty + LOG_DISPLAY_MAX 行）
+    if (!this._logPool) {
+      const bg = this.add
+        .rectangle(0, 0, logW, logH, 0x0e0c0a, 0.78)
+        .setOrigin(0, 0)
+        .setScrollFactor(0);
+      bg.setStrokeStyle(1, 0xd9d2c4, 0.4);
+      const title = this.add
+        .text(8, 4, "对话 / 反馈", {
+          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+          fontSize: "11px",
+          color: "#ffe066",
+          fontStyle: "bold",
+        })
+        .setOrigin(0, 0)
+        .setScrollFactor(0);
       const empty = this.add
         .text(8, 20, "还没有发生的事。", {
           fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
@@ -1359,11 +1538,59 @@ export class TownScene extends Phaser.Scene {
         })
         .setOrigin(0, 0)
         .setScrollFactor(0);
+      const rows = [];
+      for (let i = 0; i < LOG_DISPLAY_MAX; i++) {
+        const bar = this.add
+          .rectangle(5, 18, 2, 12, 0x666666, 0.9)
+          .setOrigin(0, 0)
+          .setScrollFactor(0)
+          .setVisible(false);
+        const t = this.add
+          .text(11, 18, "", {
+            fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+            fontSize: "10px",
+            color: "#fffdf8",
+            wordWrap: { width: logW - 20 },
+          })
+          .setOrigin(0, 0)
+          .setScrollFactor(0)
+          .setVisible(false);
+        rows.push({ bar, text: t });
+      }
+      this._logRoot.removeAll(true);
+      this._logRoot.add(bg);
+      this._logRoot.add(title);
       this._logRoot.add(empty);
+      for (const r of rows) {
+        this._logRoot.add(r.bar);
+        this._logRoot.add(r.text);
+      }
+      this._logPool = { bg, title, empty, rows };
+      this._pinHud(this._logRoot);
+    }
+
+    const pool = this._logPool;
+    pool.bg.setDisplaySize(logW, logH);
+    pool.title.setText("对话 / 反馈");
+
+    const display = lines.slice(-LOG_DISPLAY_MAX);
+    if (!display.length) {
+      pool.empty.setVisible(true);
+      for (const r of pool.rows) {
+        r.bar.setVisible(false);
+        r.text.setVisible(false);
+      }
     } else {
-      const tail = lines.slice(-4);
+      pool.empty.setVisible(false);
       let y = 18;
-      for (const line of tail) {
+      for (let i = 0; i < pool.rows.length; i++) {
+        const r = pool.rows[i];
+        if (i >= display.length || y > logH - 8) {
+          r.bar.setVisible(false);
+          r.text.setVisible(false);
+          continue;
+        }
+        const line = display[i];
         const kind = line.kind || "system";
         const color =
           kind === "narrative"
@@ -1373,23 +1600,19 @@ export class TownScene extends Phaser.Scene {
               : "#fffdf8";
         const barColor =
           kind === "narrative" ? 0x2f6f4e : kind === "system" ? 0x8a7a4a : 0x666666;
-        const bar = this.add
-          .rectangle(5, y + 1, 2, 12, barColor, 0.9)
-          .setOrigin(0, 0)
-          .setScrollFactor(0);
-        const t = this.add
-          .text(11, y, line.text || "", {
-            fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-            fontSize: "10px",
-            color,
-            wordWrap: { width: logW - 20 },
-          })
-          .setOrigin(0, 0)
-          .setScrollFactor(0);
-        this._logRoot.add(bar);
-        this._logRoot.add(t);
-        y += Math.min(t.height + 3, 20);
-        if (y > logH - 8) break;
+        r.bar.setPosition(5, y + 1);
+        r.bar.setFillStyle(barColor, 0.9);
+        r.bar.setVisible(true);
+        r.text.setStyle({
+          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+          fontSize: "10px",
+          color,
+          wordWrap: { width: logW - 20 },
+        });
+        r.text.setPosition(11, y);
+        r.text.setText(line.text || "");
+        r.text.setVisible(true);
+        y += Math.min(r.text.height + 3, 20);
       }
     }
 
@@ -1409,79 +1632,7 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
-  /**
-   * 菜单按钮：视觉在 container 内；点击由 _tryMenuClick 按屏坐标处理。
-   */
-  _makeMenuButton(x, y, w, h, label, sub, onClick, fill = 0x2f6f4e) {
-    const g = this.add.container(x, y).setScrollFactor(0);
-    const bg = this.add
-      .rectangle(0, 0, w, h, fill, 0.95)
-      .setOrigin(0, 0)
-      .setScrollFactor(0);
-    bg.setStrokeStyle(1, 0xd9d2c4, 0.75);
-
-    const title = this.add
-      .text(8, sub ? 3 : h / 2, String(label || ""), {
-        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-        fontSize: "12px",
-        color: "#fffdf8",
-        wordWrap: { width: Math.max(40, w - 16) },
-      })
-      .setOrigin(0, sub ? 0 : 0.5)
-      .setScrollFactor(0);
-    g.add(bg);
-    g.add(title);
-    if (sub) {
-      const kind = this.add
-        .text(8, 19, ellipsize(sub, 22), {
-          fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
-          fontSize: "10px",
-          color: "#d9d2c4",
-        })
-        .setOrigin(0, 0)
-        .setScrollFactor(0);
-      g.add(kind);
-    }
-
-    // 点击走 _tryMenuClick（屏坐标）；悬停走 _hoverMenu
-    this._menuHits.push({ x, y, w, h, onClick, bg, g, fill });
-    return g;
-  }
-
-  _makeActor(id, label, x, y) {
-    const fill = actorFill(id);
-    const tex = ensureActorTextures(this, id, fill);
-
-    const shadow = this.add.ellipse(0, 22, 22, 8, 0x000000, 0.3);
-    const body = this.add.sprite(0, 0, tex.sheet, 0);
-    body.setScale(SPRITE_SCALE);
-    body.setData("actorId", id);
-    body.setData("face", "down");
-    body.play(animKey(id, "idle", "down"));
-
-    // U12-01：选中底盘柔光 + 双环，选中更可感且不挡命中
-    const ringFill = this.add.circle(0, 8, R + 10, 0xffe066, 0);
-    ringFill.setVisible(false);
-
-    const ring = this.add.circle(0, 4, R + 6, 0x000000, 0);
-    ring.setStrokeStyle(3, 0xffe066, 0);
-    ring.setVisible(false);
-
-    const ringOuter = this.add.circle(0, 4, R + 14, 0x000000, 0);
-    ringOuter.setStrokeStyle(2, 0xfffdf8, 0);
-    ringOuter.setVisible(false);
-
-    const arrow = this.add
-      .triangle(0, -52, 0, 0, 6, 8, -6, 8, 0xffe066, 0.95)
-      .setVisible(false);
-
-    const bubbleBg = this.add
-      .rectangle(0, -40, 8, 18, 0xfffdf8, 0.96)
-      .setStrokeStyle(1, 0x1c1a17, 0.6)
-      .setVisible(false);
-    const bubbleText = this.add
-      .text(0, -40, "", {
-        fontFamily: "PingFang SC, Noto Sans SC, sans-serif",
+ily: "PingFang SC, Noto Sans SC, sans-serif",
         fontSize: "11px",
         color: "#1c1a17",
         align: "center",
@@ -1533,32 +1684,35 @@ export class TownScene extends Phaser.Scene {
 
     hit.on("pointerover", () => {
       if (id === this._selectedId) return;
-      this.tweens.add({
-        targets: node,
-        scaleX: 1.06,
-        scaleY: 1.06,
-        duration: 90,
-      });
+      // 不 killTweensOf(node)：避免打断走位 x/y tween（U14）
+      if (!node.getData("walking")) {
+        node.setScale(1.06);
+      }
     });
     hit.on("pointerout", () => {
       if (id === this._selectedId) return;
-      this.tweens.add({
-        targets: node,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 90,
-      });
+      if (!node.getData("walking")) {
+        const want = id === this._selectedId ? 1.12 : 1;
+        node.setScale(want);
+      }
     });
     hit.on("pointerdown", (pointer, _lx, _ly, event) => {
       if (event && event.stopPropagation) event.stopPropagation();
-      this.tweens.add({
-        targets: node,
-        scaleX: 0.92,
-        scaleY: 0.92,
-        duration: 70,
-        yoyo: true,
-        ease: "Quad.easeOut",
-      });
+      this.tweens.killTweensOf(ring);
+      this.tweens.killTweensOf(ringOuter);
+      this.tweens.killTweensOf(ringFill);
+      if (!node.getData("walking")) {
+        const base = id === this._selectedId ? 1.12 : 1;
+        node.setScale(base);
+        this.tweens.add({
+          targets: node,
+          scaleX: base * 0.92,
+          scaleY: base * 0.92,
+          duration: 70,
+          yoyo: true,
+          ease: "Quad.easeOut",
+        });
+      }
       ringFill.setVisible(true);
       ringFill.setFillStyle(0xffe066, 0.35);
       ringFill.setScale(1);
@@ -1590,6 +1744,13 @@ export class TownScene extends Phaser.Scene {
             ringOuter.setVisible(false);
             ringFill.setVisible(false);
             ringFill.setFillStyle(0xffe066, 0);
+          } else {
+            // 选中态交回 _paintSelected 脉动（避免点击闪后定死）
+            const n = this._sprites.get(id);
+            if (n) {
+              n.setData("selected", false);
+              this._paintSelected(n, true);
+            }
           }
         },
       });
