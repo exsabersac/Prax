@@ -7,7 +7,6 @@ import {
   setSelectHandler,
   setActHandler,
   setWaitHandler,
-  syncTown,
   syncHud,
   isMounted,
 } from "./phaser/game.js";
@@ -72,7 +71,7 @@ export function renderScene(root, view, onSelect, onAct, onWait) {
   setSelectHandler(onSelect);
   setActHandler(onAct);
   setWaitHandler(onWait);
-  syncTown(view);
+  // U13：不在此 syncTown；paint 经 pushHud 一次 syncHud，避免双次 sync 风暴
   return "phaser";
 }
 

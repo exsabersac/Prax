@@ -1,8 +1,8 @@
 /**
- * U12 TownScene：叠 U11 烘像素 + U9 表现 + U8 HUD + U7 流体 + U6 抗糊。
- * 选中环 / 菜单入场 / Act 按下反馈再精修；地图路径/路标层次再可读。
- * Menu / 叙事·tick 固定屏坐标；日志右侧底栏不挡主舞台；地名/tick/徽章分槽不回退。
- * BAKED 仍仅 you；角色只落当前 View 同场 placeId；其它区仅地标。Session/api 零改。
+ * U13 TownScene：表现层减卡（叠 U12）。
+ * 脏刷新选中/呼吸/气泡/日志/菜单；避免 paint 路径空转重绘与无限 tween 重启风暴。
+ * Act 按下立即派发（视觉压下不挡回调）；U6–U12 观感等价不故意回退。
+ * BAKED 仍仅 you；Session/api 零改。
  */
 import { actorFill, bubbleFromView } from "./actors.js";
 import {
@@ -121,6 +121,12 @@ export class TownScene extends Phaser.Scene {
     this._viewH = VIEW_H;
     this._hud = computeHud(VIEW_W, VIEW_H);
     this._layoutKey = "";
+    /** @type {string} */
+    this._lastCamBadge = "";
+    /** @type {number} */
+    this._hoverIdx = -1;
+    /** @type {string} */
+    this._lastMenuKey = "";
   }
 
   setSelectHandler(fn) {
@@ -180,7 +186,7 @@ export class TownScene extends Phaser.Scene {
       this._menuRoot.setPosition(this._hud.menuX, this._hud.menuY);
     }
     if (this._logRoot && this._lastView) {
-      this.syncLog(this._lastView);
+      this.syncLog(this._lastView, { force: true });
     } else if (this._logRoot) {
       this._logRoot.setPosition(this._hud.logX, this._hud.logY);
     }
@@ -361,18 +367,32 @@ export class TownScene extends Phaser.Scene {
     if (!this._menuRoot) return;
     const rootX = this._menuRoot.x;
     const rootY = this._menuRoot.y;
-    let any = false;
-    for (const rec of hits) {
+    let hitIdx = -1;
+    for (let i = 0; i < hits.length; i++) {
+      const rec = hits[i];
       const sx = rootX + rec.x;
       const sy = rootY + rec.y;
-      const over =
+      if (
         pointer.x >= sx &&
         pointer.x <= sx + rec.w &&
         pointer.y >= sy &&
-        pointer.y <= sy + rec.h;
+        pointer.y <= sy + rec.h
+      ) {
+        hitIdx = i;
+        break;
+      }
+    }
+    if (hitIdx === this._hoverIdx) {
+      if (this.game && this.game.canvas) {
+        this.game.canvas.style.cursor = hitIdx >= 0 ? "pointer" : "";
+      }
+      return;
+    }
+    this._hoverIdx = hitIdx;
+    for (let i = 0; i < hits.length; i++) {
+      const rec = hits[i];
       if (!rec.bg) continue;
-      if (over) {
-        any = true;
+      if (i === hitIdx) {
         rec.bg.setFillStyle(rec.fill, 1);
         rec.bg.setStrokeStyle(2, 0xffe066, 0.9);
         if (rec.g) rec.g.setScale(1.02);
@@ -383,7 +403,7 @@ export class TownScene extends Phaser.Scene {
       }
     }
     if (this.game && this.game.canvas) {
-      this.game.canvas.style.cursor = any ? "pointer" : "";
+      this.game.canvas.style.cursor = hitIdx >= 0 ? "pointer" : "";
     }
   }
 
@@ -451,6 +471,8 @@ export class TownScene extends Phaser.Scene {
             duration: 420,
           });
         }
+        // U13-02：先派发 Act，压下动画不挡回调（避免半拍延迟）
+        if (rec.onClick) rec.onClick();
         if (rec.g) {
           this.tweens.add({
             targets: rec.g,
@@ -459,12 +481,7 @@ export class TownScene extends Phaser.Scene {
             duration: 80,
             yoyo: true,
             ease: "Back.easeOut",
-            onComplete: () => {
-              if (rec.onClick) rec.onClick();
-            },
           });
-        } else if (rec.onClick) {
-          rec.onClick();
         }
         return true;
       }
@@ -496,7 +513,10 @@ export class TownScene extends Phaser.Scene {
     const tag = slim
       ? `镜头 ${px}%,${py}%`
       : `镜头 ${px}%,${py}%${scaleTag}`;
-    this._camBadge.setText(tag);
+    if (tag !== this._lastCamBadge) {
+      this._lastCamBadge = tag;
+      this._camBadge.setText(tag);
+    }
     this._refreshPlaceLabel();
   }
 
@@ -512,12 +532,16 @@ export class TownScene extends Phaser.Scene {
       (this._placeId && PLACES[this._placeId] && PLACES[this._placeId].label) ||
       this._placeId ||
       "";
+    let next = "";
     if (focus && this._placeId && focus.id !== this._placeId) {
-      this._placeLabel.setText(`所在 ${hereLabel} · 画面 ${focus.label}`);
+      next = `所在 ${hereLabel} · 画面 ${focus.label}`;
     } else if (focus && (!this._placeId || focus.id === this._placeId)) {
-      this._placeLabel.setText(hereLabel || focus.label);
+      next = hereLabel || focus.label;
     } else {
-      this._placeLabel.setText(hereLabel || "");
+      next = hereLabel || "";
+    }
+    if (this._placeLabel.text !== next) {
+      this._placeLabel.setText(next);
     }
   }
 
@@ -706,6 +730,35 @@ export class TownScene extends Phaser.Scene {
     border.lineStyle(2, 0x1a1a18, 0.55);
     border.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
     root.add(border);
+
+    // U13-03：静态世界合批成一张纹理，削减每帧 display list
+    this._flattenWorld(root);
+  }
+
+  /**
+   * 将 _worldRoot 子树烘成单图；失败则保留原对象树（观感不回退）。
+   * @param {Phaser.GameObjects.Container} root
+   */
+  _flattenWorld(root) {
+    if (!root || !this.textures) return;
+    try {
+      const key = "u13-world-bake";
+      if (this.textures.exists(key)) {
+        this.textures.remove(key);
+      }
+      const rt = this.make.renderTexture(
+        { x: 0, y: 0, width: WORLD_W, height: WORLD_H },
+        false
+      );
+      rt.draw(root);
+      rt.saveTexture(key);
+      root.removeAll(true);
+      rt.destroy();
+      const img = this.add.image(0, 0, key).setOrigin(0, 0);
+      root.add(img);
+    } catch (err) {
+      console.warn("U13 world flatten skipped", err);
+    }
   }
 
   /**
@@ -1008,7 +1061,10 @@ export class TownScene extends Phaser.Scene {
       view.playerLabel ||
       (view.playerId === "you" ? "你" : view.playerId) ||
       "你";
-    this._tickLabel.setText(`回合 ${tick} · ${player}`);
+    const tickStr = `回合 ${tick} · ${player}`;
+    if (this._tickLabel.text !== tickStr) {
+      this._tickLabel.setText(tickStr);
+    }
 
     if (this._lastTick !== null && this._lastTick !== tick) {
       this.tweens.killTweensOf(this._tickLabel);
@@ -1043,6 +1099,9 @@ export class TownScene extends Phaser.Scene {
       }
     }
 
+    // 先钉选中，供呼吸幅度 / 脏刷新使用
+    this._selectedId = view.selectedActorId || null;
+
     here.forEach((a, i) => {
       const [x, y] = worldSlot(placeId, a.id, i);
       let node = this._sprites.get(a.id);
@@ -1054,6 +1113,7 @@ export class TownScene extends Phaser.Scene {
         const dy = y - node.y;
         this._setFacing(node, dx, dy);
         this._playWalk(node, true);
+        this.tweens.killTweensOf(node);
         this.tweens.add({
           targets: node,
           x,
@@ -1064,14 +1124,14 @@ export class TownScene extends Phaser.Scene {
         });
       }
       const label = node.getData("labelText");
-      if (label && label.text !== (a.label || a.id)) {
-        label.setText(a.label || a.id);
+      const wantLabel = a.label || a.id;
+      if (label && label.text !== wantLabel) {
+        label.setText(wantLabel);
       }
-      this._paintSelected(node, a.id === view.selectedActorId);
+      this._paintSelected(node, a.id === this._selectedId);
       this._syncBubble(node, a, view, this._lastMenu);
     });
 
-    this._selectedId = view.selectedActorId || null;
     this.syncLog(view);
   }
 
@@ -1086,13 +1146,32 @@ export class TownScene extends Phaser.Scene {
       this._pendingMenu = menu;
       return;
     }
-    this.tweens.killTweensOf(this._menuRoot);
-    this._clearMenuHits();
-    this._menuRoot.removeAll(true);
 
     const hud = this._hud || computeHud(this._viewW, this._viewH);
     const menuW = hud.menuW;
     const menuY = hud.menuY;
+    const actions = (menu && menu.actions) || [];
+    const menuKey = `${(menu && menu.actorId) || ""}|${actions
+      .map((a) => `${a.id}:${a.label || ""}:${a.kind || ""}`)
+      .join(",")}|${menuW}`;
+    // 同内容且非 quiet 重布局：跳过整板重建（U13-03）
+    if (!quiet && menuKey === this._lastMenuKey && this._menuRoot.list.length) {
+      if (this._lastView && this._selectedId) {
+        const actor = (this._lastView.actors || []).find(
+          (a) => a.id === this._selectedId
+        );
+        const node = this._sprites.get(this._selectedId);
+        if (actor && node) this._syncBubble(node, actor, this._lastView, menu);
+      }
+      return;
+    }
+    this._lastMenuKey = menuKey;
+
+    this.tweens.killTweensOf(this._menuRoot);
+    this._clearMenuHits();
+    this._hoverIdx = -1;
+    this._menuRoot.removeAll(true);
+
     this._menuRoot.setPosition(hud.menuX, menuY);
 
     const bg = this.add
@@ -1130,7 +1209,6 @@ export class TownScene extends Phaser.Scene {
     this._menuRoot.add(title);
 
     let y = 30;
-    const actions = menu?.actions || [];
     if (!actions.length) {
       const empty = this.add
         .text(10, y, "此刻没有候选动作。", {
@@ -1233,17 +1311,22 @@ export class TownScene extends Phaser.Scene {
   /**
    * @param {object} view
    */
-  syncLog(view) {
+  syncLog(view, opts = {}) {
     if (!this._logRoot) return;
 
+    const force = !!(opts && opts.force);
     const lines = (view && view.log) || [];
     const key = lines.map((l) => `${l.kind}|${l.text}`).join("\n");
     const changed = key !== this._lastLogKey;
+    const hud = this._hud || computeHud(this._viewW, this._viewH);
+    if (!changed && !force) {
+      if (this._logRoot.alpha < 1) this._logRoot.setAlpha(1);
+      return;
+    }
     this._lastLogKey = key;
 
     this._logRoot.removeAll(true);
 
-    const hud = this._hud || computeHud(this._viewW, this._viewH);
     const logW = hud.logW;
     const logH = hud.logH;
     this._logRoot.setPosition(hud.logX, hud.logY);
@@ -1569,17 +1652,32 @@ export class TownScene extends Phaser.Scene {
   _syncBreath(node, on) {
     const body = node.getData("body");
     const shadow = node.getData("shadow");
+    const want = !!on;
+    const amp = want
+      ? node.getData("actorId") === this._selectedId
+        ? 1.6
+        : 1.1
+      : 0;
+    // 同状态不重启无限 tween（U13-03）
+    if (want && node.getData("breathOn") && node.getData("breathAmp") === amp) {
+      return;
+    }
+    if (!want && !node.getData("breathOn")) {
+      return;
+    }
     if (body) this.tweens.killTweensOf(body);
     if (shadow) this.tweens.killTweensOf(shadow);
-    if (!on) {
+    node.setData("breathOn", want);
+    node.setData("breathAmp", amp);
+    if (!want) {
       if (body) body.y = 0;
       if (shadow) {
         shadow.y = 22;
         shadow.setScale(1);
+        shadow.setAlpha(0.3);
       }
       return;
     }
-    const amp = node.getData("actorId") === this._selectedId ? 1.6 : 1.1;
     if (body) {
       body.y = 0;
       this.tweens.add({
@@ -1613,12 +1711,19 @@ export class TownScene extends Phaser.Scene {
     if (!bg || !tx) return;
     const text = bubbleFromView(actor, view, menu);
     if (!text) {
-      bg.setVisible(false);
-      tx.setVisible(false);
+      if (bg.visible) bg.setVisible(false);
+      if (tx.visible) tx.setVisible(false);
+      node.setData("bubbleKey", "");
       return;
     }
     // U8：完整两行量级，少截断；宽随视口但不超过主舞台
     const wrapW = Math.min(200, Math.max(120, Math.floor((this._viewW || 640) * 0.36)));
+    const arrowOn = !!(arrow && arrow.visible);
+    const bubbleKey = `${text}|${wrapW}|${arrowOn ? 1 : 0}`;
+    if (node.getData("bubbleKey") === bubbleKey && bg.visible) {
+      return;
+    }
+    node.setData("bubbleKey", bubbleKey);
     tx.setStyle({ wordWrap: { width: wrapW } });
     tx.setText(text);
     const maxW = wrapW + 20;
@@ -1626,7 +1731,7 @@ export class TownScene extends Phaser.Scene {
     const h = Math.max(tx.height + 12, 20);
     bg.setSize(w, h);
     bg.setDisplaySize(w, h);
-    const by = arrow && arrow.visible ? -(h / 2 + 54) : -(h / 2 + 36);
+    const by = arrowOn ? -(h / 2 + 54) : -(h / 2 + 36);
     bg.setY(by);
     tx.setY(by);
     bg.setVisible(true);
@@ -1650,12 +1755,20 @@ export class TownScene extends Phaser.Scene {
   }
 
   _paintSelected(node, selected) {
+    const want = !!selected;
+    const prev = !!node.getData("selected");
+    // 选中态未变：不杀/重启脉动 tween；仅校正呼吸幅度
+    if (prev === want) {
+      if (!node.getData("walking")) this._syncBreath(node, true);
+      return;
+    }
+    node.setData("selected", want);
     const ring = node.getData("ring");
     const ringOuter = node.getData("ringOuter");
     const ringFill = node.getData("ringFill");
     const arrow = node.getData("arrow");
     const name = node.getData("labelText");
-    if (selected) {
+    if (want) {
       if (ringFill) {
         ringFill.setVisible(true);
         ringFill.setFillStyle(0xffe066, 0.28);

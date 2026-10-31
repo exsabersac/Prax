@@ -1,6 +1,7 @@
 /**
- * U7：挂载 Phaser 3（流体铺满 + U6 抗糊 + U5 表现）。
- * 对外 sync(view) / syncMenu / set*Handler；resize 只重算布局，不丢 Session。
+ * U13：挂载 Phaser 3（流体铺满 + U6 抗糊 + U12 表现；减卡）。
+ * 对外 sync(view) / syncMenu / syncHud / set*Handler；resize 只重算布局，不丢 Session。
+ * paint 主路径请走 syncHud 一次，避免 syncTown+syncHud 双推。
  */
 import { BootScene } from "./BootScene.js";
 import { TownScene, TOWN_SIZE } from "./TownScene.js";
@@ -70,6 +71,12 @@ export function mountPhaser(parentEl) {
       antialias: false,
       roundPixels: true,
       powerPreference: "high-performance",
+      batchSize: 4096,
+    },
+    fps: {
+      target: 60,
+      min: 30,
+      smoothStep: true,
     },
     scale: {
       mode: Phaser.Scale.NONE,
