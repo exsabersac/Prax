@@ -107,8 +107,7 @@ flowchart TB
 
 | 路径 | 角色 |
 |------|------|
-| `rust/` | 并行 Rust 引擎（`prax-core` 等），目标与冻结 Haskell 规格位对齐；架构裁定见 `docs/rewrite/` |
-| `conformance/` | 跨实现语义账本：`HASKELL_PINS.txt`、fixtures、goldens、`KILLED.md` |
+| `conformance/` | 语义账本：`HASKELL_PINS.txt`、fixtures、goldens、`KILLED.md`（原跨实现对照残留） |
 | `web/` | 「我的小镇」等网页壳：经 JSON-lines 调 `Prax.Session`，不复制引擎语义 |
 
 ---
@@ -193,7 +192,7 @@ emptyState
 
 ---
 
-## 7. Rust / web / conformance 在仓库中的位置
+## 7. web / conformance 在仓库中的位置
 
 ```text
 Prax/
@@ -201,13 +200,12 @@ Prax/
 ├── app/Main.hs        # CLI
 ├── test/              # 规格钉与世界测试
 ├── docs/              # 原则、账本、导览、plans/specs、本文
-├── rust/              # 并行实现（prax-core, prax-worlds, …）
-├── conformance/       # 跨实现钉与金标准簿记
+├── conformance/       # 语义钉与金标准簿记
 ├── examples/          # 可编辑剧本 / 会话样例 JSON
 └── web/               # 可选 UI 壳（Session JSON-lines；勿在此复刻规则）
 ```
 
-- **改语义**：先改 Haskell + `test/` + 必要时 `docs/specs/`；Rust 侧按 `docs/rewrite/` 程序与 `conformance` 元门禁对齐。
+- **改语义**：先改 Haskell + `test/` + 必要时 `docs/specs/`。
 - **改故事**：优先只动 `Prax.Worlds.*` 或 `examples/*.json`；能下沉为可复用组合子时再进标准库模块。
 - **改 UI**：只消费 `Host` / `Session` 已暴露字段；行为争议以引擎测试为准。
 

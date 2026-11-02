@@ -3281,3 +3281,10 @@
 - **做了什么**：Host 增加全阵容/死者/实践 id 的 needle 过滤侧叶；CLI `practices|cast|dead matching <n>`；empty needle = 全集。
 - **测**：HostSpec matching 过滤 + 空针回归。
 
+
+## v597 — 移除 rust/ 并行实现
+
+- **做了什么**：删除 `rust/` 工作区（prax-core/worlds/vocab/oracle/cli/script/conformance crates）；`verify.sh` 仅保留 freeze/cabal/golden/Haskell test；`perf-table.sh`/`die-seed-sweep.sh` 改为显式失败桩；更新 `docs/architecture.md` / `PRINCIPLES.md` 路径说明。
+- **测**：不跑 cargo；Haskell 面仍以既有 Spec / cabal 路径为准。
+- **明确未做**：未删 `docs/rewrite/` 历史报告与 `oracle/` Haskell 对照面；未动 `feat/my-town`。
+
