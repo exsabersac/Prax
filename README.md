@@ -7,9 +7,12 @@
 affordance 的 **社会实践（social practices）**，以及按效用选择动作的 **自主 agent**。
 见设计文稿：
 
+- `docs/architecture.md` — **代码设计与分层架构**（模块职责、一回合数据流、不变量）。
 - `docs/research/versu-notes.md` — Versu 架构，出自 2014 IEEE 论文。
 - `docs/research/praxis-praxish-notes.md` — 排他逻辑 + Praxish 参考实现。
 - `docs/LEDGER.md` — 完整特性账本（已构建、已计划、以及研究阻塞项）。
+- `docs/PRINCIPLES.md` — 系统级原则（如一回合 ≈ 5 分钟）。
+- `docs/WALKTHROUGH.md` — 边玩边对照的导览。
 
 ## 状态
 
