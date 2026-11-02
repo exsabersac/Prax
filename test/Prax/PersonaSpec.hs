@@ -14,6 +14,7 @@ import qualified Prax.Planner as Planner
 import           Prax.Minds (selfWants)
 import           Prax.Witness (CoPresence)
 import           Prax.Deceit (lie)
+import           Prax.Derive (Axiom (..))
 import           Prax.Persona
 
 together :: CoPresence
@@ -61,7 +62,11 @@ member n = case [ c | c <- characters world, charName c == n ] of
 
 tests :: TestTree
 tests = testGroup "Prax.Persona"
-  [ testCase "bearing endows a character with the trait's desires by name" $
+  [ testCase "Trait exposes traitName / traitDesires" $ do
+      traitName plainspoken @?= "plainspoken"
+      map desireName (traitDesires plainspoken) @?= ["clean-conscience"]
+
+  , testCase "bearing endows a character with the trait's desires by name" $
       charDesires (bearing plainspoken (character "zed"))
         @?= ["clean-conscience"]
 
@@ -86,6 +91,12 @@ tests = testGroup "Prax.Persona"
       r <- try (evaluate (length (show (snd
              (cast [ Trait "two.part" [] ] [])))))
       assertBool "a trait name is a single path segment"
+        (isLeft (r :: Either ErrorCall Int))
+
+  , testCase "cast rejects a duplicate trait name loudly" $ do
+      r <- try (evaluate (length (show (snd
+             (cast [ Trait "same" [], Trait "same" [] ] [])))))
+      assertBool "duplicate trait names collide in the vocabulary"
         (isLeft (r :: Either ErrorCall Int))
 
   , testCase "cast rejects a borne trait missing from the vocabulary" $ do
@@ -139,6 +150,14 @@ tests = testGroup "Prax.Persona"
   , testCase "hasTrait / lacksTrait gate on trait facts" $ do
       hasTrait "gale" "honest" @?= Match "trait.gale.honest"
       lacksTrait "gale" "honest" @?= Not "trait.gale.honest"
+
+  , testCase "transparent / bearFromRegard axiom shapes" $ do
+      axiomWhen transparent @?=
+        [ Match "trait.M.T", Match "traitDesire.T.D", Match "character.P" ]
+      axiomThen transparent @?= [ "P.believes.desires.M.D.presumed" ]
+      let ax = bearFromRegard "thief" "hardened"
+      axiomWhen ax @?= [ Match "regards.W.O.thief" ]
+      axiomThen ax @?= [ "trait.O.hardened" ]
 
   , testCase "bearFromRegard derives trait from standing label" $ do
       let st = setAxioms [bearFromRegard "thief" "hardened"]

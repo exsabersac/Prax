@@ -590,4 +590,23 @@ tests = testGroup "Prax.Planner"
           st = setCharacters [priya, beth'] emptyState
       assertBool "dead.beth is read"
         (map intern (pathNames "dead.beth") `elem` moverReadAnchors st priya beth')
+
+  , testCase "candidateActions: dead yields []; unbound equals possibleActions; boundTo filters" $ do
+      let dead = performOutcome (Insert (deadSentence "beth")) walkedUp
+      candidateActions dead bethWantsCider @?= []
+      map gaLabel (candidateActions walkedUp bethWantsCider)
+        @?= map gaLabel (possibleActions walkedUp "beth")
+      let bound = bethWantsCider { charBoundTo = Just "tendBar" }
+          stBound = setCharacters [bound]
+                     (definePractices [tendBarP]
+                        (performOutcome (Insert "practice.tendBar.ada.customer.beth")
+                           (performOutcome (Insert "practice.tendBar.ada") emptyState)))
+      assertBool "bound tendBar keeps only tendBar actions"
+        (all ((== "tendBar") . gaPracticeId) (candidateActions stBound bound))
+      let wrong = bethWantsCider { charBoundTo = Just "nope" }
+          stWrong = setCharacters [wrong]
+                      (definePractices [tendBarP]
+                         (performOutcome (Insert "practice.tendBar.ada.customer.beth")
+                            (performOutcome (Insert "practice.tendBar.ada") emptyState)))
+      candidateActions stWrong wrong @?= []
   ]

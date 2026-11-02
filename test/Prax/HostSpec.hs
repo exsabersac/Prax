@@ -94,6 +94,19 @@ tests = testGroup "Prax.Host"
       let hits = queryViewMatching world "practice.wave"
       assertBool "wave practice in view" ("practice.wave" `elem` hits)
 
+  , testCase "empty needle matching returns full lists" $ do
+      let st = inject world [ Insert "flag.ada", Insert "note.hall" ]
+      queryMatching st "" @?= queryFacts st
+      queryViewMatching st "" @?= queryView st
+      livingMatching st "" @?= livingCast st
+      castMatching st "" @?= castNames st
+      deadMatching st "" @?= deadCast st
+      practiceNamesMatching world "" @?= practiceNames world
+      availableMatching world "ada" "" @?= available world "ada"
+      let (a0, r0) = factDeltaMatching "" st st
+          (a1, r1) = factDelta st st
+      (a0, r0) @?= (a1, r1)
+
   , testCase "factDelta, factDeltaMatching reports added and removed" $ do
       let before = inject world [ Insert "flag.ada", Insert "keep.x" ]
           after  = inject world [ Insert "keep.x", Insert "note.hall" ]
@@ -107,9 +120,17 @@ tests = testGroup "Prax.Host"
       assertBool "wave" (any ("wave" `isInfixOf`) hits)
       availableMatching world "ada" "nonexistent" @?= []
 
-  , testCase "livingMatching filters living cast by needle" $ do
-      let st = setCharacters (map character ["ana", "cara", "bob"]) emptyState
+  , testCase "livingMatching / castMatching / deadMatching / practiceNamesMatching filter by needle" $ do
+      let st0 = setCharacters (map character ["ana", "cara", "bob"]) emptyState
+          st = inject st0 [ Insert "dead.bob" ]
       livingMatching st "a" @?= ["ana", "cara"]
+      castMatching st "a" @?= ["ana", "cara"]
+      castMatching st "b" @?= ["bob"]
+      deadMatching st "b" @?= ["bob"]
+      deadMatching st "a" @?= []
+      deadMatching st "" @?= ["bob"]
+      practiceNamesMatching world "wa" @?= ["wave"]
+      practiceNamesMatching world "zzz" @?= []
 
   , testCase "factDeltaMatching filters delta by needle" $ do
       let before = inject world [ Insert "flag.ada", Insert "keep.x" ]
@@ -160,16 +181,20 @@ tests = testGroup "Prax.Host"
       assertBool "flag excluded" ("flag.x" `notElem` hits)
 
 
-  , testCase "membersOf / affiliatesOf list faction membership from the view" $ do
+  , testCase "membersOf / affiliatesOf / affiliatorsOf list faction membership from the view" $ do
       let st = inject world
                  [ Insert "member.ana!hall"
                  , Insert "member.ben!hall"
                  , Insert "member.cass!yard"
                  , Insert "affiliate.ana.guild"
-                 , Insert "affiliate.ana.choir" ]
+                 , Insert "affiliate.ana.choir"
+                 , Insert "affiliate.ben.guild" ]
       sort (membersOf st "hall") @?= ["ana", "ben"]
       membersOf st "yard" @?= ["cass"]
       sort (affiliatesOf st "ana") @?= ["choir", "guild"]
+      sort (affiliatorsOf st "guild") @?= ["ana", "ben"]
+      affiliatorsOf st "choir" @?= ["ana"]
+      affiliatorsOf st "void" @?= []
 
 
   , testCase "leadersOf lists leads.<faction>.<who> from the view" $ do
@@ -180,7 +205,7 @@ tests = testGroup "Prax.Host"
       leadersOf st "yard" @?= ["ben"]
       leadersOf st "void" @?= []
 
-  , testCase "debtsOf lists debt leaves involving who" $ do
+  , testCase "debtsOf / owedOf lists debt leaves" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "debt.ana.ben.favor"
                 , Insert "debt.cass.ana.coin"
@@ -188,6 +213,10 @@ tests = testGroup "Prax.Host"
       sort (debtsOf st "ana") @?= ["debt.ana.ben.favor", "debt.cass.ana.coin"]
       debtsOf st "dave" @?= ["debt.dave.eve.secret"]
       debtsOf st "void" @?= []
+      owedOf st "favor" @?= ["debt.ana.ben.favor"]
+      owedOf st "coin" @?= ["debt.cass.ana.coin"]
+      owedOf st "secret" @?= ["debt.dave.eve.secret"]
+      owedOf st "void" @?= []
 
   , testCase "obligationsOf lists obliged.<who>.* from the closed view" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -199,6 +228,10 @@ tests = testGroup "Prax.Host"
         ["obliged.ana.settle.up", "obliged.ana.whenAt.bar.greet.ben"]
       obligationsOf st "ben" @?= ["obliged.ben.tip.carol"]
       obligationsOf st "void" @?= []
+      obligedAsOf st "settle.up" @?= ["obliged.ana.settle.up"]
+      obligedAsOf st "whenAt.bar.greet.ben" @?= ["obliged.ana.whenAt.bar.greet.ben"]
+      obligedAsOf st "tip.carol" @?= ["obliged.ben.tip.carol"]
+      obligedAsOf st "void" @?= []
 
   , testCase "breachesOf lists violated.<who>.* from the closed view" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -209,6 +242,10 @@ tests = testGroup "Prax.Host"
       sort (breachesOf st "ana") @?= ["violated.ana.queue", "violated.ana.tipping"]
       breachesOf st "ben" @?= ["violated.ben.courtesy"]
       breachesOf st "void" @?= []
+      violatedAsOf st "tipping" @?= ["violated.ana.tipping"]
+      violatedAsOf st "queue" @?= ["violated.ana.queue"]
+      violatedAsOf st "courtesy" @?= ["violated.ben.courtesy"]
+      violatedAsOf st "void" @?= []
 
   , testCase "feelingsOf / liesOf / chattedWithOf list who-prefixed leaves" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -221,12 +258,18 @@ tests = testGroup "Prax.Host"
                 , Insert "flag.x" ]
       sort (feelingsOf st "ana") @?= ["ana.feels.afraid", "ana.feels.angry.toward.ben"]
       feelingsOf st "ben" @?= ["ben.feels.happy"]
+      feltOf st "afraid" @?= ["ana.feels.afraid"]
+      feltOf st "happy" @?= ["ben.feels.happy"]
+      feltOf st "angry.toward.ben" @?= ["ana.feels.angry.toward.ben"]
+      feltOf st "void" @?= []
       liesOf st "ana" @?= ["ana.lied.ben.stole.loaf"]
       liesOf st "void" @?= []
+      liedOf st "stole.loaf" @?= ["ana.lied.ben.stole.loaf"]
+      liedOf st "void" @?= []
       chattedWithOf st "ana" @?= ["ana.chattedWith.ben"]
       chattedWithOf st "cass" @?= ["cass.chattedWith.ana"]
 
-  , testCase "regardsToward / factionsNamed from the view" $ do
+  , testCase "regardsToward / regardsAsOf / factionsNamed from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "regards.dave.bob.thief"
                 , Insert "regards.fran.bob.thief"
@@ -236,9 +279,12 @@ tests = testGroup "Prax.Host"
                 , Insert "leads.guild!ana" ]
       regardsToward st "bob" @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
       regardsToward st "eve" @?= ["regards.dave.eve.hero"]
+      regardsAsOf st "thief" @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      regardsAsOf st "hero" @?= ["regards.dave.eve.hero"]
+      regardsAsOf st "void" @?= []
       factionsNamed st @?= ["choir", "guild", "mill"]
 
-  , testCase "traitsOf / moodsOf / bondsOf / kinOf / notoriousOf from the view" $ do
+  , testCase "traitsOf / traitedOf / moodsOf / moodedOf / bondsOf / kinOf / notoriousOf / notorietiesOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "trait.ana.brave"
                 , Insert "trait.ana.stubborn"
@@ -252,22 +298,35 @@ tests = testGroup "Prax.Host"
                 , Insert "sibling.ben.dave"
                 , Insert "notorious.ana.thief"
                 , Insert "notorious.ben.liar"
+                , Insert "notorious.cass.thief"
                 , Insert "flag.x" ]
       sort (traitsOf st "ana") @?= ["trait.ana.brave", "trait.ana.stubborn"]
       traitsOf st "ben" @?= ["trait.ben.shy"]
       traitsOf st "void" @?= []
+      traitedOf st "brave" @?= ["trait.ana.brave"]
+      traitedOf st "shy" @?= ["trait.ben.shy"]
+      traitedOf st "void" @?= []
       moodsOf st "ana" @?= ["mood.ana.calm"]
       moodsOf st "ben" @?= ["mood.ben.angry"]
+      moodedOf st "calm" @?= ["mood.ana.calm"]
+      moodedOf st "angry" @?= ["mood.ben.angry"]
+      moodedOf st "void" @?= []
       bondsOf st "ana" @?= ["bond.ana.ben.friends"]
       bondsOf st "cass" @?= ["bond.cass.dave.rivals"]
+      bondedOf st "friends" @?= ["bond.ana.ben.friends"]
+      bondedOf st "rivals" @?= ["bond.cass.dave.rivals"]
+      bondedOf st "void" @?= []
       sort (kinOf st "ana") @?= ["married.ana.ben", "parent.ana.cara"]
       sort (kinOf st "ben") @?= ["married.ana.ben", "sibling.ben.dave"]
       kinOf st "cara" @?= ["parent.ana.cara"]
       notoriousOf st "ana" @?= ["notorious.ana.thief"]
       notoriousOf st "ben" @?= ["notorious.ben.liar"]
       notoriousOf st "void" @?= []
+      sort (notorietiesOf st "thief") @?= ["notorious.ana.thief", "notorious.cass.thief"]
+      notorietiesOf st "liar" @?= ["notorious.ben.liar"]
+      notorietiesOf st "void" @?= []
 
-  , testCase "esteemedOf / scornedOf / beliefsOf from the view" $ do
+  , testCase "esteemedOf / scornedOf / beliefsOf / believersOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "esteemed.ana.ben.hero"
                 , Insert "esteemed.ana.cass.sage"
@@ -279,14 +338,22 @@ tests = testGroup "Prax.Host"
                 , Insert "flag.x" ]
       sort (esteemedOf st "ana") @?= ["esteemed.ana.ben.hero", "esteemed.ana.cass.sage"]
       esteemedOf st "void" @?= []
+      esteemsOf st "hero" @?= ["esteemed.ana.ben.hero"]
+      esteemsOf st "sage" @?= ["esteemed.ana.cass.sage"]
+      esteemsOf st "void" @?= []
       scornedOf st "ana" @?= ["scorned.ana.dave.thief"]
       scornedOf st "ben" @?= ["scorned.ben.dave.thief"]
+      sort (scornsOf st "thief") @?= ["scorned.ana.dave.thief", "scorned.ben.dave.thief"]
+      scornsOf st "void" @?= []
       sort (beliefsOf st "ana") @?=
         ["ana.believes.at.ben.yard", "ana.believes.stole.loaf.seen"]
       beliefsOf st "ben" @?= ["ben.believes.flag.x"]
       beliefsOf st "void" @?= []
+      believersOf st "flag.x" @?= ["ben.believes.flag.x"]
+      sort (believersOf st "at.ben") @?= ["ana.believes.at.ben.yard"]
+      believersOf st "void" @?= []
 
-  , testCase "arcsOf / agesOf / projectsOf from the view" $ do
+  , testCase "arcsOf / agesOf / projectsOf / practitionersOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
                 [ Insert "ana.arc!hopeful"
                 , Insert "ben.arc!bitter"
@@ -300,8 +367,14 @@ tests = testGroup "Prax.Host"
       arcsOf st "ana" @?= ["ana.arc.hopeful"]
       arcsOf st "ben" @?= ["ben.arc.bitter"]
       arcsOf st "void" @?= []
+      arcedOf st "hopeful" @?= ["ana.arc.hopeful"]
+      arcedOf st "bitter" @?= ["ben.arc.bitter"]
+      arcedOf st "void" @?= []
       agesOf st "ana" @?= ["age.ana.32"]
       agesOf st "ben" @?= ["age.ben.18"]
+      agedOf st "32" @?= ["age.ana.32"]
+      agedOf st "18" @?= ["age.ben.18"]
+      agedOf st "void" @?= []
       sort (projectsOf st "ana") @?=
         [ "practice.bake.ana"
         , "practice.bake.ana.crew.ben"
@@ -309,6 +382,17 @@ tests = testGroup "Prax.Host"
         ]
       projectsOf st "ben" @?= ["practice.hunt.ben.did.track"]
       projectsOf st "void" @?= []
+      sort (practitionersOf st "bake") @?=
+        [ "practice.bake.ana"
+        , "practice.bake.ana.crew.ben"
+        , "practice.bake.ana.did.mix"
+        ]
+      practitionersOf st "hunt" @?= ["practice.hunt.ben.did.track"]
+      practitionersOf st "void" @?= []
+      practicedAsOf st "did.mix" @?= ["practice.bake.ana.did.mix"]
+      practicedAsOf st "crew.ben" @?= ["practice.bake.ana.crew.ben"]
+      practicedAsOf st "did.track" @?= ["practice.hunt.ben.did.track"]
+      practicedAsOf st "void" @?= []
   
   , testCase "demandedOf / festivalsOf from the view" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -323,6 +407,9 @@ tests = testGroup "Prax.Host"
         ]
       demandedOf st "ben" @?= ["demanded.ana.ben.favor"]
       demandedOf st "void" @?= []
+      demandsOf st "favor" @?= ["demanded.ana.ben.favor"]
+      demandsOf st "coin" @?= ["demanded.cai.ana.coin"]
+      demandsOf st "void" @?= []
       festivalsOf st @?= ["festival.harvest", "festival.midwinter"]
       festivalsOf emptyState @?= []
 
@@ -840,5 +927,51 @@ tests = testGroup "Prax.Host"
       scornersOf st "dave" @?= ["scorned.ana.dave.thief", "scorned.ben.dave"]
       scornersOf st "void" @?= []
 
+
+
+  , testCase "bondersOf / liarsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+                [ Insert "bond.ana.ben.friends"
+                , Insert "bond.cass.ben"
+                , Insert "eve.lied.dana.stole.carol.loaf"
+                , Insert "nia.lied.dana.took.kit.gem"
+                , Insert "flag.x" ]
+      bondersOf st "ben" @?= ["bond.ana.ben.friends", "bond.cass.ben"]
+      bondersOf st "void" @?= []
+      liarsOf st "dana" @?=
+        ["eve.lied.dana.stole.carol.loaf", "nia.lied.dana.took.kit.gem"]
+      liarsOf st "void" @?= []
+
+  , testCase "chattersOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.chattedWith.ben"
+            , Insert "cass.chattedWith.ben"
+            , Insert "dave.chattedWith.eve"
+            ]
+      chattersOf st "ben" @?= ["ana.chattedWith.ben", "cass.chattedWith.ben"]
+      chattersOf st "eve" @?= ["dave.chattedWith.eve"]
+      chattersOf st "void" @?= []
+
+  , testCase "occupantsOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "at.ana!yard"
+            , Insert "at.ben!yard"
+            , Insert "at.cass!market"
+            ]
+      occupantsOf st "yard" @?= ["at.ana.yard", "at.ben.yard"]
+      occupantsOf st "market" @?= ["at.cass.market"]
+      occupantsOf st "void" @?= []
+
+  , testCase "holdersOf / carriersOf from the view" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "holding.ana.loaf"
+            , Insert "holding.ben.loaf"
+            , Insert "carrying.cass.flour"
+            , Insert "carrying.dave.flour"
+            ]
+      holdersOf st "loaf" @?= ["holding.ana.loaf", "holding.ben.loaf"]
+      holdersOf st "void" @?= []
+      carriersOf st "flour" @?= ["carrying.cass.flour", "carrying.dave.flour"]
+      carriersOf st "void" @?= []
 
   ]

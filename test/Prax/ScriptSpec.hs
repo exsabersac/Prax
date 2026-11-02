@@ -327,6 +327,16 @@ tests = testGroup "Prax.Script"
       endingOf (iterate roundBoundary resumed !! 2) @?= Nothing        -- boundary 4
       endingOf (iterate roundBoundary resumed !! 3) @?= Just "dismissed"  -- boundary 5
 
+  , testCase "withTraits / concernedWith alone append castTraits / castDesires" $ do
+      let tonly = member "ada" `withTraits` [ "proud", "shy" ]
+          conly = member "ben" `concernedWith` [ ("trust", 7) ]
+      castTraits tonly @?= [ "proud", "shy" ]
+      castDesires tonly @?= []
+      castTraits conly @?= []
+      castDesires conly @?=
+        [ Want [ Match "Other.relationship.ben.trust.score!N"
+               , Neq "Other" "ben", Cmp Gt "N" "0" ] 7 ]
+
   , testCase "a character sketch compiles concerns to wants and traits to facts" $ do
       let cm = member "vain" `concernedWith` [ ("beauty", 50) ] `withTraits` [ "proud" ]
       castDesires cm @?=
@@ -389,12 +399,75 @@ tests = testGroup "Prax.Script"
       scenePatienceFamily @?= "scenePatience"
       currentScenePath @?= "currentScene"
 
+  , testCase "scenePatiencePath joins family.scene.junction" $ do
+      scenePatiencePath "hall" "linger" @?= "scenePatience.hall.linger"
+
   , testCase "scriptPlayer picks the playable cast member" $ do
       let sc = Script
             { scriptStart = "s"
             , scriptCast = [ member "a", player "envoy", member "b" ]
             , scriptScenes = [ scene "s" ] }
       scriptPlayer sc @?= "envoy"
+
+
+  , testCase "member / player set castPlayable; after / timeout set junctionAfter" $ do
+      let m = member "ada"
+          pl = player "envoy"
+          a = after "linger" 3 "hall"
+          tmo = timeout "dismissed" 5
+      castName m @?= "ada"
+      castPlayable m @?= False
+      castName pl @?= "envoy"
+      castPlayable pl @?= True
+      junctionName a @?= "linger"
+      junctionTo a @?= Just "hall"
+      junctionWhen a @?= []
+      junctionAfter a @?= Just 3
+      junctionName tmo @?= "dismissed"
+      junctionTo tmo @?= Nothing
+      junctionAfter tmo @?= Just 5
+
+  , testCase "scriptPlayer errors when no cast member is playable" $ do
+      let sc = Script { scriptStart = "s", scriptCast = [ member "a" ]
+                      , scriptScenes = [ scene "s" ] }
+      r <- try (evaluate (length (scriptPlayer sc)))
+      assertBool "no playable" (isLeft (r :: Either ErrorCall Int))
+
+  , testCase "wanting appends FOL wants onto castDesires" $ do
+      let cm = member "ada" `wanting` [ Want [ Match "holding.ada.cake" ] 3 ]
+      castName cm @?= "ada"
+      castPlayable cm @?= False
+      castDesires cm @?= [ Want [ Match "holding.ada.cake" ] 3 ]
+      castTraits cm @?= []
+
+  , testCase "scene defaults leave opening/setup/beats/junctions empty" $ do
+      let s = scene "foyer"
+      sceneId s @?= "foyer"
+      sceneOpening s @?= ""
+      sceneSetup s @?= []
+      sceneBeats s @?= []
+      sceneJunctions s @?= []
+
+  , testCase "beat / quip / goto / ending build Beat and Junction shapes" $ do
+      let b = beat "wave" [ Match "seen" ] [ Insert "waved" ]
+          q = quip "ada" "[Actor]: hi" [ Match "greet" ] [ Insert "said.hi" ]
+          g = goto "toHall" "hall" [ Match "leave" ]
+          e = ending "done" [ Match "finished" ]
+      beatLabel b @?= "wave"
+      beatSpeaker b @?= Nothing
+      beatConds b @?= [ Match "seen" ]
+      beatEffects b @?= [ Insert "waved" ]
+      beatLabel q @?= "[Actor]: hi"
+      beatSpeaker q @?= Just "ada"
+      beatConds q @?= [ Match "greet" ]
+      beatEffects q @?= [ Insert "said.hi" ]
+      junctionName g @?= "toHall"
+      junctionTo g @?= Just "hall"
+      junctionWhen g @?= [ Match "leave" ]
+      junctionAfter g @?= Nothing
+      junctionName e @?= "done"
+      junctionTo e @?= Nothing
+      junctionWhen e @?= [ Match "finished" ]
 
 
   ]

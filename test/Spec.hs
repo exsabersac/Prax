@@ -6,6 +6,8 @@ import qualified Prax.SymSpec
 import qualified Prax.DbSpec
 import qualified Prax.QuerySpec
 import qualified Prax.CookedSpec
+import qualified Prax.TypesSpec
+import qualified Prax.InspectSpec
 import qualified Prax.EngineSpec
 import qualified Prax.PlannerSpec
 import qualified Prax.LoopSpec
@@ -49,6 +51,7 @@ import qualified Prax.ScheduleSpec
 import qualified Prax.ScriptSpec
 import qualified Prax.Script.JsonSpec
 import qualified Prax.DirectorSpec
+import qualified Prax.PlaySpec
 import qualified Prax.VillageSpec
 import qualified Prax.SandboxSpec
 import qualified Prax.MyTownSpec
@@ -61,6 +64,8 @@ main = defaultMain $ testGroup "prax"
   , Prax.DbSpec.tests
   , Prax.QuerySpec.tests
   , Prax.CookedSpec.tests
+  , Prax.TypesSpec.tests
+  , Prax.InspectSpec.tests
   , Prax.EngineSpec.tests
   , Prax.PlannerSpec.tests
   , Prax.LoopSpec.tests
@@ -104,6 +109,7 @@ main = defaultMain $ testGroup "prax"
   , Prax.ScriptSpec.tests
   , Prax.Script.JsonSpec.tests
   , Prax.DirectorSpec.tests
+  , Prax.PlaySpec.tests
   , Prax.VillageSpec.tests
   , Prax.SandboxSpec.tests
   , Prax.MyTownSpec.tests

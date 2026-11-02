@@ -41,7 +41,7 @@
 
 ### 已记录的违规（已纠正）
 
-吸血鬼村庄骨架（`rust/prax-worlds/src/vampire.rs`）曾违反本原则：早期
+吸血鬼村庄骨架（曾在并行 Rust 世界包中）曾违反本原则：早期
 `TURN_DELAY`/`FEED_COOLDOWN = 2` 把一回合当成约 12 小时，且 `phase_clock`
 每回合翻转日↔夜。现已改为显式 `TimeScale`：
 

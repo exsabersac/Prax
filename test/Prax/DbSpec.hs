@@ -235,6 +235,51 @@ tests = testGroup "Prax.Db"
     , testCase "an interior ! (not trailing) is unaffected" $
         tokens "turn!0" @?= [("turn", Just '!'), ("0", Nothing)]
     ]
+
+  , testGroup "childKeys / isVariable / dbAsserted / dbExcl"
+    [ testCase "childKeys lists direct children of a path" $ do
+        let d = build ["at.bob!square", "at.eve!mill", "holding.bob.loaf"]
+        childKeys "at" d @?= ["bob", "eve"]
+        childKeys "holding.bob" d @?= ["loaf"]
+        childKeys "missing" d @?= []
+
+    , testCase "isVariable is uppercase-initial" $ do
+        assertBool "Who" (isVariable "Who")
+        assertBool "bob" (not (isVariable "bob"))
+        assertBool "empty" (not (isVariable ""))
+
+    , testCase "dbExcl / dbAsserted read node flags after insert" $ do
+        -- Walk to child of exclusive parent: flag!yes → child "yes" under excl parent "flag"
+        let d = build ["flag!yes", "plain.a"]
+            -- Retrieving via childKeys walk: exclusive slot under flag
+        childKeys "flag" d @?= ["yes"]
+        -- Asserted interior: insert "scaffold" then child under it leaves scaffold asserted
+        let d2 = build ["scaffold", "scaffold.leaf"]
+        assertBool "scaffold asserted endpoint survives" (exists "scaffold" d2)
+        assertBool "exclusive value present" (exists "flag!yes" d)
+        assertBool "multi sibling present" (exists "plain.a" d)
+        -- Root of emptyDb
+        assertBool "empty not excl" (not (dbExcl emptyDb))
+        assertBool "empty not asserted" (not (dbAsserted emptyDb))
+    ]
+
+  , testGroup "valToSym / insertToks / retractNames"
+    [ testCase "valToSym unwraps VSym; otherwise interns valToString" $ do
+        let s = intern "bob"
+        valToSym (VSym s) @?= s
+        valToSym (VNum 7) @?= intern "7"
+        symName (valToSym (VSet [[intern "a"]])) @?= "<Set(1)>"
+
+    , testCase "insertToks is insert without re-parsing; retractNames mirrors retract" $ do
+        let toks = internTokens "holding.bob.loaf"
+            d1 = insertToks toks emptyDb
+            d2 = insert "holding.bob.loaf" emptyDb
+        dbToSentences d1 @?= dbToSentences d2
+        assertBool "present" (exists "holding.bob.loaf" d1)
+        let d3 = retractNames (map intern ["holding", "bob", "loaf"]) d1
+        assertBool "retracted" (not (exists "holding.bob.loaf" d3))
+        dbToSentences (retract "holding.bob.loaf" d2) @?= dbToSentences d3
+    ]
   ]
 
 -- Deterministic ordering for value lists (Val has no Ord instance).

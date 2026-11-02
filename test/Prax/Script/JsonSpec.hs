@@ -10,10 +10,12 @@ import           Data.Maybe (isJust)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
-import           Prax.Query (CalcOp (..), Condition (..))
+import           Prax.Query (CalcOp (..), CmpOp (..), Condition (..))
 import           Prax.Types (Outcome (..))
 import           Prax.Script (compile, currentSceneOf, timeout)
-import           Prax.Script.Json (encodeScript, decodeScript)
+import           Prax.Script.Json (encodeScript, decodeScript, loadScript, saveScript)
+import           System.Directory (getTemporaryDirectory, removeFile)
+import           System.IO (hClose, openTempFile)
 import           Prax.Worlds.Play (playScript)
 
 tests :: TestTree
@@ -34,6 +36,32 @@ tests = testGroup "Prax.Script.Json"
   , testCase "every CalcOp round-trips through JSON, Mod included" $ do
       let cs = [ Calc "R" op "17" "5" | op <- [Add, Sub, Mul, Mod] ]
       decode (encode cs) @?= Just cs
+
+  , testCase "every CmpOp round-trips through JSON" $ do
+      let cs = [ Cmp op "A" "B" | op <- [Lt, Lte, Gt, Gte] ]
+      decode (encode cs) @?= Just cs
+
+  , testCase "unknown cmp / calc operator tags fail decode loudly" $ do
+      assertBool "bad cmp"
+        (decode "[{\"cmp\":[\"nope\",\"A\",\"B\"]}]" == (Nothing :: Maybe [Condition]))
+      assertBool "bad calc"
+        (decode "[{\"calc\":[\"R\",\"div\",\"A\",\"B\"]}]" == (Nothing :: Maybe [Condition]))
+
+  , testCase "Eq / Count / Subquery / Or / Absent / Exists round-trip through JSON" $ do
+      let cs =
+            [ Eq "A" "B"
+            , Count "N" "item.X"
+            , Subquery "S" ["find.X"] [ Match "ok.X" ]
+            , Or [ [ Match "a" ], [ Match "b" ] ]
+            , Absent [ Match "gone.X" ]
+            , Exists [ Match "here.X" ]
+            ]
+      decode (encode cs) @?= Just cs
+
+  , testCase "Insert / Delete / Call outcomes round-trip through JSON" $ do
+      decode (encode (Insert "fact.here")) @?= Just (Insert "fact.here")
+      decode (encode (Delete "fact.here")) @?= Just (Delete "fact.here")
+      decode (encode (Call "rollDie" ["Actor", "1"])) @?= Just (Call "rollDie" ["Actor", "1"])
 
   , testCase "a ForEach outcome round-trips through JSON" $ do
       let o = ForEach [ Match "at.Witness!P", Neq "Witness" "Actor" ]
@@ -101,4 +129,13 @@ tests = testGroup "Prax.Script.Json"
         Right sc -> case compile sc of
           st -> assertBool "compiles to a scene-bearing world"
                   (isJust (currentSceneOf st))
+
+  , testCase "saveScript / loadScript round-trip via a temp file" $ do
+      dir <- getTemporaryDirectory
+      (path, h) <- openTempFile dir "prax-script-.json"
+      hClose h
+      saveScript path playScript
+      got <- loadScript path
+      removeFile path
+      got @?= Right playScript
   ]

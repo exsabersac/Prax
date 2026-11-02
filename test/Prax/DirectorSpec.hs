@@ -67,4 +67,12 @@ tests = testGroup "Prax.Worlds.Bar (player-as-DM)"
       let st = direct "kindle warmth between bex and ada" barDirectorWorld
       assertBool "after the DM kindles warmth, bex may buy ada a drink"
         (any ("Buy ada a drink" `isInfixOf`) (bexCan st))
+
+  , testCase "cast a pall unsettles a patron (sad toward here) and is one-shot" $ do
+      let st = direct "cast a pall over bex" barDirectorWorld
+      assertBool "bex feels sad toward here"
+        (exists "bex.feels.sad.toward.here" (db st))
+      assertBool "the pall is one-shot for bex"
+        (null [ () | ga <- candidateActions st directorChar
+                   , "pall over bex" `isInfixOf` gaLabel ga ])
   ]

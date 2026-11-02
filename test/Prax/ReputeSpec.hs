@@ -231,4 +231,27 @@ tests = testGroup "Prax.Repute"
   , testCase "lacksRegardedAs is Not of regards path" $
       lacksRegardedAs "ada" "bex" "thief" @?= Not "regards.ada.bex.thief"
 
+  , testCase "scornStanding / esteemStanding / scornDesire / esteemDesire reject dotted segments" $ do
+      r1 <- try (evaluate (length (show (scornStanding "brute.x" "warmth" (-1) "r"))))
+      assertBool "scornStanding dotted label" (isLeft (r1 :: Either ErrorCall Int))
+      r2 <- try (evaluate (length (show (esteemStanding "hero" "warm.th" 1 "r"))))
+      assertBool "esteemStanding dotted role" (isLeft (r2 :: Either ErrorCall Int))
+      r3 <- try (evaluate (length (show (scornDesire "ana" "bru.te" 1))))
+      assertBool "scornDesire dotted label" (isLeft (r3 :: Either ErrorCall Int))
+      r4 <- try (evaluate (length (show (esteemDesire "ana" "he.ro" 1))))
+      assertBool "esteemDesire dotted label" (isLeft (r4 :: Either ErrorCall Int))
+
+  , testCase "standing aliases standingWith with no extras" $
+      standing "kicked.Brute.dog" "brute"
+        @?= standingWith "kicked.Brute.dog" [] "brute"
+
+  , testCase "standingWith threads extra guards into axiomWhen" $ do
+      let ax = standingWith "kicked.Brute.dog" [ Not "forgiven.Brute" ] "brute"
+      axiomThen ax @?= [ "regards.Regarder.Brute.brute" ]
+      assertBool "extra guard present"
+        (Not "forgiven.Brute" `elem` axiomWhen ax)
+      assertBool "belief match present"
+        (Match "Regarder.believes.kicked.Brute.dog" `elem` axiomWhen ax)
+
+
   ]

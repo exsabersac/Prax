@@ -7,7 +7,8 @@ import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
 import           Prax.Stress
 import           Prax.Script (Script(..), Scene(..), beat, compile, goto, member, player, scene)
-import           Prax.Types (PraxState)
+import           Prax.Engine (performOutcome, setCharacters)
+import           Prax.Types (PraxState, Outcome (..), character, emptyState)
 import           Prax.Worlds.Bar (barWorld)
 import           Prax.Worlds.Intrigue (intrigueWorld)
 import           Prax.Worlds.Play (playWorld)
@@ -70,4 +71,15 @@ tests = testGroup "Prax.Stress"
       let r = stressTest 80 60 (Just "marketDay") villageWorld
       assertBool "the market was observed open at least once"
         (Map.member "square" (srVisited r))
+
+  , testCase "runRandom reports endingReached and familyVisited on a tiny world" $ do
+      -- Pre-seeded ending + family member; zero-cap run still records visit, no turns.
+      let st0 = setCharacters [character "ada"] emptyState
+          st  = foldl (flip performOutcome) st0
+                  [ Insert "ending.victory", Insert "stage.lobby" ]
+          r   = runRandom 0 1 (Just "stage") st
+      runEnding r @?= Just "victory"
+      assertBool "stage visited" (Set.member "lobby" (runVisited r))
+      runTurns r @?= 0
+      runDeadEnd r @?= False
   ]

@@ -59,7 +59,7 @@ if [ -n "$untracked" ]; then
   echo "  The frozen dirs admit NO additions (a new module could be imported" >&2
   echo "  by the oracle and silently alter the reference):" >&2
   printf '    %s\n' $untracked >&2
-  echo "  Remove them — new code belongs under oracle/, rust/, or scripts/." >&2
+  echo "  Remove them — new code belongs under oracle/ or scripts/." >&2
   exit 1
 fi
 

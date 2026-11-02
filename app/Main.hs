@@ -34,7 +34,7 @@ import qualified Prax.Worlds.Village as Village
 import qualified Prax.Worlds.Sandbox as Sandbox
 import qualified Prax.Worlds.MyTown as MyTown
 import           Prax.Chronicle (askChronicle, summarize)
-import           Prax.Host (practiceNames, castNames, livingCast, deadCast, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, leadersOf, regardsOf, regardsToward, factionsNamed, debtsOf, creditorsOf, debtorsOf, obligationsOf, breachesOf, feelingsOf, liesOf, chattedWithOf, traitsOf, moodsOf, bondsOf, kinOf, notoriousOf, esteemedOf, esteemersOf, scornedOf, scornersOf, beliefsOf, arcsOf, agesOf, projectsOf, demandedOf, demandersOf, demandeesOf, festivalsOf, locationsOf, holdingOf, carryingOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
+import           Prax.Host (practiceNames, practiceNamesMatching, castNames, castMatching, livingCast, deadCast, deadMatching, queryViewMatching, queryMatching, availableMatching, livingMatching, membersOf, affiliatesOf, affiliatorsOf, leadersOf, regardsOf, regardsToward, regardsAsOf, factionsNamed, debtsOf, creditorsOf, debtorsOf, owedOf, obligationsOf, obligedAsOf, breachesOf, violatedAsOf, feelingsOf, feltOf, liesOf, liarsOf, liedOf, chattedWithOf, chattersOf, traitsOf, traitedOf, moodsOf, moodedOf, bondsOf, bondersOf, bondedOf, kinOf, notoriousOf, notorietiesOf, esteemedOf, esteemersOf, esteemsOf, scornedOf, scornersOf, scornsOf, beliefsOf, believersOf, arcsOf, arcedOf, agesOf, agedOf, projectsOf, practitionersOf, practicedAsOf, demandedOf, demandersOf, demandeesOf, demandsOf, festivalsOf, locationsOf, occupantsOf, holdingOf, holdersOf, carryingOf, carriersOf, shunnedOf, shunnersOf, threatenedOf, threatenersOf, threateneesOf, extortedOf, extortersOf, extorteesOf, compliedOf, compliersOf, complieesOf, defiedOf, defiersOf, defieesOf, brandedOf, revokedOf, revokersOf, revokeesOf, confessedOf, recantedOf, ostracizedOf, ostracizersOf, ostracizeesOf, exiledOf, denouncedOf, denouncersOf, denounceesOf, censuredOf, censurersOf, censureesOf, paradedOf, paradersOf, paradeesOf, criedOf, criersOf, crieesOf, ralliedOf, alliesOf, ralliersOf, rallieesOf, fledOf, reconciledOf, marriedOf, eyedOf, eyersOf, eyeesOf, confrontedOf, confrontersOf, confronteesOf, atonedOf, wrongedOf, wrongersOf, wrongeesOf, hungryOf, shortTemperedOf, appetiteOf, resentsOf, resentersOf, alliedOf, stallOf, siblingsOf, parentsOf, childrenOf, grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, explainActor)
 
 -- How many plies of lookahead the NPCs use.
 lookaheadDepth :: Int
@@ -86,21 +86,31 @@ runChronicle args = do
 -- @prax worlds@ — enumerate built-in storyworld names (documented CLI surface).
 -- | List top-level practice ids for a named built-in world.
 runPractices :: [String] -> IO ()
+runPractices ("matching" : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (practiceNamesMatching st needle)
 runPractices ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (practiceNames st)
 
--- | List cast names for a named built-in world (@living@ = survivors only).
+-- | List cast names for a named built-in world (@living@ = survivors only;
+-- @matching <needle>@ filters full cast).
 runCast :: [String] -> IO ()
 runCast ("living" : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (livingCast st)
+runCast ("matching" : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (castMatching st needle)
 runCast ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (castNames st)
 
--- | List dead cast names for a named built-in world.
+-- | List dead cast names (@matching <needle>@ filters).
 runDead :: [String] -> IO ()
+runDead ("matching" : needle : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (deadMatching st needle)
 runDead ws =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (deadCast st)
@@ -119,6 +129,13 @@ runAffiliates (who : ws) =
   in mapM_ putStrLn (affiliatesOf st who)
 runAffiliates _ = putStrLn "usage: prax affiliates <who> <world>"
 
+-- | List who affiliates with faction: @prax affiliators <faction> <world>@.
+runAffiliators :: [String] -> IO ()
+runAffiliators (faction : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (affiliatorsOf st faction)
+runAffiliators _ = putStrLn "usage: prax affiliators <faction> <world>"
+
 -- | List leaders of a faction: @prax leaders <faction> <world>@.
 runLeaders :: [String] -> IO ()
 runLeaders (faction : ws) =
@@ -133,15 +150,19 @@ runFactions ws =
   in mapM_ putStrLn (factionsNamed st)
 
 -- | List regards: @prax regards <who> <world>@ (outgoing);
--- @prax regards toward <target> <world>@ (incoming leaves).
+-- @prax regards toward <target> <world>@ (incoming leaves);
+-- @prax regards as <label> <world>@ (label-side leaves).
 runRegards :: [String] -> IO ()
 runRegards ("toward" : target : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (regardsToward st target)
+runRegards ("as" : label : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (regardsAsOf st label)
 runRegards (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (regardsOf st who)
-runRegards _ = putStrLn "usage: prax regards <who> <world> | prax regards toward <target> <world>"
+runRegards _ = putStrLn "usage: prax regards <who>|<toward t>|<as label> <world>"
 
 -- | List debt leaves involving a character: @prax debts <who> <world>@.
 runDebts :: [String] -> IO ()
@@ -162,19 +183,34 @@ runDebtors (who : ws) =
   in mapM_ putStrLn (debtorsOf st who)
 runDebtors _ = putStrLn "usage: prax debtors <who> <world>"
 
--- | List obligation leaves for a character: @prax obligations <who> <world>@.
+-- | List debt leaves for content: @prax owed <content> <world>@.
+runOwed :: [String] -> IO ()
+runOwed (content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (owedOf st content)
+runOwed _ = putStrLn "usage: prax owed <content> <world>"
+
+-- | List obligation leaves: @prax obligations <who> <world>@;
+-- @prax obligations as <content> <world>@.
 runObligations :: [String] -> IO ()
+runObligations ("as" : content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (obligedAsOf st content)
 runObligations (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (obligationsOf st who)
-runObligations _ = putStrLn "usage: prax obligations <who> <world>"
+runObligations _ = putStrLn "usage: prax obligations <who>|<as content> <world>"
 
--- | List breach leaves for a character: @prax breaches <who> <world>@.
+-- | List breach leaves: @prax breaches <who> <world>@;
+-- @prax breaches as <content> <world>@.
 runBreaches :: [String] -> IO ()
+runBreaches ("as" : content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (violatedAsOf st content)
 runBreaches (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (breachesOf st who)
-runBreaches _ = putStrLn "usage: prax breaches <who> <world>"
+runBreaches _ = putStrLn "usage: prax breaches <who>|<as content> <world>"
 
 -- | List feeling leaves: @prax feelings <who> <world>@.
 runFeelings :: [String] -> IO ()
@@ -183,12 +219,33 @@ runFeelings (who : ws) =
   in mapM_ putStrLn (feelingsOf st who)
 runFeelings _ = putStrLn "usage: prax feelings <who> <world>"
 
+-- | List feeling leaves for feeling name: @prax felt <feeling> <world>@.
+runFelt :: [String] -> IO ()
+runFelt (feeling : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (feltOf st feeling)
+runFelt _ = putStrLn "usage: prax felt <feeling> <world>"
+
 -- | List lie-mark leaves: @prax lies <who> <world>@.
+
+runLiars :: [String] -> IO ()
+runLiars (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (liarsOf st who)
+runLiars _ = putStrLn "usage: prax liars <who> <world>"
+
 runLies :: [String] -> IO ()
 runLies (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (liesOf st who)
 runLies _ = putStrLn "usage: prax lies <who> <world>"
+
+-- | List lie leaves for content: @prax lied <content> <world>@.
+runLied :: [String] -> IO ()
+runLied (content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (liedOf st content)
+runLied _ = putStrLn "usage: prax lied <content> <world>"
 
 -- | List chattedWith leaves: @prax chatted <who> <world>@.
 runChatted :: [String] -> IO ()
@@ -197,12 +254,26 @@ runChatted (who : ws) =
   in mapM_ putStrLn (chattedWithOf st who)
 runChatted _ = putStrLn "usage: prax chatted <who> <world>"
 
+-- | List who was chatted with by others: @prax chatters <who> <world>@.
+runChatters :: [String] -> IO ()
+runChatters (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (chattersOf st who)
+runChatters _ = putStrLn "usage: prax chatters <who> <world>"
+
 -- | List trait leaves: @prax traits <who> <world>@.
 runTraits :: [String] -> IO ()
 runTraits (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (traitsOf st who)
 runTraits _ = putStrLn "usage: prax traits <who> <world>"
+
+-- | List trait leaves for trait name: @prax traited <trait> <world>@.
+runTraited :: [String] -> IO ()
+runTraited (trait : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (traitedOf st trait)
+runTraited _ = putStrLn "usage: prax traited <trait> <world>"
 
 -- | List mood leaves: @prax moods <who> <world>@.
 runMoods :: [String] -> IO ()
@@ -211,12 +282,33 @@ runMoods (who : ws) =
   in mapM_ putStrLn (moodsOf st who)
 runMoods _ = putStrLn "usage: prax moods <who> <world>"
 
+-- | List mood leaves for mood name: @prax mooded <mood> <world>@.
+runMooded :: [String] -> IO ()
+runMooded (mood : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (moodedOf st mood)
+runMooded _ = putStrLn "usage: prax mooded <mood> <world>"
+
 -- | List bond leaves: @prax bonds <who> <world>@.
+
+runBonders :: [String] -> IO ()
+runBonders (who : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (bondersOf st who)
+runBonders _ = putStrLn "usage: prax bonders <who> <world>"
+
 runBonds :: [String] -> IO ()
 runBonds (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (bondsOf st who)
 runBonds _ = putStrLn "usage: prax bonds <who> <world>"
+
+-- | List bond leaves for label: @prax bonded <label> <world>@.
+runBonded :: [String] -> IO ()
+runBonded (label : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (bondedOf st label)
+runBonded _ = putStrLn "usage: prax bonded <label> <world>"
 
 -- | List kin leaves: @prax kin <who> <world>@.
 runKin :: [String] -> IO ()
@@ -232,6 +324,13 @@ runNotorious (who : ws) =
   in mapM_ putStrLn (notoriousOf st who)
 runNotorious _ = putStrLn "usage: prax notorious <who> <world>"
 
+-- | List notorious leaves for label: @prax notorieties <label> <world>@.
+runNotorieties :: [String] -> IO ()
+runNotorieties (label : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (notorietiesOf st label)
+runNotorieties _ = putStrLn "usage: prax notorieties <label> <world>"
+
 
 runEsteemers :: [String] -> IO ()
 runEsteemers (who : ws) =
@@ -245,6 +344,12 @@ runEsteemed (who : ws) =
   in mapM_ putStrLn (esteemedOf st who)
 runEsteemed _ = putStrLn "usage: prax esteemed <who> <world>"
 
+-- | List esteem leaves for label: @prax esteems <label> <world>@.
+runEsteems :: [String] -> IO ()
+runEsteems (label : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (esteemsOf st label)
+runEsteems _ = putStrLn "usage: prax esteems <label> <world>"
 
 runScorners :: [String] -> IO ()
 runScorners (who : ws) =
@@ -258,11 +363,25 @@ runScorned (who : ws) =
   in mapM_ putStrLn (scornedOf st who)
 runScorned _ = putStrLn "usage: prax scorned <who> <world>"
 
+-- | List scorn leaves for label: @prax scorns <label> <world>@.
+runScorns :: [String] -> IO ()
+runScorns (label : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (scornsOf st label)
+runScorns _ = putStrLn "usage: prax scorns <label> <world>"
+
 runBeliefs :: [String] -> IO ()
 runBeliefs (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (beliefsOf st who)
 runBeliefs _ = putStrLn "usage: prax beliefs <who> <world>"
+
+-- | List belief leaves matching prop: @prax believers <prop> <world>@.
+runBelievers :: [String] -> IO ()
+runBelievers (prop : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (believersOf st prop)
+runBelievers _ = putStrLn "usage: prax believers <prop> <world>"
 
 runArcs :: [String] -> IO ()
 runArcs (who : ws) =
@@ -270,17 +389,45 @@ runArcs (who : ws) =
   in mapM_ putStrLn (arcsOf st who)
 runArcs _ = putStrLn "usage: prax arcs <who> <world>"
 
+-- | List arc leaves for stage: @prax arced <stage> <world>@.
+runArced :: [String] -> IO ()
+runArced (stage : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (arcedOf st stage)
+runArced _ = putStrLn "usage: prax arced <stage> <world>"
+
 runAges :: [String] -> IO ()
 runAges (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (agesOf st who)
 runAges _ = putStrLn "usage: prax ages <who> <world>"
 
+-- | List age leaves for value: @prax aged <n> <world>@.
+runAged :: [String] -> IO ()
+runAged (n : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (agedOf st n)
+runAged _ = putStrLn "usage: prax aged <n> <world>"
+
 runProjects :: [String] -> IO ()
 runProjects (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (projectsOf st who)
 runProjects _ = putStrLn "usage: prax projects <who> <world>"
+
+-- | List practice leaves under pid: @prax practitioners <pid> <world>@.
+runPractitioners :: [String] -> IO ()
+runPractitioners (pid : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (practitionersOf st pid)
+runPractitioners _ = putStrLn "usage: prax practitioners <pid> <world>"
+
+-- | List practice leaves for action suffix: @prax practiced <suffix> <world>@.
+runPracticed :: [String] -> IO ()
+runPracticed (suffix : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (practicedAsOf st suffix)
+runPracticed _ = putStrLn "usage: prax practiced <suffix> <world>"
 
 runDemanded :: [String] -> IO ()
 runDemanded (who : ws) =
@@ -300,6 +447,13 @@ runDemandees (who : ws) =
   in mapM_ putStrLn (demandeesOf st who)
 runDemandees _ = putStrLn "usage: prax demandees <who> <world>"
 
+-- | List demand leaves for content: @prax demands <content> <world>@.
+runDemands :: [String] -> IO ()
+runDemands (content : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (demandsOf st content)
+runDemands _ = putStrLn "usage: prax demands <content> <world>"
+
 runFestivals :: [String] -> IO ()
 runFestivals ws =
   let (_, st, _) = worldNamed ws
@@ -316,17 +470,38 @@ runLocations (who : ws) =
   in mapM_ putStrLn (locationsOf st who)
 runLocations _ = putStrLn "usage: prax locations <who> <world>"
 
+-- | List occupants at place: @prax occupants <place> <world>@.
+runOccupants :: [String] -> IO ()
+runOccupants (place : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (occupantsOf st place)
+runOccupants _ = putStrLn "usage: prax occupants <place> <world>"
+
 runHolding :: [String] -> IO ()
 runHolding (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (holdingOf st who)
 runHolding _ = putStrLn "usage: prax holding <who> <world>"
 
+-- | List who holds/carries item: @prax holders <item> <world>@.
+runHolders :: [String] -> IO ()
+runHolders (item : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (holdersOf st item)
+runHolders _ = putStrLn "usage: prax holders <item> <world>"
+
 runCarrying :: [String] -> IO ()
 runCarrying (who : ws) =
   let (_, st, _) = worldNamed ws
   in mapM_ putStrLn (carryingOf st who)
 runCarrying _ = putStrLn "usage: prax carrying <who> <world>"
+
+-- | List who holds/carries item: @prax carriers <item> <world>@.
+runCarriers :: [String] -> IO ()
+runCarriers (item : ws) =
+  let (_, st, _) = worldNamed ws
+  in mapM_ putStrLn (carriersOf st item)
+runCarriers _ = putStrLn "usage: prax carriers <item> <world>"
 
 
 runShunners :: [String] -> IO ()
@@ -838,39 +1013,58 @@ usageText = unlines
   , "  prax chronicle [world] [query…]    read-only salience / events"
   , "  prax worlds                        list built-in storyworlds"
   , "  prax version                       persist format / build label"
-  , "  prax practices <world>             list top-level practice ids"
-  , "  prax cast [living] <world>         list cast (or living only)"
-  , "  prax dead <world>                  list dead cast names"
+  , "  prax practices [matching n] <world> list practice ids (optional filter)"
+  , "  prax cast [living|matching n] <world>  list cast / living / filtered"
+  , "  prax dead [matching n] <world>     list dead cast (optional filter)"
   , "  prax members <faction> <world>     list faction members"
   , "  prax affiliates <who> <world>      list character affiliates"
+  , "  prax affiliators <faction> <world>   list who affiliate with faction"
   , "  prax leaders <faction> <world>     list faction leaders"
   , "  prax factions <world>              list faction names in view"
-  , "  prax regards <who>|<toward t> <world>  list regards leaves"
+  , "  prax regards <who>|<toward t>|<as l> <world>  list regards leaves"
   , "  prax debts <who> <world>               list debt leaves involving who"
-  , "  prax obligations <who> <world>         list obligation leaves for who"
-  , "  prax breaches <who> <world>            list violation leaves for who"
+  , "  prax owed <content> <world>            list debt.*.*.<content> leaves"
+  , "  prax obligations <who>|<as c> <world>  list obligation / content leaves"
+  , "  prax breaches <who>|<as c> <world>     list violation / content leaves"
   , "  prax feelings <who> <world>            list feeling leaves for who"
+  , "  prax felt <feeling> <world>            list <who>.feels.<feeling> leaves"
   , "  prax lies <who> <world>                list lie-mark leaves for who"
+  , "  prax liars <who> <world>              list *.lied.<who>.* leaves"
   , "  prax chatted <who> <world>             list chattedWith leaves for who"
+  , "  prax chatters <who> <world>            list *.chattedWith.<who> leaves"
   , "  prax traits <who> <world>              list trait leaves for who"
+  , "  prax traited <trait> <world>     list trait.*.<trait> leaves"
   , "  prax moods <who> <world>               list mood leaves for who"
+  , "  prax mooded <mood> <world>      list mood.*.<mood> leaves"
   , "  prax bonds <who> <world>               list bond leaves for who"
+  , "  prax bonders <who> <world>            list bond.*.<who>.* leaves"
+  , "  prax bonded <label> <world>           list bond.*.*.<label> leaves"
   , "  prax kin <who> <world>                 list kin leaves involving who"
   , "  prax notorious <who> <world>           list notoriety leaves for who"
+  , "  prax notorieties <label> <world> list notorious.*.<label> leaves"
   , "  prax esteemed <who> <world>            list esteemed leaves for who"
   , "  prax esteemers <who> <world>          list esteemed.*.<who>.* leaves"
+  , "  prax esteems <label> <world>          list esteemed.*.*.<label> leaves"
   , "  prax scorned <who> <world>             list scorned leaves for who"
   , "  prax scorners <who> <world>           list scorned.*.<who>.* leaves"
+  , "  prax scorns <label> <world>           list scorned.*.*.<label> leaves"
   , "  prax beliefs <who> <world>             list belief leaves for who"
+  , "  prax believers <prop> <world>   list *.believes.<prop>… leaves"
   , "  prax arcs <who> <world>                list arc stage leaves for who"
+  , "  prax arced <stage> <world>             list <who>.arc.<stage> leaves"
   , "  prax ages <who> <world>                list age leaves for who"
+  , "  prax aged <n> <world>                  list age.*.<n> leaves"
   , "  prax projects <who> <world>            list practice instance leaves for who"
+  , "  prax practitioners <pid> <world>  list practice.<pid>.* leaves"
   , "  prax demanded <who> <world>            list demand leaves involving who"
   , "  prax festivals <world>                 list open festival leaves"
   , "  prax stall <world>                     list stall.<item> inventory leaves"
   , "  prax locations <who> <world>           list at.<who>.* location leaves"
+  , "  prax occupants <place> <world>          list at.*.<place> leaves"
   , "  prax holding <who> <world>             list holding.<who>.* leaves"
+  , "  prax holders <item> <world>            list holding.*.<item> leaves"
   , "  prax carrying <who> <world>            list carrying.<who>.* leaves"
+  , "  prax carriers <item> <world>           list carrying.*.<item> leaves"
   , "  prax shunned <who> <world>             list shunned.<who>.* leaves"
   , "  prax threatened <who> <world>          list threatened leaves involving who"
   , "  prax extorted <who> <world>            list extorted leaves involving who"
@@ -943,38 +1137,60 @@ main = do
     ("dead" : ws)      -> runDead ws
     ("members" : ws)   -> runMembers ws
     ("affiliates" : ws) -> runAffiliates ws
+    ("affiliators" : ws) -> runAffiliators ws
     ("leaders" : ws)   -> runLeaders ws
     ("factions" : ws)  -> runFactions ws
     ("regards" : ws)   -> runRegards ws
     ("debts" : ws)     -> runDebts ws
+    ("owed" : ws)      -> runOwed ws
     ("creditors" : ws) -> runCreditors ws
     ("debtors" : ws)   -> runDebtors ws
     ("obligations" : ws) -> runObligations ws
     ("breaches" : ws)  -> runBreaches ws
     ("feelings" : ws) -> runFeelings ws
+    ("felt" : ws)     -> runFelt ws
     ("lies" : ws)     -> runLies ws
+    ("liars" : ws)     -> runLiars ws
+    ("lied" : ws)      -> runLied ws
     ("chatted" : ws)  -> runChatted ws
+    ("chatters" : ws) -> runChatters ws
     ("traits" : ws)   -> runTraits ws
+    ("traited" : ws) -> runTraited ws
     ("moods" : ws)    -> runMoods ws
+    ("mooded" : ws) -> runMooded ws
     ("bonds" : ws)    -> runBonds ws
+    ("bonders" : ws)   -> runBonders ws
+    ("bonded" : ws)    -> runBonded ws
     ("kin" : ws)      -> runKin ws
     ("notorious" : ws) -> runNotorious ws
+    ("notorieties" : ws) -> runNotorieties ws
     ("esteemed" : ws) -> runEsteemed ws
     ("esteemers" : ws) -> runEsteemers ws
+    ("esteems" : ws)  -> runEsteems ws
     ("scorned" : ws)  -> runScorned ws
     ("scorners" : ws)  -> runScorners ws
+    ("scorns" : ws)    -> runScorns ws
     ("beliefs" : ws)  -> runBeliefs ws
+    ("believers" : ws) -> runBelievers ws
     ("arcs" : ws)     -> runArcs ws
+    ("arced" : ws)    -> runArced ws
     ("ages" : ws)     -> runAges ws
+    ("aged" : ws)     -> runAged ws
     ("projects" : ws) -> runProjects ws
+    ("practitioners" : ws) -> runPractitioners ws
+    ("practiced" : ws)  -> runPracticed ws
     ("demanded" : ws) -> runDemanded ws
     ("demanders" : ws) -> runDemanders ws
     ("demandees" : ws) -> runDemandees ws
+    ("demands" : ws)  -> runDemands ws
     ("festivals" : ws) -> runFestivals ws
     ("stall" : ws)     -> runStall ws
     ("locations" : ws) -> runLocations ws
+    ("occupants" : ws) -> runOccupants ws
     ("holding" : ws)   -> runHolding ws
+    ("holders" : ws)  -> runHolders ws
     ("carrying" : ws)  -> runCarrying ws
+    ("carriers" : ws) -> runCarriers ws
     ("shunned" : ws)   -> runShunned ws
     ("shunners" : ws)  -> runShunners ws
     ("threatened" : ws) -> runThreatened ws

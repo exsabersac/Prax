@@ -142,4 +142,25 @@ tests = testGroup "Prax.Derive (m(X) closure)"
         (not (monotoneAxioms (cookAxioms [ axiom [ Count "N" "Rs", Neq "N" "3" ] [ "q.T" ] ])))
       assertBool "Eq over Match-bound names stays monotone"
         (monotoneAxioms (cookAxioms [ axiom [ Match "a.X", Match "b.Y", Eq "X" "Y" ] [ "c.X" ] ]))
+
+  , testCase "axiomHeadPatterns collects cooked head token paths" $ do
+      let rules = cookAxioms [ axiom [ Match "parent.X.Y" ] [ "elder.X", "kin.X.Y" ] ]
+          heads = axiomHeadPatterns rules
+          hasPath s = map intern (pathNames s) `elem` heads
+      assertBool "elder.X" (hasPath "elder.X")
+      assertBool "kin.X.Y" (hasPath "kin.X.Y")
+      assertBool "body not a head" (not (hasPath "parent.X.Y"))
+
+  , testCase "runCooked closes a delta exactly as closureFrom on the same base" $ do
+      -- closureFrom enters as run (model ∪ facts, delta = facts); mirror that entry.
+      let axs = [ axiom [ Match "parent.X.Y" ] [ "elder.X" ] ]
+          rules = cookAxioms axs
+          base = insertAll [ "parent.ada.bea" ] emptyDb
+          closed = either (error . show) id (closure axs base)
+          facts = [ "parent.cal.dun" ]
+          model = insertAll facts closed
+          delta = insertAll facts emptyDb
+          cont = either (error . show) id (runCooked rules model delta)
+          viaFrom = either (error . show) id (closureFrom axs closed facts)
+      dbToLabeledSentences cont @?= dbToLabeledSentences viaFrom
   ]

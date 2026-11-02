@@ -10,6 +10,7 @@ import           Prax.Query (Condition (..), CookedCondition (..))
 import           Prax.Sym (intern)
 import           Prax.Types
 import           Prax.Engine (definePractices, performOutcome, setAxioms, setDesires, possibleActions, performAction, setCharacters)
+import           Prax.Derive (Axiom (..))
 import           Prax.Minds
 import           Prax.Planner (predictMove)
 import           Prax.Rumor (gossip)
@@ -35,7 +36,14 @@ world = setDesires vocab
 
 tests :: TestTree
 tests = testGroup "Prax.Minds"
-  [ testCase "wantFor grounds the Owner variable" $
+  [ testCase "professed / conventional axiom shapes" $ do
+      axiomWhen professed @?= [ Match "professes.Owner.D", Match "character.P" ]
+      axiomThen professed @?= [ "P.believes.desires.Owner.D.presumed" ]
+      axiomWhen conventional @?=
+        [ Match "conventional.D", Match "character.P", Match "character.M" ]
+      axiomThen conventional @?= [ "P.believes.desires.M.D.presumed" ]
+
+  , testCase "wantFor grounds the Owner variable" $
       wantFor "ida" (Desire "sweet-tooth" (Want [ Match "holding.Owner.cake" ] 5))
         @?= Want [ Match "holding.ida.cake" ] 5
 

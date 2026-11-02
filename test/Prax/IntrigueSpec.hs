@@ -1,16 +1,18 @@
 module Prax.IntrigueSpec (tests) where
 
-import           Data.List (isInfixOf)
+import           Data.List (isInfixOf, sort)
+import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, assertFailure, (@?=))
 
 import           Prax.Db (dbToSentences)
-import           Prax.Types (PraxState, Outcome (..), db, gaLabel, character, practice, action, practiceId, actions)
+import           Prax.Query (Condition (..))
+import           Prax.Types (PraxState, Outcome (..), db, gaLabel, character, practice, action, practiceId, actions, characters, charName, charDesires, desires, Desire (..), Want (..), deadSentence, practiceDefs)
 import           Prax.Engine (definePractices, possibleActions, performAction, performOutcome)
 import           Prax.Loop (runNpcTicks)
 import           Prax.Inspect (explain)
 import           Prax.Planner (predictMove)
-import           Prax.Worlds.Intrigue (intrigueWorld)
+import           Prax.Worlds.Intrigue (intrigueWorld, playerName)
 
 facts :: PraxState -> [String]
 facts = dbToSentences . db
@@ -110,4 +112,18 @@ tests = testGroup "Prax.Worlds.Intrigue (a dramatic slice)"
                      (Insert "artus.believes.desires.cassia.kill-artus.heard.marcus") st
       fmap gaLabel (predictMove leaked (character "artus") (character "cassia"))
         @?= Just "cassia: slip poison into artus's cup"
+  
+  , testCase "playerName is marcus (the poet)" $
+      playerName @?= "marcus"
+
+  , testCase "cassia desires kill-artus; the world registers that named desire" $ do
+      let cassia = head [ c | c <- characters intrigueWorld, charName c == "cassia" ]
+      charDesires cassia @?= ["kill-artus"]
+      map desireName (desires intrigueWorld) @?= ["kill-artus"]
+      desireWant (head (desires intrigueWorld))
+        @?= Want [Match (deadSentence "artus")] 100
+      map charName (characters intrigueWorld) @?= ["marcus", "artus", "cassia"]
+  
+  , testCase "intrigueWorld practices are presence + plot" $
+      sort (Map.keys (practiceDefs intrigueWorld)) @?= ["plot", "presence"]
   ]

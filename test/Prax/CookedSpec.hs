@@ -4,14 +4,16 @@ import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (assertEqual, testCase, (@?=))
 
-import           Prax.Cooked (cookOutcome, groundCookedOutcome)
+import           Prax.Cooked (cookOutcome, groundCookedOutcome, cookPractice, cookFunctions, cookScheduleRule)
 import           Prax.Db (Bindings, Db, Val (..), emptyDb, insertAll)
 import           Prax.Engine (groundOutcome)
 import           Prax.Query (CalcOp (..), CmpOp (..), Condition (..), cookCondition,
                               groundCondition, groundCookedCondition, groundNames, query,
                               queryCooked)
 import           Prax.Sym (intern, symName)
-import           Prax.Types (Outcome (..))
+import           Prax.Types (Outcome (..), Practice (..), practice, Action (..), action,
+                              Function (..), FnCase (..), ScheduleRule (..),
+                              CookedPractice (..), CookedAction (..), CookedScheduleRule (..))
 
 -- A fixture exercising every pattern-bearing construct: exclusion paths,
 -- variables, negation, nested quantifiers, disjunction, subquery+count+cmp.
@@ -93,4 +95,33 @@ tests = testGroup "Prax.Cooked"
                  (cookOutcome (groundOutcome o groundBindings))
                  (groundCookedOutcome groundBindings (cookOutcome o)))
         groundFixtureOutcomes
+
+  , testCase "cookPractice cooks instance path, action conds/outs, and inits" $ do
+      let p0 = practice
+            { practiceId = "yard", roles = ["Owner"]
+            , actions = [ action "[Actor]: wave" [ Match "at.Actor!yard" ] [ Insert "waved.Actor" ] ]
+            , initOutcomes = [ Insert "yard.open" ]
+            }
+          cp = cookPractice p0
+      cpInstanceNames cp @?= map intern ["practice", "yard", "Owner"]
+      length (cpActions cp) @?= 1
+      caName (head (cpActions cp)) @?= "[Actor]: wave"
+      caConds (head (cpActions cp)) @?= [ cookCondition (Match "at.Actor!yard") ]
+      caOuts (head (cpActions cp)) @?= [ cookOutcome (Insert "waved.Actor") ]
+      cpInits cp @?= [ cookOutcome (Insert "yard.open") ]
+
+  , testCase "cookFunctions / cookScheduleRule key and cook bodies" $ do
+      let fn = Function "dbl" ["X"]
+                [ FnCase [ Match "ok.X" ] [ Insert "doubled.X" ] ]
+          m = cookFunctions [fn]
+          sr = ScheduleRule "beat" 3 [ ([ Match "go" ], [ Insert "ticked" ]) ]
+          csr = cookScheduleRule sr
+      Map.keys m @?= ["dbl"]
+      case Map.lookup "dbl" m of
+        Nothing -> assertEqual "dbl registered" True False
+        Just (params, fnCases') -> do
+          params @?= ["X"]
+          fnCases' @?= [ ([ cookCondition (Match "ok.X") ], [ cookOutcome (Insert "doubled.X") ]) ]
+      csrName csr @?= "beat"
+      csrBody csr @?= [ ([ cookCondition (Match "go") ], [ cookOutcome (Insert "ticked") ]) ]
   ]

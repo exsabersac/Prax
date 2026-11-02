@@ -1,5 +1,7 @@
 module Prax.ArcSpec (tests) where
 
+import           Control.Exception (ErrorCall, evaluate, try)
+import           Data.Either (isLeft)
 import           Data.List (isInfixOf)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
@@ -34,6 +36,14 @@ tests = testGroup "Prax.Arc"
   , testCase "leaveArc clears the stage" $ do
       let fs = run [ enterArc "bex" "hopeful", leaveArc "bex" ]
       assertBool "gone" (not (any ("bex.arc" `isInfixOf`) fs))
+
+  , testCase "adoptArc Action Not/Insert shape; dotted stage errors" $ do
+      let a = adoptArc "belonging" "[Actor]: step into belonging"
+      actionName a @?= "[Actor]: step into belonging"
+      actionConditions a @?= [ Not "Actor.arc!belonging" ]
+      actionOutcomes a @?= [ Insert "Actor.arc!belonging" ]
+      r <- try (evaluate (length (show (adoptArc "be.long" "x"))))
+      assertBool "dotted stage" (isLeft (r :: Either ErrorCall Int))
 
   , testCase "adoptArc is an Actor-scoped enter action" $ do
       let p = practice

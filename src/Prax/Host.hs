@@ -14,6 +14,24 @@
 -- v225：'arcsOf'/'agesOf'/'projectsOf' 枚举弧阶段/年龄/事业叶。
 -- v231：'demandedOf'/'festivalsOf' 催收叶与节庆叶。
 -- v244：'holdingOf'/'carryingOf'/'shunnedOf' 持有/携带/排斥叶。
+-- v523：'holdersOf'/'carriersOf' 持有/携带物品侧叶。
+-- v515：'occupantsOf' 位置目标侧叶（at.*.<place>）。
+-- v534：'affiliatorsOf' 派系次级归属人侧（affiliate.*.<faction>）。
+-- v544：'practitionersOf' 实践 id 侧叶（practice.<pid>.*）。
+-- v547：'believersOf' 信念内容侧叶（*.believes.<prop>…）。
+-- v550：'notorietiesOf' 恶名标签侧叶（notorious.*.<label>）。
+-- v553：'traitedOf' 性格标签侧叶（trait.*.<trait>）。
+-- v556：'moodedOf' 心境标签侧叶（mood.*.<mood>）。
+-- v566：'arcedOf'/'agedOf' 弧阶段/年龄值侧叶。
+-- v569：'bondedOf'/'feltOf' 纽带标签/感受标签侧叶。
+-- v572：'esteemsOf'/'scornsOf' 赞誉/蔑视标签侧叶。
+-- v575：'demandsOf' 催收内容标签侧叶。
+-- v578：'liedOf' 谎言内容标签侧叶。
+-- v582：'regardsAsOf' 站队标签侧叶。
+-- v585：'owedOf' 债务内容标签侧叶。
+-- v588：'obligedAsOf'/'violatedAsOf' 义务/违规内容标签侧叶。
+-- v592：'practicedAsOf' 实践动作后缀侧叶。
+-- v596：'castMatching'/'deadMatching'/'practiceNamesMatching' 阵容/实践名过滤。
 -- v249：'threatenedOf'/'extortedOf' 胁迫/勒索叶。
 -- v258：'compliedOf'/'defiedOf' 顺从/违抗叶。
 -- v281：'brandedOf'/'revokedOf' 烙印/撕毁协议叶（Sandbox 胁迫/沉默债）。
@@ -44,6 +62,9 @@
 -- v527：'shunnersOf' 排斥目标侧叶（shunned.*.<who>）。
 -- v531：'esteemersOf' 被赞誉侧叶（esteemed.*.<who>.*）。
 -- v533：'scornersOf' 被蔑视侧叶（scorned.*.<who>.*）。
+-- v540：'bondersOf' 纽带对象侧叶（bond.*.<who>.*）。
+-- v542：'liarsOf' 谎言听者侧叶（*.lied.<who>.*）。
+-- v504：'chattersOf' 聊天对象侧叶（*.chattedWith.<who>）。
 -- v499：'revokersOf'/'revokeesOf' 撕毁协议方叶。
 module Prax.Host
   ( step
@@ -66,24 +87,40 @@ module Prax.Host
   , livingCast
   , deadCast
   , livingMatching
+  , castMatching
+  , deadMatching
+  , practiceNamesMatching
   , practiceNames
   , regardsOf
   , membersOf
   , affiliatesOf
+  , affiliatorsOf
   , leadersOf
   , regardsToward
+  , regardsAsOf
   , factionsNamed
   , debtsOf
   , creditorsOf
   , debtorsOf
+  , owedOf
   , obligationsOf
+  , obligedAsOf
   , breachesOf
+  , violatedAsOf
   , feelingsOf
+  , feltOf
   , liesOf
+  , liarsOf
+  , liedOf
   , chattedWithOf
+  , chattersOf
   , traitsOf
+  , traitedOf
   , moodsOf
+  , moodedOf
   , bondsOf
+  , bondersOf
+  , bondedOf
   , kinOf
   , siblingsOf
   , parentsOf
@@ -93,21 +130,33 @@ module Prax.Host
   , inLawsOf
   , spousesOf
   , notoriousOf
+  , notorietiesOf
   , esteemedOf
   , esteemersOf
+  , esteemsOf
   , scornedOf
   , scornersOf
+  , scornsOf
   , beliefsOf
+  , believersOf
   , arcsOf
+  , arcedOf
   , agesOf
+  , agedOf
   , projectsOf
+  , practitionersOf
+  , practicedAsOf
   , demandedOf
   , demandersOf
   , demandeesOf
+  , demandsOf
   , festivalsOf
   , locationsOf
+  , occupantsOf
   , holdingOf
+  , holdersOf
   , carryingOf
+  , carriersOf
   , shunnedOf
   , shunnersOf
   , threatenedOf
@@ -172,7 +221,7 @@ module Prax.Host
   , restore
   ) where
 
-import           Data.List (isInfixOf, isPrefixOf, nub, sort, (\\))
+import           Data.List (intercalate, isInfixOf, isPrefixOf, nub, sort, (\\))
 import qualified Data.Map.Strict as Map
 
 import           Prax.Db (dbToSentences, exists)
@@ -292,6 +341,18 @@ deadCast st =
 livingMatching :: PraxState -> String -> [String]
 livingMatching st needle = filter (needle `isInfixOf`) (livingCast st)
 
+-- | 过滤全阵容：名含 @needle@ 的角色（含死者）。
+castMatching :: PraxState -> String -> [String]
+castMatching st needle = filter (needle `isInfixOf`) (castNames st)
+
+-- | 过滤死者阵容：名含 @needle@ 的角色。
+deadMatching :: PraxState -> String -> [String]
+deadMatching st needle = filter (needle `isInfixOf`) (deadCast st)
+
+-- | 过滤已定义实践 id：名含 @needle@ 的子集。
+practiceNamesMatching :: PraxState -> String -> [String]
+practiceNamesMatching st needle = filter (needle `isInfixOf`) (practiceNames st)
+
 -- | 闭合视图中 @who@ 发出的站队叶（@regards.<who>.*@）。
 regardsOf :: PraxState -> String -> [String]
 regardsOf st who =
@@ -326,6 +387,25 @@ affiliatesOf st who =
        | s <- queryView st, pref `isPrefixOf` s
        , '.' `notElem` drop (length pref) s ]
 
+-- | 闭合视图中次级归属 @faction@ 的角色名（@affiliate.<who>.<faction>@）。
+affiliatorsOf :: PraxState -> String -> [String]
+affiliatorsOf st faction = sort
+  [ who
+  | s <- queryView st
+  , let pref = "affiliate."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, fac) = splitLastDot rest
+  , fac == faction
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
+
 -- | 闭合视图中领导 @faction@ 的角色名（@leads.<faction>.<who>@；
 -- 排他 @!@ 在视图句子中展成 @.@）。
 leadersOf :: PraxState -> String -> [String]
@@ -352,6 +432,23 @@ regardsToward st target = sort
   , tgt == target
   , not (null (drop 1 afterTgt))  -- label nonempty
   ]
+
+-- | 闭合视图中站队标签为 @label@ 的叶（@regards.<who>.<target>.<label>@）。
+regardsAsOf :: PraxState -> String -> [String]
+regardsAsOf st label = sort
+  [ s
+  | s <- queryView st
+  , "regards." `isPrefixOf` s
+  , let rest = drop (length ("regards." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == label
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中出现的派系名（来自 @member.*.<f>@、@affiliate.*.<f>@、@leads.<f>.*@）。
 factionsNamed :: PraxState -> [String]
@@ -442,46 +539,236 @@ debtorsOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+-- | 闭合视图中债务内容为 @content@ 的叶（@debt.<creditor>.<debtor>.<content>@）。
+owedOf :: PraxState -> String -> [String]
+owedOf st content = sort
+  [ s
+  | s <- queryView st
+  , "debt." `isPrefixOf` s
+  , let rest = drop (length ("debt." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的义务叶（@obliged.<who>.*@，含 whenAt 作用域）。
 -- 与 Deontic.obligationsOf（返回内容后缀、读基库）对照：此处返回完整叶、读闭合视图，对齐 debtsOf/regardsOf。
 obligationsOf :: PraxState -> String -> [String]
 obligationsOf st who =
   sort [ s | s <- queryView st, ("obliged." ++ who ++ ".") `isPrefixOf` s ]
 
+-- | 闭合视图中义务内容为 @content@ 的叶（@obliged.<who>.<content>@）。
+obligedAsOf :: PraxState -> String -> [String]
+obligedAsOf st content = sort
+  [ s
+  | s <- queryView st
+  , "obliged." `isPrefixOf` s
+  , let rest = drop (length ("obliged." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , intercalate "." (drop 1 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的违规叶（@violated.<who>.*@）。
 breachesOf :: PraxState -> String -> [String]
 breachesOf st who =
   sort [ s | s <- queryView st, ("violated." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中违规内容为 @content@ 的叶（@violated.<who>.<content>@）。
+violatedAsOf :: PraxState -> String -> [String]
+violatedAsOf st content = sort
+  [ s
+  | s <- queryView st
+  , "violated." `isPrefixOf` s
+  , let rest = drop (length ("violated." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , intercalate "." (drop 1 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的情感叶（@<who>.feels.*@）。
 feelingsOf :: PraxState -> String -> [String]
 feelingsOf st who =
   sort [ s | s <- queryView st, (who ++ ".feels.") `isPrefixOf` s ]
 
+-- | 闭合视图中感受为 @feeling@ 的叶（@<who>.feels.<feeling>@）。
+feltOf :: PraxState -> String -> [String]
+feltOf st feeling = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "feels"
+  , intercalate "." (drop 2 parts) == feeling
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的谎言标记叶（@<who>.lied.*@）。
 liesOf :: PraxState -> String -> [String]
 liesOf st who =
   sort [ s | s <- queryView st, (who ++ ".lied.") `isPrefixOf` s ]
+
+
+-- | 闭合视图中 @who@ 作为听者的谎言叶（@<liar>.lied.<who>.*@）。
+liarsOf :: PraxState -> String -> [String]
+liarsOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "lied"
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中谎言内容为 @content@ 的叶（@<liar>.lied.<listener>.<content>@）。
+liedOf :: PraxState -> String -> [String]
+liedOf st content = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 4
+  , parts !! 1 == "lied"
+  , intercalate "." (drop 3 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 的聊天叶（@<who>.chattedWith.*@）。
 chattedWithOf :: PraxState -> String -> [String]
 chattedWithOf st who =
   sort [ s | s <- queryView st, (who ++ ".chattedWith.") `isPrefixOf` s ]
 
+
+-- | 闭合视图中 @who@ 作为聊天对象的叶（@<actor>.chattedWith.<who>@）。
+chattersOf :: PraxState -> String -> [String]
+chattersOf st who = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "chattedWith"
+  , parts !! 2 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的性格叶（@trait.<who>.*@）。
 traitsOf :: PraxState -> String -> [String]
 traitsOf st who =
   sort [ s | s <- queryView st, ("trait." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中性格标签为 @trait@ 的叶（@trait.<who>.<trait>@）。
+traitedOf :: PraxState -> String -> [String]
+traitedOf st trait = sort
+  [ s
+  | s <- queryView st
+  , let pref = "trait."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == trait
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
 
 -- | 闭合视图中 @who@ 的基线心境叶（@mood.<who>.*@；排他 @!@ 展成 @.@）。
 moodsOf :: PraxState -> String -> [String]
 moodsOf st who =
   sort [ s | s <- queryView st, ("mood." ++ who ++ ".") `isPrefixOf` s ]
 
+-- | 闭合视图中心境标签为 @mood@ 的叶（@mood.<who>.<mood>@）。
+moodedOf :: PraxState -> String -> [String]
+moodedOf st mood = sort
+  [ s
+  | s <- queryView st
+  , let pref = "mood."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == mood
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
+
 -- | 闭合视图中与 @who@ 相关的公开纽带叶（@bond.<who>.*@ 一侧）。
 bondsOf :: PraxState -> String -> [String]
 bondsOf st who =
   sort [ s | s <- queryView st, ("bond." ++ who ++ ".") `isPrefixOf` s ]
+
+
+-- | 闭合视图中 @who@ 作为纽带对象的叶（@bond.<actor>.<who>[.<label>]@）。
+bondersOf :: PraxState -> String -> [String]
+bondersOf st who = sort
+  [ s
+  | s <- queryView st
+  , "bond." `isPrefixOf` s
+  , let rest = drop (length ("bond." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中纽带标签为 @label@ 的叶（@bond.<a>.<b>.<label>@）。
+bondedOf :: PraxState -> String -> [String]
+bondedOf st label = sort
+  [ s
+  | s <- queryView st
+  , "bond." `isPrefixOf` s
+  , let rest = drop (length ("bond." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == label
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中与 @who@ 相关的亲属叶（married/parent/sibling/inLaw/grandparent 任一侧）。
 kinOf :: PraxState -> String -> [String]
@@ -573,6 +860,25 @@ notoriousOf :: PraxState -> String -> [String]
 notoriousOf st who =
   sort [ s | s <- queryView st, ("notorious." ++ who ++ ".") `isPrefixOf` s ]
 
+-- | 闭合视图中恶名标签为 @label@ 的叶（@notorious.<who>.<label>@）。
+notorietiesOf :: PraxState -> String -> [String]
+notorietiesOf st label = sort
+  [ s
+  | s <- queryView st
+  , let pref = "notorious."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == label
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
+
 -- | 闭合视图中 @who@ 发出的赞誉叶（@esteemed.<who>.*@）。
 esteemedOf :: PraxState -> String -> [String]
 esteemedOf st who =
@@ -589,6 +895,23 @@ esteemersOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中赞誉标签为 @label@ 的叶（@esteemed.<a>.<b>.<label>@）。
+esteemsOf :: PraxState -> String -> [String]
+esteemsOf st label = sort
+  [ s
+  | s <- queryView st
+  , "esteemed." `isPrefixOf` s
+  , let rest = drop (length ("esteemed." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == label
   ]
   where
     splitDots :: String -> [String]
@@ -619,20 +942,78 @@ scornersOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+-- | 闭合视图中蔑视标签为 @label@ 的叶（@scorned.<a>.<b>.<label>@）。
+scornsOf :: PraxState -> String -> [String]
+scornsOf st label = sort
+  [ s
+  | s <- queryView st
+  , "scorned." `isPrefixOf` s
+  , let rest = drop (length ("scorned." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == label
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的信念叶（@<who>.believes.*@）。
 beliefsOf :: PraxState -> String -> [String]
 beliefsOf st who =
   sort [ s | s <- queryView st, (who ++ ".believes.") `isPrefixOf` s ]
+
+-- | 闭合视图中信念内容含 @prop@ 的叶（@*.believes.<prop>…@）。
+believersOf :: PraxState -> String -> [String]
+believersOf st prop =
+  let marker = ".believes." ++ prop
+  in sort [ s | s <- queryView st, marker `isInfixOf` s ]
 
 -- | 闭合视图中 @who@ 的弧阶段叶（@<who>.arc.*@；排他 @!@ 展成 @.@）。
 arcsOf :: PraxState -> String -> [String]
 arcsOf st who =
   sort [ s | s <- queryView st, (who ++ ".arc.") `isPrefixOf` s ]
 
+-- | 闭合视图中弧阶段为 @stage@ 的叶（@<who>.arc.<stage>@）。
+arcedOf :: PraxState -> String -> [String]
+arcedOf st stage = sort
+  [ s
+  | s <- queryView st
+  , let parts = splitDots s
+  , length parts >= 3
+  , parts !! 1 == "arc"
+  , intercalate "." (drop 2 parts) == stage
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的年龄叶（@age.<who>.*@）。
 agesOf :: PraxState -> String -> [String]
 agesOf st who =
   sort [ s | s <- queryView st, ("age." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中年龄值为 @n@ 的叶（@age.<who>.<n>@）。
+agedOf :: PraxState -> String -> [String]
+agedOf st n = sort
+  [ s
+  | s <- queryView st
+  , let pref = "age."
+  , pref `isPrefixOf` s
+  , let rest = drop (length pref) s
+  , let (who, lab) = splitLastDot rest
+  , lab == n
+  , not (null who)
+  , '.' `notElem` who
+  ]
+  where
+    splitLastDot s =
+      case break (== '.') (reverse s) of
+        (rf, '.' : rw) -> (reverse rw, reverse rf)
+        (rf, _)        -> ("", reverse rf)
 
 -- | 闭合视图中与 @who@ 相关的事业实例叶（@practice.<pid>.<who>.*@，含 crew/did）。
 projectsOf :: PraxState -> String -> [String]
@@ -644,6 +1025,29 @@ projectsOf st who = sort
   , let parts = splitDots rest
   , length parts >= 2
   , parts !! 1 == who
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
+-- | 闭合视图中实践 @pid@ 下的角色相关叶（@practice.<pid>.*@）。
+practitionersOf :: PraxState -> String -> [String]
+practitionersOf st pid =
+  let pref = "practice." ++ pid ++ "."
+  in sort [ s | s <- queryView st, pref `isPrefixOf` s ]
+
+-- | 闭合视图中实践动作后缀为 @suffix@ 的叶（@practice.<pid>.<who>.<suffix>@）。
+practicedAsOf :: PraxState -> String -> [String]
+practicedAsOf st suffix = sort
+  [ s
+  | s <- queryView st
+  , "practice." `isPrefixOf` s
+  , let rest = drop (length ("practice." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == suffix
   ]
   where
     splitDots :: String -> [String]
@@ -702,6 +1106,23 @@ demandeesOf st who = sort
       (a, '.' : b) -> a : splitDots b
       (a, _)       -> [a | not (null a)]
 
+-- | 闭合视图中催收内容为 @content@ 的叶（@demanded.<a>.<b>.<content>@）。
+demandsOf :: PraxState -> String -> [String]
+demandsOf st content = sort
+  [ s
+  | s <- queryView st
+  , "demanded." `isPrefixOf` s
+  , let rest = drop (length ("demanded." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 3
+  , intercalate "." (drop 2 parts) == content
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中开放的节庆叶（@festival.*@）。
 festivalsOf :: PraxState -> [String]
 festivalsOf st =
@@ -712,15 +1133,66 @@ locationsOf :: PraxState -> String -> [String]
 locationsOf st who =
   sort [ s | s <- queryView st, ("at." ++ who ++ ".") `isPrefixOf` s ]
 
+-- | 闭合视图中位于 @place@ 的角色叶（@at.<who>.<place>@；! 展成 .）。
+occupantsOf :: PraxState -> String -> [String]
+occupantsOf st place = sort
+  [ s
+  | s <- queryView st
+  , "at." `isPrefixOf` s
+  , let rest = drop (length ("at." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == place
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的持有叶（@holding.<who>.*@）。
 holdingOf :: PraxState -> String -> [String]
 holdingOf st who =
   sort [ s | s <- queryView st, ("holding." ++ who ++ ".") `isPrefixOf` s ]
 
+-- | 闭合视图中持有 @item@ 的角色叶（@holding.<who>.<item>@）。
+holdersOf :: PraxState -> String -> [String]
+holdersOf st item = sort
+  [ s
+  | s <- queryView st
+  , "holding." `isPrefixOf` s
+  , let rest = drop (length ("holding." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == item
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
+
 -- | 闭合视图中 @who@ 的携带叶（@carrying.<who>.*@）。
 carryingOf :: PraxState -> String -> [String]
 carryingOf st who =
   sort [ s | s <- queryView st, ("carrying." ++ who ++ ".") `isPrefixOf` s ]
+
+-- | 闭合视图中携带 @item@ 的角色叶（@carrying.<who>.<item>@）。
+carriersOf :: PraxState -> String -> [String]
+carriersOf st item = sort
+  [ s
+  | s <- queryView st
+  , "carrying." `isPrefixOf` s
+  , let rest = drop (length ("carrying." :: String)) s
+  , let parts = splitDots rest
+  , length parts >= 2
+  , parts !! 1 == item
+  ]
+  where
+    splitDots :: String -> [String]
+    splitDots s = case break (== '.') s of
+      (a, '.' : b) -> a : splitDots b
+      (a, _)       -> [a | not (null a)]
 
 -- | 闭合视图中 @who@ 发出的排斥叶（@shunned.<who>.*@）。
 shunnedOf :: PraxState -> String -> [String]

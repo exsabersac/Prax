@@ -7,7 +7,7 @@ import qualified Data.Map.Strict as Map
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, (@?=), assertBool, assertFailure)
 
-import           Prax.Db (dbToSentences, exists, pathNames)
+import           Prax.Db (dbToSentences, exists, pathNames, Val (..))
 import           Prax.Query
 import           Prax.Types
 import           Prax.Engine
@@ -393,5 +393,33 @@ tests = testGroup "Prax.Engine"
         let st2 = defineFunctions [ Function "g" [] [] ]
                     (defineFunctions [ Function "f" [] [] ] emptyState)
         Map.keys (cookedFns st2) @?= ["f", "g"]
+    ]
+
+  , testGroup "currentTurn guard"
+    [ testCase "currentTurn reads the seeded turn!0" $
+        currentTurn emptyState @?= 0
+
+    , testCase "currentTurn errors when the clock slot is missing" $ do
+        let st = performOutcome (Delete turnPath) emptyState
+        r <- try (evaluate (currentTurn st))
+        assertBool "missing clock" (isLeft (r :: Either ErrorCall Int))
+
+    , testCase "currentTurn errors when multiple turn children exist" $ do
+        let st = foldl (flip performOutcome) (performOutcome (Delete turnPath) emptyState)
+                       [ Insert "turn.0", Insert "turn.1" ]
+        r <- try (evaluate (currentTurn st))
+        assertBool "ambiguous clock" (isLeft (r :: Either ErrorCall Int))
+    ]
+
+  , testGroup "renderText"
+    [ testCase "renderText substitutes [Name] bindings; leaves unknowns bracketed" $ do
+        let b = Map.fromList
+              [ (intern "Actor", VSym (intern "ada"))
+              , (intern "R", VSym (intern "bea"))
+              ]
+        renderText "[Actor]: wave at [R]" b @?= "ada: wave at bea"
+        renderText "[Actor]: wait" Map.empty @?= "[Actor]: wait"
+        renderText "plain" b @?= "plain"
+        renderText "unterminated [Actor" b @?= "unterminated [Actor"
     ]
   ]

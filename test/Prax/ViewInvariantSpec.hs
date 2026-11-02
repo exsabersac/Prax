@@ -9,9 +9,10 @@ import           Prax.Types
 import           Prax.Engine (performOutcome)
 import           Prax.Loop (advance, npcAct)
 import           Prax.Worlds.Village (villageWorld, playerName)
-import           Prax.Worlds.Bar (barWorld)
+import           Prax.Worlds.Bar (barWorld, barDirectorWorld)
 import           Prax.Worlds.Intrigue (intrigueWorld)
 import           Prax.Worlds.Feud (feudWorld)
+import           Prax.Worlds.Play (playWorld)
 
 -- The round's core invariant: the cached view IS the closure of the base
 -- under the axioms — label-faithfully, whatever construction path built it.
@@ -67,6 +68,13 @@ tests = testGroup "Prax.ViewInvariant (readView == recomputed closure)"
 
     -- feud is the only other axiom-bearing world: it exercises the fast path
     -- and the continuation through its own pure-Match rules
+
   , testCase "feud: 20 turns, invariant after every turn" $
       firstDrift Nothing 20 feudWorld @?= Nothing
+
+  , testCase "play: 20 turns (idle marcus), invariant after every turn" $
+      firstDrift (Just "marcus") 20 playWorld @?= Nothing
+
+  , testCase "barDirectorWorld: 12 turns, invariant after every turn" $
+      firstDrift (Just "director") 12 barDirectorWorld @?= Nothing
   ]

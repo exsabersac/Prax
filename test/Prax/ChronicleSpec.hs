@@ -1,6 +1,6 @@
 module Prax.ChronicleSpec (tests) where
 
-import           Data.List (isInfixOf, isPrefixOf)
+import           Data.List (isInfixOf, isPrefixOf, sort)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.HUnit (testCase, assertBool, (@?=))
 
@@ -9,13 +9,13 @@ import           Prax.Engine (definePractices, performOutcome, setAxioms, setCha
 import           Prax.Repute (standingUnless, notoriety)
 import           Prax.Chronicle
 import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
-                             carryingOf, shunnedOf, locationsOf,
+                             carryingOf, shunnedOf, locationsOf, occupantsOf, holdersOf, carriersOf,
                              obligationsOf, breachesOf, debtsOf,
                              threatenedOf, stallOf, kinOf,
                              brandedOf, exiledOf, denouncedOf,
-                             moodsOf, arcsOf, liesOf, traitsOf,
-                             chattedWithOf, esteemedOf, scornedOf,
-                             beliefsOf, projectsOf, bondsOf,
+                             moodsOf, arcsOf, arcedOf, agesOf, agedOf, liesOf, traitsOf, traitedOf, moodedOf, feltOf, bondedOf, esteemsOf, scornsOf, demandsOf, liedOf, regardsAsOf, owedOf, obligedAsOf, violatedAsOf, practicedAsOf,
+                             chattedWithOf, chattersOf, esteemedOf, scornedOf,
+                             beliefsOf, believersOf, projectsOf, practitionersOf, bondsOf,
                              extortedOf, compliedOf, defiedOf,
                              revokedOf, confessedOf, censuredOf,
                              paradedOf, criedOf, ralliedOf,
@@ -24,10 +24,10 @@ import           Prax.Host (feelingsOf, festivalsOf, holdingOf,
                              eyedOf, confrontedOf, wrongedOf,
                              recantedOf, shortTemperedOf, appetiteOf,
                              resentsOf, alliedOf, demandedOf,
-                             notoriousOf, regardsToward, factionsNamed,
-                             membersOf, affiliatesOf, leadersOf, agesOf,
+                             notoriousOf, notorietiesOf, regardsOf, regardsToward, factionsNamed,
+                             membersOf, affiliatesOf, affiliatorsOf, leadersOf, agesOf,
                              siblingsOf, parentsOf, childrenOf,
-                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf)
+                             grandparentsOf, grandchildrenOf, inLawsOf, spousesOf, creditorsOf, debtorsOf, demandersOf, demandeesOf, threatenersOf, threateneesOf, extortersOf, extorteesOf, compliersOf, complieesOf, defiersOf, defieesOf, wrongersOf, wrongeesOf, eyersOf, eyeesOf, confrontersOf, confronteesOf, revokersOf, revokeesOf, ostracizersOf, ostracizeesOf, denouncersOf, denounceesOf, censurersOf, censureesOf, paradersOf, paradeesOf, criersOf, crieesOf, ralliersOf, rallieesOf, alliesOf, resentersOf, shunnersOf, esteemersOf, scornersOf, bondersOf, liarsOf)
 
 -- Two knowers of a kick; standing derives; notoriety at threshold 2.
 world :: PraxState
@@ -120,6 +120,8 @@ tests = testGroup "Prax.Chronicle"
                 [ Insert "leads.hall!ana"
                 , Insert "affiliate.ana.guild" ]
       askChronicle st "leads of hall" @?= ["ana leads hall"]
+      askChronicle st "leaders of hall" @?= ["ana leads hall"]
+      askChronicle st "leaders of void" @?= ["nobody leads void"]
       askChronicle st "affiliates of ana" @?= ["ana affiliates guild"]
 
 
@@ -240,7 +242,9 @@ tests = testGroup "Prax.Chronicle"
                 [ Insert "shortTempered.carol"
                 , Insert "appetite.bob" ]
       askChronicle st "shortTempered of carol" @?= ["shortTempered.carol"]
+      askChronicle st "short-tempered of carol" @?= ["shortTempered.carol"]
       askChronicle st "shortTempered of void" @?= ["void has no short-temper mark"]
+      askChronicle st "short-tempered of void" @?= ["void has no short-temper mark"]
       askChronicle st "appetite of bob" @?= ["appetite.bob"]
       askChronicle st "appetite of void" @?= ["void has no appetite mark"]
 
@@ -416,6 +420,10 @@ tests = testGroup "Prax.Chronicle"
         @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
       askChronicle st "regards toward eve" @?= ["regards.dave.eve.hero"]
       askChronicle st "regards toward void" @?= ["nobody regards void"]
+      askChronicle st "regards as thief"
+        @?= ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      askChronicle st "regards as hero" @?= ["regards.dave.eve.hero"]
+      askChronicle st "regards as void" @?= ["nobody regards as void"]
 
   , testCase "askChronicle what-factions" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -434,6 +442,7 @@ tests = testGroup "Prax.Chronicle"
             , Insert "carrying.ben.loaf"
             ]
       askChronicle st "what festivals" @?= festivalsOf st
+      askChronicle st "festivals" @?= festivalsOf st
       askChronicle st "holding of ana" @?= holdingOf st "ana"
       askChronicle st "carrying of ben" @?= carryingOf st "ben"
       askChronicle st "holding of void" @?= ["void holds nothing"]
@@ -476,6 +485,7 @@ tests = testGroup "Prax.Chronicle"
             ]
       askChronicle st "threatened of vic" @?= threatenedOf st "vic"
       askChronicle st "what is on the stall" @?= stallOf st
+      askChronicle st "stall" @?= stallOf st
       askChronicle st "kin of mia" @?= kinOf st "mia"
 
 
@@ -499,6 +509,10 @@ tests = testGroup "Prax.Chronicle"
       arcsOf st "mia" @?= ["mia.arc.hopeful"]
       askChronicle st "mood of ana" @?= ["ana mood cheerful"]
       askChronicle st "arc of mia" @?= ["mia arc hopeful"]
+      askChronicle st "moods of ana" @?= moodsOf st "ana"
+      askChronicle st "arcs of mia" @?= arcsOf st "mia"
+      askChronicle st "moods of void" @?= ["void has no mood marks"]
+      askChronicle st "arcs of void" @?= ["void has no arc marks"]
 
 
   , testCase "askChronicle lies/traits/chatted dual Host view" $ do
@@ -605,6 +619,7 @@ tests = testGroup "Prax.Chronicle"
             , Insert "appetite.bob"
             ]
       askChronicle st "shortTempered of carol" @?= shortTemperedOf st "carol"
+      askChronicle st "short-tempered of carol" @?= shortTemperedOf st "carol"
       askChronicle st "appetite of bob" @?= appetiteOf st "bob"
 
   , testCase "askChronicle resents/allied dual Host view" $ do
@@ -633,6 +648,7 @@ tests = testGroup "Prax.Chronicle"
             , Insert "leads.choir!carol"
             ]
       askChronicle st "regards toward eve" @?= regardsToward st "eve"
+      askChronicle st "regards as hero" @?= regardsAsOf st "hero"
       askChronicle st "what factions" @?= factionsNamed st
 
   , testCase "askChronicle members/affiliates/leads dual Host names" $ do
@@ -657,6 +673,8 @@ tests = testGroup "Prax.Chronicle"
             ]
       agesOf st "mia" @?= ["age.mia.17"]
       askChronicle st "age of mia" @?= ["mia age 17"]
+      askChronicle st "ages of mia" @?= agesOf st "mia"
+      askChronicle st "ages of void" @?= ["void has no age marks"]
 
   , testCase "askChronicle regards-of dual Host regardsToward phrasing" $ do
       -- Host regardsToward returns full leaves on target; Chronicle phrases observers.
@@ -668,6 +686,10 @@ tests = testGroup "Prax.Chronicle"
       regardsToward st "dog" @?= ["regards.kai.dog.victim"]
       askChronicle st "regards of eve" @?= ["dave as hero"]
       askChronicle st "regards of dog" @?= ["kai as victim"]
+      regardsOf st "dave" @?= ["regards.dave.eve.hero"]
+      askChronicle st "regards by dave" @?= regardsOf st "dave"
+      askChronicle st "regards by kai" @?= regardsOf st "kai"
+      askChronicle st "regards by void" @?= ["void regards nobody"]
 
   , testCase "askChronicle siblings dual Host siblingsOf raw leaves" $ do
       let st = foldl (flip performOutcome) emptyState
@@ -943,5 +965,386 @@ tests = testGroup "Prax.Chronicle"
       askChronicle st "esteemers of void" @?= ["void has no known esteemers"]
       askChronicle st "scorners of void" @?= ["void has no known scorners"]
 
+
+
+  , testCase "askChronicle bonders/liars dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "bond.ana.ben.friends"
+            , Insert "bond.cass.ben"
+            , Insert "eve.lied.dana.stole.carol.loaf"
+            , Insert "nia.lied.dana.took.kit.gem"
+            ]
+      bondersOf st "ben" @?= ["bond.ana.ben.friends", "bond.cass.ben"]
+      liarsOf st "dana" @?=
+        ["eve.lied.dana.stole.carol.loaf", "nia.lied.dana.took.kit.gem"]
+      askChronicle st "bonders of ben" @?=
+        ["ana bonder of ben", "cass bonder of ben"]
+      askChronicle st "liars of dana" @?=
+        ["eve liar of dana", "nia liar of dana"]
+      askChronicle st "bonders of void" @?= ["void has no known bonders"]
+      askChronicle st "liars of void" @?= ["void has no known liars"]
+
+  , testCase "askChronicle chatters dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.chattedWith.ben"
+            , Insert "cass.chattedWith.ben"
+            , Insert "dave.chattedWith.eve"
+            ]
+      chattersOf st "ben" @?= ["ana.chattedWith.ben", "cass.chattedWith.ben"]
+      askChronicle st "chatters of ben" @?=
+        ["ana chatter of ben", "cass chatter of ben"]
+      askChronicle st "chatters of eve" @?= ["dave chatter of eve"]
+      askChronicle st "chatters of void" @?= ["void has no known chatters"]
+
+  , testCase "askChronicle occupants dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "at.ana!yard"
+            , Insert "at.ben!yard"
+            , Insert "at.cass!market"
+            ]
+      occupantsOf st "yard" @?= ["at.ana.yard", "at.ben.yard"]
+      askChronicle st "occupants of yard" @?=
+        ["ana at yard", "ben at yard"]
+      askChronicle st "occupants of market" @?= ["cass at market"]
+      askChronicle st "occupants of void" @?= ["nobody is at void"]
+
+  , testCase "askChronicle holders/carriers dual Host" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "holding.ana.loaf"
+            , Insert "holding.ben.loaf"
+            , Insert "carrying.cass.flour"
+            , Insert "carrying.dave.flour"
+            ]
+      holdersOf st "loaf" @?= ["holding.ana.loaf", "holding.ben.loaf"]
+      carriersOf st "flour" @?= ["carrying.cass.flour", "carrying.dave.flour"]
+      askChronicle st "holders of loaf" @?=
+        ["ana holder of loaf", "ben holder of loaf"]
+      askChronicle st "carriers of flour" @?=
+        ["cass carrier of flour", "dave carrier of flour"]
+      askChronicle st "holders of void" @?= ["nobody holds void"]
+      askChronicle st "carriers of void" @?= ["nobody carries void"]
+
+  , testCase "affiliatorsOf / affiliators of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "affiliate.ana.guild"
+            , Insert "affiliate.ben.guild"
+            , Insert "affiliate.ana.choir"
+            ]
+      sort (affiliatorsOf st "guild") @?= ["ana", "ben"]
+      affiliatorsOf st "choir" @?= ["ana"]
+      affiliatorsOf st "void" @?= []
+      askChronicle st "affiliators of guild" @?=
+        ["ana affiliates guild", "ben affiliates guild"]
+      askChronicle st "affiliators of choir" @?=
+        ["ana affiliates choir"]
+      askChronicle st "affiliators of void" @?=
+        ["no one affiliates with void"]
+
+  , testCase "practitionersOf / practitioners of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "practice.bake.ana"
+            , Insert "practice.bake.ana.crew.ben"
+            , Insert "practice.hunt.ben.did.track"
+            ]
+      sort (practitionersOf st "bake") @?=
+        [ "practice.bake.ana"
+        , "practice.bake.ana.crew.ben"
+        ]
+      practitionersOf st "hunt" @?= ["practice.hunt.ben.did.track"]
+      practitionersOf st "void" @?= []
+      askChronicle st "practitioners of bake" @?=
+        [ "practice.bake.ana"
+        , "practice.bake.ana.crew.ben"
+        ]
+      askChronicle st "practitioners of hunt" @?=
+        ["practice.hunt.ben.did.track"]
+      askChronicle st "practitioners of void" @?=
+        ["no one is in practice void"]
+
+  , testCase "believersOf / believers of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.believes.at.ben.yard"
+            , Insert "ben.believes.flag.x"
+            , Insert "cass.believes.flag.x"
+            ]
+      believersOf st "flag.x" @?= ["ben.believes.flag.x", "cass.believes.flag.x"]
+      believersOf st "at.ben.yard" @?= ["ana.believes.at.ben.yard"]
+      believersOf st "void" @?= []
+      askChronicle st "believers of flag.x" @?=
+        ["ben.believes.flag.x", "cass.believes.flag.x"]
+      askChronicle st "believers of at.ben.yard" @?=
+        ["ana.believes.at.ben.yard"]
+      askChronicle st "believers of void" @?=
+        ["no one believes void"]
+
+  , testCase "notorietiesOf / notorieties of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "notorious.ana.thief"
+            , Insert "notorious.ben.liar"
+            , Insert "notorious.cass.thief"
+            ]
+      sort (notorietiesOf st "thief") @?=
+        ["notorious.ana.thief", "notorious.cass.thief"]
+      notorietiesOf st "liar" @?= ["notorious.ben.liar"]
+      notorietiesOf st "void" @?= []
+      askChronicle st "notorieties of thief" @?=
+        ["notorious.ana.thief", "notorious.cass.thief"]
+      askChronicle st "notorieties of liar" @?=
+        ["notorious.ben.liar"]
+      askChronicle st "notorieties of void" @?=
+        ["nobody is notorious as void"]
+
+  , testCase "traitedOf / traited of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "trait.ana.brave"
+            , Insert "trait.ben.shy"
+            , Insert "trait.cass.brave"
+            ]
+      sort (traitedOf st "brave") @?= ["trait.ana.brave", "trait.cass.brave"]
+      traitedOf st "shy" @?= ["trait.ben.shy"]
+      traitedOf st "void" @?= []
+      askChronicle st "traited of brave" @?=
+        ["trait.ana.brave", "trait.cass.brave"]
+      askChronicle st "traited of shy" @?=
+        ["trait.ben.shy"]
+      askChronicle st "traited of void" @?=
+        ["nobody is traited void"]
+
+  , testCase "moodedOf / mooded of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "mood.ana.calm"
+            , Insert "mood.ben.angry"
+            , Insert "mood.cass.calm"
+            ]
+      sort (moodedOf st "calm") @?= ["mood.ana.calm", "mood.cass.calm"]
+      moodedOf st "angry" @?= ["mood.ben.angry"]
+      moodedOf st "void" @?= []
+      askChronicle st "mooded of calm" @?=
+        ["mood.ana.calm", "mood.cass.calm"]
+      askChronicle st "mooded of angry" @?=
+        ["mood.ben.angry"]
+      askChronicle st "mooded of void" @?=
+        ["nobody is mooded void"]
+
+  , testCase "arcedOf / arced of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.arc!hopeful"
+            , Insert "ben.arc!bitter"
+            , Insert "cass.arc!hopeful"
+            ]
+      sort (arcedOf st "hopeful") @?= ["ana.arc.hopeful", "cass.arc.hopeful"]
+      arcedOf st "bitter" @?= ["ben.arc.bitter"]
+      arcedOf st "void" @?= []
+      askChronicle st "arced of hopeful" @?=
+        ["ana.arc.hopeful", "cass.arc.hopeful"]
+      askChronicle st "arced of bitter" @?=
+        ["ben.arc.bitter"]
+      askChronicle st "arced of void" @?=
+        ["nobody is arced void"]
+
+  , testCase "agedOf / aged of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "age.ana!32"
+            , Insert "age.ben!18"
+            , Insert "age.cass!32"
+            ]
+      sort (agedOf st "32") @?= ["age.ana.32", "age.cass.32"]
+      agedOf st "18" @?= ["age.ben.18"]
+      agedOf st "void" @?= []
+      askChronicle st "aged of 32" @?=
+        ["age.ana.32", "age.cass.32"]
+      askChronicle st "aged of 18" @?=
+        ["age.ben.18"]
+      askChronicle st "aged of void" @?=
+        ["nobody is aged void"]
+
+  , testCase "feltOf / felt of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.feels.afraid"
+            , Insert "ben.feels.happy"
+            , Insert "cass.feels.afraid"
+            , Insert "ana.feels.angry.toward.ben"
+            ]
+      sort (feltOf st "afraid") @?= ["ana.feels.afraid", "cass.feels.afraid"]
+      feltOf st "happy" @?= ["ben.feels.happy"]
+      feltOf st "angry.toward.ben" @?= ["ana.feels.angry.toward.ben"]
+      feltOf st "void" @?= []
+      askChronicle st "felt of afraid" @?=
+        ["ana.feels.afraid", "cass.feels.afraid"]
+      askChronicle st "felt of happy" @?=
+        ["ben.feels.happy"]
+      askChronicle st "felt of void" @?=
+        ["nobody felt void"]
+
+  , testCase "bondedOf / bonded of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "bond.ana.ben.friends"
+            , Insert "bond.cass.dave.rivals"
+            , Insert "bond.eve.fran.friends"
+            , Insert "bond.cass.ben"
+            ]
+      sort (bondedOf st "friends") @?=
+        ["bond.ana.ben.friends", "bond.eve.fran.friends"]
+      bondedOf st "rivals" @?= ["bond.cass.dave.rivals"]
+      bondedOf st "void" @?= []
+      askChronicle st "bonded of friends" @?=
+        ["bond.ana.ben.friends", "bond.eve.fran.friends"]
+      askChronicle st "bonded of rivals" @?=
+        ["bond.cass.dave.rivals"]
+      askChronicle st "bonded of void" @?=
+        ["nobody is bonded void"]
+
+  , testCase "esteemsOf / esteems of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "esteemed.ana.ben.hero"
+            , Insert "esteemed.ana.cass.sage"
+            , Insert "esteemed.dave.ben.hero"
+            , Insert "esteemed.cass.ben"
+            ]
+      sort (esteemsOf st "hero") @?=
+        ["esteemed.ana.ben.hero", "esteemed.dave.ben.hero"]
+      esteemsOf st "sage" @?= ["esteemed.ana.cass.sage"]
+      esteemsOf st "void" @?= []
+      askChronicle st "esteems of hero" @?=
+        ["esteemed.ana.ben.hero", "esteemed.dave.ben.hero"]
+      askChronicle st "esteems of sage" @?=
+        ["esteemed.ana.cass.sage"]
+      askChronicle st "esteems of void" @?=
+        ["nobody esteems as void"]
+
+  , testCase "scornsOf / scorns of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "scorned.ana.dave.thief"
+            , Insert "scorned.ben.dave.thief"
+            , Insert "scorned.cass.eve.liar"
+            , Insert "scorned.ben.dave"
+            ]
+      sort (scornsOf st "thief") @?=
+        ["scorned.ana.dave.thief", "scorned.ben.dave.thief"]
+      scornsOf st "liar" @?= ["scorned.cass.eve.liar"]
+      scornsOf st "void" @?= []
+      askChronicle st "scorns of thief" @?=
+        ["scorned.ana.dave.thief", "scorned.ben.dave.thief"]
+      askChronicle st "scorns of liar" @?=
+        ["scorned.cass.eve.liar"]
+      askChronicle st "scorns of void" @?=
+        ["nobody scorns as void"]
+
+  , testCase "demandsOf / demands of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "demanded.ana.ben.favor"
+            , Insert "demanded.cai.ana.coin"
+            , Insert "demanded.dave.eve.favor"
+            ]
+      sort (demandsOf st "favor") @?=
+        ["demanded.ana.ben.favor", "demanded.dave.eve.favor"]
+      demandsOf st "coin" @?= ["demanded.cai.ana.coin"]
+      demandsOf st "void" @?= []
+      askChronicle st "demands of favor" @?=
+        ["demanded.ana.ben.favor", "demanded.dave.eve.favor"]
+      askChronicle st "demands of coin" @?=
+        ["demanded.cai.ana.coin"]
+      askChronicle st "demands of void" @?=
+        ["nobody demands void"]
+
+  , testCase "liedOf / lied of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "ana.lied.ben.stole.loaf"
+            , Insert "cass.lied.dave.stole.loaf"
+            , Insert "ben.lied.ana.saw.nothing"
+            ]
+      sort (liedOf st "stole.loaf") @?=
+        ["ana.lied.ben.stole.loaf", "cass.lied.dave.stole.loaf"]
+      liedOf st "saw.nothing" @?= ["ben.lied.ana.saw.nothing"]
+      liedOf st "void" @?= []
+      askChronicle st "lied of stole.loaf" @?=
+        ["ana.lied.ben.stole.loaf", "cass.lied.dave.stole.loaf"]
+      askChronicle st "lied of saw.nothing" @?=
+        ["ben.lied.ana.saw.nothing"]
+      askChronicle st "lied of void" @?=
+        ["nobody lied void"]
+
+  , testCase "regardsAsOf / regards as dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "regards.dave.bob.thief"
+            , Insert "regards.fran.bob.thief"
+            , Insert "regards.dave.eve.hero"
+            ]
+      sort (regardsAsOf st "thief") @?=
+        ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      regardsAsOf st "hero" @?= ["regards.dave.eve.hero"]
+      regardsAsOf st "void" @?= []
+      askChronicle st "regards as thief" @?=
+        ["regards.dave.bob.thief", "regards.fran.bob.thief"]
+      askChronicle st "regards as hero" @?=
+        ["regards.dave.eve.hero"]
+      askChronicle st "regards as void" @?=
+        ["nobody regards as void"]
+
+  , testCase "owedOf / owed of dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "debt.ana.ben.favor"
+            , Insert "debt.cass.ana.coin"
+            , Insert "debt.dave.eve.favor"
+            ]
+      sort (owedOf st "favor") @?=
+        ["debt.ana.ben.favor", "debt.dave.eve.favor"]
+      owedOf st "coin" @?= ["debt.cass.ana.coin"]
+      owedOf st "void" @?= []
+      askChronicle st "owed of favor" @?=
+        ["debt.ana.ben.favor", "debt.dave.eve.favor"]
+      askChronicle st "owed of coin" @?=
+        ["debt.cass.ana.coin"]
+      askChronicle st "owed of void" @?=
+        ["nobody owes void"]
+
+  , testCase "obligedAsOf / violatedAsOf dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "obliged.ana.settle.up"
+            , Insert "obliged.ben.tip.carol"
+            , Insert "obliged.cass.settle.up"
+            , Insert "violated.ana.tipping"
+            , Insert "violated.ben.courtesy"
+            , Insert "violated.dave.tipping"
+            ]
+      sort (obligedAsOf st "settle.up") @?=
+        ["obliged.ana.settle.up", "obliged.cass.settle.up"]
+      obligedAsOf st "tip.carol" @?= ["obliged.ben.tip.carol"]
+      obligedAsOf st "void" @?= []
+      sort (violatedAsOf st "tipping") @?=
+        ["violated.ana.tipping", "violated.dave.tipping"]
+      violatedAsOf st "courtesy" @?= ["violated.ben.courtesy"]
+      violatedAsOf st "void" @?= []
+      askChronicle st "obliged as settle.up" @?=
+        ["obliged.ana.settle.up", "obliged.cass.settle.up"]
+      askChronicle st "obliged as tip.carol" @?=
+        ["obliged.ben.tip.carol"]
+      askChronicle st "obliged as void" @?=
+        ["nobody is obliged as void"]
+      askChronicle st "violated as tipping" @?=
+        ["violated.ana.tipping", "violated.dave.tipping"]
+      askChronicle st "violated as courtesy" @?=
+        ["violated.ben.courtesy"]
+      askChronicle st "violated as void" @?=
+        ["nobody violated as void"]
+
+  , testCase "practicedAsOf / practiced as dual" $ do
+      let st = foldl (flip performOutcome) emptyState
+            [ Insert "practice.bake.ana.did.mix"
+            , Insert "practice.bake.ana.crew.ben"
+            , Insert "practice.hunt.ben.did.track"
+            , Insert "practice.bake.cass.did.mix"
+            ]
+      sort (practicedAsOf st "did.mix") @?=
+        ["practice.bake.ana.did.mix", "practice.bake.cass.did.mix"]
+      practicedAsOf st "crew.ben" @?= ["practice.bake.ana.crew.ben"]
+      practicedAsOf st "did.track" @?= ["practice.hunt.ben.did.track"]
+      practicedAsOf st "void" @?= []
+      askChronicle st "practiced as did.mix" @?=
+        ["practice.bake.ana.did.mix", "practice.bake.cass.did.mix"]
+      askChronicle st "practiced as crew.ben" @?=
+        ["practice.bake.ana.crew.ben"]
+      askChronicle st "practiced as void" @?=
+        ["nobody practiced as void"]
 
   ]
